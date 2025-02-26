@@ -57,13 +57,13 @@ class Transactions extends HookConsumerWidget {
                       ),
                     ),
                   _ => const RegularFlag(
-                      textStyle: TextStyle(
-                        color: SideSwapColors.brightTurquoise,
-                        fontSize: 14,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                      ),
+                    textStyle: TextStyle(
+                      color: SideSwapColors.brightTurquoise,
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
                     ),
+                  ),
                 },
                 const Spacer(),
                 const CsvExportButton(),
@@ -74,7 +74,7 @@ class Transactions extends HookConsumerWidget {
         ),
       ),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.invalidate(pageStorageKeyDataProvider);
           ref.read(walletProvider).goBack();
@@ -84,22 +84,24 @@ class Transactions extends HookConsumerWidget {
       sideSwapBackground: false,
       body: SafeArea(
         child: ScrollConfiguration(
-          behavior: allTransactions.isEmpty
-              ? ScrollConfiguration.of(context).copyWith(scrollbars: false)
-              : ScrollConfiguration.of(context),
+          behavior:
+              allTransactions.isEmpty
+                  ? ScrollConfiguration.of(context).copyWith(scrollbars: false)
+                  : ScrollConfiguration.of(context),
           child: CustomScrollView(
             key: storageKey,
-            physics: allTransactions.isEmpty
-                ? const NeverScrollableScrollPhysics()
-                : null,
+            physics:
+                allTransactions.isEmpty
+                    ? const NeverScrollableScrollPhysics()
+                    : null,
             slivers: [
               SliverList.builder(
                 itemBuilder: (context, index) {
                   return allTransactions.isNotEmpty
                       ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: TxListItem(txItem: allTransactions[index]),
-                        )
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: TxListItem(txItem: allTransactions[index]),
+                      )
                       : const EmptyTxListItem();
                 },
                 itemCount:

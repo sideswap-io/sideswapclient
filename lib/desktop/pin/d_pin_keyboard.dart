@@ -12,7 +12,8 @@ import 'package:sideswap/providers/pin_protection_provider.dart';
 
 final pinKeyboardIndexProvider =
     ChangeNotifierProvider.autoDispose<PinKeyboardIndexProvider>(
-        (ref) => PinKeyboardIndexProvider(ref));
+      (ref) => PinKeyboardIndexProvider(ref),
+    );
 
 class PinKeyboardIndexProvider extends ChangeNotifier {
   final Ref ref;
@@ -58,11 +59,9 @@ class DPinKeyboard extends HookConsumerWidget {
         .defaultButtonStyle
         ?.merge(
           DButtonStyle(
-            border: ButtonState.resolveWith(
-              (states) {
-                return const BorderSide(color: Color(0xFF5F9EC4), width: 1);
-              },
-            ),
+            border: ButtonState.resolveWith((states) {
+              return const BorderSide(color: Color(0xFF5F9EC4), width: 1);
+            }),
             textStyle: ButtonState.all(
               const TextStyle(
                 fontSize: 18,
@@ -115,9 +114,7 @@ class DPinKeyboard extends HookConsumerWidget {
               break;
             case 11:
               buttonStyle = defaultEnterButtonStyle;
-              const textStyle = TextStyle(
-                fontSize: 14,
-              );
+              const textStyle = TextStyle(fontSize: 14);
 
               switch (acceptType) {
                 case PinKeyboardAcceptType.icon:
@@ -128,28 +125,16 @@ class DPinKeyboard extends HookConsumerWidget {
                   );
                   break;
                 case PinKeyboardAcceptType.enable:
-                  child = Text(
-                    'ENABLE'.tr(),
-                    style: textStyle,
-                  );
+                  child = Text('ENABLE'.tr(), style: textStyle);
                   break;
                 case PinKeyboardAcceptType.disable:
-                  child = Text(
-                    'DISABLE'.tr(),
-                    style: textStyle,
-                  );
+                  child = Text('DISABLE'.tr(), style: textStyle);
                   break;
                 case PinKeyboardAcceptType.unlock:
-                  child = Text(
-                    'UNLOCK'.tr(),
-                    style: textStyle,
-                  );
+                  child = Text('UNLOCK'.tr(), style: textStyle);
                   break;
                 case PinKeyboardAcceptType.save:
-                  child = Text(
-                    'SAVE'.tr(),
-                    style: textStyle,
-                  );
+                  child = Text('SAVE'.tr(), style: textStyle);
                   break;
               }
 
@@ -189,14 +174,18 @@ class DAnimatedPinButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller =
-        useAnimationController(duration: const Duration(milliseconds: 160));
+    final controller = useAnimationController(
+      duration: const Duration(milliseconds: 160),
+    );
 
-    final beginColor =
-        buttonStyle?.backgroundColor?.resolve({ButtonStates.pressing});
+    final beginColor = buttonStyle?.backgroundColor?.resolve({
+      ButtonStates.pressing,
+    });
 
-    final color = ColorTween(begin: beginColor, end: Colors.transparent)
-        .animate(controller);
+    final color = ColorTween(
+      begin: beginColor,
+      end: Colors.transparent,
+    ).animate(controller);
 
     controller.forward();
 
@@ -224,9 +213,7 @@ class DAnimatedPinButton extends HookConsumerWidget {
           return Container(
             decoration: ShapeDecoration(
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
               color: color.value,
             ),

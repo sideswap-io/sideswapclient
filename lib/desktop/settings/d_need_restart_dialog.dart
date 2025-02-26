@@ -27,7 +27,9 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
           width: 64,
           height: 64,
           colorFilter: const ColorFilter.mode(
-              SideSwapColors.brightTurquoise, BlendMode.srcIn),
+            SideSwapColors.brightTurquoise,
+            BlendMode.srcIn,
+          ),
         ),
       ),
       content: Center(
@@ -45,21 +47,23 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 60),
-            Consumer(builder: (context, ref, _) {
-              return DCustomButton(
-                width: 266,
-                height: 54,
-                isFilled: true,
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  ref.read(networkSettingsNotifierProvider.notifier).save();
-                  ref
-                      .read(pageStatusNotifierProvider.notifier)
-                      .setStatus(Status.registered);
-                },
-                child: Text('OK'.tr()),
-              );
-            }),
+            Consumer(
+              builder: (context, ref, _) {
+                return DCustomButton(
+                  width: 266,
+                  height: 54,
+                  isFilled: true,
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    ref.read(networkSettingsNotifierProvider.notifier).save();
+                    ref
+                        .read(pageStatusNotifierProvider.notifier)
+                        .setStatus(Status.registered);
+                  },
+                  child: Text('OK'.tr()),
+                );
+              },
+            ),
           ],
         ),
       ),

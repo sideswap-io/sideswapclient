@@ -11,10 +11,7 @@ class SideSwapNavigationItemIcon extends StatelessWidget {
     return SizedBox(
       width: 32,
       height: 32,
-      child: SvgPicture.asset(
-        assetName,
-        width: 32,
-      ),
+      child: SvgPicture.asset(assetName, width: 32),
     );
   }
 }

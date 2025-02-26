@@ -36,7 +36,11 @@ class PegxLoginAutheIDInfo extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(
-                    top: 14, bottom: 24, left: 48, right: 48),
+                  top: 14,
+                  bottom: 24,
+                  left: 48,
+                  right: 48,
+                ),
                 child: Text(
                   'To register AMP ID with PEGx, you will need an Auth eID app'
                       .tr(),
@@ -63,7 +67,7 @@ class PegxLoginAutheIDInfo extends StatelessWidget {
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    text: 'Don\'t have the Auth eID App? '.tr(),
+                    text: "Don't have the Auth eID App? ".tr(),
                     style: textTheme.bodyMedium?.copyWith(fontSize: 14),
                   ),
                 ),
@@ -81,9 +85,13 @@ class PegxLoginAutheIDInfo extends StatelessWidget {
                         color: SideSwapColors.brightTurquoise,
                       ),
                     ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () => openUrl('https://autheid.com/',
-                          mode: LaunchMode.externalNonBrowserApplication),
+                    recognizer:
+                        TapGestureRecognizer()
+                          ..onTap =
+                              () => openUrl(
+                                'https://autheid.com/',
+                                mode: LaunchMode.externalNonBrowserApplication,
+                              ),
                   ),
                 ),
               ),

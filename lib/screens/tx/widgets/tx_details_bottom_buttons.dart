@@ -37,22 +37,26 @@ class TxDetailsBottomButtonsState
 
   Future<void> _openUrl(String txid, bool isLiquid, bool unblinded) async {
     await openExplorerSubscription?.cancel();
-    openExplorerSubscription =
-        ref.read(walletProvider).explorerUrlSubject.listen((value) async {
-      await openExplorerSubscription?.cancel();
-      await openUrl(value);
-    });
+    openExplorerSubscription = ref
+        .read(walletProvider)
+        .explorerUrlSubject
+        .listen((value) async {
+          await openExplorerSubscription?.cancel();
+          await openUrl(value);
+        });
 
     ref.read(walletProvider).openTxUrl(txid, isLiquid, unblinded);
   }
 
   Future<void> _shareAddress(String txid, bool isLiquid, bool unblinded) async {
     await shareExplorerSubscription?.cancel();
-    shareExplorerSubscription =
-        ref.read(walletProvider).explorerUrlSubject.listen((value) async {
-      await shareExplorerSubscription?.cancel();
-      await shareAddress(value);
-    });
+    shareExplorerSubscription = ref
+        .read(walletProvider)
+        .explorerUrlSubject
+        .listen((value) async {
+          await shareExplorerSubscription?.cancel();
+          await shareAddress(value);
+        });
 
     ref.read(walletProvider).openTxUrl(txid, isLiquid, unblinded);
   }
@@ -112,7 +116,9 @@ class TxDetailsBottomButtonsState
                     width: 8.16,
                     height: 14.73,
                     colorFilter: const ColorFilter.mode(
-                        SideSwapColors.brightTurquoise, BlendMode.srcIn),
+                      SideSwapColors.brightTurquoise,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
               ],
@@ -146,7 +152,9 @@ class TxDetailsBottomButtonsState
             width: 22,
             height: 26,
             colorFilter: const ColorFilter.mode(
-                SideSwapColors.brightTurquoise, BlendMode.srcIn),
+              SideSwapColors.brightTurquoise,
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ],

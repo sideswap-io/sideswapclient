@@ -7,10 +7,7 @@ import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 import 'package:sideswap/screens/accounts/widgets/assets_header.dart';
 
 class WalletAssets extends ConsumerWidget {
-  const WalletAssets({
-    super.key,
-    required this.accountAssets,
-  });
+  const WalletAssets({super.key, required this.accountAssets});
 
   final List<AccountAsset> accountAssets;
 
@@ -24,32 +21,30 @@ class WalletAssets extends ConsumerWidget {
           child: CustomScrollView(
             slivers: [
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: AccountItem(
-                        accountAsset: accountAssets[index],
-                        onSelected: (AccountAsset value) {
-                          final walletMainArguments =
-                              ref.read(uiStateArgsNotifierProvider);
-                          ref
-                              .read(uiStateArgsNotifierProvider.notifier)
-                              .setWalletMainArguments(
-                                walletMainArguments.copyWith(
-                                  navigationItemEnum:
-                                      WalletMainNavigationItemEnum.assetDetails,
-                                ),
-                              );
-                          ref
-                              .read(walletProvider)
-                              .selectAssetDetails(accountAssets[index]);
-                        },
-                      ),
-                    );
-                  },
-                  childCount: accountAssets.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: AccountItem(
+                      accountAsset: accountAssets[index],
+                      onSelected: (AccountAsset value) {
+                        final walletMainArguments = ref.read(
+                          uiStateArgsNotifierProvider,
+                        );
+                        ref
+                            .read(uiStateArgsNotifierProvider.notifier)
+                            .setWalletMainArguments(
+                              walletMainArguments.copyWith(
+                                navigationItemEnum:
+                                    WalletMainNavigationItemEnum.assetDetails,
+                              ),
+                            );
+                        ref
+                            .read(walletProvider)
+                            .selectAssetDetails(accountAssets[index]);
+                      },
+                    ),
+                  );
+                }, childCount: accountAssets.length),
               ),
             ],
           ),

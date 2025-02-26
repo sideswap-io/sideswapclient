@@ -1,14 +1,11 @@
-import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_settings_radio_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/providers/countries_provider.dart';
 import 'package:sideswap/providers/currency_rates_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
@@ -22,7 +19,7 @@ class DSettingsDefaultCurrency extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -44,9 +41,7 @@ class DSettingsDefaultCurrency extends ConsumerWidget {
               onPressed: () {
                 ref.read(walletProvider).goBack();
               },
-              child: Text(
-                'BACK'.tr(),
-              ),
+              child: Text('BACK'.tr()),
             ),
           ),
         ],
@@ -61,15 +56,9 @@ class DSettingsDefaultCurrencyContent extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final conversionRates = ref.watch(conversionRatesNotifierProvider);
-    final defaultConverstionRate =
-        ref.watch(defaultConversionRateNotifierProvider);
-    final countryCodesValue = ref.watch(countriesFutureProvider);
-
-    final countryCodes = switch (countryCodesValue) {
-      AsyncValue(hasValue: true, value: List<CountryCode> countries) =>
-        countries,
-      _ => <CountryCode>[],
-    };
+    final defaultConverstionRate = ref.watch(
+      defaultConversionRateNotifierProvider,
+    );
 
     return Center(
       child: SizedBox(
@@ -81,11 +70,6 @@ class DSettingsDefaultCurrencyContent extends HookConsumerWidget {
               itemBuilder: (context, index) {
                 final conversionRate =
                     conversionRates.usdConversionRates[index];
-                // TODO: use when conversion rates will contain country code
-                // ignore: unused_local_variable
-                final countryCode = countryCodes.firstWhereOrNull(
-                    (e) => e.currencyCode == conversionRate.name);
-
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10, right: 30),
                   child: DSettingsRadioButton(
@@ -95,18 +79,12 @@ class DSettingsDefaultCurrencyContent extends HookConsumerWidget {
                           .read(defaultConversionRateNotifierProvider.notifier)
                           .setDefaultConversionRate(conversionRate);
                     },
-                    content: Row(
-                      children: [
-                        Text(
-                          conversionRate.name,
-                        ),
-                      ],
-                    ),
+                    content: Row(children: [Text(conversionRate.name)]),
                   ),
                 );
               },
               itemCount: conversionRates.usdConversionRates.length,
-            )
+            ),
           ],
         ),
       ),

@@ -37,9 +37,7 @@ class UrlLinkButton extends StatelessWidget {
           foregroundColor: Colors.white,
           backgroundColor: SideSwapColors.chathamsBlue,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           side: const BorderSide(
             color: SideSwapColors.chathamsBlue,
@@ -52,11 +50,7 @@ class UrlLinkButton extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 16),
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: icon,
-              ),
+              child: SizedBox(width: 24, height: 24, child: icon),
             ),
             Expanded(
               child: Padding(
@@ -67,9 +61,10 @@ class UrlLinkButton extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
                     color: SideSwapColors.brightTurquoise,
-                    decoration: url.isNotEmpty
-                        ? TextDecoration.underline
-                        : TextDecoration.none,
+                    decoration:
+                        url.isNotEmpty
+                            ? TextDecoration.underline
+                            : TextDecoration.none,
                   ),
                 ),
               ),

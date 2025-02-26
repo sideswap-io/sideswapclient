@@ -6,16 +6,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/insufficient_funds.dart';
-import 'package:sideswap/common/widgets/unregistered_gaid.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/widgets/quote_expired_dialog.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-enum SettingsDialogIcon {
-  error,
-  restart,
-}
+enum SettingsDialogIcon { error, restart }
 
 const kErrorQuoteExpired = 'quote expired';
 
@@ -48,7 +44,9 @@ class UtilsProvider {
           width: 23,
           height: 23,
           colorFilter: const ColorFilter.mode(
-              SideSwapColors.bitterSweet, BlendMode.srcIn),
+            SideSwapColors.bitterSweet,
+            BlendMode.srcIn,
+          ),
         );
         borderColor = SideSwapColors.bitterSweet;
         break;
@@ -67,21 +65,19 @@ class UtilsProvider {
       barrierDismissible: false,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           child: Container(
             decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(
-                Radius.circular(8),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
               color: SideSwapColors.blumine,
             ),
             child: SizedBox(
               width: width,
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -97,9 +93,7 @@ class UtilsProvider {
                           style: BorderStyle.solid,
                         ),
                       ),
-                      child: Center(
-                        child: iconWidget,
-                      ),
+                      child: Center(child: iconWidget),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 32),
@@ -166,8 +160,10 @@ class UtilsProvider {
     );
   }
 
-  Future<void> showErrorDialog(String errorDescription,
-      {String? buttonText}) async {
+  Future<void> showErrorDialog(
+    String errorDescription, {
+    String? buttonText,
+  }) async {
     final context = ref.read(navigatorKeyProvider).currentContext;
 
     if (context == null) {
@@ -213,14 +209,14 @@ class UtilsProvider {
               width: 343,
               height: 378,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.all(Radius.circular(8)),
                 color: SideSwapColors.blumine,
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -241,7 +237,9 @@ class UtilsProvider {
                           width: 23,
                           height: 23,
                           colorFilter: const ColorFilter.mode(
-                              SideSwapColors.bitterSweet, BlendMode.srcIn),
+                            SideSwapColors.bitterSweet,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
@@ -313,34 +311,6 @@ class UtilsProvider {
             }
           },
           child: InsufficientFunds(msg: msg),
-        );
-      },
-    );
-  }
-
-  Future<void> showUnregisteredGaid(
-      From_SubmitResult_UnregisteredGaid msg) async {
-    final context = ref.read(navigatorKeyProvider).currentContext;
-
-    if (context == null) {
-      return;
-    }
-    await showDialog<void>(
-      context: context,
-      barrierDismissible:
-          FlavorConfig.isDesktop, // Allow close popups with Esc on desktop
-      builder: (BuildContext context) {
-        return KeyboardListener(
-          focusNode: FocusNode(),
-          autofocus: true,
-          onKeyEvent: (KeyEvent event) {
-            if (FlavorConfig.isDesktop &&
-                event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.enter) {
-              Navigator.of(context).pop(); // Dismiss the dialog
-            }
-          },
-          child: UnregisteredGaid(msg: msg),
         );
       },
     );

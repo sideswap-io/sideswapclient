@@ -7,7 +7,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/desktop/stokr/d_stokr_need_register_popup.dart';
-import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
@@ -16,9 +16,12 @@ class StokrNeedRegisterPopup extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountAsset =
-        ref.watch(marketSelectedAccountAssetStateProvider);
-    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    // TODO (malcolmpl): Old markets
+    // final selectedAccountAsset =
+    //     ref.watch(marketSelectedAccountAssetStateProvider);
+    final AccountAsset? selectedAccountAsset = null;
+
+    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset?.assetId];
 
     return SideSwapPopup(
       onClose: () {
@@ -31,10 +34,9 @@ class StokrNeedRegisterPopup extends HookConsumerWidget {
             const SizedBox(height: 32),
             Text(
               'Please complete the following steps on STOKR:'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontSize: 20),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontSize: 20),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -55,9 +57,9 @@ class StokrNeedRegisterPopup extends HookConsumerWidget {
                 },
                 child: Text(
                   'REGISTER ON STOKR'.tr(),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -69,9 +71,7 @@ class StokrNeedRegisterPopup extends HookConsumerWidget {
 }
 
 class StokrErrorIcon extends StatelessWidget {
-  const StokrErrorIcon({
-    super.key,
-  });
+  const StokrErrorIcon({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -80,10 +80,7 @@ class StokrErrorIcon extends StatelessWidget {
       height: 66,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: SideSwapColors.bitterSweet,
-          width: 3,
-        ),
+        border: Border.all(color: SideSwapColors.bitterSweet, width: 3),
         color: SideSwapColors.chathamsBlue,
       ),
       child: Center(
@@ -92,7 +89,9 @@ class StokrErrorIcon extends StatelessWidget {
           width: 22,
           height: 22,
           colorFilter: const ColorFilter.mode(
-              SideSwapColors.bitterSweet, BlendMode.srcIn),
+            SideSwapColors.bitterSweet,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     );
@@ -100,18 +99,14 @@ class StokrErrorIcon extends StatelessWidget {
 }
 
 class StokrStepsContainer extends StatelessWidget {
-  const StokrStepsContainer({
-    super.key,
-  });
+  const StokrStepsContainer({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: SideSwapColors.chathamsBlue,
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),

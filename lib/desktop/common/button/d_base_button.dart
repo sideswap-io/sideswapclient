@@ -46,12 +46,19 @@ abstract class DBaseButton extends ConsumerStatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
     properties.add(
-        DiagnosticsProperty<DButtonStyle>('style', style, defaultValue: null));
-    properties.add(DiagnosticsProperty<FocusNode>('focusNode', focusNode,
-        defaultValue: null));
+      FlagProperty('enabled', value: enabled, ifFalse: 'disabled'),
+    );
+    properties.add(
+      DiagnosticsProperty<DButtonStyle>('style', style, defaultValue: null),
+    );
+    properties.add(
+      DiagnosticsProperty<FocusNode>(
+        'focusNode',
+        focusNode,
+        defaultValue: null,
+      ),
+    );
   }
 }
 
@@ -89,47 +96,59 @@ class BaseButtonState extends ConsumerState<DBaseButton> {
       cursor: widget.cursor,
       builder: (context, states) {
         T? resolve<T>(
-            ButtonState<T>? Function(DButtonStyle? style) getProperty) {
+          ButtonState<T>? Function(DButtonStyle? style) getProperty,
+        ) {
           return effectiveValue(
             (DButtonStyle? style) => getProperty(style)?.resolve(states),
           );
         }
 
-        final double? resolvedElevation =
-            resolve<double?>((DButtonStyle? style) => style?.elevation);
-        final TextStyle? resolvedTextStyle =
-            resolve<TextStyle?>((DButtonStyle? style) => style?.textStyle);
-        final Color? resolvedBackgroundColor =
-            resolve<Color?>((DButtonStyle? style) => style?.backgroundColor);
-        final Color? resolvedForegroundColor =
-            resolve<Color?>((DButtonStyle? style) => style?.foregroundColor);
-        final Color? resolvedShadowColor =
-            resolve<Color?>((DButtonStyle? style) => style?.shadowColor);
-        final EdgeInsetsGeometry resolvedPadding = resolve<EdgeInsetsGeometry?>(
-                (DButtonStyle? style) => style?.padding) ??
+        final double? resolvedElevation = resolve<double?>(
+          (DButtonStyle? style) => style?.elevation,
+        );
+        final TextStyle? resolvedTextStyle = resolve<TextStyle?>(
+          (DButtonStyle? style) => style?.textStyle,
+        );
+        final Color? resolvedBackgroundColor = resolve<Color?>(
+          (DButtonStyle? style) => style?.backgroundColor,
+        );
+        final Color? resolvedForegroundColor = resolve<Color?>(
+          (DButtonStyle? style) => style?.foregroundColor,
+        );
+        final Color? resolvedShadowColor = resolve<Color?>(
+          (DButtonStyle? style) => style?.shadowColor,
+        );
+        final EdgeInsetsGeometry resolvedPadding =
+            resolve<EdgeInsetsGeometry?>(
+              (DButtonStyle? style) => style?.padding,
+            ) ??
             EdgeInsets.zero;
-        final BorderSide? resolvedBorder =
-            resolve<BorderSide?>((DButtonStyle? style) => style?.border);
+        final BorderSide? resolvedBorder = resolve<BorderSide?>(
+          (DButtonStyle? style) => style?.border,
+        );
         final OutlinedBorder resolvedShape =
             resolve<OutlinedBorder?>((DButtonStyle? style) => style?.shape) ??
-                const RoundedRectangleBorder();
+            const RoundedRectangleBorder();
 
         final EdgeInsetsGeometry padding = resolvedPadding
-            .add(EdgeInsets.symmetric(
-              horizontal: theme.visualDensity.horizontal,
-              vertical: theme.visualDensity.vertical,
-            ))
+            .add(
+              EdgeInsets.symmetric(
+                horizontal: theme.visualDensity.horizontal,
+                vertical: theme.visualDensity.vertical,
+              ),
+            )
             .clamp(EdgeInsets.zero, EdgeInsetsGeometry.infinity);
         final double? iconSize = resolve<double?>((style) => style?.iconSize);
         Widget result = PhysicalModel(
           color: Colors.transparent,
           shadowColor: resolvedShadowColor ?? Colors.black,
           elevation: resolvedElevation ?? 0.0,
-          borderRadius: resolvedShape is RoundedRectangleBorder
-              ? resolvedShape.borderRadius is BorderRadius
-                  ? resolvedShape.borderRadius as BorderRadius
-                  : BorderRadius.zero
-              : BorderRadius.zero,
+          borderRadius:
+              resolvedShape is RoundedRectangleBorder
+                  ? resolvedShape.borderRadius is BorderRadius
+                      ? resolvedShape.borderRadius as BorderRadius
+                      : BorderRadius.zero
+                  : BorderRadius.zero,
           child: AnimatedContainer(
             duration: fasterAnimationDuration,
             curve: animationCurve,
@@ -146,8 +165,9 @@ class BaseButtonState extends ConsumerState<DBaseButton> {
               child: AnimatedDefaultTextStyle(
                 duration: fastAnimationDuration,
                 curve: animationCurve,
-                style: (resolvedTextStyle ?? const TextStyle())
-                    .copyWith(color: resolvedForegroundColor),
+                style: (resolvedTextStyle ?? const TextStyle()).copyWith(
+                  color: resolvedForegroundColor,
+                ),
                 textAlign: TextAlign.center,
                 child: widget.child,
               ),

@@ -4,7 +4,7 @@ Tutorial on how to run own dealer.
 
 ## Decide in which market you want to participate
 
-There are 3 types of markets - Stablecoin, AMP and Token. Stablecoin markets are based on selected list of stablecoin assets. Currently available stablecoins: USDt, EURx, DePix and MEX. Assets can be traded against L-BTC (Liquid Bitcoin) or each other. AMP markets are based on selected list of AMP assets. Some of the AMP assets are SSWP, CMSTR, BMN2. Token markets can be any registered in the GDK registry asset. Currently the dealer only supports the PPRGB asset as a token market asset and all the other token markets are ignored. To see the list of all supported markets you can visit https://sideswap.io/dealer-demo/api/metadata
+There are 3 types of markets - Stablecoin, AMP and Token. Stablecoin markets are based on selected list of stablecoin assets. Currently available stablecoins: USDt, EURx, DePix and MEX. Assets can be traded against L-BTC (Liquid Bitcoin) or each other. AMP markets are based on selected list of AMP assets. Some of the AMP assets are SSWP, CMSTR, BMN2. Token markets can be any asset registered in the GDK registry. Currently the dealer whitelists only a few token market assets and all other token markets are ignored. To see the list of all supported markets you can visit [https://sideswap.io/dealer-demo/api/metadata](https://sideswap.io/dealer-demo/api/metadata). Other assets (and markets) can be added using the `whitelisted_assets` parameter.
 
 ## Decide which wallet to use
 

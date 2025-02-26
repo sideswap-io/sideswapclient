@@ -1,14 +1,13 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::Arc};
 
 use sideswap_api::{
     mkt::{AssetPair, TradeDir},
     PricePair,
 };
 use sideswap_common::{
-    dealer_ticker::{dealer_ticker_to_asset_id, DealerTicker},
+    dealer_ticker::{DealerTicker, TickerLoader},
     env::Env,
     exchange_pair::ExchangePair,
-    network::Network,
     price_stream,
 };
 use sideswap_types::normal_float::NormalFloat;
@@ -24,14 +23,13 @@ enum Msg {
 }
 
 pub struct Data {
-    network: Network,
     markets: price_stream::Markets,
     submit_prices: BTreeMap<ExchangePair, PricePair>,
     msg_receiver: UnboundedReceiver<Msg>,
 }
 
 impl Data {
-    pub fn new(env: Env, markets: price_stream::Markets) -> Data {
+    pub fn new(env: Env, markets: price_stream::Markets, ticker_loader: Arc<TickerLoader>) -> Data {
         let (msg_sender, msg_receiver) = unbounded_channel::<Msg>();
 
         for market in markets.iter() {
@@ -47,11 +45,10 @@ impl Data {
                 }
             });
 
-            price_stream::start(env, market.clone(), callback);
+            price_stream::start(env, market.clone(), Arc::clone(&ticker_loader), callback);
         }
 
         Data {
-            network: env.d().network,
             markets,
             submit_prices: BTreeMap::new(),
             msg_receiver,
@@ -81,7 +78,7 @@ impl Data {
         updates
     }
 
-    pub fn market_prices(&self) -> Vec<market::AutomaticOrder> {
+    pub fn market_prices(&self, ticker_loader: &TickerLoader) -> Vec<market::AutomaticOrder> {
         let mut orders = Vec::new();
 
         for market in self.markets.iter() {
@@ -89,12 +86,12 @@ impl Data {
             let submit_price = self.submit_prices.get(&exchange_pair);
             if let Some(submit_price) = submit_price {
                 let asset_pair = AssetPair {
-                    base: dealer_ticker_to_asset_id(self.network, market.base),
-                    quote: dealer_ticker_to_asset_id(self.network, market.quote),
+                    base: *ticker_loader.asset_id(market.base),
+                    quote: *ticker_loader.asset_id(market.quote),
                 };
 
                 {
-                    let bid_amount = market.bid_amount_sats();
+                    let bid_amount = market.bid_amount_sats(ticker_loader);
                     if bid_amount > 0 {
                         orders.push(market::AutomaticOrder {
                             asset_pair,
@@ -106,7 +103,7 @@ impl Data {
                 }
 
                 {
-                    let ask_amount = market.ask_amount_sats();
+                    let ask_amount = market.ask_amount_sats(ticker_loader);
                     orders.push(market::AutomaticOrder {
                         asset_pair,
                         trade_dir: TradeDir::Sell,

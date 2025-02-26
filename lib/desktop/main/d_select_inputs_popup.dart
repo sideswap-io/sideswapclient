@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/common/widgets/animated_dropdown_arrow.dart';
 import 'package:sideswap/common/widgets/colored_container.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
@@ -24,14 +25,14 @@ class DSelectInputsPopup extends HookConsumerWidget {
     final defaultDialogTheme = ref
         .watch(desktopAppThemeNotifierProvider)
         .dialogTheme
-        .merge(const DContentDialogThemeData(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
+        .merge(
+          const DContentDialogThemeData(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              color: SideSwapColors.blumine,
             ),
-            color: SideSwapColors.blumine,
           ),
-        ));
+        );
 
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 1040, maxHeight: 808),
@@ -65,8 +66,9 @@ class DSelectInputsPopup extends HookConsumerWidget {
                     Text(
                       'Wallet:'.tr(),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: SideSwapColors.brightTurquoise),
+                        fontWeight: FontWeight.w500,
+                        color: SideSwapColors.brightTurquoise,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     const DSelectInputsWalletTypeFlagPopupMenu(),
@@ -89,10 +91,9 @@ class DSelectInputsPopup extends HookConsumerWidget {
                         Text(
                           'Network fees will be visible on the transaction review screen.'
                               .tr(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(color: textColor),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.labelMedium?.copyWith(color: textColor),
                         ),
                       ],
                     ),
@@ -119,75 +120,70 @@ class DSelectInputsPopup extends HookConsumerWidget {
 }
 
 class DInputsListHeader extends StatelessWidget {
-  const DInputsListHeader({
-    super.key,
-  });
+  const DInputsListHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return DFlexesRow(flexes: const [
-      865,
-      132,
-      132
-    ], children: [
-      Row(
-        children: [
-          const SizedBox(width: 10),
-          Consumer(
-            builder: (context, ref, child) {
-              final inputsAddresses = ref.watch(inputsAddressesAsyncProvider);
-              final selectedInputsHelper =
-                  ref.watch(selectedInputsHelperProvider);
+    return DFlexesRow(
+      flexes: const [865, 132, 132],
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 10),
+            Consumer(
+              builder: (context, ref, child) {
+                final inputsAddresses = ref.watch(inputsAddressesAsyncProvider);
+                final selectedInputsHelper = ref.watch(
+                  selectedInputsHelperProvider,
+                );
 
-              return switch (inputsAddresses) {
-                AsyncValue(
-                  hasValue: true,
-                  value: AddressesModel addressesModel
-                ) =>
-                  CustomCheckBox(
-                    value: selectedInputsHelper.containsModel(addressesModel),
-                    onChecked: (value) {
-                      if (value) {
+                return switch (inputsAddresses) {
+                  AsyncValue(
+                    hasValue: true,
+                    value: AddressesModel addressesModel,
+                  ) =>
+                    CustomCheckBox(
+                      value: selectedInputsHelper.containsModel(addressesModel),
+                      onChecked: (value) {
+                        if (value) {
+                          ref
+                              .read(selectedInputsNotifierProvider.notifier)
+                              .addAllItemsFromModel(addressesModel);
+                          return;
+                        }
+
                         ref
                             .read(selectedInputsNotifierProvider.notifier)
-                            .addAllItemsFromModel(addressesModel);
-                        return;
-                      }
-
-                      ref
-                          .read(selectedInputsNotifierProvider.notifier)
-                          .removeAll();
-                    },
-                  ),
-                _ => const SizedBox(),
-              };
-            },
-          ),
-          const SizedBox(width: 10),
-          Text(
-            'Address/Hash'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(color: SideSwapColors.cornFlower),
-          ),
-        ],
-      ),
-      Text(
-        'Asset'.tr(),
-        style: Theme.of(context)
-            .textTheme
-            .labelMedium
-            ?.copyWith(color: SideSwapColors.cornFlower),
-      ),
-      Text(
-        'Balance'.tr(),
-        style: Theme.of(context)
-            .textTheme
-            .labelMedium
-            ?.copyWith(color: SideSwapColors.cornFlower),
-      ),
-    ]);
+                            .removeAll();
+                      },
+                    ),
+                  _ => const SizedBox(),
+                };
+              },
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Address/Hash'.tr(),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: SideSwapColors.cornFlower,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          'Asset'.tr(),
+          style: Theme.of(
+            context,
+          ).textTheme.labelMedium?.copyWith(color: SideSwapColors.cornFlower),
+        ),
+        Text(
+          'Balance'.tr(),
+          style: Theme.of(
+            context,
+          ).textTheme.labelMedium?.copyWith(color: SideSwapColors.cornFlower),
+        ),
+      ],
+    );
   }
 }
 
@@ -208,8 +204,10 @@ class DInputsDetails extends StatelessWidget {
           const Spacer(),
           ColoredContainer(
             height: 224,
-            backgroundColor: SideSwapColors.chathamsBlue,
-            borderColor: SideSwapColors.chathamsBlue,
+            theme: ColoredContainerTheme(
+              backgroundColor: SideSwapColors.chathamsBlue,
+              borderColor: SideSwapColors.chathamsBlue,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -219,13 +217,15 @@ class DInputsDetails extends StatelessWidget {
                     Text(
                       'Transaction inputs:'.tr(),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: SideSwapColors.brightTurquoise),
+                        fontWeight: FontWeight.w500,
+                        color: SideSwapColors.brightTurquoise,
+                      ),
                     ),
                     Consumer(
                       builder: (context, ref, child) {
-                        final selectedInputsHelper =
-                            ref.watch(selectedInputsHelperProvider);
+                        final selectedInputsHelper = ref.watch(
+                          selectedInputsHelperProvider,
+                        );
 
                         return Text(
                           '${selectedInputsHelper.count()}',
@@ -245,15 +245,22 @@ class DInputsDetails extends StatelessWidget {
                 Text(
                   'Total amounts:'.tr(),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: SideSwapColors.brightTurquoise),
+                    fontWeight: FontWeight.w500,
+                    color: SideSwapColors.brightTurquoise,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 ColoredContainer(
-                  backgroundColor:
-                      SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.1),
-                  borderColor:
-                      SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.1),
+                  theme: ColoredContainerTheme(
+                    backgroundColor: SideSwapColors.chathamsBlue.lerpWith(
+                      Colors.black,
+                      0.1,
+                    ),
+                    borderColor: SideSwapColors.chathamsBlue.lerpWith(
+                      Colors.black,
+                      0.1,
+                    ),
+                  ),
                   child: const DInputsTotalAmountList(),
                 ),
               ],
@@ -285,17 +292,15 @@ class DInputsTotalAmountList extends HookConsumerWidget {
               children: [
                 Text(
                   'Asset'.tr(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(color: SideSwapColors.cornFlower),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: SideSwapColors.cornFlower,
+                  ),
                 ),
                 Text(
                   'Balance'.tr(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(color: SideSwapColors.cornFlower),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: SideSwapColors.cornFlower,
+                  ),
                 ),
               ],
             ),
@@ -308,8 +313,9 @@ class DInputsTotalAmountList extends HookConsumerWidget {
           ),
           Consumer(
             builder: (context, ref, child) {
-              final selectedInputsHelper =
-                  ref.watch(selectedInputsHelperProvider);
+              final selectedInputsHelper = ref.watch(
+                selectedInputsHelperProvider,
+              );
               final totalAmounts = selectedInputsHelper.totalAmounts();
 
               return Flexible(
@@ -378,16 +384,16 @@ class DInputsList extends HookConsumerWidget {
           Flexible(
             child: switch (inputsAddresses) {
               AsyncValue(isLoading: true) => const Center(
-                  child: CircularProgressIndicator(
-                    color: SideSwapColors.brightTurquoise,
-                  ),
+                child: CircularProgressIndicator(
+                  color: SideSwapColors.brightTurquoise,
                 ),
+              ),
               AsyncValue(error: Object()) => Center(
-                  child: Text('Error loading inputs'.tr()),
-                ),
+                child: Text('Error loading inputs'.tr()),
+              ),
               AsyncValue(
                 hasValue: true,
-                value: AddressesModel addressesModel
+                value: AddressesModel addressesModel,
               ) =>
                 Scrollbar(
                   thumbVisibility: true,
@@ -402,7 +408,7 @@ class DInputsList extends HookConsumerWidget {
                           );
                         },
                         itemCount: addressesModel.addresses?.length,
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -427,8 +433,9 @@ class DInputsListItem extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final expanded =
-        ref.watch(inputListItemExpandedStateProvider(addressesItem.hashCode));
+    final expanded = ref.watch(
+      inputListItemExpandedStateProvider(addressesItem.hashCode),
+    );
 
     final animationController = useAnimationController(
       duration: const Duration(milliseconds: 150),
@@ -467,9 +474,10 @@ class DInputsListItem extends HookConsumerWidget {
     }, [animationController]);
 
     return SizedBox(
-      height: expanded == true
-          ? height * (addressesItem.utxos!.length) + height
-          : height,
+      height:
+          expanded == true
+              ? height * (addressesItem.utxos!.length) + height
+              : height,
       child: Column(
         children: [
           DHoverButton(
@@ -481,80 +489,74 @@ class DInputsListItem extends HookConsumerWidget {
                 child: Column(
                   children: [
                     const Spacer(),
-                    DFlexesRow(flexes: const [
-                      865,
-                      132,
-                      132
-                    ], children: [
-                      Row(
-                        children: [
-                          const SizedBox(width: 10),
-                          Consumer(
-                            builder: (context, ref, child) {
-                              final selectedInputsHelper =
-                                  ref.watch(selectedInputsHelperProvider);
+                    DFlexesRow(
+                      flexes: const [865, 132, 132],
+                      children: [
+                        Row(
+                          children: [
+                            const SizedBox(width: 10),
+                            Consumer(
+                              builder: (context, ref, child) {
+                                final selectedInputsHelper = ref.watch(
+                                  selectedInputsHelperProvider,
+                                );
 
-                              return CustomCheckBox(
-                                value: selectedInputsHelper
-                                    .containsAll(addressesItem.utxos),
-                                onChecked: (value) {
-                                  if (value) {
+                                return CustomCheckBox(
+                                  value: selectedInputsHelper.containsAll(
+                                    addressesItem.utxos,
+                                  ),
+                                  onChecked: (value) {
+                                    if (value) {
+                                      ref
+                                          .read(
+                                            selectedInputsNotifierProvider
+                                                .notifier,
+                                          )
+                                          .addAllItems(addressesItem.utxos);
+                                      return;
+                                    }
+
                                     ref
-                                        .read(selectedInputsNotifierProvider
-                                            .notifier)
-                                        .addAllItems(addressesItem.utxos);
-                                    return;
-                                  }
-
-                                  ref
-                                      .read(selectedInputsNotifierProvider
-                                          .notifier)
-                                      .removeAllItems(addressesItem.utxos);
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 350,
-                                child: ExtendedText(
-                                  addressesItem.address ?? '',
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelMedium
-                                      ?.copyWith(fontSize: 14),
-                                  overflowWidget: TextOverflowWidget(
-                                    position: TextOverflowPosition.middle,
-                                    align: TextOverflowAlign.center,
-                                    child: Text(
-                                      '...',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelMedium
-                                          ?.copyWith(fontSize: 14),
-                                    ),
+                                        .read(
+                                          selectedInputsNotifierProvider
+                                              .notifier,
+                                        )
+                                        .removeAllItems(addressesItem.utxos);
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 10),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 350,
+                                  child: MiddleEllipsisText(
+                                    text: addressesItem.address ?? '',
+                                    textAlign: TextAlign.left,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium
+                                        ?.copyWith(fontSize: 14),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              AnimatedDropdownArrow(
-                                target: expanded ? 1 : 0,
-                                initFrom: expanded ? 1 : 0,
-                                iconColor: expanded
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(),
-                      const SizedBox(),
-                    ]),
+                                const SizedBox(width: 10),
+                                AnimatedDropdownArrow(
+                                  target: expanded ? 1 : 0,
+                                  initFrom: expanded ? 1 : 0,
+                                  iconColor:
+                                      expanded
+                                          ? SideSwapColors.brightTurquoise
+                                          : Colors.white,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(),
+                        const SizedBox(),
+                      ],
+                    ),
                     const Spacer(),
                     AnimatedPadding(
                       duration: const Duration(milliseconds: 150),
@@ -588,11 +590,12 @@ class DInputsListItem extends HookConsumerWidget {
                 );
               },
               child: DInputsListItemTx(
-                  expanded: expanded,
-                  addressesItem: addressesItem,
-                  height: height),
+                expanded: expanded,
+                addressesItem: addressesItem,
+                height: height,
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -617,39 +620,37 @@ class DInputsListItemTx extends StatelessWidget {
       color: expanded ? SideSwapColors.chathamsBlue : Colors.transparent,
       child: Column(
         children: [
-          ...List.generate(
-            addressesItem.utxos?.length ?? 0,
-            ((index) {
-              return HookConsumer(
-                builder: (context, ref, child) {
-                  final selectedInputs =
-                      ref.watch(selectedInputsNotifierProvider);
-                  final selectedInputsHelper =
-                      ref.watch(selectedInputsHelperProvider);
+          ...List.generate(addressesItem.utxos?.length ?? 0, ((index) {
+            return HookConsumer(
+              builder: (context, ref, child) {
+                final selectedInputs = ref.watch(
+                  selectedInputsNotifierProvider,
+                );
+                final selectedInputsHelper = ref.watch(
+                  selectedInputsHelperProvider,
+                );
 
-                  final checkboxValue = useState(false);
+                final checkboxValue = useState(false);
 
-                  useEffect(() {
-                    checkboxValue.value = selectedInputsHelper
-                        .contains(addressesItem.utxos?[index]);
+                useEffect(() {
+                  checkboxValue.value = selectedInputsHelper.contains(
+                    addressesItem.utxos?[index],
+                  );
 
-                    return;
-                  }, [selectedInputs]);
-                  return DHoverButton(
-                    builder: (context, states) {
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 39),
-                        child: SizedBox(
-                          height:
-                              height - 1, // 1 pixel for divider at the bottom
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 10),
-                              DFlexesRow(flexes: const [
-                                804,
-                                156,
-                                135
-                              ], children: [
+                  return;
+                }, [selectedInputs]);
+                return DHoverButton(
+                  builder: (context, states) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 39),
+                      child: SizedBox(
+                        height: height - 1, // 1 pixel for divider at the bottom
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 10),
+                            DFlexesRow(
+                              flexes: const [804, 156, 135],
+                              children: [
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -671,68 +672,78 @@ class DInputsListItemTx extends StatelessWidget {
                                 ),
                                 Consumer(
                                   builder: (context, ref, child) {
-                                    final selectedInputsHelper =
-                                        ref.watch(selectedInputsHelperProvider);
+                                    final selectedInputsHelper = ref.watch(
+                                      selectedInputsHelperProvider,
+                                    );
 
                                     return Row(
                                       children: [
                                         selectedInputsHelper.utxoAsset(
-                                            utxo: addressesItem.utxos?[index]),
+                                          utxo: addressesItem.utxos?[index],
+                                        ),
                                         const SizedBox(width: 6),
-                                        Text(selectedInputsHelper.utxoTicker(
-                                            utxo: addressesItem.utxos?[index])),
+                                        Text(
+                                          selectedInputsHelper.utxoTicker(
+                                            utxo: addressesItem.utxos?[index],
+                                          ),
+                                        ),
                                         selectedInputsHelper.utxoAccount(
-                                            utxo: addressesItem.utxos?[index]),
+                                          utxo: addressesItem.utxos?[index],
+                                        ),
                                       ],
                                     );
                                   },
                                 ),
                                 Consumer(
                                   builder: (context, ref, child) {
-                                    final selectedInputsHelper =
-                                        ref.watch(selectedInputsHelperProvider);
+                                    final selectedInputsHelper = ref.watch(
+                                      selectedInputsHelperProvider,
+                                    );
 
-                                    return Text(selectedInputsHelper.utxoAmount(
-                                        utxo: addressesItem.utxos?[index]));
+                                    return Text(
+                                      selectedInputsHelper.utxoAmount(
+                                        utxo: addressesItem.utxos?[index],
+                                      ),
+                                    );
                                   },
                                 ),
-                              ]),
-                              const Spacer(),
-                              ...switch (expanded) {
-                                true
-                                    when index + 1 !=
-                                        addressesItem.utxos?.length =>
-                                  [
-                                    const Divider(
-                                      height: 1,
-                                      thickness: 1,
-                                      color: SideSwapColors.jellyBean,
-                                    )
-                                  ],
-                                _ => [const SizedBox()],
-                              }
-                            ],
-                          ),
+                              ],
+                            ),
+                            const Spacer(),
+                            ...switch (expanded) {
+                              true
+                                  when index + 1 !=
+                                      addressesItem.utxos?.length =>
+                                [
+                                  const Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: SideSwapColors.jellyBean,
+                                  ),
+                                ],
+                              _ => [const SizedBox()],
+                            },
+                          ],
                         ),
-                      );
-                    },
-                    onPressed: () {
-                      if (!checkboxValue.value) {
-                        ref
-                            .read(selectedInputsNotifierProvider.notifier)
-                            .addItem(addressesItem.utxos?[index]);
-                        return;
-                      }
-
+                      ),
+                    );
+                  },
+                  onPressed: () {
+                    if (!checkboxValue.value) {
                       ref
                           .read(selectedInputsNotifierProvider.notifier)
-                          .removeItem(addressesItem.utxos?[index]);
-                    },
-                  );
-                },
-              );
-            }),
-          ),
+                          .addItem(addressesItem.utxos?[index]);
+                      return;
+                    }
+
+                    ref
+                        .read(selectedInputsNotifierProvider.notifier)
+                        .removeItem(addressesItem.utxos?[index]);
+                  },
+                );
+              },
+            );
+          })),
           const Spacer(),
           const Divider(
             height: 1,

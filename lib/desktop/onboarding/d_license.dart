@@ -56,10 +56,7 @@ class DLicense extends ConsumerWidget {
 
                   return const Padding(
                     padding: EdgeInsets.only(top: 32),
-                    child: SpinKitThreeBounce(
-                      color: Colors.white,
-                      size: 24,
-                    ),
+                    child: SpinKitThreeBounce(color: Colors.white, size: 24),
                   );
                 },
               ),

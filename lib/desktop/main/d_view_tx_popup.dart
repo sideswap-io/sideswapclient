@@ -52,11 +52,15 @@ class DViewTxPopup extends ConsumerWidget {
                   width: 18,
                   height: 18,
                   colorFilter: const ColorFilter.mode(
-                      SideSwapColors.brightTurquoise, BlendMode.srcIn),
+                    SideSwapColors.brightTurquoise,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 onPressed: () async {
                   await copyToClipboard(
-                      context, createdTx?.addressees.first.address ?? '');
+                    context,
+                    createdTx?.addressees.first.address ?? '',
+                  );
                 },
               ),
             ),
@@ -68,8 +72,9 @@ class DViewTxPopup extends ConsumerWidget {
                   width: 245,
                   height: 44,
                   onPressed: () {
-                    Navigator.of(context)
-                        .pop(const DialogReturnValueCancelled());
+                    Navigator.of(
+                      context,
+                    ).pop(const DialogReturnValueCancelled());
                   },
                   child: Text('BACK'.tr()),
                 ),
@@ -79,9 +84,10 @@ class DViewTxPopup extends ConsumerWidget {
                   isFilled: true,
                   onPressed: () async {
                     final navigator = Navigator.of(context);
-                    final result = await ref
-                        .read(outputsCreatorProvider.notifier)
-                        .saveToFile();
+                    final result =
+                        await ref
+                            .read(outputsCreatorProvider.notifier)
+                            .saveToFile();
                     if (result) {
                       navigator.pop(const DialogReturnValueAccepted());
                     }

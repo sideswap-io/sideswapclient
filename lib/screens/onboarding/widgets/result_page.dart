@@ -3,10 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 
-enum ResultPageType {
-  success,
-  error,
-}
+enum ResultPageType { success, error }
 
 class ResultPage extends StatelessWidget {
   const ResultPage({
@@ -51,29 +48,35 @@ class ResultPage extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: resultType == ResultPageType.success
-                      ? SideSwapColors.brightTurquoise
-                      : SideSwapColors.bitterSweet,
+                  color:
+                      resultType == ResultPageType.success
+                          ? SideSwapColors.brightTurquoise
+                          : SideSwapColors.bitterSweet,
                   style: BorderStyle.solid,
                   width: 6,
                 ),
               ),
               child: Center(
-                child: resultType == ResultPageType.success
-                    ? SvgPicture.asset(
-                        'assets/success.svg',
-                        width: 51,
-                        height: 51,
-                        colorFilter: const ColorFilter.mode(
-                            Color(0xFFCAF3FF), BlendMode.srcIn),
-                      )
-                    : SvgPicture.asset(
-                        'assets/error.svg',
-                        width: 51,
-                        height: 51,
-                        colorFilter: const ColorFilter.mode(
-                            SideSwapColors.bitterSweet, BlendMode.srcIn),
-                      ),
+                child:
+                    resultType == ResultPageType.success
+                        ? SvgPicture.asset(
+                          'assets/success.svg',
+                          width: 51,
+                          height: 51,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFFCAF3FF),
+                            BlendMode.srcIn,
+                          ),
+                        )
+                        : SvgPicture.asset(
+                          'assets/error.svg',
+                          width: 51,
+                          height: 51,
+                          colorFilter: const ColorFilter.mode(
+                            SideSwapColors.bitterSweet,
+                            BlendMode.srcIn,
+                          ),
+                        ),
               ),
             ),
           ),
@@ -90,17 +93,18 @@ class ResultPage extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: description.isNotEmpty
-                ? Text(
-                    description,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                    ),
-                  )
-                : descriptionWidget ?? Container(),
+            child:
+                description.isNotEmpty
+                    ? Text(
+                      description,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.white,
+                      ),
+                    )
+                    : descriptionWidget ?? Container(),
           ),
           const Spacer(),
           Padding(

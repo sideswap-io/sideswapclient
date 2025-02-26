@@ -18,23 +18,15 @@ class DExportTxSuccess extends ConsumerWidget {
           const SizedBox(height: 40),
           Text(
             'Transaction export'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          const DColoredCircularIcon(
-            type: DColoredCircularIconType.success,
-          ),
+          const DColoredCircularIcon(type: DColoredCircularIconType.success),
           Padding(
             padding: const EdgeInsets.only(top: 32),
             child: Text(
               'Transaction successfully exported'.tr(),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 24),
@@ -44,9 +36,7 @@ class DExportTxSuccess extends ConsumerWidget {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(
-                'OK'.tr(),
-              ),
+              child: Text('OK'.tr()),
             ),
           ),
           const SizedBox(height: 24),

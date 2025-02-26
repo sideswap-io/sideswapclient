@@ -17,7 +17,8 @@ class DBackgroundPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: constraints,
-      decoration: decoration ??
+      decoration:
+          decoration ??
           ShapeDecoration(
             color: SideSwapColors.chathamsBlue,
             shape: RoundedRectangleBorder(

@@ -25,7 +25,8 @@ abstract class SideswapNotificationsPlatformInterface
 
   Future<void> firebaseInitializeApp() async {
     throw UnimplementedError(
-        'firebaseInitializeApp() has not been implemented');
+      'firebaseInitializeApp() has not been implemented',
+    );
   }
 
   Future<void> notificationsInitialize({
@@ -33,7 +34,8 @@ abstract class SideswapNotificationsPlatformInterface
     THandleIncomingNotification? handleIncomingNotification,
   }) async {
     throw UnimplementedError(
-        'notificationServiceProviderInit() has not been implemented');
+      'notificationServiceProviderInit() has not been implemented',
+    );
   }
 
   Future<void> firebaseRefreshToken({
@@ -42,11 +44,9 @@ abstract class SideswapNotificationsPlatformInterface
     throw UnimplementedError('firebaseRefreshToken() has not been implemented');
   }
 
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
+  InitializationSettings getLocalNotificationsInitializationSettings() {
     throw UnimplementedError(
-        'getLocalNotificationsInitializationSettings() has not been implemented');
+      'getLocalNotificationsInitializationSettings() has not been implemented',
+    );
   }
 }

@@ -15,7 +15,8 @@ class SideswapNotificationsAndroidPlugin
   Future<void> firebaseInitializeApp() async {
     logger.d('Initialize firebase app');
     firebaseApp = await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     logger.d('FirebaseApp: $firebaseApp');
   }
 
@@ -39,20 +40,17 @@ class SideswapNotificationsAndroidPlugin
       return;
     }
 
-    notificationService!
-        .refreshToken(refreshTokenCallback: refreshTokenCallback);
+    notificationService!.refreshToken(
+      refreshTokenCallback: refreshTokenCallback,
+    );
   }
 
   @override
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/notification_icon');
-
-    return const InitializationSettings(
-      android: initializationSettingsAndroid,
+  InitializationSettings getLocalNotificationsInitializationSettings() {
+    const initializationSettingsAndroid = AndroidInitializationSettings(
+      '@mipmap/notification_icon',
     );
+
+    return const InitializationSettings(android: initializationSettingsAndroid);
   }
 }

@@ -30,9 +30,7 @@ class SettingsAboutUs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      appBar: CustomAppBar(
-        title: 'About us'.tr(),
-      ),
+      appBar: CustomAppBar(title: 'About us'.tr()),
       body: SafeArea(
         child: CustomScrollableContainer(
           child: Padding(
@@ -94,10 +92,7 @@ class SettingsAboutUs extends StatelessWidget {
                       ),
                       UrlLinkButton(
                         text: 'Licenses',
-                        icon: const Icon(
-                          Icons.copyright,
-                          size: 24,
-                        ),
+                        icon: const Icon(Icons.copyright, size: 24),
                         onPressed: () {
                           Navigator.of(context).push<void>(
                             MaterialPageRoute(

@@ -18,8 +18,10 @@ class SettingsLogs extends HookWidget {
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         box.localToGlobal(Offset(0, buttonOffset.dy), ancestor: overlay),
-        box.localToGlobal(box.size.bottomRight(Offset.zero) + Offset.zero,
-            ancestor: overlay),
+        box.localToGlobal(
+          box.size.bottomRight(Offset.zero) + Offset.zero,
+          ancestor: overlay,
+        ),
       ),
       Offset.zero & overlay.size,
     );
@@ -29,14 +31,8 @@ class SettingsLogs extends HookWidget {
       position: position,
       color: SideSwapColors.chathamsBlue,
       items: [
-        PopupMenuItem<int>(
-          value: 1,
-          child: Text('Export log'.tr()),
-        ),
-        PopupMenuItem<int>(
-          value: 2,
-          child: Text('Export previous log'.tr()),
-        ),
+        PopupMenuItem<int>(value: 1, child: Text('Export log'.tr())),
+        PopupMenuItem<int>(value: 2, child: Text('Export previous log'.tr())),
       ],
     );
 
@@ -76,9 +72,7 @@ class SettingsLogs extends HookWidget {
                       foregroundColor: Colors.white,
                       backgroundColor: SideSwapColors.chathamsBlue,
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(8),
-                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
                       ),
                     ),
                     child: Text(

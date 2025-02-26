@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class AssetHeaderitem extends StatelessWidget {
-  const AssetHeaderitem({
-    super.key,
-    required this.text,
-  });
+  const AssetHeaderitem({super.key, required this.text});
 
   final String text;
 
@@ -12,10 +10,7 @@ class AssetHeaderitem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 12,
-        color: Color(0xFF87C1E1),
-      ),
+      style: const TextStyle(fontSize: 12, color: SideSwapColors.cornFlower),
     );
   }
 }

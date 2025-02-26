@@ -87,7 +87,7 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -95,8 +95,12 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
       child: Shortcuts(
         shortcuts: <LogicalKeySet, Intent>{
           if (Platform.isLinux || Platform.isFuchsia) ...{
-            LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift,
-                LogicalKeyboardKey.keyC): const CopyMnemonicIntent(),
+            LogicalKeySet(
+                  LogicalKeyboardKey.control,
+                  LogicalKeyboardKey.shift,
+                  LogicalKeyboardKey.keyC,
+                ):
+                const CopyMnemonicIntent(),
           },
           if (Platform.isWindows) ...{
             LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyC):
@@ -130,8 +134,9 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                         child: Column(
                           children: [
                             Text(
-                                'Your $wordCount word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
-                                    .tr()),
+                              'Your $wordCount word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
+                                  .tr(),
+                            ),
                             Padding(
                               padding: const EdgeInsets.only(top: 24),
                               child: DMnemonicTable(
@@ -144,23 +149,29 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                               alignment: Alignment.centerRight,
                               child: Consumer(
                                 builder: (context, ref, child) {
-                                  final enabled =
-                                      ref.watch(isCopyEnabledProvider);
+                                  final enabled = ref.watch(
+                                    isCopyEnabledProvider,
+                                  );
 
                                   return DButton(
-                                    onPressed: enabled
-                                        ? () {
-                                            Actions.maybeInvoke<
-                                                    CopyMnemonicIntent>(context,
-                                                const CopyMnemonicIntent());
-                                          }
-                                        : null,
+                                    onPressed:
+                                        enabled
+                                            ? () {
+                                              Actions.maybeInvoke<
+                                                CopyMnemonicIntent
+                                              >(
+                                                context,
+                                                const CopyMnemonicIntent(),
+                                              );
+                                            }
+                                            : null,
                                     child: SizedBox(
                                       height: 34,
                                       width: 200,
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
+                                          horizontal: 8,
+                                        ),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
@@ -170,9 +181,7 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                                               width: 16,
                                             ),
                                             const SizedBox(width: 8),
-                                            Text(
-                                              'Copy mnemonic'.tr(),
-                                            ),
+                                            Text('Copy mnemonic'.tr()),
                                           ],
                                         ),
                                       ),
@@ -193,14 +202,13 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                         onPressed: () {
                           ref.read(walletProvider).goBack();
                         },
-                        child: Text(
-                          'BACK'.tr(),
-                        ),
+                        child: Text('BACK'.tr()),
                       ),
                     ),
                   ],
-                  style:
-                      const DContentDialogThemeData().merge(defaultDialogTheme),
+                  style: const DContentDialogThemeData().merge(
+                    defaultDialogTheme,
+                  ),
                   constraints: const BoxConstraints(maxWidth: 580),
                 ),
               );

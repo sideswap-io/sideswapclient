@@ -32,19 +32,19 @@ class DPopupWithClose extends StatelessWidget {
 
     return switch (barrierDismissible) {
       true => DPopupWithCloseContent(
+        width: width,
+        height: height,
+        onClose: onClose,
+        child: child,
+      ),
+      _ => Scaffold(
+        body: DPopupWithCloseContent(
           width: width,
           height: height,
           onClose: onClose,
           child: child,
         ),
-      _ => Scaffold(
-          body: DPopupWithCloseContent(
-            width: width,
-            height: height,
-            onClose: onClose,
-            child: child,
-          ),
-        ),
+      ),
     };
   }
 }
@@ -93,12 +93,12 @@ class DPopupWithCloseContent extends StatelessWidget {
                       onPressed: switch (onClose) {
                         final onClose? => onClose,
                         _ => () {
-                            Navigator.pop(context);
-                          },
+                          Navigator.pop(context);
+                        },
                       },
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

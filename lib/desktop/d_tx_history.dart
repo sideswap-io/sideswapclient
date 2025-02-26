@@ -8,7 +8,7 @@ import 'package:sideswap/desktop/widgets/d_tx_history_amount.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_date.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_header.dart';
-import 'package:sideswap/desktop/widgets/d_tx_history_link.dart';
+import 'package:sideswap/desktop/widgets/d_tx_blinded_url_icon_button.dart';
 import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_wallet.dart';
@@ -32,17 +32,21 @@ class DTxHistory extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding:
-              EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
-          child: DFlexesRow(children: [
-            DTxHistoryHeader(text: 'Date'.tr()),
-            DTxHistoryHeader(text: 'Wallet'.tr()),
-            DTxHistoryHeader(text: 'Type'.tr()),
-            DTxHistoryHeader(text: 'Sent'.tr()),
-            DTxHistoryHeader(text: 'Received'.tr()),
-            DTxHistoryHeader(text: 'Confirmations'.tr()),
-            DTxHistoryHeader(text: 'Link'.tr()),
-          ]),
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: 12,
+          ),
+          child: DFlexesRow(
+            children: [
+              DTxHistoryHeader(text: 'Date'.tr()),
+              DTxHistoryHeader(text: 'Wallet'.tr()),
+              DTxHistoryHeader(text: 'Type'.tr()),
+              DTxHistoryHeader(text: 'Sent'.tr()),
+              DTxHistoryHeader(text: 'Received'.tr()),
+              DTxHistoryHeader(text: 'Confirmations'.tr()),
+              DTxHistoryHeader(text: 'Link'.tr()),
+            ],
+          ),
         ),
         Expanded(
           child: DTxHistoryTransaction(
@@ -81,17 +85,12 @@ class DTxHistoryTransaction extends HookConsumerWidget {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Container(
-              height: 1,
-              color: SideSwapColors.jellyBean,
-            ),
+            child: Container(height: 1, color: SideSwapColors.jellyBean),
           ),
           const SizedBox(height: 12),
           Text(
             'No transactions'.tr(),
-            style: const TextStyle(
-              color: Color(0xFF87C1E1),
-            ),
+            style: const TextStyle(color: SideSwapColors.cornFlower),
           ),
         ],
       );
@@ -106,14 +105,13 @@ class DTxHistoryTransaction extends HookConsumerWidget {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: Container(
-                height: 1,
-                color: SideSwapColors.jellyBean,
-              ),
+              child: Container(height: 1, color: SideSwapColors.jellyBean),
             ),
             Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding, vertical: 1),
+                horizontal: horizontalPadding,
+                vertical: 1,
+              ),
               child: DTransparentButton(
                 child: DFlexesRow(
                   children: [
@@ -121,61 +119,62 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                       dateFormatDate: dateFormatDate,
                       dateFormatTime: dateFormatTime,
                       tx: transItem,
-                      dateTextStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
-                      timeTextStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
+                      dateTextStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                      timeTextStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryWallet(
                       tx: transItem,
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryType(
                       transItem: transItem,
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryAmount(
                       balance: transItemHelper.getSentBalance(
-                          liquidAssetId, bitcoinAssetId),
+                        liquidAssetId,
+                        bitcoinAssetId,
+                      ),
                       multipleOutputs: transItemHelper.getSentMultipleOutputs(),
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryAmount(
                       balance: transItemHelper.getRecvBalance(
-                          liquidAssetId, bitcoinAssetId),
+                        liquidAssetId,
+                        bitcoinAssetId,
+                      ),
                       multipleOutputs: transItemHelper.getRecvMultipleOutputs(),
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryConfs(
                       tx: transItem,
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 14),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
-                    DTxHistoryLink(txid: transItem.tx.txid),
+                    DTxBlindedUrlIconButton(txid: transItem.tx.txid),
                   ],
                 ),
                 onPressed: () {
                   final allPegsById = ref.read(allPegsByIdProvider);
-                  ref.read(desktopDialogProvider).showTx(transItem,
-                      isPeg: allPegsById.containsKey(transItem.id));
+                  ref
+                      .read(desktopDialogProvider)
+                      .showTx(
+                        transItem,
+                        isPeg: allPegsById.containsKey(transItem.id),
+                      );
                 },
               ),
             ),

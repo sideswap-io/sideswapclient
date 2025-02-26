@@ -45,9 +45,7 @@ class SideSwapPopupPage extends ConsumerWidget {
       content: Stack(
         children: [
           backgroundContent ??
-              Container(
-                color: Colors.black.withOpacity(0.5),
-              ),
+              Container(color: Colors.black.withValues(alpha: 0.5)),
           DContentDialog(
             title: DContentDialogTitle(
               content: title,
@@ -58,29 +56,27 @@ class SideSwapPopupPage extends ConsumerWidget {
             ),
             content: content,
             actions: actions,
-            style: style ??
+            style:
+                style ??
                 const DContentDialogThemeData().merge(
                   DContentDialogThemeData(
                     padding: EdgeInsets.zero,
                     titlePadding: EdgeInsets.only(
-                        top: 24,
-                        bottom: title == null ? 0 : 20,
-                        left: 24,
-                        right: 24),
+                      top: 24,
+                      bottom: title == null ? 0 : 20,
+                      left: 24,
+                      right: 24,
+                    ),
                     bodyPadding: EdgeInsets.zero,
                     decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(8),
-                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
                       color: SideSwapColors.blumine,
                     ),
                   ),
                 ),
             constraints: constraints,
           ),
-          if (foregroundContent != null) ...[
-            foregroundContent!,
-          ]
+          if (foregroundContent != null) ...[foregroundContent!],
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:sideswap/desktop/d_jade_info_dialog.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/jade/jade_info_dialog.dart';
 
@@ -19,14 +20,20 @@ class JadeStatusListener extends HookConsumerWidget {
     final jadeInfoDialogRoute = ref.watch(jadeInfoDialogNotifierProvider);
 
     ref.listen(jadeStatusNotifierProvider, (previous, next) {
-      if (previous == const JadeStatusMasterBlindingKey() &&
+      if (previous == const JadeStatusSignMessage() &&
           next == const JadeStatusIdle()) {
         if (FlavorConfig.isDesktop) {
-          Future.microtask(() => ref
-              .read(jadeOnboardingRegistrationNotifierProvider.notifier)
-              .setState(const JadeOnboardingRegistrationStateDone()));
+          Future.microtask(
+            () => ref
+                .read(jadeOnboardingRegistrationNotifierProvider.notifier)
+                .setState(const JadeOnboardingRegistrationStateDone()),
+          );
         } else {
-          Future.microtask(() => Navigator.of(context).pop());
+          Future.microtask(() {
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          });
         }
       }
     });
@@ -37,8 +44,12 @@ class JadeStatusListener extends HookConsumerWidget {
           jadeInfoDialogRoute.isActive == true) {
         // close dialog
         Future.microtask(() {
-          Navigator.of(context).removeRoute(jadeInfoDialogRoute);
-          ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
+          if (context.mounted) {
+            Navigator.of(context).removeRoute(jadeInfoDialogRoute);
+            ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
+            // rest of MarketTradeRepository.makeSwapTrade
+            ref.invalidate(marketPreviewOrderQuoteNotifierProvider);
+          }
         });
       }
 
@@ -52,46 +63,48 @@ class JadeStatusListener extends HookConsumerWidget {
         // open dialog
         if (FlavorConfig.isDesktop) {
           Future.microtask(() {
-            final dialogRoute = DialogRoute(
-              context: context,
-              builder: (context) {
-                return const DJadeInfoDialog();
-              },
-              barrierDismissible: false,
-            );
+            if (context.mounted) {
+              final dialogRoute = DialogRoute(
+                context: context,
+                builder: (context) {
+                  return const DJadeInfoDialog();
+                },
+                barrierDismissible: false,
+              );
 
-            Navigator.of(context).push(dialogRoute);
-            ref
-                .read(jadeInfoDialogNotifierProvider.notifier)
-                .setState(dialogRoute);
+              Navigator.of(context).push(dialogRoute);
+              ref
+                  .read(jadeInfoDialogNotifierProvider.notifier)
+                  .setState(dialogRoute);
+            }
           });
         } else {
+          final CapturedThemes themes = InheritedTheme.capture(
+            from: context,
+            to: Navigator.of(context, rootNavigator: true).context,
+          );
+
           Future.microtask(() {
-            final CapturedThemes themes = InheritedTheme.capture(
-              from: context,
-              to: Navigator.of(
-                context,
-                rootNavigator: true,
-              ).context,
-            );
+            if (context.mounted) {
+              final dialogRoute = DialogRoute(
+                context: context,
+                builder: (context) {
+                  return const JadeInfoDialog();
+                },
+                barrierDismissible: false,
+                barrierColor:
+                    Theme.of(context).dialogTheme.barrierColor ??
+                    Colors.black54,
+                useSafeArea: true,
+                traversalEdgeBehavior: TraversalEdgeBehavior.closedLoop,
+                themes: themes,
+              );
 
-            final dialogRoute = DialogRoute(
-              context: context,
-              builder: (context) {
-                return const JadeInfoDialog();
-              },
-              barrierDismissible: false,
-              barrierColor:
-                  Theme.of(context).dialogTheme.barrierColor ?? Colors.black54,
-              useSafeArea: true,
-              traversalEdgeBehavior: TraversalEdgeBehavior.closedLoop,
-              themes: themes,
-            );
-
-            Navigator.of(context, rootNavigator: true).push(dialogRoute);
-            ref
-                .read(jadeInfoDialogNotifierProvider.notifier)
-                .setState(dialogRoute);
+              Navigator.of(context, rootNavigator: true).push(dialogRoute);
+              ref
+                  .read(jadeInfoDialogNotifierProvider.notifier)
+                  .setState(dialogRoute);
+            }
           });
         }
       }
@@ -99,8 +112,9 @@ class JadeStatusListener extends HookConsumerWidget {
       return;
     }, [jadeStatus, jadeInfoDialogRoute]);
 
-    final jadeOnboardingRegistration =
-        ref.watch(jadeOnboardingRegistrationNotifierProvider);
+    final jadeOnboardingRegistration = ref.watch(
+      jadeOnboardingRegistrationNotifierProvider,
+    );
 
     useEffect(() {
       if (!FlavorConfig.isDesktop) {

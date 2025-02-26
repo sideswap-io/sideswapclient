@@ -14,9 +14,7 @@ import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
 class HomeBottomPanel extends ConsumerWidget {
-  const HomeBottomPanel({
-    super.key,
-  });
+  const HomeBottomPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,25 +22,26 @@ class HomeBottomPanel extends ConsumerWidget {
 
     ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
       next.when(
-          empty: () {},
-          data: (result) {
-            if (result?.outputsData != null) {
-              // go to the confirm transaction page directly
-              paymentHelper.outputsPaymentSend();
-              return;
-            }
+        empty: () {},
+        data: (result) {
+          if (result?.outputsData != null) {
+            // go to the confirm transaction page directly
+            paymentHelper.outputsPaymentSend();
+            return;
+          }
 
-            Future.microtask(() {
-              ref
-                  .read(paymentAmountPageArgumentsNotifierProvider.notifier)
-                  .setPaymentAmountPageArguments(PaymentAmountPageArguments(
-                    result: result,
-                  ));
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.paymentAmountPage);
-            });
+          Future.microtask(() {
+            ref
+                .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+                .setPaymentAmountPageArguments(
+                  PaymentAmountPageArguments(result: result),
+                );
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.paymentAmountPage);
           });
+        },
+      );
     });
 
     return Container(
@@ -80,8 +79,9 @@ class HomeBottomPanel extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context, rootNavigator: true).push<void>(
                     MaterialPageRoute(
-                      builder: (context) =>
-                          getAddressQrScanner(bitcoinAddress: false),
+                      builder:
+                          (context) =>
+                              getAddressQrScanner(bitcoinAddress: false),
                     ),
                   );
                 },

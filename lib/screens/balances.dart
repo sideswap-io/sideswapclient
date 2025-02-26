@@ -84,13 +84,16 @@ class WalletTxMemoState extends State<WalletTxMemo> {
                       child: Consumer(
                         builder: (context, ref, child) {
                           final tx = ref.watch(walletProvider).txDetails.tx;
-                          final initialValue =
-                              ref.watch(walletProvider).txMemo(tx);
+                          final initialValue = ref
+                              .watch(walletProvider)
+                              .txMemo(tx);
                           return TextFormField(
                             focusNode: _focusNode,
                             initialValue: initialValue,
-                            onChanged: (value) =>
-                                ref.read(walletProvider).onTxMemoChanged(value),
+                            onChanged:
+                                (value) => ref
+                                    .read(walletProvider)
+                                    .onTxMemoChanged(value),
                             onFieldSubmitted: (value) {
                               ref.read(walletProvider).goBack();
                             },
@@ -105,7 +108,7 @@ class WalletTxMemoState extends State<WalletTxMemo> {
                           );
                         },
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 
 class PaymentSendPopupAddressAmountItem extends StatelessWidget {
   const PaymentSendPopupAddressAmountItem({
@@ -31,10 +31,10 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
             switch (index) {
               0 => const SizedBox(),
               _ => const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: SideSwapColors.lapisLazuli,
-                ),
+                height: 1,
+                thickness: 1,
+                color: SideSwapColors.lapisLazuli,
+              ),
             },
             const SizedBox(height: 8),
             Column(
@@ -43,28 +43,23 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
                   children: [
                     Text(
                       'Amount'.tr(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelLarge
-                          ?.copyWith(color: SideSwapColors.brightTurquoise),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: SideSwapColors.brightTurquoise,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       amount,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: SideSwapColors.bitterSweet),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: SideSwapColors.bitterSweet,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     ...switch (icon) {
-                      final icon? => [
-                          icon,
-                          const SizedBox(width: 8),
-                        ],
-                      _ => [
-                          const SizedBox(),
-                        ],
+                      final icon? => [icon, const SizedBox(width: 8)],
+                      _ => [const SizedBox()],
                     },
                     ConstrainedBox(
                       constraints: const BoxConstraints(minWidth: 40),
@@ -72,7 +67,9 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
                         ticker,
                         textAlign: TextAlign.right,
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontSize: 14, fontWeight: FontWeight.w400),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ],
@@ -82,32 +79,20 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
                   children: [
                     Text(
                       'Address'.tr(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelLarge
-                          ?.copyWith(color: SideSwapColors.brightTurquoise),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: SideSwapColors.brightTurquoise,
+                      ),
                     ),
                     const Spacer(),
                     SizedBox(
                       width: 180,
-                      child: ExtendedText(
-                        address,
+                      child: MiddleEllipsisText(
+                        text: address,
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontSize: 14, fontWeight: FontWeight.w400),
-                        textAlign: TextAlign.end,
-                        maxLines: 1,
-                        overflowWidget: TextOverflowWidget(
-                          position: TextOverflowPosition.middle,
-                          align: TextOverflowAlign.center,
-                          child: Text(
-                            '...',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
-                                ?.copyWith(
-                                    fontSize: 14, fontWeight: FontWeight.w400),
-                          ),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
                         ),
+                        textAlign: TextAlign.end,
                       ),
                     ),
                   ],

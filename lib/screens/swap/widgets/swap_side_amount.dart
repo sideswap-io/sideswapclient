@@ -1,16 +1,16 @@
 import 'dart:ui' as ui;
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:marquee/marquee.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:marquee_plus/marquee.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/qrcode_models.dart';
@@ -153,10 +153,7 @@ class SwapSideAmount extends HookConsumerWidget {
                   width: 122,
                   child: Row(
                     children: [
-                      Text(
-                        text,
-                        style: labelStyle,
-                      ),
+                      Text(text, style: labelStyle),
                       if (isAmp)
                         const AmpFlag(
                           textStyle: TextStyle(
@@ -201,10 +198,7 @@ class SwapSideAmount extends HookConsumerWidget {
                           color: SideSwapColors.bitterSweet,
                         );
                         final renderParagraph = RenderParagraph(
-                          TextSpan(
-                            text: errorDescription,
-                            style: textStyle,
-                          ),
+                          TextSpan(text: errorDescription, style: textStyle),
                           textDirection: ui.TextDirection.ltr,
                           softWrap: false,
                           maxLines: 1,
@@ -216,31 +210,28 @@ class SwapSideAmount extends HookConsumerWidget {
                             renderParagraph.constraints.maxWidth;
                         return textWidth > constraintsWidth
                             ? Marquee(
-                                text: errorDescription,
-                                style: textStyle,
-                                scrollAxis: Axis.horizontal,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                blankSpace: 200.0,
-                                velocity: 30.0,
-                                pauseAfterRound: const Duration(seconds: 3),
-                                showFadingOnlyWhenScrolling: true,
-                                fadingEdgeStartFraction: 0.1,
-                                fadingEdgeEndFraction: 0.1,
-                                startPadding: 100.0,
-                                accelerationDuration:
-                                    const Duration(seconds: 3),
-                                accelerationCurve: Curves.linear,
-                                decelerationDuration:
-                                    const Duration(milliseconds: 500),
-                                decelerationCurve: Curves.easeOut,
-                              )
+                              text: errorDescription,
+                              style: textStyle,
+                              scrollAxis: Axis.horizontal,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              blankSpace: 200.0,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 3),
+                              showFadingOnlyWhenScrolling: true,
+                              fadingEdgeStartFraction: 0.1,
+                              fadingEdgeEndFraction: 0.1,
+                              startPadding: 100.0,
+                              accelerationDuration: const Duration(seconds: 3),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              decelerationCurve: Curves.easeOut,
+                            )
                             : Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  errorDescription,
-                                  style: textStyle,
-                                ),
-                              );
+                              alignment: Alignment.centerRight,
+                              child: Text(errorDescription, style: textStyle),
+                            );
                       },
                     ),
                   ),
@@ -318,26 +309,31 @@ class SwapSideAmount extends HookConsumerWidget {
                       errorText: addressErrorText,
                       controller: addressController ?? TextEditingController(),
                       onChanged: onAddressChanged,
-                      onPasteTap: FlavorConfig.isDesktop &&
-                              addressController != null
-                          ? () async {
-                              await handlePasteSingleLine(addressController!);
-                              onAddressChanged?.call(addressController!.text);
-                            }
-                          : null,
-                      onScanTap: FlavorConfig.isDesktop
-                          ? null
-                          : () async {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              await Navigator.of(context, rootNavigator: true)
-                                  .push<void>(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      getAddressQrScanner(bitcoinAddress: true),
-                                ),
-                              );
-                              logger.d('Scanner Done');
-                            },
+                      onPasteTap:
+                          FlavorConfig.isDesktop && addressController != null
+                              ? () async {
+                                await handlePasteSingleLine(addressController!);
+                                onAddressChanged?.call(addressController!.text);
+                              }
+                              : null,
+                      onScanTap:
+                          FlavorConfig.isDesktop
+                              ? null
+                              : () async {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                await Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).push<void>(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => getAddressQrScanner(
+                                          bitcoinAddress: true,
+                                        ),
+                                  ),
+                                );
+                                logger.d('Scanner Done');
+                              },
                       onEditingCompleted: onAddressEditingCompleted,
                       addrType: AddrType.bitcoin,
                     ),
@@ -348,24 +344,19 @@ class SwapSideAmount extends HookConsumerWidget {
                     isAddressLabelVisible) ...[
                   Flexible(
                     child: SwapSideAmountPegOutAddressLabel(
-                        addressController: addressController,
-                        onAddressLabelClose: onAddressLabelClose),
+                      addressController: addressController,
+                      onAddressLabelClose: onAddressLabelClose,
+                    ),
                   ),
                 ],
                 if (labelGroupValue == const SwapWallet.extern() &&
                     swapType == const SwapType.atomic()) ...[
-                  Text(
-                    'Balance: unknown'.tr(),
-                    style: balanceStyle,
-                  ).tr(),
+                  Text('Balance: unknown'.tr(), style: balanceStyle).tr(),
                 ],
                 if (labelGroupValue == const SwapWallet.local() &&
                     (swapType == const SwapType.atomic() ||
                         swapType == const SwapType.pegOut())) ...[
-                  Text(
-                    'Balance: {}'.tr(args: [balance]),
-                    style: balanceStyle,
-                  ),
+                  Text('Balance: {}'.tr(args: [balance]), style: balanceStyle),
                 ],
                 if (labelGroupValue == const SwapWallet.extern() &&
                     swapType == const SwapType.pegIn()) ...[
@@ -382,7 +373,8 @@ class SwapSideAmount extends HookConsumerWidget {
                         if (isInputsVisible &&
                             labelGroupValue != const SwapWallet.extern()) ...[
                           SwapSideAmountSelectInputsButton(
-                              onInputsSelected: onSelectInputs),
+                            onInputsSelected: onSelectInputs,
+                          ),
                         ],
                         if (isMaxVisible &&
                             labelGroupValue != const SwapWallet.extern()) ...[
@@ -429,9 +421,7 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
       height: 74,
       decoration: const BoxDecoration(
         color: Color(0xFF226F99),
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -440,17 +430,10 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
           Flexible(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: ExtendedText(
-                addressController?.text ?? '',
-                softWrap: true,
+              child: MiddleEllipsisText(
+                text: addressController?.text ?? '',
                 maxLines: 2,
-                overflowWidget: const TextOverflowWidget(
-                  position: TextOverflowPosition.middle,
-                  align: TextOverflowAlign.center,
-                  child: Text(
-                    '...',
-                  ),
-                ),
+                softWrap: true,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
@@ -488,9 +471,7 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
 }
 
 class SwapSideAmountLocalPegInDescription extends StatelessWidget {
-  const SwapSideAmountLocalPegInDescription({
-    super.key,
-  });
+  const SwapSideAmountLocalPegInDescription({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -510,9 +491,7 @@ class SwapSideAmountLocalPegInDescription extends StatelessWidget {
 }
 
 class SwapSideAmountExternPegInDescription extends StatelessWidget {
-  const SwapSideAmountExternPegInDescription({
-    super.key,
-  });
+  const SwapSideAmountExternPegInDescription({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -555,10 +534,7 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              'Fee suggestions'.tr(),
-              style: labelStyle,
-            ),
+            Text('Fee suggestions'.tr(), style: labelStyle),
             const Spacer(),
             const FeeRatesDropdown(),
           ],
@@ -569,10 +545,7 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
 }
 
 class SwapSideAmountMaxButton extends StatelessWidget {
-  const SwapSideAmountMaxButton({
-    super.key,
-    required this.onMaxPressed,
-  });
+  const SwapSideAmountMaxButton({super.key, required this.onMaxPressed});
 
   final ui.VoidCallback? onMaxPressed;
 
@@ -595,9 +568,7 @@ class SwapSideAmountMaxButton extends StatelessWidget {
           foregroundColor: Colors.black,
           padding: EdgeInsets.zero,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
         ),
         child: const Text(
@@ -631,66 +602,61 @@ class SwapSideAmountSelectInputsButton extends ConsumerWidget {
       children: [
         Container(
           height: 24,
-          decoration: containsUtxo
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: SideSwapColors.turquoise,
-                )
-              : BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: SideSwapColors.brightTurquoise,
-                    width: 1,
-                    style: BorderStyle.solid,
+          decoration:
+              containsUtxo
+                  ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: SideSwapColors.turquoise,
+                  )
+                  : BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: SideSwapColors.brightTurquoise,
+                      width: 1,
+                      style: BorderStyle.solid,
+                    ),
                   ),
-                ),
           child: TextButton(
             onPressed: onInputsSelected,
             style: TextButton.styleFrom(
               foregroundColor: Colors.black,
               padding: EdgeInsets.zero,
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
             ),
             child: switch (containsUtxo) {
               true => Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.done,
-                      size: 10,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(width: 8),
+                  const Icon(Icons.done, size: 10, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    '{} INPUTS'.plural(utxoCount, args: ['$utxoCount']),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '{} INPUTS'.plural(utxoCount, args: ['$utxoCount']),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
               _ => Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    Text(
-                      'SELECT INPUTS'.tr(),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: SideSwapColors.brightTurquoise,
-                      ),
+                children: [
+                  const SizedBox(width: 8),
+                  Text(
+                    'SELECT INPUTS'.tr(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                      color: SideSwapColors.brightTurquoise,
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
             },
           ),
         ),

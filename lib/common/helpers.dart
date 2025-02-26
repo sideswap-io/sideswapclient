@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -65,10 +64,10 @@ double convertToNewRange({
   required double newMin,
   required double newMax,
 }) {
-  final converted =
-      ((((value - minValue) * (newMax - newMin)) / (maxValue - minValue)) +
-              newMin)
-          .toStringAsFixed(2);
+  final converted = ((((value - minValue) * (newMax - newMin)) /
+              (maxValue - minValue)) +
+          newMin)
+      .toStringAsFixed(2);
   return double.tryParse(converted) ?? 0;
 }
 
@@ -94,9 +93,11 @@ String priceStr(double price, bool priceInLiquid, {int? precision}) {
   return newPrice.toStringAsPrecision(7);
 }
 
-String priceStrForMarket(double price, MarketType market) {
+String priceStrForMarket(double price, MarketType_ market) {
   return priceStr(
-      price, market == MarketType.token || market == MarketType.amp);
+    price,
+    market == MarketType_.TOKEN || market == MarketType_.AMP,
+  );
 }
 
 // Same as priceStr but without trailing zeros
@@ -121,15 +122,18 @@ String txDateCsvExport(int timestamp) {
 }
 
 void showMessage(BuildContext context, String title, String message) {
-  final alert =
-      AlertDialog(title: Text(title), content: Text(message), actions: <Widget>[
-    TextButton(
-      onPressed: () {
-        Navigator.of(context, rootNavigator: true).pop();
-      },
-      child: const Text('OK').tr(),
-    ),
-  ]);
+  final alert = AlertDialog(
+    title: Text(title),
+    content: Text(message),
+    actions: <Widget>[
+      TextButton(
+        onPressed: () {
+          Navigator.of(context, rootNavigator: true).pop();
+        },
+        child: const Text('OK').tr(),
+      ),
+    ],
+  );
 
   showDialog<void>(
     context: context,
@@ -142,10 +146,7 @@ void showMessage(BuildContext context, String title, String message) {
 class CustomTitle extends StatelessWidget {
   final String data;
 
-  const CustomTitle(
-    Key? key,
-    this.data,
-  ) : super(key: key);
+  const CustomTitle(Key? key, this.data) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -166,24 +167,25 @@ Future<void> copyToClipboard(
   bool displaySnackbar = true,
   String? suffix,
 }) async {
-  await Clipboard.setData(ClipboardData(text: text)).then((value) {
-    if (displaySnackbar) {
-      final displayString =
-          suffix != null ? '${'Copied'.tr()}: $suffix' : 'Copied'.tr();
-      final flushbar = Flushbar<void>(
-        messageText: Text(displayString),
-        duration: const Duration(seconds: 3),
-        backgroundColor: SideSwapColors.chathamsBlue,
-      );
-      flushbar.show(context);
-    }
-  });
+  if (displaySnackbar) {
+    final displayString =
+        suffix != null ? '${'Copied'.tr()}: $suffix' : 'Copied'.tr();
+    final flushbar = Flushbar<void>(
+      messageText: Text(displayString),
+      duration: const Duration(seconds: 3),
+      backgroundColor: SideSwapColors.chathamsBlue,
+    );
+    flushbar.show(context);
+  }
+
+  await Clipboard.setData(ClipboardData(text: text));
 }
 
 void setControllerValue(TextEditingController? controller, String value) {
   controller?.text = value;
-  controller?.selection =
-      TextSelection.fromPosition(TextPosition(offset: value.length));
+  controller?.selection = TextSelection.fromPosition(
+    TextPosition(offset: value.length),
+  );
 }
 
 Future<void> handlePasteSingleLine(TextEditingController? controller) async {
@@ -216,13 +218,15 @@ String generateTxidUrl(
 }) {
   String baseUrl;
   if (!testnet) {
-    baseUrl = isLiquid
-        ? 'https://blockstream.info/liquid'
-        : 'https://blockstream.info';
+    baseUrl =
+        isLiquid
+            ? 'https://blockstream.info/liquid'
+            : 'https://blockstream.info';
   } else {
-    baseUrl = isLiquid
-        ? 'https://blockstream.info/liquidtestnet'
-        : 'https://blockstream.info/testnet';
+    baseUrl =
+        isLiquid
+            ? 'https://blockstream.info/liquidtestnet'
+            : 'https://blockstream.info/testnet';
   }
 
   var url = '$baseUrl/tx/$txid';
@@ -234,16 +238,18 @@ String generateTxidUrl(
 }
 
 String generateAssetUrl({required String? assetId, required bool testnet}) {
-  final baseUrl = testnet
-      ? 'https://blockstream.info/liquidtestnet'
-      : 'https://blockstream.info/liquid';
+  final baseUrl =
+      testnet
+          ? 'https://blockstream.info/liquidtestnet'
+          : 'https://blockstream.info/liquid';
   return '$baseUrl/asset/${assetId ?? ''}';
 }
 
 String generateAddressUrl({required String? address, required bool testnet}) {
-  final baseUrl = testnet
-      ? 'https://blockstream.info/liquidtestnet'
-      : 'https://blockstream.info/liquid';
+  final baseUrl =
+      testnet
+          ? 'https://blockstream.info/liquidtestnet'
+          : 'https://blockstream.info/liquid';
   return '$baseUrl/address/${address ?? ''}';
 }
 
@@ -256,10 +262,7 @@ Future<void> shareAddress(String address) async {
   await Share.share(address);
 }
 
-enum CurrencyCharAlignment {
-  begin,
-  end,
-}
+enum CurrencyCharAlignment { begin, end }
 
 String strip(String str, String charactersToRemove) {
   final escapedChars = RegExp.escape(charactersToRemove);
@@ -333,7 +336,10 @@ String replaceCharacterOnPosition({
 }
 
 List<TransItem> selectTransactions(
-    int start, int end, Iterable<TransItem> allTxs) {
+  int start,
+  int end,
+  Iterable<TransItem> allTxs,
+) {
   var result = <TransItem>[];
   for (final tx in allTxs) {
     if (tx.createdAt.toInt() >= start && tx.createdAt.toInt() < end) {
@@ -347,9 +353,7 @@ Future<void> shareLogFile(String name, RenderBox box) async {
   final dir = (await getApplicationSupportDirectory()).path;
   final path = '$dir/$name';
   try {
-    await Share.shareXFiles(
-      [XFile(path, mimeType: "text/plain")],
-    );
+    await Share.shareXFiles([XFile(path, mimeType: "text/plain")]);
   } on PlatformException {
     logger.e('share log failed');
   }
@@ -381,14 +385,16 @@ String formatThousandsSep(double value) {
   return _formatterThousandsSep.format(value).replaceAll(',', ' ');
 }
 
-final alphaNumFormatter =
-    FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]"));
+final alphaNumFormatter = FilteringTextInputFormatter.allow(
+  RegExp("[a-zA-Z0-9]"),
+);
 
 Widget getAddressQrScanner({required bool bitcoinAddress}) {
   if (defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS) {
     return AddressQrScanner(
-        expectedAddress: bitcoinAddress ? BIP21AddressTypeEnum.bitcoin : null);
+      expectedAddress: bitcoinAddress ? BIP21AddressTypeEnum.bitcoin : null,
+    );
   } else {
     return const SizedBox();
   }

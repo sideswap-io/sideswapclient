@@ -60,19 +60,20 @@ class AmpRegister extends HookConsumerWidget {
       }
 
       Future.microtask(() {
-        final snackBar = SnackBar(
-          content: Text(
-            registerFailedReason,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: Colors.white),
-          ),
-          duration: const Duration(seconds: 3),
-          backgroundColor: SideSwapColors.chathamsBlue,
-        );
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        ref.read(pegxRegisterFailedNotifierProvider.notifier).setState('');
+        if (context.mounted) {
+          final snackBar = SnackBar(
+            content: Text(
+              registerFailedReason,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: Colors.white),
+            ),
+            duration: const Duration(seconds: 3),
+            backgroundColor: SideSwapColors.chathamsBlue,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          ref.read(pegxRegisterFailedNotifierProvider.notifier).setState('');
+        }
       });
 
       return;
@@ -96,12 +97,13 @@ class AmpRegister extends HookConsumerWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(
-                                top: 21, left: 24, right: 24),
+                              top: 21,
+                              left: 24,
+                              right: 24,
+                            ),
                             child: Text(
                               'Register your AMP ID to trade securities'.tr(),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
+                              style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(letterSpacing: .22, height: 1.27),
                               textAlign: TextAlign.center,
                             ),
@@ -123,35 +125,43 @@ class AmpRegister extends HookConsumerWidget {
                               children: [
                                 Consumer(
                                   builder: (context, ref, child) {
-                                    final stokrGaidState =
-                                        ref.watch(stokrGaidNotifierProvider);
+                                    final stokrGaidState = ref.watch(
+                                      stokrGaidNotifierProvider,
+                                    );
 
                                     return AmpServiceRegisterBox(
-                                        width: 170,
-                                        height: 340,
-                                        boxLogo: 'assets/stokr_logo.svg',
-                                        items: stokrItems,
-                                        registered: (stokrGaidState ==
-                                            const StokrGaidStateRegistered()),
-                                        loading: (stokrGaidState ==
-                                            const StokrGaidStateLoading()),
-                                        onPressed: (stokrGaidState ==
-                                                const StokrGaidStateUnregistered())
-                                            ? () {
+                                      width: 170,
+                                      height: 340,
+                                      boxLogo: 'assets/stokr_logo.svg',
+                                      items: stokrItems,
+                                      registered:
+                                          (stokrGaidState ==
+                                              const StokrGaidStateRegistered()),
+                                      loading:
+                                          (stokrGaidState ==
+                                              const StokrGaidStateLoading()),
+                                      onPressed:
+                                          (stokrGaidState ==
+                                                  const StokrGaidStateUnregistered())
+                                              ? () {
                                                 ref
                                                     .read(
-                                                        pageStatusNotifierProvider
-                                                            .notifier)
+                                                      pageStatusNotifierProvider
+                                                          .notifier,
+                                                    )
                                                     .setStatus(
-                                                        Status.stokrLogin);
+                                                      Status.stokrLogin,
+                                                    );
                                               }
-                                            : null);
+                                              : null,
+                                    );
                                   },
                                 ),
                                 Consumer(
                                   builder: (context, ref, child) {
-                                    final pegxGaidState =
-                                        ref.watch(pegxGaidNotifierProvider);
+                                    final pegxGaidState = ref.watch(
+                                      pegxGaidNotifierProvider,
+                                    );
                                     final env = ref.watch(envProvider);
 
                                     return AmpServiceRegisterBox(
@@ -159,24 +169,30 @@ class AmpRegister extends HookConsumerWidget {
                                       height: 340,
                                       boxLogo: 'assets/pegx_logo.svg',
                                       items: pegxItems,
-                                      registered: (pegxGaidState ==
-                                          const PegxGaidStateRegistered()),
-                                      loading: (pegxGaidState ==
-                                          const PegxGaidStateLoading()),
-                                      onPressed: (pegxGaidState ==
-                                                  const PegxGaidStateUnregistered()) ||
-                                              (env == SIDESWAP_ENV_TESTNET ||
-                                                  env ==
-                                                      SIDESWAP_ENV_LOCAL_TESTNET)
-                                          ? () {
-                                              ref
-                                                  .read(
+                                      registered:
+                                          (pegxGaidState ==
+                                              const PegxGaidStateRegistered()),
+                                      loading:
+                                          (pegxGaidState ==
+                                              const PegxGaidStateLoading()),
+                                      onPressed:
+                                          (pegxGaidState ==
+                                                      const PegxGaidStateUnregistered()) ||
+                                                  (env ==
+                                                          SIDESWAP_ENV_TESTNET ||
+                                                      env ==
+                                                          SIDESWAP_ENV_LOCAL_TESTNET)
+                                              ? () {
+                                                ref
+                                                    .read(
                                                       pegxLoginStateNotifierProvider
-                                                          .notifier)
-                                                  .setState(
-                                                      const PegxLoginStateLoginDialog());
-                                            }
-                                          : null,
+                                                          .notifier,
+                                                    )
+                                                    .setState(
+                                                      const PegxLoginStateLoginDialog(),
+                                                    );
+                                              }
+                                              : null,
                                     );
                                   },
                                 ),
@@ -204,9 +220,7 @@ class AmpRegister extends HookConsumerWidget {
                                   .read(configurationProvider.notifier)
                                   .setShowAmpOnboarding(false);
                             },
-                            child: Text(
-                              'NOT NOW'.tr(),
-                            ),
+                            child: Text('NOT NOW'.tr()),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 23, top: 10),
@@ -214,9 +228,7 @@ class AmpRegister extends HookConsumerWidget {
                               'If you skip this step, you can do so at a later date by pressing the AMP ID "icon" on desktop'
                                   .tr(),
                               textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(color: SideSwapColors.hippieBlue),
                             ),
                           ),

@@ -8,9 +8,15 @@ import 'package:image/image.dart' as image;
 
 class BitmapHelper {
   static Future<Image> getImageFromSvgAsset(
-      String svgAssetLink, double width, double height) async {
-    final unit8List =
-        await getPngBufferFromSvgAsset(svgAssetLink, width, height);
+    String svgAssetLink,
+    double width,
+    double height,
+  ) async {
+    final unit8List = await getPngBufferFromSvgAsset(
+      svgAssetLink,
+      width,
+      height,
+    );
     return Image.memory(
       unit8List,
       width: width,
@@ -20,7 +26,10 @@ class BitmapHelper {
   }
 
   static Future<Image> getImageFromSvgString(
-      String svgString, double width, double height) async {
+    String svgString,
+    double width,
+    double height,
+  ) async {
     final unit8List = await getPngBufferFromSvgString(svgString, width, height);
     return Image.memory(
       unit8List,
@@ -31,15 +40,24 @@ class BitmapHelper {
   }
 
   static Future<Uint8List> getPngBufferFromSvgAsset(
-      String svgAssetLink, double width, double height) async {
+    String svgAssetLink,
+    double width,
+    double height,
+  ) async {
     final svgString = await rootBundle.loadString(svgAssetLink);
     return getPngBufferFromSvgString(svgString, width, height);
   }
 
   static Future<Uint8List> getPngBufferFromSvgString(
-      String svgString, double width, double height) async {
-    final pictureInfo =
-        await getPictureInfoFromString(svgString, width, height);
+    String svgString,
+    double width,
+    double height,
+  ) async {
+    final pictureInfo = await getPictureInfoFromString(
+      svgString,
+      width,
+      height,
+    );
     final bytes = await getSizedSvgImageBytes(pictureInfo, width, height);
     pictureInfo.picture.dispose();
 
@@ -49,26 +67,38 @@ class BitmapHelper {
   static Future<ui.Image> getSvgImageFromAssets(String svgAssertLink) async {
     final svgString = await rootBundle.loadString(svgAssertLink);
 
-    final PictureInfo pictureInfo =
-        await vg.loadPicture(SvgStringLoader(svgString), null);
-    final image = await pictureInfo.picture
-        .toImage(pictureInfo.size.width.ceil(), pictureInfo.size.height.ceil());
+    final PictureInfo pictureInfo = await vg.loadPicture(
+      SvgStringLoader(svgString),
+      null,
+    );
+    final image = await pictureInfo.picture.toImage(
+      pictureInfo.size.width.ceil(),
+      pictureInfo.size.height.ceil(),
+    );
     pictureInfo.picture.dispose();
     return image;
   }
 
   static Future<PictureInfo> getPictureInfoFromString(
-      String svgString, double width, double height) async {
+    String svgString,
+    double width,
+    double height,
+  ) async {
     return vg.loadPicture(SvgStringLoader(svgString), null);
   }
 
   static Future<Uint8List> getSizedSvgImageBytes(
-      PictureInfo pictureInfo, double width, double height) async {
+    PictureInfo pictureInfo,
+    double width,
+    double height,
+  ) async {
     /// (malcolmpl): not working on ubuntu 24.04 - crash in nvidia drivers 535.171.04
     /// issue solved by: https://github.com/flutter/flutter/issues/148364
     /// fix released in 3.22.3
     final image = await pictureInfo.picture.toImage(
-        pictureInfo.size.width.round(), pictureInfo.size.height.round());
+      pictureInfo.size.width.round(),
+      pictureInfo.size.height.round(),
+    );
     final imageBytes = await image.toByteData(format: ui.ImageByteFormat.png);
 
     final byteData = imageBytes?.buffer.asUint8List() ?? Uint8List(0);

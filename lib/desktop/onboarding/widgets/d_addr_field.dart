@@ -25,11 +25,12 @@ class DAddrTextField extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
     final address = parseAddressResult.match((l) => '', (r) => r.address);
-    final errorText = address.isNotEmpty
-        ? parseAddressResult.match((l) => false, (r) => true)
-            ? ''
-            : 'Invalid address'.tr()
-        : '';
+    final errorText =
+        address.isNotEmpty
+            ? parseAddressResult.match((l) => false, (r) => true)
+                ? ''
+                : 'Invalid address'.tr()
+            : '';
 
     if (address.isNotEmpty && errorText.isEmpty) {
       return DTextIconContainer(
@@ -53,9 +54,7 @@ class DAddrTextField extends ConsumerWidget {
       ),
       autofocus: autofocus,
       style: const TextStyle(color: Colors.black),
-      inputFormatters: [
-        TrimmingTextInputFormatter(),
-      ],
+      inputFormatters: [TrimmingTextInputFormatter()],
     );
   }
 }

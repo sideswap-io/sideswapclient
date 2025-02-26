@@ -1,11 +1,14 @@
-use std::time::{Duration, Instant};
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use anyhow::ensure;
 use serde::Deserialize;
 use sideswap_api::PricePair;
 
 use crate::{
-    dealer_ticker::DealerTicker,
+    dealer_ticker::{DealerTicker, TickerLoader},
     env::Env,
     exchange_pair::ExchangePair,
     http_client::HttpClient,
@@ -56,12 +59,14 @@ impl Market {
         self.ask_amount.unwrap_or(MAX_BTC_AMOUNT)
     }
 
-    pub fn bid_amount_sats(&self) -> u64 {
-        asset_int_amount_(self.bid_amount_f64(), self.base.asset_precision())
+    pub fn bid_amount_sats(&self, ticker_loader: &TickerLoader) -> u64 {
+        let base_precision = ticker_loader.precision(self.base);
+        asset_int_amount_(self.bid_amount_f64(), base_precision)
     }
 
-    pub fn ask_amount_sats(&self) -> u64 {
-        asset_int_amount_(self.ask_amount_f64(), self.base.asset_precision())
+    pub fn ask_amount_sats(&self, ticker_loader: &TickerLoader) -> u64 {
+        let base_precision = ticker_loader.precision(self.base);
+        asset_int_amount_(self.ask_amount_f64(), base_precision)
     }
 }
 
@@ -71,12 +76,13 @@ async fn get_price(
     env: Env,
     client: &HttpClient,
     market: &Market,
+    ticker_loader: &TickerLoader,
 ) -> Result<PricePair, anyhow::Error> {
     match market.source {
         PriceSource::Binance => binance::get_price(client, market).await,
         PriceSource::Bitfinex => bitfinex::get_price(client, market).await,
         PriceSource::BitPreco => bitpreco::get_price(client, market).await,
-        PriceSource::SideSwap => sideswap::get_price(env, client, market).await,
+        PriceSource::SideSwap => sideswap::get_price(env, client, market, ticker_loader).await,
         PriceSource::Fixed => fixed::get_price(client, market).await,
     }
 }
@@ -89,13 +95,18 @@ fn verify_price_pair(price_pair: PricePair) -> Result<PricePair, anyhow::Error> 
     Ok(price_pair)
 }
 
-async fn run(env: Env, market: Market, mut callback: PriceCallback) {
+async fn run(
+    env: Env,
+    market: Market,
+    ticker_loader: Arc<TickerLoader>,
+    mut callback: PriceCallback,
+) {
     let client = HttpClient::new();
     let mut last_success = None;
     let exchange_pair = market.exchange_pair();
 
     loop {
-        let res = get_price(env, &client, &market)
+        let res = get_price(env, &client, &market, &ticker_loader)
             .await
             .and_then(verify_price_pair);
 
@@ -129,6 +140,6 @@ async fn run(env: Env, market: Market, mut callback: PriceCallback) {
     }
 }
 
-pub fn start(env: Env, market: Market, callback: PriceCallback) {
-    tokio::spawn(run(env, market, callback));
+pub fn start(env: Env, market: Market, ticker_loader: Arc<TickerLoader>, callback: PriceCallback) {
+    tokio::spawn(run(env, market, ticker_loader, callback));
 }

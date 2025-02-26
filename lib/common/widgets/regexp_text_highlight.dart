@@ -27,39 +27,50 @@ class RegexTextHighlight extends StatelessWidget {
     final spans = <TextSpan>[];
     var start = 0;
     while (true) {
-      final highlight = ignoreCase
-          ? highlightRegex.stringMatch(text.toLowerCase().substring(start))
-          : highlightRegex.stringMatch(text.substring(start));
+      final highlight =
+          ignoreCase
+              ? highlightRegex.stringMatch(text.toLowerCase().substring(start))
+              : highlightRegex.stringMatch(text.substring(start));
       if (highlight == null) {
         // no highlight
         spans.add(_normalSpan(text.substring(start)));
         break;
       }
 
-      final indexOfHighlight = ignoreCase
-          ? text.toLowerCase().indexOf(highlight, start)
-          : text.indexOf(highlight, start);
+      final indexOfHighlight =
+          ignoreCase
+              ? text.toLowerCase().indexOf(highlight, start)
+              : text.indexOf(highlight, start);
 
       if (indexOfHighlight == start) {
         // starts with highlight
-        spans.add(_highlightSpan(text.substring(
-            indexOfHighlight, indexOfHighlight + highlight.length)));
+        spans.add(
+          _highlightSpan(
+            text.substring(
+              indexOfHighlight,
+              indexOfHighlight + highlight.length,
+            ),
+          ),
+        );
         start += highlight.length;
       } else {
         // normal + highlight
         spans.add(_normalSpan(text.substring(start, indexOfHighlight)));
-        spans.add(_highlightSpan(text.substring(
-            indexOfHighlight, indexOfHighlight + highlight.length)));
+        spans.add(
+          _highlightSpan(
+            text.substring(
+              indexOfHighlight,
+              indexOfHighlight + highlight.length,
+            ),
+          ),
+        );
         start = indexOfHighlight + highlight.length;
       }
     }
 
     return RichText(
       maxLines: maxLines,
-      text: TextSpan(
-        style: nonHighlightStyle,
-        children: spans,
-      ),
+      text: TextSpan(style: nonHighlightStyle, children: spans),
     );
   }
 

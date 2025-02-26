@@ -26,23 +26,23 @@ class HelperFunctions {
     return price > 1000
         ? price.toStringAsFixed(2)
         : price > 100
-            ? price.toStringAsFixed(3)
-            : price > 10
-                ? price.toStringAsFixed(4)
-                : price > 1
-                    ? price.toStringAsFixed(5)
-                    : price.toStringAsFixed(6);
+        ? price.toStringAsFixed(3)
+        : price > 10
+        ? price.toStringAsFixed(4)
+        : price > 1
+        ? price.toStringAsFixed(5)
+        : price.toStringAsFixed(6);
   }
 
   static String priceToString(double price) {
     return price > 1000
         ? price.toStringAsFixed(2)
         : price > 100
-            ? price.toStringAsFixed(3)
-            : price > 10
-                ? price.toStringAsFixed(4)
-                : price > 1
-                    ? price.toStringAsFixed(5)
-                    : price.toStringAsFixed(8);
+        ? price.toStringAsFixed(3)
+        : price > 10
+        ? price.toStringAsFixed(4)
+        : price > 1
+        ? price.toStringAsFixed(5)
+        : price.toStringAsFixed(8);
   }
 }

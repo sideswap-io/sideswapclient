@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 class SwapBottomBackground extends StatelessWidget {
-  const SwapBottomBackground({
-    super.key,
-    required this.middle,
-  });
+  const SwapBottomBackground({super.key, required this.middle});
 
   final double middle;
   @override

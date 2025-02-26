@@ -12,7 +12,8 @@ part of 'login_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$LoginState {
@@ -20,47 +21,42 @@ mixin _$LoginState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String? mnemonic, String? jadeId) login,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String? mnemonic, String? jadeId)? login,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String? mnemonic, String? jadeId)? login,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoginStateEmpty value) empty,
     required TResult Function(LoginStateLogin value) login,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoginStateEmpty value)? empty,
     TResult? Function(LoginStateLogin value)? login,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoginStateEmpty value)? empty,
     TResult Function(LoginStateLogin value)? login,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $LoginStateCopyWith<$Res> {
   factory $LoginStateCopyWith(
-          LoginState value, $Res Function(LoginState) then) =
-      _$LoginStateCopyWithImpl<$Res, LoginState>;
+    LoginState value,
+    $Res Function(LoginState) then,
+  ) = _$LoginStateCopyWithImpl<$Res, LoginState>;
 }
 
 /// @nodoc
@@ -72,13 +68,17 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of LoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$LoginStateEmptyImplCopyWith<$Res> {
-  factory _$$LoginStateEmptyImplCopyWith(_$LoginStateEmptyImpl value,
-          $Res Function(_$LoginStateEmptyImpl) then) =
-      __$$LoginStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$LoginStateEmptyImplCopyWith(
+    _$LoginStateEmptyImpl value,
+    $Res Function(_$LoginStateEmptyImpl) then,
+  ) = __$$LoginStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -86,8 +86,12 @@ class __$$LoginStateEmptyImplCopyWithImpl<$Res>
     extends _$LoginStateCopyWithImpl<$Res, _$LoginStateEmptyImpl>
     implements _$$LoginStateEmptyImplCopyWith<$Res> {
   __$$LoginStateEmptyImplCopyWithImpl(
-      _$LoginStateEmptyImpl _value, $Res Function(_$LoginStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$LoginStateEmptyImpl _value,
+    $Res Function(_$LoginStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -178,9 +182,10 @@ abstract class LoginStateEmpty implements LoginState {
 
 /// @nodoc
 abstract class _$$LoginStateLoginImplCopyWith<$Res> {
-  factory _$$LoginStateLoginImplCopyWith(_$LoginStateLoginImpl value,
-          $Res Function(_$LoginStateLoginImpl) then) =
-      __$$LoginStateLoginImplCopyWithImpl<$Res>;
+  factory _$$LoginStateLoginImplCopyWith(
+    _$LoginStateLoginImpl value,
+    $Res Function(_$LoginStateLoginImpl) then,
+  ) = __$$LoginStateLoginImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String? mnemonic, String? jadeId});
 }
@@ -190,25 +195,29 @@ class __$$LoginStateLoginImplCopyWithImpl<$Res>
     extends _$LoginStateCopyWithImpl<$Res, _$LoginStateLoginImpl>
     implements _$$LoginStateLoginImplCopyWith<$Res> {
   __$$LoginStateLoginImplCopyWithImpl(
-      _$LoginStateLoginImpl _value, $Res Function(_$LoginStateLoginImpl) _then)
-      : super(_value, _then);
+    _$LoginStateLoginImpl _value,
+    $Res Function(_$LoginStateLoginImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of LoginState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? mnemonic = freezed,
-    Object? jadeId = freezed,
-  }) {
-    return _then(_$LoginStateLoginImpl(
-      mnemonic: freezed == mnemonic
-          ? _value.mnemonic
-          : mnemonic // ignore: cast_nullable_to_non_nullable
-              as String?,
-      jadeId: freezed == jadeId
-          ? _value.jadeId
-          : jadeId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? mnemonic = freezed, Object? jadeId = freezed}) {
+    return _then(
+      _$LoginStateLoginImpl(
+        mnemonic:
+            freezed == mnemonic
+                ? _value.mnemonic
+                : mnemonic // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        jadeId:
+            freezed == jadeId
+                ? _value.jadeId
+                : jadeId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -240,12 +249,16 @@ class _$LoginStateLoginImpl implements LoginStateLogin {
   @override
   int get hashCode => Object.hash(runtimeType, mnemonic, jadeId);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LoginState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LoginStateLoginImplCopyWith<_$LoginStateLoginImpl> get copyWith =>
       __$$LoginStateLoginImplCopyWithImpl<_$LoginStateLoginImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -311,12 +324,17 @@ class _$LoginStateLoginImpl implements LoginStateLogin {
 }
 
 abstract class LoginStateLogin implements LoginState {
-  const factory LoginStateLogin(
-      {final String? mnemonic, final String? jadeId}) = _$LoginStateLoginImpl;
+  const factory LoginStateLogin({
+    final String? mnemonic,
+    final String? jadeId,
+  }) = _$LoginStateLoginImpl;
 
   String? get mnemonic;
   String? get jadeId;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LoginState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoginStateLoginImplCopyWith<_$LoginStateLoginImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

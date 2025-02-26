@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-enum DColoredCircularIconType {
-  delete,
-  success,
-}
+enum DColoredCircularIconType { delete, success }
 
 class DColoredCircularIcon extends StatelessWidget {
   const DColoredCircularIcon({

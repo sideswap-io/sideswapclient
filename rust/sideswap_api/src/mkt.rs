@@ -157,6 +157,7 @@ pub struct OwnOrder {
     pub client_order_id: Option<Box<String>>,
     pub asset_pair: AssetPair,
     pub price: NormalFloat,
+    pub price_tracking: Option<NormalFloat>,
     pub orig_amount: u64,
     pub active_amount: u64,
     pub trade_dir: TradeDir,
@@ -244,10 +245,17 @@ pub enum ClientEvent {
     AddOrder {
         asset_pair: AssetPair,
         base_amount: u64,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        price: Option<NormalFloat>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        price_tracking: Option<NormalFloat>,
+
         #[serde(skip_serializing_if = "Option::is_none")]
         min_price: Option<NormalFloat>,
         #[serde(skip_serializing_if = "Option::is_none")]
         max_price: Option<NormalFloat>,
+
         trade_dir: TradeDir,
         #[serde(skip_serializing_if = "Option::is_none")]
         ttl: Option<DurationMs>,
@@ -261,10 +269,17 @@ pub enum ClientEvent {
         order_id: OrdId,
         #[serde(skip_serializing_if = "Option::is_none")]
         base_amount: Option<u64>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        price: Option<NormalFloat>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        price_tracking: Option<NormalFloat>,
+
         #[serde(skip_serializing_if = "Option::is_none")]
         min_price: Option<NormalFloat>,
         #[serde(skip_serializing_if = "Option::is_none")]
         max_price: Option<NormalFloat>,
+
         #[serde(skip_serializing_if = "Option::is_none")]
         receive_address: Option<Address>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -406,7 +421,10 @@ pub struct RemoveUtxosResponse {}
 pub struct AddOrderRequest {
     pub asset_pair: AssetPair,
     pub base_amount: u64,
-    pub price: NormalFloat,
+    pub price: Option<NormalFloat>,
+    pub price_tracking: Option<NormalFloat>,
+    pub min_price: Option<NormalFloat>,
+    pub max_price: Option<NormalFloat>,
     pub trade_dir: TradeDir,
     pub ttl: Option<DurationMs>,
     pub receive_address: Address,
@@ -426,6 +444,9 @@ pub struct EditOrderRequest {
     pub order_id: OrdId,
     pub base_amount: Option<u64>,
     pub price: Option<NormalFloat>,
+    pub price_tracking: Option<NormalFloat>,
+    pub min_price: Option<NormalFloat>,
+    pub max_price: Option<NormalFloat>,
     pub receive_address: Option<Address>,
     pub change_address: Option<Address>,
     pub signature: Option<String>,

@@ -27,10 +27,9 @@ class AmpSecuritiesList extends HookConsumerWidget {
           children: [
             Text(
               'Listed securities'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: SideSwapColors.cornFlower,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 14),
@@ -49,7 +48,7 @@ class AmpSecuritiesList extends HookConsumerWidget {
                           );
                         },
                         itemCount: items.length,
-                      )
+                      ),
                     ],
                   ),
                 ),

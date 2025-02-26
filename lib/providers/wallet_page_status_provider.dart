@@ -22,19 +22,11 @@ enum Status {
   importWalletBiometricPrompt,
   importWalletError,
   importWalletSuccess,
-  importAvatar,
-  importAvatarSuccess,
-  associatePhoneWelcome,
-  confirmPhone,
-  confirmPhoneSuccess,
-  importContacts,
-  importContactsSuccess,
   newWalletPinWelcome,
   pinWelcome,
   pinSetup,
   pinSuccess,
   transactions,
-  orderFilers,
 
   registered,
   assetsSelect,
@@ -52,7 +44,6 @@ enum Status {
   settingsBackup,
   settingsAboutUs,
   settingsSecurity,
-  settingsUserDetails,
   settingsNetwork,
   settingsLogs,
   settingsCurrency,
@@ -60,16 +51,6 @@ enum Status {
   paymentPage,
   paymentAmountPage,
   paymentSend,
-
-  orderPopup,
-  orderSuccess,
-  orderResponseSuccess,
-  swapPrompt,
-
-  createOrderEntry,
-  createOrder,
-  createOrderSuccess,
-  orderRequestView,
 
   ampRegister,
   stokrLogin,
@@ -86,13 +67,16 @@ enum Status {
 
   stokrRestrictionsInfo,
   stokrNeedRegister,
+
+  marketSwap,
+  marketLimit,
 }
 
 @Riverpod(keepAlive: true)
 class PageStatusNotifier extends _$PageStatusNotifier {
   @override
   Status build() {
-    ref.listenSelf((_, next) {
+    listenSelf((_, next) {
       logger.d('${pageStatusNotifierProvider.toString()}: $next');
     });
     return Status.walletLoading;

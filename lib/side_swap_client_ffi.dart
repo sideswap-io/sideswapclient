@@ -8,17 +8,16 @@ import 'dart:ffi' as ffi;
 class NativeLibrary {
   /// Holds the symbol lookup function.
   final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-      _lookup;
+  _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
   NativeLibrary(ffi.DynamicLibrary dynamicLibrary)
-      : _lookup = dynamicLibrary.lookup;
+    : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
   NativeLibrary.fromLookup(
-      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-          lookup)
-      : _lookup = lookup;
+    ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
+  ) : _lookup = lookup;
 
   int sideswap_client_start(
     int env,
@@ -26,112 +25,97 @@ class NativeLibrary {
     ffi.Pointer<ffi.Char> version,
     int dart_port,
   ) {
-    return _sideswap_client_start(
-      env,
-      work_dir,
-      version,
-      dart_port,
-    );
+    return _sideswap_client_start(env, work_dir, version, dart_port);
   }
 
   late final _sideswap_client_startPtr = _lookup<
-      ffi.NativeFunction<
-          IntPtr Function(ffi.Int32, ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>, ffi.Int64)>>('sideswap_client_start');
-  late final _sideswap_client_start = _sideswap_client_startPtr.asFunction<
-      int Function(int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)>();
+    ffi.NativeFunction<
+      IntPtr Function(
+        ffi.Int32,
+        ffi.Pointer<ffi.Char>,
+        ffi.Pointer<ffi.Char>,
+        ffi.Int64,
+      )
+    >
+  >('sideswap_client_start');
+  late final _sideswap_client_start =
+      _sideswap_client_startPtr
+          .asFunction<
+            int Function(int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)
+          >();
 
-  void sideswap_send_request(
-    int client,
-    ffi.Pointer<ffi.Uint8> data,
-    int len,
-  ) {
-    return _sideswap_send_request(
-      client,
-      data,
-      len,
-    );
+  void sideswap_send_request(int client, ffi.Pointer<ffi.Uint8> data, int len) {
+    return _sideswap_send_request(client, data, len);
   }
 
   late final _sideswap_send_requestPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(IntPtr, ffi.Pointer<ffi.Uint8>,
-              ffi.Uint64)>>('sideswap_send_request');
-  late final _sideswap_send_request = _sideswap_send_requestPtr
-      .asFunction<void Function(int, ffi.Pointer<ffi.Uint8>, int)>();
+    ffi.NativeFunction<
+      ffi.Void Function(IntPtr, ffi.Pointer<ffi.Uint8>, ffi.Uint64)
+    >
+  >('sideswap_send_request');
+  late final _sideswap_send_request =
+      _sideswap_send_requestPtr
+          .asFunction<void Function(int, ffi.Pointer<ffi.Uint8>, int)>();
 
-  void sideswap_process_background(
-    ffi.Pointer<ffi.Char> data,
-  ) {
-    return _sideswap_process_background(
-      data,
-    );
+  void sideswap_process_background(ffi.Pointer<ffi.Char> data) {
+    return _sideswap_process_background(data);
   }
 
   late final _sideswap_process_backgroundPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char>)>>(
-          'sideswap_process_background');
-  late final _sideswap_process_background = _sideswap_process_backgroundPtr
-      .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
+        'sideswap_process_background',
+      );
+  late final _sideswap_process_background =
+      _sideswap_process_backgroundPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 
   bool sideswap_check_addr(
     int client,
     ffi.Pointer<ffi.Char> addr,
     int addr_type,
   ) {
-    return _sideswap_check_addr(
-      client,
-      addr,
-      addr_type,
-    );
+    return _sideswap_check_addr(client, addr, addr_type);
   }
 
   late final _sideswap_check_addrPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Bool Function(IntPtr, ffi.Pointer<ffi.Char>,
-              ffi.Int32)>>('sideswap_check_addr');
-  late final _sideswap_check_addr = _sideswap_check_addrPtr
-      .asFunction<bool Function(int, ffi.Pointer<ffi.Char>, int)>();
+    ffi.NativeFunction<
+      ffi.Bool Function(IntPtr, ffi.Pointer<ffi.Char>, ffi.Int32)
+    >
+  >('sideswap_check_addr');
+  late final _sideswap_check_addr =
+      _sideswap_check_addrPtr
+          .asFunction<bool Function(int, ffi.Pointer<ffi.Char>, int)>();
 
-  ffi.Pointer<ffi.Uint8> sideswap_msg_ptr(
-    int msg,
-  ) {
-    return _sideswap_msg_ptr(
-      msg,
-    );
+  ffi.Pointer<ffi.Uint8> sideswap_msg_ptr(int msg) {
+    return _sideswap_msg_ptr(msg);
   }
 
   late final _sideswap_msg_ptrPtr =
       _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Uint8> Function(IntPtr)>>(
-          'sideswap_msg_ptr');
+        'sideswap_msg_ptr',
+      );
   late final _sideswap_msg_ptr =
       _sideswap_msg_ptrPtr.asFunction<ffi.Pointer<ffi.Uint8> Function(int)>();
 
-  int sideswap_msg_len(
-    int msg,
-  ) {
-    return _sideswap_msg_len(
-      msg,
-    );
+  int sideswap_msg_len(int msg) {
+    return _sideswap_msg_len(msg);
   }
 
   late final _sideswap_msg_lenPtr =
       _lookup<ffi.NativeFunction<ffi.Uint64 Function(IntPtr)>>(
-          'sideswap_msg_len');
+        'sideswap_msg_len',
+      );
   late final _sideswap_msg_len =
       _sideswap_msg_lenPtr.asFunction<int Function(int)>();
 
-  void sideswap_msg_free(
-    int msg,
-  ) {
-    return _sideswap_msg_free(
-      msg,
-    );
+  void sideswap_msg_free(int msg) {
+    return _sideswap_msg_free(msg);
   }
 
   late final _sideswap_msg_freePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(IntPtr)>>(
-          'sideswap_msg_free');
+        'sideswap_msg_free',
+      );
   late final _sideswap_msg_free =
       _sideswap_msg_freePtr.asFunction<void Function(int)>();
 
@@ -141,37 +125,35 @@ class NativeLibrary {
 
   late final _sideswap_generate_mnemonic12Ptr =
       _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>(
-          'sideswap_generate_mnemonic12');
-  late final _sideswap_generate_mnemonic12 = _sideswap_generate_mnemonic12Ptr
-      .asFunction<ffi.Pointer<ffi.Char> Function()>();
+        'sideswap_generate_mnemonic12',
+      );
+  late final _sideswap_generate_mnemonic12 =
+      _sideswap_generate_mnemonic12Ptr
+          .asFunction<ffi.Pointer<ffi.Char> Function()>();
 
-  bool sideswap_verify_mnemonic(
-    ffi.Pointer<ffi.Char> mnemonic,
-  ) {
-    return _sideswap_verify_mnemonic(
-      mnemonic,
-    );
+  bool sideswap_verify_mnemonic(ffi.Pointer<ffi.Char> mnemonic) {
+    return _sideswap_verify_mnemonic(mnemonic);
   }
 
   late final _sideswap_verify_mnemonicPtr =
       _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<ffi.Char>)>>(
-          'sideswap_verify_mnemonic');
-  late final _sideswap_verify_mnemonic = _sideswap_verify_mnemonicPtr
-      .asFunction<bool Function(ffi.Pointer<ffi.Char>)>();
+        'sideswap_verify_mnemonic',
+      );
+  late final _sideswap_verify_mnemonic =
+      _sideswap_verify_mnemonicPtr
+          .asFunction<bool Function(ffi.Pointer<ffi.Char>)>();
 
-  void sideswap_string_free(
-    ffi.Pointer<ffi.Char> str,
-  ) {
-    return _sideswap_string_free(
-      str,
-    );
+  void sideswap_string_free(ffi.Pointer<ffi.Char> str) {
+    return _sideswap_string_free(str);
   }
 
   late final _sideswap_string_freePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char>)>>(
-          'sideswap_string_free');
-  late final _sideswap_string_free = _sideswap_string_freePtr
-      .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
+        'sideswap_string_free',
+      );
+  late final _sideswap_string_free =
+      _sideswap_string_freePtr
+          .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 }
 
 final class __fsid_t extends ffi.Struct {

@@ -31,7 +31,7 @@ class DJadeImport extends ConsumerWidget {
           children: [
             ...switch (jadeDevicesState) {
               JadeDevicesStateAvailable(
-                devices: List<From_JadePorts_Port> devices
+                devices: List<From_JadePorts_Port> devices,
               )
                   when devices.isNotEmpty =>
                 [const SizedBox()],
@@ -51,9 +51,7 @@ class DJadeImport extends ConsumerWidget {
                         width: 16,
                         height: 16,
                       ),
-                      const SizedBox(
-                        width: 7,
-                      ),
+                      const SizedBox(width: 7),
                       Text(
                         'Back'.tr(),
                         style: desktopAppTheme.textTheme.bodyMedium,
@@ -66,7 +64,8 @@ class DJadeImport extends ConsumerWidget {
                   height: 40,
                   onPressed: () {
                     openUrl(
-                        'https://help.blockstream.com/hc/en-us/sections/900000124103-Getting-Started');
+                      'https://help.blockstream.com/hc/en-us/sections/900000124103-Getting-Started',
+                    );
                   },
                   child: Row(
                     children: [
@@ -75,9 +74,7 @@ class DJadeImport extends ConsumerWidget {
                         width: 16,
                         height: 16,
                       ),
-                      const SizedBox(
-                        width: 7,
-                      ),
+                      const SizedBox(width: 7),
                       Text(
                         'Quick start guide'.tr(),
                         style: desktopAppTheme.textTheme.bodyMedium,
@@ -90,7 +87,8 @@ class DJadeImport extends ConsumerWidget {
                   height: 40,
                   onPressed: () {
                     openUrl(
-                        'https://store.blockstream.com/product/blockstream-jade-hardware-wallet/');
+                      'https://store.blockstream.com/product/blockstream-jade-hardware-wallet/',
+                    );
                   },
                   child: Row(
                     children: [
@@ -99,9 +97,7 @@ class DJadeImport extends ConsumerWidget {
                         width: 16,
                         height: 16,
                       ),
-                      const SizedBox(
-                        width: 7,
-                      ),
+                      const SizedBox(width: 7),
                       Text(
                         'Get Jade'.tr(),
                         style: desktopAppTheme.textTheme.bodyMedium,
@@ -126,35 +122,50 @@ class DJadeImport extends ConsumerWidget {
                   children: [
                     Text(
                       jadeDevicesState.maybeWhen(
-                          available: (devices) => 'Jade is ready to start'.tr(),
-                          orElse: () => 'Please connect your Jade device'.tr()),
+                        available: (devices) => 'Jade is ready to start'.tr(),
+                        orElse: () => 'Please connect your Jade device'.tr(),
+                      ),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    jadeDevicesState.maybeWhen(available: (devices) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: Column(
-                          children: devices
-                              .map(
-                                (port) => JadeDevice(
-                                  key: ValueKey(port.port),
-                                  jadePort: JadePort(fromJadePortsPort: port),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      );
-                    }, orElse: () {
-                      return const Padding(
-                        padding: EdgeInsets.only(top: 200),
-                        child: SpinKitFadingCircle(
-                          color: SideSwapColors.brightTurquoise,
-                        ),
-                      );
-                    }),
+                    jadeDevicesState.maybeWhen(
+                      available: (devices) => SizedBox(),
+                      orElse:
+                          () => Text(
+                            'Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.'
+                                .tr(),
+                          ),
+                    ),
+                    jadeDevicesState.maybeWhen(
+                      available: (devices) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 24),
+                          child: Column(
+                            children:
+                                devices
+                                    .map(
+                                      (port) => JadeDevice(
+                                        key: ValueKey(port.port),
+                                        jadePort: JadePort(
+                                          fromJadePortsPort: port,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
+                        );
+                      },
+                      orElse: () {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 200),
+                          child: SpinKitFadingCircle(
+                            color: SideSwapColors.brightTurquoise,
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 );
               },
@@ -167,11 +178,7 @@ class DJadeImport extends ConsumerWidget {
 }
 
 class JadeDevice extends StatelessWidget {
-  const JadeDevice({
-    super.key,
-    required this.jadePort,
-    this.register = true,
-  });
+  const JadeDevice({super.key, required this.jadePort, this.register = true});
 
   final JadePort jadePort;
   final bool register;
@@ -184,9 +191,7 @@ class JadeDevice extends StatelessWidget {
           width: 285,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: Border.all(
-              color: const Color(0xFF165071),
-            ),
+            border: Border.all(color: const Color(0xFF165071)),
           ),
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -204,10 +209,7 @@ class JadeDevice extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              JadeDeviceDetailsLine(
-                title: 'Port',
-                value: jadePort.port,
-              ),
+              JadeDeviceDetailsLine(title: 'Port', value: jadePort.port),
             ],
           ),
         ),
@@ -215,15 +217,16 @@ class JadeDevice extends StatelessWidget {
           const SizedBox(height: 32),
           Consumer(
             builder: (context, ref, child) {
-              final jadeOnboardingRegistration =
-                  ref.watch(jadeOnboardingRegistrationNotifierProvider);
+              final registrationButtonEnabled = ref.watch(
+                jadeRegistrationButtonEnabledProvider,
+              );
               return DCustomFilledBigButton(
-                onPressed: jadeOnboardingRegistration !=
-                        const JadeOnboardingRegistrationStateIdle()
-                    ? null
-                    : () {
-                        ref.read(walletProvider).jadeLogin(jadePort.jadeId);
-                      },
+                onPressed:
+                    registrationButtonEnabled
+                        ? () {
+                          ref.read(walletProvider).jadeLogin(jadePort.jadeId);
+                        }
+                        : null,
                 child: Text('REGISTER'.tr()),
               );
             },
@@ -250,10 +253,7 @@ class JadeDeviceDetailsLine extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title),
-          Text(value),
-        ],
+        children: [Text(title), Text(value)],
       ),
     );
   }

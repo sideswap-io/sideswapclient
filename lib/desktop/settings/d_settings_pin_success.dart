@@ -26,21 +26,23 @@ class DSettingsPinSuccess extends ConsumerWidget {
       content: SizedBox(
         height: 418,
         child: Center(
-          child: Column(children: [
-            const DColoredCircularIcon(
-              type: DColoredCircularIconType.success,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 32),
-              child: Text(
-                'PIN successfully enabled'.tr(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+          child: Column(
+            children: [
+              const DColoredCircularIcon(
+                type: DColoredCircularIconType.success,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 32),
+                child: Text(
+                  'PIN successfully enabled'.tr(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -50,11 +52,9 @@ class DSettingsPinSuccess extends ConsumerWidget {
             onPressed: () {
               ref.read(walletProvider).settingsViewPage();
             },
-            child: Text(
-              'OK'.tr(),
-            ),
+            child: Text('OK'.tr()),
           ),
-        )
+        ),
       ],
       style: const DContentDialogThemeData().merge(defaultDialogTheme),
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),

@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_background.dart';
@@ -36,35 +37,40 @@ class SwapMain extends HookConsumerWidget {
     });
     ref.listen(subscribePriceStreamNotifierProvider, (_, next) {
       next.maybeWhen(
-          data: (From_UpdatePriceStream priceStream) {
-            if (priceStream.hasPrice()) {
-              final swapState = ref.read(swapStateNotifierProvider);
-              if (swapState == const SwapState.idle()) {
-                ref
-                    .read(swapPriceStateNotifierProvider.notifier)
-                    .setPrice(priceStream.price);
-              }
+        data: (From_UpdatePriceStream priceStream) {
+          if (priceStream.hasPrice()) {
+            final swapState = ref.read(swapStateNotifierProvider);
+            if (swapState == const SwapState.idle()) {
+              ref
+                  .read(swapPriceStateNotifierProvider.notifier)
+                  .setPrice(priceStream.price);
             }
-          },
-          orElse: () {});
+          }
+        },
+        orElse: () {},
+      );
     });
 
-    ref.listen<SwapRecvAmountPriceStream>(recvAmountPriceStreamWatcherProvider,
-        (_, next) {
-      if (next is SwapRecvAmountPriceStreamData) {
-        ref
-            .read(swapRecvTextAmountNotifierProvider.notifier)
-            .setAmount(next.value);
-      }
-    });
-    ref.listen<SwapSendAmountPriceStream>(sendAmountPriceStreamWatcherProvider,
-        (_, next) {
-      if (next is SwapSendAmountPriceStreamData) {
-        ref
-            .read(swapSendTextAmountNotifierProvider.notifier)
-            .setAmount(next.value);
-      }
-    });
+    ref.listen<SwapRecvAmountPriceStream>(
+      recvAmountPriceStreamWatcherProvider,
+      (_, next) {
+        if (next is SwapRecvAmountPriceStreamData) {
+          ref
+              .read(swapRecvTextAmountNotifierProvider.notifier)
+              .setAmount(next.value);
+        }
+      },
+    );
+    ref.listen<SwapSendAmountPriceStream>(
+      sendAmountPriceStreamWatcherProvider,
+      (_, next) {
+        if (next is SwapSendAmountPriceStreamData) {
+          ref
+              .read(swapSendTextAmountNotifierProvider.notifier)
+              .setAmount(next.value);
+        }
+      },
+    );
 
     final swapType = ref.watch(swapTypeProvider);
 
@@ -98,6 +104,24 @@ class SwapMain extends HookConsumerWidget {
       return;
     }, const []);
 
+    final pegRepository = ref.watch(pegRepositoryProvider);
+
+    useEffect(() {
+      (switch (swapType) {
+        SwapTypePegIn() => () {
+          pegRepository.setActivePage(activePage: ActivePage.PEG_IN);
+        },
+        SwapTypePegOut() => () {
+          pegRepository.setActivePage(activePage: ActivePage.PEG_OUT);
+        },
+        SwapTypeAtomic() => () {
+          pegRepository.setActivePage(activePage: ActivePage.OTHER);
+        },
+      })();
+
+      return;
+    }, [pegRepository, swapType]);
+
     final deliverFocusNode = useFocusNode();
 
     return GestureDetector(
@@ -123,9 +147,7 @@ class SwapMain extends HookConsumerWidget {
               child: IntrinsicHeight(
                 child: Stack(
                   children: [
-                    SwapBottomBackground(
-                      middle: middle,
-                    ),
+                    SwapBottomBackground(middle: middle),
                     Padding(
                       padding: const EdgeInsets.only(top: 18),
                       child: Column(
@@ -160,9 +182,7 @@ class SwapMain extends HookConsumerWidget {
                               ),
                             ),
                           ],
-                          const SizedBox(
-                            height: 5,
-                          ),
+                          const SizedBox(height: 5),
                           SizedBox(
                             height: 109,
                             child: SwapDeliverAmount(
@@ -173,9 +193,7 @@ class SwapMain extends HookConsumerWidget {
                             visibleToggles: false,
                             onTap: ref.read(swapHelperProvider).toggleAssets,
                           ),
-                          const SizedBox(
-                            height: 6,
-                          ),
+                          const SizedBox(height: 6),
                           const SwapReceiveAmount(),
                           const Spacer(),
                           const Padding(

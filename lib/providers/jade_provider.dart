@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -35,7 +38,7 @@ class JadeBluetoothPermissionStateNotifier
 }
 
 @riverpod
-void jadeRescan(JadeRescanRef ref) {
+void jadeRescan(Ref ref) {
   ref.watch(walletProvider).jadeRescan();
   final timer = Timer.periodic(const Duration(seconds: 1), (_) {
     ref.watch(walletProvider).jadeRescan();
@@ -79,7 +82,7 @@ class JadeDeviceNotifier extends _$JadeDeviceNotifier {
 class JadeStatusNotifier extends _$JadeStatusNotifier {
   @override
   JadeStatus build() {
-    ref.listenSelf((_, next) {
+    listenSelf((_, next) {
       logger.d('${jadeStatusNotifierProvider.name}: $next');
     });
 
@@ -100,13 +103,25 @@ class JadeOnboardingRegistrationNotifier
   }
 
   void setState(
-      JadeOnboardingRegistrationState jadeOnboardingRegistrationState) {
+    JadeOnboardingRegistrationState jadeOnboardingRegistrationState,
+  ) {
     state = jadeOnboardingRegistrationState;
   }
 }
 
 @riverpod
-bool isJadeWallet(IsJadeWalletRef ref) {
+bool jadeRegistrationButtonEnabled(Ref ref) {
+  final serverLoginState = ref.watch(serverLoginNotifierProvider);
+  final jadeOnboardingRegistrationState = ref.watch(
+    jadeOnboardingRegistrationNotifierProvider,
+  );
+  return (jadeOnboardingRegistrationState ==
+          JadeOnboardingRegistrationStateIdle() &&
+      serverLoginState == ServerLoginStateLogout());
+}
+
+@riverpod
+bool isJadeWallet(Ref ref) {
   final jadeId = ref.watch(configurationProvider).jadeId;
 
   return jadeId.isNotEmpty;
@@ -121,18 +136,6 @@ class JadeInfoDialogNotifier extends _$JadeInfoDialogNotifier {
 
   void setState(DialogRoute<dynamic>? value) {
     state = value;
-  }
-}
-
-@riverpod
-class JadeOrderIdTimerNotifier extends _$JadeOrderIdTimerNotifier {
-  @override
-  String build() {
-    return '';
-  }
-
-  void setOrderId(String orderId) {
-    state = orderId;
   }
 }
 

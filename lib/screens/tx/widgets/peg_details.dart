@@ -16,10 +16,7 @@ import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class PegDetails extends ConsumerStatefulWidget {
-  const PegDetails({
-    super.key,
-    required this.transItem,
-  });
+  const PegDetails({super.key, required this.transItem});
 
   final TransItem transItem;
 
@@ -36,16 +33,17 @@ class TxDetailsPegState extends ConsumerState<PegDetails> {
   @override
   Widget build(BuildContext context) {
     final amountProvider = ref.watch(amountToStringProvider);
-    final transItemHelper =
-        ref.watch(transItemHelperProvider(widget.transItem));
+    final transItemHelper = ref.watch(
+      transItemHelperProvider(widget.transItem),
+    );
 
     final amountSendStr = amountProvider.amountToString(
-        AmountToStringParameters(
-            amount: widget.transItem.peg.amountSend.toInt()));
+      AmountToStringParameters(amount: widget.transItem.peg.amountSend.toInt()),
+    );
     final amountSend = double.tryParse(amountSendStr) ?? 0;
     final amountRecvStr = amountProvider.amountToString(
-        AmountToStringParameters(
-            amount: widget.transItem.peg.amountRecv.toInt()));
+      AmountToStringParameters(amount: widget.transItem.peg.amountRecv.toInt()),
+    );
     final amountRecv = double.tryParse(amountRecvStr) ?? 0;
     var conversionReceived = .0;
     if (amountSend != 0 && amountRecv != 0) {
@@ -92,30 +90,34 @@ class TxDetailsPegState extends ConsumerState<PegDetails> {
             ),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.only(top: 18),
-          child: SizedBox(),
-        ),
-        Consumer(builder: (context, ref, child) {
-          final details = amountProvider.amountToStringNamed(
+        const Padding(padding: EdgeInsets.only(top: 18), child: SizedBox()),
+        Consumer(
+          builder: (context, ref, child) {
+            final details = amountProvider.amountToStringNamed(
               AmountToStringNamedParameters(
-                  amount: widget.transItem.peg.amountSend.toInt(),
-                  ticker: sendTicker));
-          return TxDetailsRow(
-            description: isPegIn
-                ? 'BTC Peg-in amount'.tr()
-                : 'L-BTC Peg-out amount'.tr(),
-            details: details,
-          );
-        }),
+                amount: widget.transItem.peg.amountSend.toInt(),
+                ticker: sendTicker,
+              ),
+            );
+            return TxDetailsRow(
+              description:
+                  isPegIn
+                      ? 'BTC Peg-in amount'.tr()
+                      : 'L-BTC Peg-out amount'.tr(),
+              details: details,
+            );
+          },
+        ),
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: Consumer(
             builder: (context, ref, child) {
               final details = amountProvider.amountToStringNamed(
-                  AmountToStringNamedParameters(
-                      amount: widget.transItem.peg.amountRecv.toInt(),
-                      ticker: recvTicker));
+                AmountToStringNamedParameters(
+                  amount: widget.transItem.peg.amountRecv.toInt(),
+                  ticker: recvTicker,
+                ),
+              );
               return TxDetailsRow(
                 description:
                     isPegIn ? 'L-BTC received'.tr() : 'BTC received'.tr(),
@@ -136,9 +138,10 @@ class TxDetailsPegState extends ConsumerState<PegDetails> {
           child: TxDetailsRow(
             description: 'Status'.tr(),
             details: transItemHelper.txStatus(),
-            detailsColor: widget.transItem.confs.count != 0
-                ? SideSwapColors.airSuperiorityBlue
-                : Colors.white,
+            detailsColor:
+                widget.transItem.confs.count != 0
+                    ? SideSwapColors.airSuperiorityBlue
+                    : Colors.white,
           ),
         ),
         const Padding(
@@ -151,18 +154,20 @@ class TxDetailsPegState extends ConsumerState<PegDetails> {
         Padding(
           padding: const EdgeInsets.only(top: 20.5),
           child: TxDetailsColumn(
-            description: isPegIn
-                ? 'BTC Peg-in address'.tr()
-                : 'L-BTC delivery address'.tr(),
+            description:
+                isPegIn
+                    ? 'BTC Peg-in address'.tr()
+                    : 'L-BTC delivery address'.tr(),
             details: widget.transItem.peg.addrSend,
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 16),
           child: TxDetailsColumn(
-            description: isPegIn
-                ? 'L-BTC receiving address'.tr()
-                : 'BTC receiving address'.tr(),
+            description:
+                isPegIn
+                    ? 'L-BTC receiving address'.tr()
+                    : 'BTC receiving address'.tr(),
             details: widget.transItem.peg.addrRecv,
           ),
         ),

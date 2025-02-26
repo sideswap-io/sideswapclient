@@ -22,16 +22,6 @@ pub const TICKER_EURX: &str = "EURx";
 pub const TICKER_MEX: &str = "MEX";
 pub const TICKER_DEPIX: &str = "DePix";
 
-pub const TICKER_SSWP: &str = "SSWP";
-pub const TICKER_BMN2: &str = "BMN2";
-pub const TICKER_CMSTR: &str = "CMSTR";
-pub const TICKER_EXOEU: &str = "EXOeu";
-pub const TICKER_AQF: &str = "AQF";
-pub const TICKER_BAKER: &str = "BAKER";
-pub const TICKER_BSIC1: &str = "BSIC1";
-
-pub const TICKER_PPRGB: &str = "PPRGB";
-
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
 
@@ -49,6 +39,40 @@ pub fn get_os_type() -> i32 {
     } else {
         OS_TYPE_OTHER
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum SubscribedValueType {
+    PegInMinAmount,
+    PegInWalletBalance,
+    PegOutMinAmount,
+    PegOutWalletBalance,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum SubscribedValue {
+    PegInMinAmount {
+        min_amount: u64,
+    },
+
+    PegInWalletBalance {
+        /// How much L-BTC is available in the hot Liquid Bitcoin wallet (in sats).
+        /// If the peg-in amount is less than or equal to this amount, it will be paid after 2 confirmations.
+        /// If the peg-in amount is greater than this amount, it will it will be paid after 102 confirmations.
+        /// If the bitcoin transaction is not confirmed within 6 hours, the reservation will be released.
+        available: u64,
+    },
+
+    PegOutMinAmount {
+        min_amount: u64,
+    },
+
+    PegOutWalletBalance {
+        /// How much BTC is available in the hot Bitcoin wallet (in sats).
+        /// If the peg-out amount is less than or equal to this amount, it will be paid after 2 confirmations.
+        /// If the peg-out amount is greater than this amount, it is usually paid within 20-30 minutes.
+        available: u64,
+    },
 }
 
 #[derive(
@@ -961,6 +985,27 @@ pub struct NewSwapPriceNotification {
     pub swap_price: SwapPrice,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribeValueRequest {
+    pub value: SubscribedValueType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribeValueResponse {}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UnsubscribeValueRequest {
+    pub value: SubscribedValueType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UnsubscribeValueResponse {}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribedValueNotification {
+    pub value: SubscribedValue,
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -1046,6 +1091,9 @@ pub enum Request {
     SwapPrices(SwapPricesRequest),
 
     Market(mkt::Request),
+
+    SubscribeValue(SubscribeValueRequest),
+    UnsubscribeValue(UnsubscribeValueRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1102,6 +1150,9 @@ pub enum Response {
     SwapPrices(SwapPricesResponse),
 
     Market(mkt::Response),
+
+    SubscribeValue(SubscribeValueResponse),
+    UnsubscribeValue(UnsubscribeValueResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1128,6 +1179,8 @@ pub enum Notification {
     NewSwapPrice(NewSwapPriceNotification),
 
     Market(mkt::Notification),
+
+    SubscribedValue(SubscribedValueNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]

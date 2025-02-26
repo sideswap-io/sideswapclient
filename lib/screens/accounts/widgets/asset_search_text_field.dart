@@ -7,17 +7,15 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class AssetSearchTextField extends ConsumerWidget {
-  const AssetSearchTextField({
-    super.key,
-  });
+  const AssetSearchTextField({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       height: 44,
       child: TextField(
-        onChanged: (value) =>
-            ref.read(walletProvider).setToggleAssetFilter(value),
+        onChanged:
+            (value) => ref.read(walletProvider).setToggleAssetFilter(value),
         style: const TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.normal,
@@ -34,8 +32,10 @@ class AssetSearchTextField extends ConsumerWidget {
                 'assets/search.svg',
                 width: 19,
                 height: 19,
-                colorFilter:
-                    const ColorFilter.mode(Color(0xFF055271), BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF055271),
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

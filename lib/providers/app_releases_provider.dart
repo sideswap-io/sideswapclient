@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/app_version.dart';
@@ -74,7 +75,7 @@ class AppReleasesStateNotifier extends _$AppReleasesStateNotifier {
 }
 
 @riverpod
-FutureOr<bool> showNewReleaseFuture(ShowNewReleaseFutureRef ref) async {
+FutureOr<bool> showNewReleaseFuture(Ref ref) async {
   final knownNewReleaseBuild =
       ref.watch(configurationProvider).knownNewReleaseBuild;
 

@@ -25,7 +25,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           goBack(ref);
         }
@@ -40,30 +40,32 @@ class DSettingsDeleteWallet extends ConsumerWidget {
         content: Center(
           child: SizedBox(
             height: 418,
-            child: Column(children: [
-              const DColoredCircularIcon(),
-              Padding(
-                padding: const EdgeInsets.only(top: 33),
-                child: Text(
-                  'Are you sure to delete wallet?'.tr(),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+            child: Column(
+              children: [
+                const DColoredCircularIcon(),
+                Padding(
+                  padding: const EdgeInsets.only(top: 33),
+                  child: Text(
+                    'Are you sure to delete wallet?'.tr(),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                child: Text(
-                  'Please make sure you have backed up your wallet before proceeding.'
-                      .tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: Text(
+                    'Please make sure you have backed up your wallet before proceeding.'
+                        .tr(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -76,9 +78,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
                 onPressed: () {
                   goBack(ref);
                 },
-                child: Text(
-                  'NO'.tr(),
-                ),
+                child: Text('NO'.tr()),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -92,9 +92,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
                           .settingsDeletePromptConfirm();
                     }
                   },
-                  child: Text(
-                    'YES'.tr(),
-                  ),
+                  child: Text('YES'.tr()),
                 ),
               ),
             ],

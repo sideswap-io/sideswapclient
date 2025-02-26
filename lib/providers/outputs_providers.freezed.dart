@@ -12,7 +12,8 @@ part of 'outputs_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 OutputsData _$OutputsDataFromJson(Map<String, dynamic> json) {
   return _OutputsData.fromJson(json);
@@ -25,8 +26,12 @@ mixin _$OutputsData {
   int? get timestamp => throw _privateConstructorUsedError;
   List<OutputsReceiver>? get receivers => throw _privateConstructorUsedError;
 
+  /// Serializes this OutputsData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of OutputsData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $OutputsDataCopyWith<OutputsData> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -34,14 +39,16 @@ mixin _$OutputsData {
 /// @nodoc
 abstract class $OutputsDataCopyWith<$Res> {
   factory $OutputsDataCopyWith(
-          OutputsData value, $Res Function(OutputsData) then) =
-      _$OutputsDataCopyWithImpl<$Res, OutputsData>;
+    OutputsData value,
+    $Res Function(OutputsData) then,
+  ) = _$OutputsDataCopyWithImpl<$Res, OutputsData>;
   @useResult
-  $Res call(
-      {String? type,
-      String? version,
-      int? timestamp,
-      List<OutputsReceiver>? receivers});
+  $Res call({
+    String? type,
+    String? version,
+    int? timestamp,
+    List<OutputsReceiver>? receivers,
+  });
 }
 
 /// @nodoc
@@ -54,6 +61,8 @@ class _$OutputsDataCopyWithImpl<$Res, $Val extends OutputsData>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of OutputsData
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -62,24 +71,31 @@ class _$OutputsDataCopyWithImpl<$Res, $Val extends OutputsData>
     Object? timestamp = freezed,
     Object? receivers = freezed,
   }) {
-    return _then(_value.copyWith(
-      type: freezed == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String?,
-      version: freezed == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as String?,
-      timestamp: freezed == timestamp
-          ? _value.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as int?,
-      receivers: freezed == receivers
-          ? _value.receivers
-          : receivers // ignore: cast_nullable_to_non_nullable
-              as List<OutputsReceiver>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            type:
+                freezed == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            version:
+                freezed == version
+                    ? _value.version
+                    : version // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            timestamp:
+                freezed == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            receivers:
+                freezed == receivers
+                    ? _value.receivers
+                    : receivers // ignore: cast_nullable_to_non_nullable
+                        as List<OutputsReceiver>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -87,15 +103,17 @@ class _$OutputsDataCopyWithImpl<$Res, $Val extends OutputsData>
 abstract class _$$OutputsDataImplCopyWith<$Res>
     implements $OutputsDataCopyWith<$Res> {
   factory _$$OutputsDataImplCopyWith(
-          _$OutputsDataImpl value, $Res Function(_$OutputsDataImpl) then) =
-      __$$OutputsDataImplCopyWithImpl<$Res>;
+    _$OutputsDataImpl value,
+    $Res Function(_$OutputsDataImpl) then,
+  ) = __$$OutputsDataImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String? type,
-      String? version,
-      int? timestamp,
-      List<OutputsReceiver>? receivers});
+  $Res call({
+    String? type,
+    String? version,
+    int? timestamp,
+    List<OutputsReceiver>? receivers,
+  });
 }
 
 /// @nodoc
@@ -103,9 +121,12 @@ class __$$OutputsDataImplCopyWithImpl<$Res>
     extends _$OutputsDataCopyWithImpl<$Res, _$OutputsDataImpl>
     implements _$$OutputsDataImplCopyWith<$Res> {
   __$$OutputsDataImplCopyWithImpl(
-      _$OutputsDataImpl _value, $Res Function(_$OutputsDataImpl) _then)
-      : super(_value, _then);
+    _$OutputsDataImpl _value,
+    $Res Function(_$OutputsDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsData
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -114,24 +135,30 @@ class __$$OutputsDataImplCopyWithImpl<$Res>
     Object? timestamp = freezed,
     Object? receivers = freezed,
   }) {
-    return _then(_$OutputsDataImpl(
-      type: freezed == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String?,
-      version: freezed == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as String?,
-      timestamp: freezed == timestamp
-          ? _value.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as int?,
-      receivers: freezed == receivers
-          ? _value._receivers
-          : receivers // ignore: cast_nullable_to_non_nullable
-              as List<OutputsReceiver>?,
-    ));
+    return _then(
+      _$OutputsDataImpl(
+        type:
+            freezed == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        version:
+            freezed == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        timestamp:
+            freezed == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        receivers:
+            freezed == receivers
+                ? _value._receivers
+                : receivers // ignore: cast_nullable_to_non_nullable
+                    as List<OutputsReceiver>?,
+      ),
+    );
   }
 }
 
@@ -139,12 +166,12 @@ class __$$OutputsDataImplCopyWithImpl<$Res>
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
 class _$OutputsDataImpl implements _OutputsData {
-  const _$OutputsDataImpl(
-      {this.type,
-      this.version,
-      this.timestamp,
-      final List<OutputsReceiver>? receivers})
-      : _receivers = receivers;
+  const _$OutputsDataImpl({
+    this.type,
+    this.version,
+    this.timestamp,
+    final List<OutputsReceiver>? receivers,
+  }) : _receivers = receivers;
 
   factory _$OutputsDataImpl.fromJson(Map<String, dynamic> json) =>
       _$$OutputsDataImplFromJson(json);
@@ -179,16 +206,25 @@ class _$OutputsDataImpl implements _OutputsData {
             (identical(other.version, version) || other.version == version) &&
             (identical(other.timestamp, timestamp) ||
                 other.timestamp == timestamp) &&
-            const DeepCollectionEquality()
-                .equals(other._receivers, _receivers));
+            const DeepCollectionEquality().equals(
+              other._receivers,
+              _receivers,
+            ));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, type, version, timestamp,
-      const DeepCollectionEquality().hash(_receivers));
+  int get hashCode => Object.hash(
+    runtimeType,
+    type,
+    version,
+    timestamp,
+    const DeepCollectionEquality().hash(_receivers),
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsDataImplCopyWith<_$OutputsDataImpl> get copyWith =>
@@ -196,18 +232,17 @@ class _$OutputsDataImpl implements _OutputsData {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$OutputsDataImplToJson(
-      this,
-    );
+    return _$$OutputsDataImplToJson(this);
   }
 }
 
 abstract class _OutputsData implements OutputsData {
-  const factory _OutputsData(
-      {final String? type,
-      final String? version,
-      final int? timestamp,
-      final List<OutputsReceiver>? receivers}) = _$OutputsDataImpl;
+  const factory _OutputsData({
+    final String? type,
+    final String? version,
+    final int? timestamp,
+    final List<OutputsReceiver>? receivers,
+  }) = _$OutputsDataImpl;
 
   factory _OutputsData.fromJson(Map<String, dynamic> json) =
       _$OutputsDataImpl.fromJson;
@@ -220,8 +255,11 @@ abstract class _OutputsData implements OutputsData {
   int? get timestamp;
   @override
   List<OutputsReceiver>? get receivers;
+
+  /// Create a copy of OutputsData
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsDataImplCopyWith<_$OutputsDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -239,8 +277,12 @@ mixin _$OutputsReceiver {
   String? get comment => throw _privateConstructorUsedError;
   int? get account => throw _privateConstructorUsedError;
 
+  /// Serializes this OutputsReceiver to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of OutputsReceiver
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $OutputsReceiverCopyWith<OutputsReceiver> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -248,15 +290,17 @@ mixin _$OutputsReceiver {
 /// @nodoc
 abstract class $OutputsReceiverCopyWith<$Res> {
   factory $OutputsReceiverCopyWith(
-          OutputsReceiver value, $Res Function(OutputsReceiver) then) =
-      _$OutputsReceiverCopyWithImpl<$Res, OutputsReceiver>;
+    OutputsReceiver value,
+    $Res Function(OutputsReceiver) then,
+  ) = _$OutputsReceiverCopyWithImpl<$Res, OutputsReceiver>;
   @useResult
-  $Res call(
-      {String? address,
-      @JsonKey(name: 'asset_id') String? assetId,
-      int? satoshi,
-      String? comment,
-      int? account});
+  $Res call({
+    String? address,
+    @JsonKey(name: 'asset_id') String? assetId,
+    int? satoshi,
+    String? comment,
+    int? account,
+  });
 }
 
 /// @nodoc
@@ -269,6 +313,8 @@ class _$OutputsReceiverCopyWithImpl<$Res, $Val extends OutputsReceiver>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of OutputsReceiver
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -278,45 +324,55 @@ class _$OutputsReceiverCopyWithImpl<$Res, $Val extends OutputsReceiver>
     Object? comment = freezed,
     Object? account = freezed,
   }) {
-    return _then(_value.copyWith(
-      address: freezed == address
-          ? _value.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String?,
-      assetId: freezed == assetId
-          ? _value.assetId
-          : assetId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      satoshi: freezed == satoshi
-          ? _value.satoshi
-          : satoshi // ignore: cast_nullable_to_non_nullable
-              as int?,
-      comment: freezed == comment
-          ? _value.comment
-          : comment // ignore: cast_nullable_to_non_nullable
-              as String?,
-      account: freezed == account
-          ? _value.account
-          : account // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            address:
+                freezed == address
+                    ? _value.address
+                    : address // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            assetId:
+                freezed == assetId
+                    ? _value.assetId
+                    : assetId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            satoshi:
+                freezed == satoshi
+                    ? _value.satoshi
+                    : satoshi // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            comment:
+                freezed == comment
+                    ? _value.comment
+                    : comment // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            account:
+                freezed == account
+                    ? _value.account
+                    : account // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$OutputsReceiverImplCopyWith<$Res>
     implements $OutputsReceiverCopyWith<$Res> {
-  factory _$$OutputsReceiverImplCopyWith(_$OutputsReceiverImpl value,
-          $Res Function(_$OutputsReceiverImpl) then) =
-      __$$OutputsReceiverImplCopyWithImpl<$Res>;
+  factory _$$OutputsReceiverImplCopyWith(
+    _$OutputsReceiverImpl value,
+    $Res Function(_$OutputsReceiverImpl) then,
+  ) = __$$OutputsReceiverImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String? address,
-      @JsonKey(name: 'asset_id') String? assetId,
-      int? satoshi,
-      String? comment,
-      int? account});
+  $Res call({
+    String? address,
+    @JsonKey(name: 'asset_id') String? assetId,
+    int? satoshi,
+    String? comment,
+    int? account,
+  });
 }
 
 /// @nodoc
@@ -324,9 +380,12 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
     extends _$OutputsReceiverCopyWithImpl<$Res, _$OutputsReceiverImpl>
     implements _$$OutputsReceiverImplCopyWith<$Res> {
   __$$OutputsReceiverImplCopyWithImpl(
-      _$OutputsReceiverImpl _value, $Res Function(_$OutputsReceiverImpl) _then)
-      : super(_value, _then);
+    _$OutputsReceiverImpl _value,
+    $Res Function(_$OutputsReceiverImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsReceiver
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -336,28 +395,35 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
     Object? comment = freezed,
     Object? account = freezed,
   }) {
-    return _then(_$OutputsReceiverImpl(
-      address: freezed == address
-          ? _value.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String?,
-      assetId: freezed == assetId
-          ? _value.assetId
-          : assetId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      satoshi: freezed == satoshi
-          ? _value.satoshi
-          : satoshi // ignore: cast_nullable_to_non_nullable
-              as int?,
-      comment: freezed == comment
-          ? _value.comment
-          : comment // ignore: cast_nullable_to_non_nullable
-              as String?,
-      account: freezed == account
-          ? _value.account
-          : account // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+    return _then(
+      _$OutputsReceiverImpl(
+        address:
+            freezed == address
+                ? _value.address
+                : address // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        assetId:
+            freezed == assetId
+                ? _value.assetId
+                : assetId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        satoshi:
+            freezed == satoshi
+                ? _value.satoshi
+                : satoshi // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        comment:
+            freezed == comment
+                ? _value.comment
+                : comment // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        account:
+            freezed == account
+                ? _value.account
+                : account // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
   }
 }
 
@@ -365,12 +431,13 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
 class _$OutputsReceiverImpl implements _OutputsReceiver {
-  const _$OutputsReceiverImpl(
-      {this.address,
-      @JsonKey(name: 'asset_id') this.assetId,
-      this.satoshi,
-      this.comment,
-      this.account});
+  const _$OutputsReceiverImpl({
+    this.address,
+    @JsonKey(name: 'asset_id') this.assetId,
+    this.satoshi,
+    this.comment,
+    this.account,
+  });
 
   factory _$OutputsReceiverImpl.fromJson(Map<String, dynamic> json) =>
       _$$OutputsReceiverImplFromJson(json);
@@ -404,33 +471,36 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
             (identical(other.account, account) || other.account == account));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, address, assetId, satoshi, comment, account);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsReceiver
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsReceiverImplCopyWith<_$OutputsReceiverImpl> get copyWith =>
       __$$OutputsReceiverImplCopyWithImpl<_$OutputsReceiverImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$OutputsReceiverImplToJson(
-      this,
-    );
+    return _$$OutputsReceiverImplToJson(this);
   }
 }
 
 abstract class _OutputsReceiver implements OutputsReceiver {
-  const factory _OutputsReceiver(
-      {final String? address,
-      @JsonKey(name: 'asset_id') final String? assetId,
-      final int? satoshi,
-      final String? comment,
-      final int? account}) = _$OutputsReceiverImpl;
+  const factory _OutputsReceiver({
+    final String? address,
+    @JsonKey(name: 'asset_id') final String? assetId,
+    final int? satoshi,
+    final String? comment,
+    final int? account,
+  }) = _$OutputsReceiverImpl;
 
   factory _OutputsReceiver.fromJson(Map<String, dynamic> json) =
       _$OutputsReceiverImpl.fromJson;
@@ -446,8 +516,11 @@ abstract class _OutputsReceiver implements OutputsReceiver {
   String? get comment;
   @override
   int? get account;
+
+  /// Create a copy of OutputsReceiver
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsReceiverImplCopyWith<_$OutputsReceiverImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -464,8 +537,7 @@ mixin _$OutputsError {
     required TResult Function(String? message) operationCancelled,
     required TResult Function(String? message) requiredDataIsEmpty,
     required TResult Function(String? message) outputsDataIsEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String? message)? wrongTypeOfFile,
@@ -475,8 +547,7 @@ mixin _$OutputsError {
     TResult? Function(String? message)? operationCancelled,
     TResult? Function(String? message)? requiredDataIsEmpty,
     TResult? Function(String? message)? outputsDataIsEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String? message)? wrongTypeOfFile,
@@ -487,55 +558,53 @@ mixin _$OutputsError {
     TResult Function(String? message)? requiredDataIsEmpty,
     TResult Function(String? message)? outputsDataIsEmpty,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+    outputsDataIsEmpty,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $OutputsErrorCopyWith<OutputsError> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -543,8 +612,9 @@ mixin _$OutputsError {
 /// @nodoc
 abstract class $OutputsErrorCopyWith<$Res> {
   factory $OutputsErrorCopyWith(
-          OutputsError value, $Res Function(OutputsError) then) =
-      _$OutputsErrorCopyWithImpl<$Res, OutputsError>;
+    OutputsError value,
+    $Res Function(OutputsError) then,
+  ) = _$OutputsErrorCopyWithImpl<$Res, OutputsError>;
   @useResult
   $Res call({String? message});
 }
@@ -559,17 +629,21 @@ class _$OutputsErrorCopyWithImpl<$Res, $Val extends OutputsError>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_value.copyWith(
-      message: freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _value.copyWith(
+            message:
+                freezed == message
+                    ? _value.message
+                    : message // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -577,9 +651,9 @@ class _$OutputsErrorCopyWithImpl<$Res, $Val extends OutputsError>
 abstract class _$$OutputsErrorWrongTypeOfFileImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorWrongTypeOfFileImplCopyWith(
-          _$OutputsErrorWrongTypeOfFileImpl value,
-          $Res Function(_$OutputsErrorWrongTypeOfFileImpl) then) =
-      __$$OutputsErrorWrongTypeOfFileImplCopyWithImpl<$Res>;
+    _$OutputsErrorWrongTypeOfFileImpl value,
+    $Res Function(_$OutputsErrorWrongTypeOfFileImpl) then,
+  ) = __$$OutputsErrorWrongTypeOfFileImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -590,21 +664,23 @@ class __$$OutputsErrorWrongTypeOfFileImplCopyWithImpl<$Res>
     extends _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorWrongTypeOfFileImpl>
     implements _$$OutputsErrorWrongTypeOfFileImplCopyWith<$Res> {
   __$$OutputsErrorWrongTypeOfFileImplCopyWithImpl(
-      _$OutputsErrorWrongTypeOfFileImpl _value,
-      $Res Function(_$OutputsErrorWrongTypeOfFileImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorWrongTypeOfFileImpl _value,
+    $Res Function(_$OutputsErrorWrongTypeOfFileImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorWrongTypeOfFileImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorWrongTypeOfFileImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -632,12 +708,15 @@ class _$OutputsErrorWrongTypeOfFileImpl implements OutputsErrorWrongTypeOfFile {
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorWrongTypeOfFileImplCopyWith<_$OutputsErrorWrongTypeOfFileImpl>
-      get copyWith => __$$OutputsErrorWrongTypeOfFileImplCopyWithImpl<
-          _$OutputsErrorWrongTypeOfFileImpl>(this, _$identity);
+  get copyWith => __$$OutputsErrorWrongTypeOfFileImplCopyWithImpl<
+    _$OutputsErrorWrongTypeOfFileImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -689,19 +768,19 @@ class _$OutputsErrorWrongTypeOfFileImpl implements OutputsErrorWrongTypeOfFile {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return wrongTypeOfFile(this);
   }
@@ -712,11 +791,11 @@ class _$OutputsErrorWrongTypeOfFileImpl implements OutputsErrorWrongTypeOfFile {
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return wrongTypeOfFile?.call(this);
@@ -728,11 +807,11 @@ class _$OutputsErrorWrongTypeOfFileImpl implements OutputsErrorWrongTypeOfFile {
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -749,19 +828,22 @@ abstract class OutputsErrorWrongTypeOfFile implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorWrongTypeOfFileImplCopyWith<_$OutputsErrorWrongTypeOfFileImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$OutputsErrorWrongVersionOfFileImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorWrongVersionOfFileImplCopyWith(
-          _$OutputsErrorWrongVersionOfFileImpl value,
-          $Res Function(_$OutputsErrorWrongVersionOfFileImpl) then) =
-      __$$OutputsErrorWrongVersionOfFileImplCopyWithImpl<$Res>;
+    _$OutputsErrorWrongVersionOfFileImpl value,
+    $Res Function(_$OutputsErrorWrongVersionOfFileImpl) then,
+  ) = __$$OutputsErrorWrongVersionOfFileImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -769,25 +851,27 @@ abstract class _$$OutputsErrorWrongVersionOfFileImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OutputsErrorWrongVersionOfFileImplCopyWithImpl<$Res>
-    extends _$OutputsErrorCopyWithImpl<$Res,
-        _$OutputsErrorWrongVersionOfFileImpl>
+    extends
+        _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorWrongVersionOfFileImpl>
     implements _$$OutputsErrorWrongVersionOfFileImplCopyWith<$Res> {
   __$$OutputsErrorWrongVersionOfFileImplCopyWithImpl(
-      _$OutputsErrorWrongVersionOfFileImpl _value,
-      $Res Function(_$OutputsErrorWrongVersionOfFileImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorWrongVersionOfFileImpl _value,
+    $Res Function(_$OutputsErrorWrongVersionOfFileImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorWrongVersionOfFileImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorWrongVersionOfFileImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -816,13 +900,17 @@ class _$OutputsErrorWrongVersionOfFileImpl
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorWrongVersionOfFileImplCopyWith<
-          _$OutputsErrorWrongVersionOfFileImpl>
-      get copyWith => __$$OutputsErrorWrongVersionOfFileImplCopyWithImpl<
-          _$OutputsErrorWrongVersionOfFileImpl>(this, _$identity);
+    _$OutputsErrorWrongVersionOfFileImpl
+  >
+  get copyWith => __$$OutputsErrorWrongVersionOfFileImplCopyWithImpl<
+    _$OutputsErrorWrongVersionOfFileImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -874,19 +962,19 @@ class _$OutputsErrorWrongVersionOfFileImpl
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return wrongVersionOfFile(this);
   }
@@ -897,11 +985,11 @@ class _$OutputsErrorWrongVersionOfFileImpl
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return wrongVersionOfFile?.call(this);
@@ -913,11 +1001,11 @@ class _$OutputsErrorWrongVersionOfFileImpl
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -934,20 +1022,24 @@ abstract class OutputsErrorWrongVersionOfFile implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorWrongVersionOfFileImplCopyWith<
-          _$OutputsErrorWrongVersionOfFileImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OutputsErrorWrongVersionOfFileImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$OutputsErrorJsonFileSyntaxErrorImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorJsonFileSyntaxErrorImplCopyWith(
-          _$OutputsErrorJsonFileSyntaxErrorImpl value,
-          $Res Function(_$OutputsErrorJsonFileSyntaxErrorImpl) then) =
-      __$$OutputsErrorJsonFileSyntaxErrorImplCopyWithImpl<$Res>;
+    _$OutputsErrorJsonFileSyntaxErrorImpl value,
+    $Res Function(_$OutputsErrorJsonFileSyntaxErrorImpl) then,
+  ) = __$$OutputsErrorJsonFileSyntaxErrorImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -955,25 +1047,27 @@ abstract class _$$OutputsErrorJsonFileSyntaxErrorImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OutputsErrorJsonFileSyntaxErrorImplCopyWithImpl<$Res>
-    extends _$OutputsErrorCopyWithImpl<$Res,
-        _$OutputsErrorJsonFileSyntaxErrorImpl>
+    extends
+        _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorJsonFileSyntaxErrorImpl>
     implements _$$OutputsErrorJsonFileSyntaxErrorImplCopyWith<$Res> {
   __$$OutputsErrorJsonFileSyntaxErrorImplCopyWithImpl(
-      _$OutputsErrorJsonFileSyntaxErrorImpl _value,
-      $Res Function(_$OutputsErrorJsonFileSyntaxErrorImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorJsonFileSyntaxErrorImpl _value,
+    $Res Function(_$OutputsErrorJsonFileSyntaxErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorJsonFileSyntaxErrorImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorJsonFileSyntaxErrorImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -1002,13 +1096,17 @@ class _$OutputsErrorJsonFileSyntaxErrorImpl
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorJsonFileSyntaxErrorImplCopyWith<
-          _$OutputsErrorJsonFileSyntaxErrorImpl>
-      get copyWith => __$$OutputsErrorJsonFileSyntaxErrorImplCopyWithImpl<
-          _$OutputsErrorJsonFileSyntaxErrorImpl>(this, _$identity);
+    _$OutputsErrorJsonFileSyntaxErrorImpl
+  >
+  get copyWith => __$$OutputsErrorJsonFileSyntaxErrorImplCopyWithImpl<
+    _$OutputsErrorJsonFileSyntaxErrorImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1060,19 +1158,19 @@ class _$OutputsErrorJsonFileSyntaxErrorImpl
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return jsonFileSyntaxError(this);
   }
@@ -1083,11 +1181,11 @@ class _$OutputsErrorJsonFileSyntaxErrorImpl
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return jsonFileSyntaxError?.call(this);
@@ -1099,11 +1197,11 @@ class _$OutputsErrorJsonFileSyntaxErrorImpl
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -1120,20 +1218,24 @@ abstract class OutputsErrorJsonFileSyntaxError implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorJsonFileSyntaxErrorImplCopyWith<
-          _$OutputsErrorJsonFileSyntaxErrorImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OutputsErrorJsonFileSyntaxErrorImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$OutputsErrorFileStructureErrorImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorFileStructureErrorImplCopyWith(
-          _$OutputsErrorFileStructureErrorImpl value,
-          $Res Function(_$OutputsErrorFileStructureErrorImpl) then) =
-      __$$OutputsErrorFileStructureErrorImplCopyWithImpl<$Res>;
+    _$OutputsErrorFileStructureErrorImpl value,
+    $Res Function(_$OutputsErrorFileStructureErrorImpl) then,
+  ) = __$$OutputsErrorFileStructureErrorImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -1141,25 +1243,27 @@ abstract class _$$OutputsErrorFileStructureErrorImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OutputsErrorFileStructureErrorImplCopyWithImpl<$Res>
-    extends _$OutputsErrorCopyWithImpl<$Res,
-        _$OutputsErrorFileStructureErrorImpl>
+    extends
+        _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorFileStructureErrorImpl>
     implements _$$OutputsErrorFileStructureErrorImplCopyWith<$Res> {
   __$$OutputsErrorFileStructureErrorImplCopyWithImpl(
-      _$OutputsErrorFileStructureErrorImpl _value,
-      $Res Function(_$OutputsErrorFileStructureErrorImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorFileStructureErrorImpl _value,
+    $Res Function(_$OutputsErrorFileStructureErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorFileStructureErrorImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorFileStructureErrorImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -1188,13 +1292,17 @@ class _$OutputsErrorFileStructureErrorImpl
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorFileStructureErrorImplCopyWith<
-          _$OutputsErrorFileStructureErrorImpl>
-      get copyWith => __$$OutputsErrorFileStructureErrorImplCopyWithImpl<
-          _$OutputsErrorFileStructureErrorImpl>(this, _$identity);
+    _$OutputsErrorFileStructureErrorImpl
+  >
+  get copyWith => __$$OutputsErrorFileStructureErrorImplCopyWithImpl<
+    _$OutputsErrorFileStructureErrorImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1246,19 +1354,19 @@ class _$OutputsErrorFileStructureErrorImpl
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return fileStructureError(this);
   }
@@ -1269,11 +1377,11 @@ class _$OutputsErrorFileStructureErrorImpl
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return fileStructureError?.call(this);
@@ -1285,11 +1393,11 @@ class _$OutputsErrorFileStructureErrorImpl
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -1306,20 +1414,24 @@ abstract class OutputsErrorFileStructureError implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorFileStructureErrorImplCopyWith<
-          _$OutputsErrorFileStructureErrorImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OutputsErrorFileStructureErrorImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$OutputsErrorOperationCancelledImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorOperationCancelledImplCopyWith(
-          _$OutputsErrorOperationCancelledImpl value,
-          $Res Function(_$OutputsErrorOperationCancelledImpl) then) =
-      __$$OutputsErrorOperationCancelledImplCopyWithImpl<$Res>;
+    _$OutputsErrorOperationCancelledImpl value,
+    $Res Function(_$OutputsErrorOperationCancelledImpl) then,
+  ) = __$$OutputsErrorOperationCancelledImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -1327,25 +1439,27 @@ abstract class _$$OutputsErrorOperationCancelledImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OutputsErrorOperationCancelledImplCopyWithImpl<$Res>
-    extends _$OutputsErrorCopyWithImpl<$Res,
-        _$OutputsErrorOperationCancelledImpl>
+    extends
+        _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorOperationCancelledImpl>
     implements _$$OutputsErrorOperationCancelledImplCopyWith<$Res> {
   __$$OutputsErrorOperationCancelledImplCopyWithImpl(
-      _$OutputsErrorOperationCancelledImpl _value,
-      $Res Function(_$OutputsErrorOperationCancelledImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorOperationCancelledImpl _value,
+    $Res Function(_$OutputsErrorOperationCancelledImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorOperationCancelledImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorOperationCancelledImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -1374,13 +1488,17 @@ class _$OutputsErrorOperationCancelledImpl
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorOperationCancelledImplCopyWith<
-          _$OutputsErrorOperationCancelledImpl>
-      get copyWith => __$$OutputsErrorOperationCancelledImplCopyWithImpl<
-          _$OutputsErrorOperationCancelledImpl>(this, _$identity);
+    _$OutputsErrorOperationCancelledImpl
+  >
+  get copyWith => __$$OutputsErrorOperationCancelledImplCopyWithImpl<
+    _$OutputsErrorOperationCancelledImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1432,19 +1550,19 @@ class _$OutputsErrorOperationCancelledImpl
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return operationCancelled(this);
   }
@@ -1455,11 +1573,11 @@ class _$OutputsErrorOperationCancelledImpl
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return operationCancelled?.call(this);
@@ -1471,11 +1589,11 @@ class _$OutputsErrorOperationCancelledImpl
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -1492,20 +1610,24 @@ abstract class OutputsErrorOperationCancelled implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorOperationCancelledImplCopyWith<
-          _$OutputsErrorOperationCancelledImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OutputsErrorOperationCancelledImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$OutputsErrorRequiredDataIsEmptyImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorRequiredDataIsEmptyImplCopyWith(
-          _$OutputsErrorRequiredDataIsEmptyImpl value,
-          $Res Function(_$OutputsErrorRequiredDataIsEmptyImpl) then) =
-      __$$OutputsErrorRequiredDataIsEmptyImplCopyWithImpl<$Res>;
+    _$OutputsErrorRequiredDataIsEmptyImpl value,
+    $Res Function(_$OutputsErrorRequiredDataIsEmptyImpl) then,
+  ) = __$$OutputsErrorRequiredDataIsEmptyImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -1513,25 +1635,27 @@ abstract class _$$OutputsErrorRequiredDataIsEmptyImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OutputsErrorRequiredDataIsEmptyImplCopyWithImpl<$Res>
-    extends _$OutputsErrorCopyWithImpl<$Res,
-        _$OutputsErrorRequiredDataIsEmptyImpl>
+    extends
+        _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorRequiredDataIsEmptyImpl>
     implements _$$OutputsErrorRequiredDataIsEmptyImplCopyWith<$Res> {
   __$$OutputsErrorRequiredDataIsEmptyImplCopyWithImpl(
-      _$OutputsErrorRequiredDataIsEmptyImpl _value,
-      $Res Function(_$OutputsErrorRequiredDataIsEmptyImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorRequiredDataIsEmptyImpl _value,
+    $Res Function(_$OutputsErrorRequiredDataIsEmptyImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorRequiredDataIsEmptyImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorRequiredDataIsEmptyImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -1560,13 +1684,17 @@ class _$OutputsErrorRequiredDataIsEmptyImpl
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorRequiredDataIsEmptyImplCopyWith<
-          _$OutputsErrorRequiredDataIsEmptyImpl>
-      get copyWith => __$$OutputsErrorRequiredDataIsEmptyImplCopyWithImpl<
-          _$OutputsErrorRequiredDataIsEmptyImpl>(this, _$identity);
+    _$OutputsErrorRequiredDataIsEmptyImpl
+  >
+  get copyWith => __$$OutputsErrorRequiredDataIsEmptyImplCopyWithImpl<
+    _$OutputsErrorRequiredDataIsEmptyImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1618,19 +1746,19 @@ class _$OutputsErrorRequiredDataIsEmptyImpl
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return requiredDataIsEmpty(this);
   }
@@ -1641,11 +1769,11 @@ class _$OutputsErrorRequiredDataIsEmptyImpl
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return requiredDataIsEmpty?.call(this);
@@ -1657,11 +1785,11 @@ class _$OutputsErrorRequiredDataIsEmptyImpl
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -1678,20 +1806,24 @@ abstract class OutputsErrorRequiredDataIsEmpty implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorRequiredDataIsEmptyImplCopyWith<
-          _$OutputsErrorRequiredDataIsEmptyImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OutputsErrorRequiredDataIsEmptyImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$OutputsErrorOutputsDataIsEmptyImplCopyWith<$Res>
     implements $OutputsErrorCopyWith<$Res> {
   factory _$$OutputsErrorOutputsDataIsEmptyImplCopyWith(
-          _$OutputsErrorOutputsDataIsEmptyImpl value,
-          $Res Function(_$OutputsErrorOutputsDataIsEmptyImpl) then) =
-      __$$OutputsErrorOutputsDataIsEmptyImplCopyWithImpl<$Res>;
+    _$OutputsErrorOutputsDataIsEmptyImpl value,
+    $Res Function(_$OutputsErrorOutputsDataIsEmptyImpl) then,
+  ) = __$$OutputsErrorOutputsDataIsEmptyImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? message});
@@ -1699,25 +1831,27 @@ abstract class _$$OutputsErrorOutputsDataIsEmptyImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OutputsErrorOutputsDataIsEmptyImplCopyWithImpl<$Res>
-    extends _$OutputsErrorCopyWithImpl<$Res,
-        _$OutputsErrorOutputsDataIsEmptyImpl>
+    extends
+        _$OutputsErrorCopyWithImpl<$Res, _$OutputsErrorOutputsDataIsEmptyImpl>
     implements _$$OutputsErrorOutputsDataIsEmptyImplCopyWith<$Res> {
   __$$OutputsErrorOutputsDataIsEmptyImplCopyWithImpl(
-      _$OutputsErrorOutputsDataIsEmptyImpl _value,
-      $Res Function(_$OutputsErrorOutputsDataIsEmptyImpl) _then)
-      : super(_value, _then);
+    _$OutputsErrorOutputsDataIsEmptyImpl _value,
+    $Res Function(_$OutputsErrorOutputsDataIsEmptyImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$OutputsErrorOutputsDataIsEmptyImpl(
-      freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$OutputsErrorOutputsDataIsEmptyImpl(
+        freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String?,
+      ),
+    );
   }
 }
 
@@ -1746,13 +1880,17 @@ class _$OutputsErrorOutputsDataIsEmptyImpl
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OutputsErrorOutputsDataIsEmptyImplCopyWith<
-          _$OutputsErrorOutputsDataIsEmptyImpl>
-      get copyWith => __$$OutputsErrorOutputsDataIsEmptyImplCopyWithImpl<
-          _$OutputsErrorOutputsDataIsEmptyImpl>(this, _$identity);
+    _$OutputsErrorOutputsDataIsEmptyImpl
+  >
+  get copyWith => __$$OutputsErrorOutputsDataIsEmptyImplCopyWithImpl<
+    _$OutputsErrorOutputsDataIsEmptyImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1804,19 +1942,19 @@ class _$OutputsErrorOutputsDataIsEmptyImpl
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(OutputsErrorWrongTypeOfFile value)
-        wrongTypeOfFile,
+    wrongTypeOfFile,
     required TResult Function(OutputsErrorWrongVersionOfFile value)
-        wrongVersionOfFile,
+    wrongVersionOfFile,
     required TResult Function(OutputsErrorJsonFileSyntaxError value)
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     required TResult Function(OutputsErrorFileStructureError value)
-        fileStructureError,
+    fileStructureError,
     required TResult Function(OutputsErrorOperationCancelled value)
-        operationCancelled,
+    operationCancelled,
     required TResult Function(OutputsErrorRequiredDataIsEmpty value)
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     required TResult Function(OutputsErrorOutputsDataIsEmpty value)
-        outputsDataIsEmpty,
+    outputsDataIsEmpty,
   }) {
     return outputsDataIsEmpty(this);
   }
@@ -1827,11 +1965,11 @@ class _$OutputsErrorOutputsDataIsEmptyImpl
     TResult? Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult? Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult? Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult? Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult? Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult? Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult? Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
   }) {
     return outputsDataIsEmpty?.call(this);
@@ -1843,11 +1981,11 @@ class _$OutputsErrorOutputsDataIsEmptyImpl
     TResult Function(OutputsErrorWrongTypeOfFile value)? wrongTypeOfFile,
     TResult Function(OutputsErrorWrongVersionOfFile value)? wrongVersionOfFile,
     TResult Function(OutputsErrorJsonFileSyntaxError value)?
-        jsonFileSyntaxError,
+    jsonFileSyntaxError,
     TResult Function(OutputsErrorFileStructureError value)? fileStructureError,
     TResult Function(OutputsErrorOperationCancelled value)? operationCancelled,
     TResult Function(OutputsErrorRequiredDataIsEmpty value)?
-        requiredDataIsEmpty,
+    requiredDataIsEmpty,
     TResult Function(OutputsErrorOutputsDataIsEmpty value)? outputsDataIsEmpty,
     required TResult orElse(),
   }) {
@@ -1864,9 +2002,13 @@ abstract class OutputsErrorOutputsDataIsEmpty implements OutputsError {
 
   @override
   String? get message;
+
+  /// Create a copy of OutputsError
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OutputsErrorOutputsDataIsEmptyImplCopyWith<
-          _$OutputsErrorOutputsDataIsEmptyImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$OutputsErrorOutputsDataIsEmptyImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }

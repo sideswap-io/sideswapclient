@@ -29,18 +29,21 @@ class PaymentContinueButton extends ConsumerWidget {
       backgroundColor: SideSwapColors.brightTurquoise,
       text: 'CONTINUE'.tr(),
       enabled: enabled,
-      onPressed: ((errorText != null) && (!enabled))
-          ? null
-          : () {
-              ref
-                  .read(paymentAmountPageArgumentsNotifierProvider.notifier)
-                  .setPaymentAmountPageArguments(PaymentAmountPageArguments(
-                    result: QrCodeResult(address: addressController.text),
-                  ));
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.paymentAmountPage);
-            },
+      onPressed:
+          ((errorText != null) && (!enabled))
+              ? null
+              : () {
+                ref
+                    .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+                    .setPaymentAmountPageArguments(
+                      PaymentAmountPageArguments(
+                        result: QrCodeResult(address: addressController.text),
+                      ),
+                    );
+                ref
+                    .read(pageStatusNotifierProvider.notifier)
+                    .setStatus(Status.paymentAmountPage);
+              },
     );
   }
 }

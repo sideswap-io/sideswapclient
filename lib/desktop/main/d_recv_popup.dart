@@ -39,50 +39,53 @@ class DReceivePopup extends HookConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(
-                    left: 40, right: 40, top: 40, bottom: 10),
+                  left: 40,
+                  right: 40,
+                  top: 40,
+                  bottom: 10,
+                ),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         'Generate address'.tr(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .displaySmall
-                            ?.copyWith(fontSize: 20),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.displaySmall?.copyWith(fontSize: 20),
                       ),
                       const SizedBox(height: 8),
                       switch (receiveAddress.recvAddress.isEmpty) {
                         true => const SizedBox(
-                            width: 32,
-                            height: 100,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
+                          width: 32,
+                          height: 100,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
                             ),
                           ),
+                        ),
                         false => Flexible(
-                            child: Column(
-                              children: [
-                                Text(
-                                  isAmp
-                                      ? 'Address for AMP Securities wallet successfully generated'
-                                          .tr()
-                                      : "Address for regular wallet successfully generated"
-                                          .tr(),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                  ),
+                          child: Column(
+                            children: [
+                              Text(
+                                isAmp
+                                    ? 'Address for AMP Securities wallet successfully generated'
+                                        .tr()
+                                    : "Address for regular wallet successfully generated"
+                                        .tr(),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
                                 ),
-                                AssetReceiveWidget(
-                                  key: Key(isAmp.toString()),
-                                  showShare: false,
-                                ),
-                              ],
-                            ),
+                              ),
+                              AssetReceiveWidget(
+                                key: Key(isAmp.toString()),
+                                showShare: false,
+                              ),
+                            ],
                           ),
+                        ),
                       },
                     ],
                   ),
@@ -103,10 +106,10 @@ class DReceivePopup extends HookConsumerWidget {
                     },
                   ),
                 ),
-              )
+              ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

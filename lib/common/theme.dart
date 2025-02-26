@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/styles/button_styles.dart';
+import 'package:sideswap/common/styles/theme_extensions.dart';
 
 part 'theme.g.dart';
 
@@ -87,54 +89,60 @@ class MobileThemeData {
   }
 
   TextTheme get _darkTextTheme => const TextTheme(
-        displayLarge: TextStyle(
-          fontFamily: 'Corben',
-          fontWeight: FontWeight.w700,
-          fontSize: 24,
-          color: Colors.white,
-        ),
-        titleLarge: TextStyle(
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.bold,
-          fontSize: 22,
-          color: Colors.white,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 17,
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.normal,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.normal,
-          fontFamily: 'Roboto',
-          color: Colors.white,
-        ),
-        labelMedium: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-          fontFamily: 'Roboto',
-          color: Colors.white,
-        ),
-        labelSmall: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.normal,
-          fontFamily: 'Roboto',
-          color: Colors.white,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.normal,
-          fontFamily: 'Roboto',
-          color: Colors.white,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.normal,
-          fontFamily: 'Roboto',
-          color: Colors.white,
-        ),
-      );
+    displayLarge: TextStyle(
+      fontFamily: 'Corben',
+      fontWeight: FontWeight.w700,
+      fontSize: 24,
+      color: Colors.white,
+    ),
+    titleLarge: TextStyle(
+      fontFamily: 'Roboto',
+      fontWeight: FontWeight.bold,
+      fontSize: 22,
+      color: Colors.white,
+    ),
+    titleMedium: TextStyle(
+      fontSize: 17,
+      fontFamily: 'Roboto',
+      fontWeight: FontWeight.normal,
+    ),
+    titleSmall: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w400, // normal
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    labelLarge: TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    labelMedium: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    labelSmall: TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    bodyLarge: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+  );
 
   TextButtonThemeData get textButtonTheme => _textButtonTheme;
   set textButtonTheme(TextButtonThemeData value) {
@@ -146,20 +154,118 @@ class MobileThemeData {
 
   TextButtonThemeData firstLaunchNetworkSettingsButtonTheme =
       TextButtonThemeData(
-    style: ButtonStyle(
-      side: const WidgetStatePropertyAll(
-        BorderSide(color: SideSwapColors.brightTurquoise),
-      ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: SideSwapColors.brightTurquoise),
+        style: ButtonStyle(
+          side: const WidgetStatePropertyAll(
+            BorderSide(color: SideSwapColors.brightTurquoise),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: const BorderSide(color: SideSwapColors.brightTurquoise),
+            ),
+          ),
+          foregroundColor: const WidgetStatePropertyAll(Colors.white),
+          textStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 16)),
         ),
+      );
+
+  /// Theme Extensions
+  ///
+  Iterable<ThemeExtension<dynamic>>? get themeExtensions {
+    return [
+      orderRowElementTheme(),
+      coloredContainerTheme(),
+      workingOrderItemCancelButtonStyle(),
+      sideswapCancelButtonStyle(),
+      sideswapOkButtonStyle(),
+      marketAssetRowTheme(),
+      marketColorsTheme(),
+    ];
+  }
+
+  OrderRowElementTheme orderRowElementTheme() {
+    return OrderRowElementTheme(
+      padding: const EdgeInsets.only(left: 12, top: 12),
+      textColor: SideSwapColors.cornFlower,
+    );
+  }
+
+  MarketColorsTheme marketColorsTheme() {
+    return MarketColorsTheme(
+      sellColor: SideSwapColors.bitterSweet,
+      buyColor: SideSwapColors.turquoise,
+    );
+  }
+
+  ColoredContainerTheme coloredContainerTheme() {
+    return ColoredContainerTheme(
+      backgroundColor: SideSwapColors.navyBlue,
+      borderColor: SideSwapColors.navyBlue,
+      horizontalPadding: 12,
+    );
+  }
+
+  WorkingOrderItemCancelButtonStyle workingOrderItemCancelButtonStyle() {
+    return WorkingOrderItemCancelButtonStyle(
+      style: TextButton.styleFrom(
+        backgroundColor: SideSwapColors.blueSapphire,
+        foregroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        padding: EdgeInsets.zero,
       ),
-      foregroundColor: const WidgetStatePropertyAll(Colors.white),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(fontSize: 16),
+    );
+  }
+
+  SideswapNoButtonStyle sideswapCancelButtonStyle() {
+    return SideswapNoButtonStyle(
+      style: TextButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        padding: EdgeInsets.zero,
+        minimumSize: Size(100, 45),
       ),
-    ),
-  );
+    );
+  }
+
+  SideswapYesButtonStyle sideswapOkButtonStyle() {
+    return SideswapYesButtonStyle(
+      style: TextButton.styleFrom(
+        backgroundColor: SideSwapColors.brightTurquoise,
+        foregroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        padding: EdgeInsets.zero,
+        minimumSize: Size(100, 45),
+      ),
+    );
+  }
+
+  MarketAssetRowTheme marketAssetRowTheme() {
+    return MarketAssetRowTheme(
+      labelStyle: textTheme.titleSmall?.copyWith(
+        color: SideSwapColors.brightTurquoise,
+      ),
+      errorLabelStyle: textTheme.titleSmall?.copyWith(
+        color: SideSwapColors.bitterSweet,
+      ),
+      amountStyle: textTheme.titleSmall,
+      errorAmountStyle: textTheme.titleSmall?.copyWith(
+        color: SideSwapColors.bitterSweet,
+      ),
+      tickerStyle: textTheme.titleSmall,
+      errorTickerStyle: textTheme.titleSmall?.copyWith(
+        color: SideSwapColors.bitterSweet,
+      ),
+      conversionStyle: textTheme.titleSmall?.copyWith(
+        fontSize: 13,
+        color: SideSwapColors.halfBaked,
+      ),
+    );
+  }
 }

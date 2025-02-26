@@ -15,12 +15,11 @@ class CustomBigButton extends StatelessWidget {
     OutlinedBorder? shape,
     this.side,
     this.child,
-  }) : shape = shape ??
-            const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(8),
-              ),
-            );
+  }) : shape =
+           shape ??
+           const RoundedRectangleBorder(
+             borderRadius: BorderRadius.all(Radius.circular(8)),
+           );
 
   final String? text;
   final VoidCallback? onPressed;
@@ -42,36 +41,38 @@ class CustomBigButton extends StatelessWidget {
       height: height ?? 54,
       child: TextButton(
         onPressed: enabled ? onPressed : null,
-        style: buttonStyle ??
+        style:
+            buttonStyle ??
             TextButton.styleFrom(
               padding: EdgeInsets.zero,
-              foregroundColor: enabled
-                  ? textColor ?? Colors.white
-                  : textColor?.withOpacity(0.5) ??
-                      Colors.white.withOpacity(0.5),
-              backgroundColor: enabled
-                  ? backgroundColor ?? const Color(0xFF2A6D92)
-                  : backgroundColor == Colors.transparent
+              foregroundColor:
+                  enabled
+                      ? textColor ?? Colors.white
+                      : textColor?.withValues(alpha: 0.5) ??
+                          Colors.white.withValues(alpha: 0.5),
+              backgroundColor:
+                  enabled
+                      ? backgroundColor ?? const Color(0xFF2A6D92)
+                      : backgroundColor == Colors.transparent
                       ? Colors.transparent
-                      : backgroundColor?.withOpacity(0.5) ??
-                          const Color(0xFF2A6D92).withOpacity(0.5),
+                      : backgroundColor?.withValues(alpha: 0.5) ??
+                          const Color(0xFF2A6D92).withValues(alpha: 0.5),
               shape: shape,
               side: side,
             ),
-        child: child != null
-            ? Opacity(
-                opacity: enabled ? 1.0 : 0.5,
-                child: child,
-              )
-            : Text(
-                text ?? '',
-                overflow: TextOverflow.fade,
-                style: textStyle ??
-                    const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                    ),
-              ),
+        child:
+            child != null
+                ? Opacity(opacity: enabled ? 1.0 : 0.5, child: child)
+                : Text(
+                  text ?? '',
+                  overflow: TextOverflow.fade,
+                  style:
+                      textStyle ??
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                      ),
+                ),
       ),
     );
   }

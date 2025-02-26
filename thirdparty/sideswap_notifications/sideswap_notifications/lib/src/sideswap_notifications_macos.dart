@@ -18,14 +18,9 @@ class SideswapNotificationsMacOSPlugin
   }) async {}
 
   @override
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
+  InitializationSettings getLocalNotificationsInitializationSettings() {
     const initializationSettingsMacos = DarwinInitializationSettings();
 
-    return const InitializationSettings(
-      macOS: initializationSettingsMacos,
-    );
+    return const InitializationSettings(macOS: initializationSettingsMacos);
   }
 }

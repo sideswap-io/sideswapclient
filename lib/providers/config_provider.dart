@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -10,7 +11,6 @@ import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 
-import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/providers/proxy_provider.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
@@ -19,7 +19,7 @@ part 'config_provider.freezed.dart';
 part 'config_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-SharedPreferences sharedPreferences(SharedPreferencesRef ref) {
+SharedPreferences sharedPreferences(Ref ref) {
   throw UnimplementedError();
 }
 
@@ -117,7 +117,7 @@ class SideswapSettings with _$SideswapSettings {
 class Configuration extends _$Configuration {
   @override
   SideswapSettings build() {
-    ref.listenSelf((_, __) async {
+    listenSelf((_, __) async {
       final prefs = ref.read(sharedPreferencesProvider);
       await _saveSettings(prefs);
     });
@@ -271,8 +271,9 @@ class Configuration extends _$Configuration {
   }
 
   void setHideTxChainingPromptValue(bool hideTxChainingPromptValue) {
-    state =
-        state.copyWith(hideTxChainingPromptValue: hideTxChainingPromptValue);
+    state = state.copyWith(
+      hideTxChainingPromptValue: hideTxChainingPromptValue,
+    );
   }
 
   void setHidePegInInfo(bool hidePegInInfo) {
@@ -293,13 +294,11 @@ class Configuration extends _$Configuration {
 
   Future<void> deleteConfig() async {
     final currentEnv = state.env;
-    ref
-        .read(phoneProvider)
-        .setConfirmPhoneData(confirmPhoneData: ConfirmPhoneData());
     state = SideswapSettings.empty(
-        mnemonicEncrypted: Uint8List.fromList([]),
-        env: currentEnv,
-        showAmpOnboarding: true);
+      mnemonicEncrypted: Uint8List.fromList([]),
+      env: currentEnv,
+      showAmpOnboarding: true,
+    );
 
     final prefs = ref.read(sharedPreferencesProvider);
     await _saveSettings(prefs);
@@ -312,20 +311,25 @@ class Configuration extends _$Configuration {
   }
 
   Uint8List _mnemonicEncrypted(SharedPreferences prefs) {
-    return base64
-        .decode(prefs.getString(SideswapSettings.mnemonicEncryptedField) ?? '');
+    return base64.decode(
+      prefs.getString(SideswapSettings.mnemonicEncryptedField) ?? '',
+    );
   }
 
   Future<void> _setMnemonicEncrypted(
-      SharedPreferences prefs, Uint8List mnemonicEncrypted) async {
+    SharedPreferences prefs,
+    Uint8List mnemonicEncrypted,
+  ) async {
     return switch (mnemonicEncrypted.isEmpty) {
       true => () async {
-          await prefs.remove(SideswapSettings.mnemonicEncryptedField);
-        }(),
+        await prefs.remove(SideswapSettings.mnemonicEncryptedField);
+      }(),
       _ => () async {
-          await prefs.setString(SideswapSettings.mnemonicEncryptedField,
-              base64.encode(mnemonicEncrypted));
-        }(),
+        await prefs.setString(
+          SideswapSettings.mnemonicEncryptedField,
+          base64.encode(mnemonicEncrypted),
+        );
+      }(),
     };
   }
 
@@ -342,7 +346,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setLicenseAccepted(
-      SharedPreferences prefs, bool licenseAccepted) async {
+    SharedPreferences prefs,
+    bool licenseAccepted,
+  ) async {
     await prefs.setBool(SideswapSettings.licenseAcceptedField, licenseAccepted);
   }
 
@@ -351,7 +357,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setEnableEndpoint(
-      SharedPreferences prefs, bool enableEndpoint) async {
+    SharedPreferences prefs,
+    bool enableEndpoint,
+  ) async {
     await prefs.setBool(SideswapSettings.enableEndpointField, enableEndpoint);
   }
 
@@ -360,9 +368,13 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setUseBiometricProtection(
-      SharedPreferences prefs, bool useBiometricProtection) async {
+    SharedPreferences prefs,
+    bool useBiometricProtection,
+  ) async {
     await prefs.setBool(
-        SideswapSettings.useBiometricProtectionField, useBiometricProtection);
+      SideswapSettings.useBiometricProtectionField,
+      useBiometricProtection,
+    );
   }
 
   int _env(SharedPreferences prefs) {
@@ -382,7 +394,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setPhoneNumber(
-      SharedPreferences prefs, String phoneNumber) async {
+    SharedPreferences prefs,
+    String phoneNumber,
+  ) async {
     await prefs.setString(SideswapSettings.phoneNumberField, phoneNumber);
   }
 
@@ -391,9 +405,13 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setUsePinProtection(
-      SharedPreferences prefs, bool usePinProtection) async {
+    SharedPreferences prefs,
+    bool usePinProtection,
+  ) async {
     await prefs.setBool(
-        SideswapSettings.usePinProtectionField, usePinProtection);
+      SideswapSettings.usePinProtectionField,
+      usePinProtection,
+    );
   }
 
   bool _usePinProtection(SharedPreferences prefs) {
@@ -402,8 +420,9 @@ class Configuration extends _$Configuration {
 
   PinDataState? _pinData(SharedPreferences prefs) {
     final salt = prefs.getString(SideswapSettings.pinSaltField);
-    final encryptedData =
-        prefs.getString(SideswapSettings.pinEncryptedDataField);
+    final encryptedData = prefs.getString(
+      SideswapSettings.pinEncryptedDataField,
+    );
     final pinIdentifier = prefs.getString(SideswapSettings.pinIdentifierField);
     final pinHmac = prefs.getString(SideswapSettings.pinHmacField);
 
@@ -418,7 +437,7 @@ class Configuration extends _$Configuration {
       PinDataStateData(
         salt: final salt,
         encryptedData: final encryptedData,
-        pinIdentifier: final pinIdentifier
+        pinIdentifier: final pinIdentifier,
       )
           when salt.isNotEmpty &&
               encryptedData.isNotEmpty &&
@@ -429,16 +448,22 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setDefaultCurrency(
-      SharedPreferences prefs, String? defaultCurrency) async {
+    SharedPreferences prefs,
+    String? defaultCurrency,
+  ) async {
     (switch (defaultCurrency) {
       final defaultCurrency? => await prefs.setString(
-          SideswapSettings.defaultCurrencyField, defaultCurrency),
+        SideswapSettings.defaultCurrencyField,
+        defaultCurrency,
+      ),
       _ => () {}(),
     });
   }
 
   Future<void> _setPinData(
-      SharedPreferences prefs, PinDataState? pinData) async {
+    SharedPreferences prefs,
+    PinDataState? pinData,
+  ) async {
     return switch (pinData) {
       PinDataStateData(
         salt: final salt,
@@ -452,33 +477,44 @@ class Configuration extends _$Configuration {
         () async {
           await prefs.setString(SideswapSettings.pinSaltField, salt);
           await prefs.setString(
-              SideswapSettings.pinEncryptedDataField, encryptedData);
+            SideswapSettings.pinEncryptedDataField,
+            encryptedData,
+          );
           await prefs.setString(
-              SideswapSettings.pinIdentifierField, pinIdentifier);
+            SideswapSettings.pinIdentifierField,
+            pinIdentifier,
+          );
           await prefs.setString(SideswapSettings.pinHmacField, pinHmac);
         }(),
       _ => () async {
-          await prefs.remove(SideswapSettings.pinEncryptedDataField);
-          await prefs.remove(SideswapSettings.pinIdentifierField);
-          await prefs.remove(SideswapSettings.pinSaltField);
-          await prefs.remove(SideswapSettings.pinHmacField);
-        }(),
+        await prefs.remove(SideswapSettings.pinEncryptedDataField);
+        await prefs.remove(SideswapSettings.pinIdentifierField);
+        await prefs.remove(SideswapSettings.pinSaltField);
+        await prefs.remove(SideswapSettings.pinHmacField);
+      }(),
     };
   }
 
   Future<void> _setSettingsNetworkType(
-      SharedPreferences prefs, SettingsNetworkType type) async {
-    await prefs.setString(SideswapSettings.settingsNetworkTypeField,
-        EnumToString.convertToString(type));
+    SharedPreferences prefs,
+    SettingsNetworkType type,
+  ) async {
+    await prefs.setString(
+      SideswapSettings.settingsNetworkTypeField,
+      EnumToString.convertToString(type),
+    );
   }
 
   SettingsNetworkType _settingsNetworkType(SharedPreferences prefs) {
-    final typeString =
-        prefs.getString(SideswapSettings.settingsNetworkTypeField);
+    final typeString = prefs.getString(
+      SideswapSettings.settingsNetworkTypeField,
+    );
 
     final settingsNetworkType = switch (typeString) {
-      final notNullString? =>
-        EnumToString.fromString(SettingsNetworkType.values, notNullString),
+      final notNullString? => EnumToString.fromString(
+        SettingsNetworkType.values,
+        notNullString,
+      ),
       _ => null,
     };
 
@@ -520,7 +556,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setKnownNewReleaseBuild(
-      SharedPreferences prefs, int value) async {
+    SharedPreferences prefs,
+    int value,
+  ) async {
     await prefs.setInt(SideswapSettings.knownNewReleaseField, value);
   }
 
@@ -529,7 +567,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setShowAmpOnboarding(
-      SharedPreferences prefs, bool value) async {
+    SharedPreferences prefs,
+    bool value,
+  ) async {
     await prefs.setBool(SideswapSettings.showAmpOnboardingField, value);
   }
 
@@ -538,16 +578,20 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setNetworkSettingsModel(
-      SharedPreferences prefs, NetworkSettingsModel? model) async {
+    SharedPreferences prefs,
+    NetworkSettingsModel? model,
+  ) async {
     return switch (model) {
       final model? => () async {
-          final encoded = jsonEncode(model.toJson());
-          await prefs.setString(
-              SideswapSettings.networkSettingsModelField, encoded);
-        }(),
+        final encoded = jsonEncode(model.toJson());
+        await prefs.setString(
+          SideswapSettings.networkSettingsModelField,
+          encoded,
+        );
+      }(),
       _ => () async {
-          await prefs.remove(SideswapSettings.networkSettingsModelField);
-        }(),
+        await prefs.remove(SideswapSettings.networkSettingsModelField);
+      }(),
     };
   }
 
@@ -557,15 +601,15 @@ class Configuration extends _$Configuration {
     try {
       return switch (encoded) {
         final encodedJson? => () {
-            final json = jsonDecode(encodedJson) as Map<String, dynamic>;
-            return NetworkSettingsModel.fromJson(json);
-          }(),
+          final json = jsonDecode(encodedJson) as Map<String, dynamic>;
+          return NetworkSettingsModel.fromJson(json);
+        }(),
         _ => () {
-            return NetworkSettingsModelEmpty(
-              settingsNetworkType: _settingsNetworkType(prefs),
-              env: _env(prefs),
-            );
-          }(),
+          return NetworkSettingsModelEmpty(
+            settingsNetworkType: _settingsNetworkType(prefs),
+            env: _env(prefs),
+          );
+        }(),
       };
     } catch (e) {
       logger.w(e);
@@ -578,16 +622,20 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setStokrSettings(
-      SharedPreferences prefs, StokrSettingsModel? model) async {
+    SharedPreferences prefs,
+    StokrSettingsModel? model,
+  ) async {
     return switch (model) {
       final model? => () async {
-          final encoded = jsonEncode(model.toJson());
-          await prefs.setString(
-              SideswapSettings.stokrSettingsModelField, encoded);
-        }(),
+        final encoded = jsonEncode(model.toJson());
+        await prefs.setString(
+          SideswapSettings.stokrSettingsModelField,
+          encoded,
+        );
+      }(),
       _ => () async {
-          await prefs.remove(SideswapSettings.stokrSettingsModelField);
-        }(),
+        await prefs.remove(SideswapSettings.stokrSettingsModelField);
+      }(),
     };
   }
 
@@ -597,12 +645,12 @@ class Configuration extends _$Configuration {
     try {
       return switch (encoded) {
         final encodedJson? => () {
-            final json = jsonDecode(encodedJson) as Map<String, dynamic>;
-            return StokrSettingsModel.fromJson(json);
-          }(),
+          final json = jsonDecode(encodedJson) as Map<String, dynamic>;
+          return StokrSettingsModel.fromJson(json);
+        }(),
         _ => () {
-            return const StokrSettingsModel();
-          }(),
+          return const StokrSettingsModel();
+        }(),
       };
     } catch (e) {
       logger.e(e);
@@ -612,7 +660,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setHideTxChainingPromptValue(
-      SharedPreferences prefs, bool value) async {
+    SharedPreferences prefs,
+    bool value,
+  ) async {
     await prefs.setBool(SideswapSettings.hideTxChainingPromptField, value);
   }
 
@@ -621,7 +671,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setHidePegInInfo(
-      SharedPreferences prefs, bool hidePegInInfo) async {
+    SharedPreferences prefs,
+    bool hidePegInInfo,
+  ) async {
     await prefs.setBool(SideswapSettings.hidePegInInfoField, hidePegInInfo);
   }
 
@@ -630,7 +682,9 @@ class Configuration extends _$Configuration {
   }
 
   Future<void> _setHidePegOutInfo(
-      SharedPreferences prefs, bool hidePegOutInfo) async {
+    SharedPreferences prefs,
+    bool hidePegOutInfo,
+  ) async {
     await prefs.setBool(SideswapSettings.hidePegOutInfoField, hidePegOutInfo);
   }
 
@@ -644,13 +698,13 @@ class Configuration extends _$Configuration {
   ) async {
     return switch (proxySettings) {
       ProxySettings(host: String host, port: int port) => () async {
-          await prefs.setString(SideswapSettings.proxyHostField, host);
-          await prefs.setInt(SideswapSettings.proxyPortField, port);
-        }(),
+        await prefs.setString(SideswapSettings.proxyHostField, host);
+        await prefs.setInt(SideswapSettings.proxyPortField, port);
+      }(),
       _ => () async {
-          await prefs.remove(SideswapSettings.proxyHostField);
-          await prefs.remove(SideswapSettings.proxyPortField);
-        }(),
+        await prefs.remove(SideswapSettings.proxyHostField);
+        await prefs.remove(SideswapSettings.proxyPortField);
+      }(),
     };
   }
 
@@ -661,8 +715,7 @@ class Configuration extends _$Configuration {
     final proxySettings = ProxySettings(host: host, port: port);
 
     return switch (proxySettings) {
-      // ignore: non_constant_identifier_names, constant_identifier_names
-      ProxySettings(host: String _, port: int __) => proxySettings,
+      ProxySettings(host: String _, port: int _) => proxySettings,
       _ => null,
     };
   }

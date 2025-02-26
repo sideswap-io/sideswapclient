@@ -35,7 +35,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
         onPressed: () => ref.read(walletProvider).goBack(),
       ),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -52,9 +52,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
                   fontWeight: FontWeight.w400,
                 ),
               ),
-              const SizedBox(
-                height: 16,
-              ),
+              const SizedBox(height: 16),
               Consumer(
                 builder: (context, ref, _) {
                   return OptionGenerateWidget(

@@ -18,8 +18,8 @@ use sideswap_api::mkt::TradeDir;
 use sideswap_api::PricePair;
 use sideswap_api::PriceUpdateBroadcast;
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
-use sideswap_common::dealer_ticker::dealer_ticker_to_asset_id;
 use sideswap_common::dealer_ticker::DealerTicker;
+use sideswap_common::dealer_ticker::TickerLoader;
 use sideswap_common::network::Network;
 use sideswap_common::rpc;
 use sideswap_common::types::btc_to_sat;
@@ -109,7 +109,7 @@ impl std::fmt::Display for ExchangeTicker {
     }
 }
 
-const DEALER_TICKERS: [DealerTicker; 2] = [DealerTicker::USDt, DealerTicker::EURx];
+const DEALER_TICKERS: [DealerTicker; 2] = [DealerTicker::USDT, DealerTicker::EURX];
 
 const BITFINEX_WALLET_EXCHANGE: &str = "exchange";
 
@@ -215,8 +215,8 @@ impl ExchangePair {
 
     fn dealer_ticker(self) -> Option<DealerTicker> {
         match self {
-            ExchangePair::BtcUsdt => Some(DealerTicker::USDt),
-            ExchangePair::BtcEur => Some(DealerTicker::EURx),
+            ExchangePair::BtcUsdt => Some(DealerTicker::USDT),
+            ExchangePair::BtcEur => Some(DealerTicker::EURX),
             ExchangePair::EurUsdt => None,
         }
     }
@@ -267,6 +267,7 @@ struct Data {
     settings: Settings,
     network: sideswap_common::network::Network,
     policy_asset: AssetId,
+    ticker_loader: Arc<TickerLoader>,
     server_connected: bool,
     bfx_connected: bool,
     wallet_balances: WalletBalances,
@@ -462,15 +463,15 @@ async fn process_dealer_event(data: &mut Data, event: Event) {
 
             let convert_balances = |amounts: &BTreeMap<AssetId, f64>| {
                 let get_balance = |ticker: DealerTicker| -> (DealerTicker, f64) {
-                    let asset_id = dealer_ticker_to_asset_id(data.network, ticker);
+                    let asset_id = data.ticker_loader.asset_id(ticker);
                     let amount = amounts.get(&asset_id).copied().unwrap_or_default();
                     (ticker, amount)
                 };
 
                 BTreeMap::from([
                     get_balance(DealerTicker::LBTC),
-                    get_balance(DealerTicker::USDt),
-                    get_balance(DealerTicker::EURx),
+                    get_balance(DealerTicker::USDT),
+                    get_balance(DealerTicker::EURX),
                 ])
             };
 
@@ -505,12 +506,12 @@ async fn process_dealer_event(data: &mut Data, event: Event) {
 }
 
 fn submit_dealer_prices(data: &mut Data) {
-    for ticker in [DealerTicker::USDt, DealerTicker::EURx] {
+    for ticker in [DealerTicker::USDT, DealerTicker::EURX] {
         let exchange_pair = ExchangePair::find_ticker(ticker).expect("must exist");
         let price = get_bfx_price(&data, exchange_pair).map(|bfx_price| {
-            let submit_interest = if ticker == DealerTicker::USDt {
+            let submit_interest = if ticker == DealerTicker::USDT {
                 INTEREST_BTC_USDT
-            } else if ticker == DealerTicker::EURx {
+            } else if ticker == DealerTicker::EURX {
                 INTEREST_BTC_EURX
             } else {
                 panic!("unexpected asset");
@@ -525,12 +526,12 @@ fn submit_dealer_prices(data: &mut Data) {
             let exchange_btc_amount =
                 get_exchange_balance(&data.exchange_balances, &ExchangeTicker::BTC);
             let exchange_asset_currency = match ticker {
-                DealerTicker::USDt => &ExchangeTicker::USDt,
-                DealerTicker::EURx => &ExchangeTicker::EUR,
+                DealerTicker::USDT => &ExchangeTicker::USDt,
+                DealerTicker::EURX => &ExchangeTicker::EUR,
                 _ => panic!(),
             };
             // Show that the dealer will buy any amount of EURx as needed
-            let exchange_asset_amount = if ticker == DealerTicker::EURx {
+            let exchange_asset_amount = if ticker == DealerTicker::EURX {
                 10.0 * bfx_price.ask
             } else {
                 get_exchange_balance(&data.exchange_balances, exchange_asset_currency)
@@ -551,7 +552,7 @@ fn submit_dealer_prices(data: &mut Data) {
         if let Some(price) = data.bfx_prices.get(&exchange_pair) {
             data.dealer_command_sender
                 .send(Command::IndexPriceUpdate(PriceUpdateBroadcast {
-                    asset: dealer_ticker_to_asset_id(data.network, ticker),
+                    asset: *data.ticker_loader.asset_id(ticker),
                     price: PricePair {
                         bid: price.bid,
                         ask: price.ask,
@@ -649,12 +650,12 @@ async fn process_timer(data: &mut Data) {
         .unwrap_or_default();
     let balance_wallet_usdt = data
         .wallet_balances
-        .get(&DealerTicker::USDt)
+        .get(&DealerTicker::USDT)
         .cloned()
         .unwrap_or_default();
     let balance_wallet_eurx = data
         .wallet_balances
-        .get(&DealerTicker::EURx)
+        .get(&DealerTicker::EURX)
         .cloned()
         .unwrap_or_default();
     let balance_exchange_bitcoin = data
@@ -783,12 +784,12 @@ async fn process_timer(data: &mut Data) {
             .unwrap_or_default();
         let balance_wallet_usdt_old = profits
             .wallet_balances
-            .get(&DealerTicker::USDt)
+            .get(&DealerTicker::USDT)
             .cloned()
             .unwrap_or_default();
         let balance_wallet_eurx_old = profits
             .wallet_balances
-            .get(&DealerTicker::EURx)
+            .get(&DealerTicker::EURX)
             .cloned()
             .unwrap_or_default();
         let balance_exchange_bitcoin_old = profits
@@ -1167,6 +1168,12 @@ async fn main() {
         .clone()
         .unwrap_or_else(|| settings.env.base_server_ws_url());
 
+    let ticker_loader = Arc::new(
+        TickerLoader::load(&settings.work_dir, None, settings.env.d().network)
+            .await
+            .expect("must not fail"),
+    );
+
     let params = Params {
         env: settings.env,
         server_url: server_url.clone(),
@@ -1176,6 +1183,7 @@ async fn main() {
         bitcoin_amount_min: Amount::from_bitcoin(settings.bitcoin_amount_min),
         bitcoin_amount_max: Amount::from_bitcoin(settings.bitcoin_amount_max),
         api_key: settings.api_key.clone(),
+        ticker_loader: Arc::clone(&ticker_loader),
     };
 
     sideswap_dealer::logs::init(&settings.work_dir);
@@ -1228,6 +1236,7 @@ async fn main() {
         work_dir: settings.work_dir.clone(),
         web_server: None,
         ws_server: None,
+        ticker_loader: Arc::clone(&ticker_loader),
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
@@ -1236,6 +1245,7 @@ async fn main() {
         settings,
         network,
         policy_asset: network.d().policy_asset.asset_id(),
+        ticker_loader,
         server_connected: false,
         bfx_connected: false,
         wallet_balances: WalletBalances::new(),

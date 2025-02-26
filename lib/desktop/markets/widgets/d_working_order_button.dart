@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
@@ -13,7 +12,7 @@ class DWorkingOrderButton extends ConsumerWidget {
     required this.onPressed,
   });
 
-  final String icon;
+  final Widget icon;
   final VoidCallback onPressed;
 
   @override
@@ -26,24 +25,13 @@ class DWorkingOrderButton extends ConsumerWidget {
         DButtonStyle(
           shape: ButtonState.all(
             const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(0),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(0)),
             ),
           ),
         ),
       ),
       onPressed: onPressed,
-      child: SizedBox(
-        width: 28,
-        height: 28,
-        child: Center(
-          child: SvgPicture.asset(
-            icon,
-            width: 14,
-          ),
-        ),
-      ),
+      child: SizedBox(width: 24, height: 24, child: icon),
     );
   }
 }

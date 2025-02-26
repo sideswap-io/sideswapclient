@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -8,11 +9,12 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 part 'licenses_provider.g.dart';
 
 @riverpod
-FutureOr<bool> licensesLoaderFuture(LicensesLoaderFutureRef ref) {
+FutureOr<bool> licensesLoaderFuture(Ref ref) {
   logger.d('Loading licenses...');
   LicenseRegistry.addLicense(() async* {
-    var license =
-        await rootBundle.loadString('assets/licenses/gdk-license.txt');
+    var license = await rootBundle.loadString(
+      'assets/licenses/gdk-license.txt',
+    );
     yield LicenseEntryWithLineBreaks([kPackageGdk], license);
   });
   return true;
@@ -22,10 +24,7 @@ class LicensesData {
   LicenseEntry licenseEntry;
   List<LicenseParagraph> paragraphs;
 
-  LicensesData({
-    required this.licenseEntry,
-    required this.paragraphs,
-  });
+  LicensesData({required this.licenseEntry, required this.paragraphs});
 
   LicensesData copyWith({
     LicenseEntry? licenseEntry,
@@ -54,11 +53,15 @@ class LicensesData {
 }
 
 @riverpod
-FutureOr<List<LicensesData>> licensesEntries(LicensesEntriesRef ref) async {
+FutureOr<List<LicensesData>> licensesEntries(Ref ref) async {
   final licenses = <LicensesData>[];
   await for (final LicenseEntry license in LicenseRegistry.licenses) {
-    licenses.add(LicensesData(
-        licenseEntry: license, paragraphs: license.paragraphs.toList()));
+    licenses.add(
+      LicensesData(
+        licenseEntry: license,
+        paragraphs: license.paragraphs.toList(),
+      ),
+    );
   }
 
   return licenses;

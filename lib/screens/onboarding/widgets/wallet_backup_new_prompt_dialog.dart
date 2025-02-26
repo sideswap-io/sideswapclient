@@ -6,7 +6,6 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/providers/new_wallet_backup_skip_prompt_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/screens/flavor_config.dart';
 
 void showWalletBackupDialog(BuildContext context) {
   showDialog<void>(
@@ -23,14 +22,16 @@ void showWalletBackupDialog(BuildContext context) {
               width: 343,
               height: 485,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.all(Radius.circular(8)),
                 color: SideSwapColors.blumine,
               ),
               child: Padding(
                 padding: const EdgeInsets.only(
-                    left: 24, right: 24, top: 30, bottom: 8),
+                  left: 24,
+                  right: 24,
+                  top: 30,
+                  bottom: 8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -51,7 +52,9 @@ void showWalletBackupDialog(BuildContext context) {
                           width: 20,
                           height: 22,
                           colorFilter: const ColorFilter.mode(
-                              SideSwapColors.bitterSweet, BlendMode.srcIn),
+                            SideSwapColors.bitterSweet,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
@@ -107,12 +110,7 @@ void showWalletBackupDialog(BuildContext context) {
 
                           Navigator.of(context, rootNavigator: true).pop();
 
-                          if (FlavorConfig.isProduction &&
-                              FlavorConfig.enableOnboardingUserFeatures) {
-                            ref.read(walletProvider).setImportAvatar();
-                          } else {
-                            ref.read(walletProvider).loginAndLoadMainPage();
-                          }
+                          ref.read(walletProvider).loginAndLoadMainPage();
                         },
                       ),
                     ),

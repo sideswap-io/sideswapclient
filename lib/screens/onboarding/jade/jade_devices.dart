@@ -18,7 +18,7 @@ class JadeDevices extends HookConsumerWidget {
     final jadeDeviceState = ref.watch(jadeDeviceNotifierProvider);
 
     return SideSwapScaffold(
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -31,7 +31,7 @@ class JadeDevices extends HookConsumerWidget {
       body: SafeArea(
         child: switch (jadeDeviceState) {
           JadeDevicesStateAvailable(
-            devices: List<From_JadePorts_Port> devices
+            devices: List<From_JadePorts_Port> devices,
           ) =>
             CustomScrollView(
               slivers: [
@@ -57,8 +57,9 @@ class JadeDeviceItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jadeOnboardingRegistration =
-        ref.watch(jadeOnboardingRegistrationNotifierProvider);
+    final jadeOnboardingRegistration = ref.watch(
+      jadeOnboardingRegistrationNotifierProvider,
+    );
 
     return Column(
       children: [
@@ -68,18 +69,19 @@ class JadeDeviceItem extends ConsumerWidget {
             width: double.infinity,
             height: 78,
             backgroundColor: SideSwapColors.blueSapphire,
-            onPressed: jadeOnboardingRegistration !=
-                    const JadeOnboardingRegistrationStateIdle()
-                ? null
-                : () {
-                    ref
-                        .read(jadeSelectedDeviceProvider.notifier)
-                        .setJadePortsPort(jadePort);
-                    ref
-                        .read(pageStatusNotifierProvider.notifier)
-                        .setStatus(Status.jadeConnecting);
-                    ref.read(walletProvider).jadeLogin(jadePort.jadeId);
-                  },
+            onPressed:
+                jadeOnboardingRegistration !=
+                        const JadeOnboardingRegistrationStateIdle()
+                    ? null
+                    : () {
+                      ref
+                          .read(jadeSelectedDeviceProvider.notifier)
+                          .setJadePortsPort(jadePort);
+                      ref
+                          .read(pageStatusNotifierProvider.notifier)
+                          .setStatus(Status.jadeConnecting);
+                      ref.read(walletProvider).jadeLogin(jadePort.jadeId);
+                    },
             child: SizedBox(
               height: 78,
               child: Row(
@@ -101,11 +103,7 @@ class JadeDeviceItem extends ConsumerWidget {
                     ],
                   ),
                   const Spacer(),
-                  SvgPicture.asset(
-                    'assets/jade.svg',
-                    width: 24,
-                    height: 24,
-                  ),
+                  SvgPicture.asset('assets/jade.svg', width: 24, height: 24),
                   const SizedBox(width: 16),
                 ],
               ),

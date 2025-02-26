@@ -1,527 +1,1815 @@
-import 'dart:math';
+import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
-import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/desktop/markets/widgets/d_preview_order_dialog.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
-import 'package:sideswap/models/stokr_model.dart';
+import 'package:sideswap/models/ui_history_order.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/amp_register_provider.dart';
-import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/config_provider.dart';
-
-import 'package:sideswap/providers/request_order_provider.dart';
-import 'package:sideswap/providers/stokr_providers.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/satoshi_providers.dart';
+import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/providers/wallet_page_status_provider.dart';
-import 'package:sideswap/providers/warmup_app_provider.dart';
-import 'package:sideswap/screens/markets/widgets/modify_price_dialog.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
-import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/duration_extension.dart';
+import 'package:sideswap/models/ui_own_order.dart';
+import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/screens/markets/market_swap_page.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'markets_provider.g.dart';
+part 'markets_provider.freezed.dart';
 
-enum RequestOrderType {
-  order,
+@riverpod
+String marketTypeName(Ref ref, MarketType_ type) {
+  return switch (type) {
+    MarketType_.STABLECOIN => 'Stablecoins'.tr(),
+    MarketType_.AMP => 'AMP Listings'.tr(),
+    MarketType_.TOKEN => 'Token Market'.tr(),
+    MarketType_() => throw UnimplementedError(),
+  };
 }
 
-extension RequestOrderEx on RequestOrder {
-  DateTime getCreatedAt() {
-    return DateTime.fromMillisecondsSinceEpoch(createdAt);
+@riverpod
+MarketType_ assetMarketType(Ref ref, Asset? asset) {
+  return switch (asset) {
+    final asset? when asset.swapMarket => MarketType_.STABLECOIN,
+    final asset? when asset.ampMarket => MarketType_.AMP,
+    // if asset is null assume that is token
+    _ => MarketType_.TOKEN,
+  };
+}
+
+@Riverpod(keepAlive: true)
+class TradeDirStateNotifier extends _$TradeDirStateNotifier {
+  @override
+  TradeDir build() {
+    return TradeDir.BUY;
   }
 
-  String getCreatedAtFormatted() {
-    final shortFormat = DateFormat('MMM d, yyyy');
-    return shortFormat.format(getCreatedAt());
-  }
-
-  Duration? getExpiresAt() {
-    if (expiresAt == null) {
-      return null;
-    }
-    return DateTime.fromMillisecondsSinceEpoch(expiresAt!)
-        .difference(DateTime.now());
-  }
-
-  bool isExpired() {
-    final expiresAt = getExpiresAt();
-    return expiresAt != null && expiresAt.isNegative;
-  }
-
-  Duration? getExpireDuration() {
-    if (expiresAt == null) {
-      return null;
-    }
-    final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt!);
-    final duration = expireAt.difference(DateTime.now());
-    return duration;
-  }
-
-  String getExpireDescription() {
-    final duration = getExpireDuration();
-    return duration.toStringCustom();
-  }
-
-  int get bitcoinAmountWithFee {
-    return sendBitcoins ? bitcoinAmount + serverFee : bitcoinAmount - serverFee;
+  void setSide(TradeDir side) {
+    state = side;
   }
 }
 
-// TODO (malcolmpl): fix this - AccountAsset instead of assetId (and maybe marketType, as accountasset is include type?)
-class RequestOrder {
-  final String orderId;
+/// Market list
+@Riverpod(keepAlive: true)
+class MarketsNotifier extends _$MarketsNotifier {
+  @override
+  List<MarketInfo> build() {
+    return [];
+  }
+
+  void setState(List<MarketInfo> markets) {
+    state = markets;
+  }
+
+  void addMarketInfo(MarketInfo marketInfo) {
+    final markets = [...state];
+    markets.add(marketInfo);
+    state = markets;
+  }
+
+  void removeAssetPair(AssetPair assetPair) {
+    final markets = [...state];
+    markets.removeWhere((e) => e.assetPair == assetPair);
+    state = markets;
+  }
+}
+
+@riverpod
+List<MarketInfo> marketInfoByMarketType(Ref ref, MarketType_ marketType) {
+  final markets = ref.watch(marketsNotifierProvider);
+  return markets.where((e) => e.type == marketType).toList();
+}
+
+@riverpod
+Option<Asset> baseAssetByMarketInfo(Ref ref, MarketInfo marketInfo) {
+  final assetsState = ref.watch(assetsStateProvider);
+
+  final asset = assetsState[marketInfo.assetPair.base];
+  return asset == null ? Option.none() : Option.of(asset);
+}
+
+@riverpod
+Widget baseAssetIconByMarketInfo(Ref ref, MarketInfo marketInfo) {
+  final optionAsset = ref.watch(baseAssetByMarketInfoProvider(marketInfo));
+
+  return optionAsset.match(
+    () => SizedBox(),
+    (asset) =>
+        ref.watch(assetImageRepositoryProvider).getSmallImage(asset.assetId),
+  );
+}
+
+@riverpod
+Option<Asset> quoteAssetByMarketInfo(Ref ref, MarketInfo marketInfo) {
+  final assetsState = ref.watch(assetsStateProvider);
+
+  final asset = assetsState[marketInfo.assetPair.quote];
+  return asset == null ? Option.none() : Option.of(asset);
+}
+
+@riverpod
+Widget quoteAssetIconByMarketInfo(Ref ref, MarketInfo marketInfo) {
+  final optionAsset = ref.watch(quoteAssetByMarketInfoProvider(marketInfo));
+  return optionAsset.match(
+    () => SizedBox(),
+    (asset) =>
+        ref.watch(assetImageRepositoryProvider).getSmallImage(asset.assetId),
+  );
+}
+
+/// Public orders
+@riverpod
+class MarketPublicOrdersNotifier extends _$MarketPublicOrdersNotifier {
+  @override
+  Map<AssetPair, List<PublicOrder>> build() {
+    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, next) {
+      next.match(
+        () => () {},
+        (assetPair) => () {
+          _subscribe(assetPair);
+        },
+      )();
+    });
+
+    ref.onDispose(() {
+      _unsubscribe();
+    });
+
+    return {};
+  }
+
+  void setOrders(AssetPair assetPair, List<PublicOrder> publicOrders) {
+    final orders = {...state};
+    orders[assetPair] = publicOrders;
+    state = orders;
+  }
+
+  void orderCreated(PublicOrder publicOrder) {
+    final assetPair = publicOrder.assetPair;
+    final orders = {...state};
+    final ordersByAssetPair = orders[assetPair] ?? [];
+    final index = ordersByAssetPair.indexWhere(
+      (e) => e.orderId == publicOrder.orderId,
+    );
+    if (index < 0) {
+      ordersByAssetPair.add(publicOrder);
+    } else {
+      ordersByAssetPair[index] = publicOrder;
+    }
+
+    orders[assetPair] = ordersByAssetPair;
+    state = orders;
+  }
+
+  void removeOrder(OrderId orderId) {
+    final orders = {...state};
+
+    for (final key in orders.keys) {
+      final ordersByAssetPair = orders[key] ?? [];
+      ordersByAssetPair.removeWhere((e) => e.orderId == orderId);
+      orders[key] = ordersByAssetPair;
+    }
+
+    state = orders;
+  }
+
+  void _subscribe(AssetPair assetPair) {
+    final msg = To();
+    msg.marketSubscribe = assetPair;
+    ref.read(walletProvider).sendMsg(msg);
+  }
+
+  void _unsubscribe() {
+    final msg = To();
+    msg.marketUnsubscribe = Empty();
+    ref.read(walletProvider).sendMsg(msg);
+  }
+}
+
+/// Own orders
+
+@Riverpod(keepAlive: true)
+class MarketOwnOrdersNotifier extends _$MarketOwnOrdersNotifier {
+  @override
+  List<OwnOrder> build() {
+    return [];
+  }
+
+  void setState(List<OwnOrder> ownOrders) {
+    state = [...ownOrders];
+  }
+
+  void orderCreated(OwnOrder ownOrder) {
+    final list = [...state];
+
+    final index = list.indexWhere((e) => e.orderId == ownOrder.orderId);
+    if (index < 0) {
+      list.add(ownOrder);
+    } else {
+      list[index] = ownOrder;
+    }
+
+    state = list;
+  }
+
+  void removeOrder(OrderId orderId) {
+    final list = [...state];
+    list.removeWhere((e) => e.orderId == orderId);
+
+    state = list;
+  }
+}
+
+@riverpod
+List<UiOwnOrder> marketUiOwnOrders(Ref ref) {
+  final ownOrders = ref.watch(marketOwnOrdersNotifierProvider);
+  final amountToString = ref.watch(amountToStringProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final assetImageRepository = ref.watch(assetImageRepositoryProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+  final assetUtils = ref.watch(assetUtilsProvider);
+  final locale = ref.watch(localesNotifierProvider);
+
+  return ownOrders.map((e) {
+    final quoteAsset = assetsState[e.assetPair.quote];
+    final marketType =
+        quoteAsset == null
+            ? MarketType_.STABLECOIN
+            : ref.read(assetMarketTypeProvider(quoteAsset));
+    return UiOwnOrder(
+      amountToString: amountToString,
+      assetsState: assetsState,
+      assetImageRepository: assetImageRepository,
+      satoshiRepository: satoshiRepository,
+      assetUtils: assetUtils,
+      marketType: marketType,
+      locale: locale,
+      ownOrder: e,
+    );
+  }).toList();
+}
+
+@riverpod
+class MarketSubscribedAssetPairNotifier
+    extends _$MarketSubscribedAssetPairNotifier {
+  @override
+  Option<AssetPair> build() {
+    return Option.none();
+  }
+
+  void setState(AssetPair assetPair) {
+    state = Option.of(assetPair);
+  }
+}
+
+@riverpod
+Option<MarketInfo> subscribedMarketInfo(Ref ref) {
+  final markets = ref.watch(marketsNotifierProvider);
+  final subscribedAssetPair = ref.watch(
+    marketSubscribedAssetPairNotifierProvider,
+  );
+
+  return subscribedAssetPair.match(() => Option.none(), (assetPair) {
+    final index = markets.indexWhere((e) => e.assetPair == assetPair);
+    if (index == -1) {
+      return Option.none();
+    }
+
+    return Option.of(markets[index]);
+  });
+}
+
+@riverpod
+String subscribedMarketProductName(Ref ref) {
+  final optionMarketInfo = ref.watch(subscribedMarketInfoProvider);
+
+  return optionMarketInfo.match(
+    () {
+      return '';
+    },
+    (marketInfo) {
+      final optionBaseAsset = ref.watch(
+        baseAssetByMarketInfoProvider(marketInfo),
+      );
+      final optionQuoteAsset = ref.watch(
+        quoteAssetByMarketInfoProvider(marketInfo),
+      );
+
+      return optionBaseAsset.match(
+        () => '',
+        (baseAsset) => optionQuoteAsset.match(
+          () => '',
+          (quoteAsset) => '${baseAsset.ticker} / ${quoteAsset.ticker}',
+        ),
+      );
+    },
+  );
+}
+
+@riverpod
+Option<Asset> marketSubscribedBaseAsset(Ref ref) {
+  final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+
+  return optionSubscribedMarket.match(() => Option.none(), (marketInfo) {
+    final asset = assetsState[marketInfo.assetPair.base];
+    return asset == null ? Option.none() : Option.of(asset);
+  });
+}
+
+@riverpod
+Option<Asset> marketSubscribedQuoteAsset(Ref ref) {
+  final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+
+  return optionSubscribedMarket.match(() => Option.none(), (marketInfo) {
+    final asset = assetsState[marketInfo.assetPair.quote];
+    return asset == null ? Option.none() : Option.of(asset);
+  });
+}
+
+/// Index price
+@riverpod
+class MarketPriceNotifier extends _$MarketPriceNotifier {
+  @override
+  Map<AssetPair, ({double indexPrice, double lastPrice})> build() {
+    return {};
+  }
+
+  void setState(From_MarketPrice marketPrice) {
+    final prices = {...state};
+    prices[marketPrice.assetPair] = (
+      indexPrice: marketPrice.indPrice,
+      lastPrice: marketPrice.lastPrice,
+    );
+    state = prices;
+  }
+}
+
+@riverpod
+Option<({String indexPrice, Option<Asset> quoteAsset})> marketIndexPrice(
+  Ref ref,
+) {
+  final subscribedAssetPair = ref.watch(
+    marketSubscribedAssetPairNotifierProvider,
+  );
+  final marketPrices = ref.watch(marketPriceNotifierProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return subscribedAssetPair.match(() => Option.none(), (assetPair) {
+    if (marketPrices[assetPair] == null ||
+        marketPrices[assetPair]!.indexPrice == .0) {
+      return Option.none();
+    }
+
+    final amount = marketPrices[assetPair]!.indexPrice;
+    final asset = assetsState[assetPair.quote];
+    final satoshi =
+        asset == null
+            ? 0
+            : satoshiRepository.satoshiForAmount(
+              amount: amount.toString(),
+              assetId: asset.assetId,
+            );
+
+    if (satoshi == 0) {
+      return Option.none();
+    }
+
+    final price = ref
+        .watch(amountToStringProvider)
+        .amountToString(
+          AmountToStringParameters(amount: satoshi, trailingZeroes: false),
+        );
+    final quoteAsset = asset == null ? Option<Asset>.none() : Option.of(asset);
+    return Option.of((indexPrice: price, quoteAsset: quoteAsset));
+  });
+}
+
+@riverpod
+Option<({String lastPrice, Option<Asset> quoteAsset})> marketLastPrice(
+  Ref ref,
+) {
+  final subscribedAssetPair = ref.watch(
+    marketSubscribedAssetPairNotifierProvider,
+  );
+  final marketPrices = ref.watch(marketPriceNotifierProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return subscribedAssetPair.match(() => Option.none(), (assetPair) {
+    if (marketPrices[assetPair] == null ||
+        marketPrices[assetPair]!.lastPrice == .0) {
+      return Option.none();
+    }
+
+    final amount = marketPrices[assetPair]!.lastPrice;
+    final asset = assetsState[assetPair.quote];
+    final satoshi =
+        asset == null
+            ? 0
+            : satoshiRepository.satoshiForAmount(
+              amount: amount.toString(),
+              assetId: asset.assetId,
+            );
+
+    if (satoshi == 0) {
+      return Option.none();
+    }
+
+    final price = ref
+        .watch(amountToStringProvider)
+        .amountToString(
+          AmountToStringParameters(amount: satoshi, trailingZeroes: false),
+        );
+    final quoteAsset = asset == null ? Option<Asset>.none() : Option.of(asset);
+    return Option.of((lastPrice: price, quoteAsset: quoteAsset));
+  });
+}
+
+@freezed
+sealed class MarketSideState with _$MarketSideState {
+  const factory MarketSideState.base() = MarketSideStateBase;
+  const factory MarketSideState.quote() = MarketSideStateQuote;
+}
+
+@riverpod
+class MarketSideStateNotifier extends _$MarketSideStateNotifier {
+  @override
+  MarketSideState build() {
+    return MarketSideState.base();
+  }
+
+  void setState(MarketSideState side) {
+    state = side;
+  }
+}
+
+@freezed
+sealed class MarketTypeSwitchState with _$MarketTypeSwitchState {
+  const factory MarketTypeSwitchState.market() = MarketTypeSwitchStateMarket;
+  const factory MarketTypeSwitchState.limit() = MarketTypeSwitchStateLimit;
+}
+
+@riverpod
+class MarketTypeSwitchStateNotifier extends _$MarketTypeSwitchStateNotifier {
+  @override
+  MarketTypeSwitchState build() {
+    return MarketTypeSwitchState.limit();
+  }
+
+  void setState(MarketTypeSwitchState value) {
+    state = value;
+  }
+}
+
+class OrderAmount {
+  final Decimal amount;
+  final int satoshi;
   final String assetId;
-  final int bitcoinAmount;
-  final int serverFee;
-  final int assetAmount;
-  final double price;
-  final int createdAt;
-  final int? expiresAt;
-  final RequestOrderType requestOrderType = RequestOrderType.order;
-  final bool private;
-  final bool sendBitcoins;
-  final bool twoStep;
-  final bool autoSign;
-  final bool own;
-  final MarketType marketType;
-  final double indexPrice;
-  final bool isNew;
-  RequestOrder({
-    required this.orderId,
+  final AssetPair assetPair;
+
+  OrderAmount({
+    required this.amount,
+    required this.satoshi,
     required this.assetId,
-    required this.bitcoinAmount,
-    required this.serverFee,
-    required this.assetAmount,
-    required this.price,
-    required this.createdAt,
-    required this.expiresAt,
-    required this.private,
-    required this.sendBitcoins,
-    required this.twoStep,
-    required this.autoSign,
-    required this.own,
-    required this.marketType,
-    required this.indexPrice,
-    required this.isNew,
+    required this.assetPair,
   });
 
-  @override
-  String toString() {
-    return 'RequestOrder(orderId: $orderId, assetId: $assetId, bitcoinAmount: $bitcoinAmount, serverFee: $serverFee, assetAmount: $assetAmount, price: $price, createdAt: $createdAt, expiresAt: $expiresAt, private: $private, sendBitcoins: $sendBitcoins, autoSign: $autoSign, own: $own, marketType: $marketType, indexPrice: $indexPrice, isNew: $isNew)';
+  String asString() {
+    return amount.toString();
   }
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  double asDouble() {
+    return amount.toDouble();
+  }
 
-    return other is RequestOrder &&
-        other.orderId == orderId &&
-        other.assetId == assetId &&
-        other.bitcoinAmount == bitcoinAmount &&
-        other.serverFee == serverFee &&
-        other.assetAmount == assetAmount &&
-        other.price == price &&
-        other.createdAt == createdAt &&
-        other.expiresAt == expiresAt &&
-        other.private == private &&
-        other.sendBitcoins == sendBitcoins &&
-        other.autoSign == autoSign &&
-        other.own == own &&
-        other.marketType == marketType &&
-        other.indexPrice == indexPrice &&
-        other.isNew == isNew;
+  int asSatoshi() {
+    return satoshi;
+  }
+
+  (Decimal, int, String, AssetPair) _equality() => (
+    amount,
+    satoshi,
+    assetId,
+    assetPair,
+  );
+
+  @override
+  bool operator ==(covariant OrderAmount other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other._equality() == _equality();
   }
 
   @override
   int get hashCode {
-    return orderId.hashCode ^
-        assetId.hashCode ^
-        bitcoinAmount.hashCode ^
-        serverFee.hashCode ^
-        assetAmount.hashCode ^
-        price.hashCode ^
-        createdAt.hashCode ^
-        expiresAt.hashCode ^
-        private.hashCode ^
-        sendBitcoins.hashCode ^
-        autoSign.hashCode ^
-        own.hashCode ^
-        marketType.hashCode ^
-        indexPrice.hashCode ^
-        isNew.hashCode;
-  }
-
-  bool isSell() {
-    // On stablecoin market we sell/buy L-BTC for asset
-    // On AMP/token market we sell/buy asset for L-BTC
-    return (marketType == MarketType.stablecoin) != sendBitcoins;
-  }
-}
-
-@Riverpod(keepAlive: true)
-class IndexPriceSubscriberNotifier extends _$IndexPriceSubscriberNotifier {
-  @override
-  Set<String> build() {
-    ref.onCancel(() {
-      unsubscribeAll();
-    });
-    return {};
-  }
-
-  void subscribe(String assetId) {
-    if (assetId.isEmpty) {
-      logger.w("assetid is empty!");
-      return;
-    }
-
-    // don't subscribe liquid
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    if (assetId == liquidAssetId) {
-      return;
-    }
-
-    final subscribedAssets = {...state};
-
-    // don't subscribe if already subscribed
-    if (isSubscribed(assetId)) {
-      return;
-    }
-
-    subscribedAssets.add(assetId);
-    state = subscribedAssets;
-
-    _subscribe(assetId);
-  }
-
-  void subscribeOne(String assetId) {
-    final subscribedAssets = {...state};
-    subscribedAssets.remove(assetId);
-    for (final subscribedAssetId in subscribedAssets) {
-      unsubscribe(subscribedAssetId);
-    }
-
-    subscribe(assetId);
-  }
-
-  void _subscribe(String assetId) {
-    logger.d('Index price subscribe to: $assetId');
-    logger.d('Index price subscribed assets: $state');
-
-    final msg = To();
-    msg.subscribePrice = AssetId();
-    msg.subscribePrice.assetId = assetId;
-    ref.read(walletProvider).sendMsg(msg);
-  }
-
-  void unsubscribe(String assetId) {
-    if (assetId.isEmpty) {
-      return;
-    }
-
-    final subscribedAssets = {...state};
-
-    subscribedAssets.remove(assetId);
-    state = subscribedAssets;
-
-    _unsubscribe(assetId);
-  }
-
-  void _unsubscribe(String assetId) {
-    logger.d('Index price unsubscribe: $assetId');
-    logger.d('Index price subscribed assets: $state');
-
-    final msg = To();
-    msg.unsubscribePrice = AssetId();
-    msg.unsubscribePrice.assetId = assetId;
-    ref.read(walletProvider).sendMsg(msg);
-  }
-
-  void unsubscribeAll() {
-    for (final subscribedAssetId in state) {
-      _unsubscribe(subscribedAssetId);
-    }
-
-    state = {};
-  }
-
-  bool isSubscribed(String assetId) {
-    return state.contains(assetId);
-  }
-
-  void onPriceUpdate(From_PriceUpdate value) {
-    // (malcolmpl): when app receive price update for asset which isn't subscribed (except usdt & eurx) then unsubscribe it
-    // to make sure that only needed assets are subscribed
-    final tetherAssetId = ref.read(tetherAssetIdStateProvider);
-    final eurxAssetId = ref.read(eurxAssetIdStateProvider);
-    if (!isSubscribed(value.asset) &&
-        (value.asset != tetherAssetId && value.asset != eurxAssetId)) {
-      unsubscribe(value.asset);
-    }
-
-    final oldPrice = ref.read(walletAssetPricesNotifierProvider)[value.asset];
-    final newPrice = value;
-    if (oldPrice == null ||
-        oldPrice.ask != newPrice.ask ||
-        oldPrice.bid != newPrice.bid) {
-      ref.read(walletAssetPricesNotifierProvider.notifier).updatePrices(value);
-    }
-  }
-}
-
-enum SubscribedMarketEnumType {
-  none,
-  token,
-  asset,
-}
-
-@Riverpod(keepAlive: true)
-class MarketAssetSubscriberNotifier extends _$MarketAssetSubscriberNotifier {
-  @override
-  Set<({String assetId, SubscribedMarketEnumType subscribedMarketType})>
-      build() {
-    return {};
-  }
-
-  void subscribe(String assetId) {
-    return switch (assetId.isEmpty) {
-      true => () {}(),
-      _ => () {
-          if (isSubscribed(assetId)) {
-            return;
-          }
-
-          final asset = ref.read(assetsStateProvider)[assetId];
-
-          return switch (asset) {
-            final asset? when asset.ampMarket || asset.swapMarket => () {
-                _subscribe(assetId);
-                final subscribedAssets = {...state};
-                subscribedAssets.add((
-                  assetId: assetId,
-                  subscribedMarketType: SubscribedMarketEnumType.asset
-                ));
-                state = subscribedAssets;
-              }(),
-            final _? => () {
-                _subscribe(assetId);
-                final subscribedAssets = {...state};
-                subscribedAssets.add((
-                  assetId: assetId,
-                  subscribedMarketType: SubscribedMarketEnumType.token
-                ));
-                state = subscribedAssets;
-              }(),
-            _ => () {}(),
-          };
-        }(),
-    };
-  }
-
-  void _subscribe(String assetId) {
-    final msg = To();
-    msg.subscribe = To_Subscribe();
-    msg.subscribe.markets.add(To_Subscribe_Market(assetId: assetId));
-    ref.read(walletProvider).sendMsg(msg);
-  }
-
-  void unsubscribeAll() {
-    final subscribedAssets = {...state};
-    if (subscribedAssets.isEmpty) {
-      return;
-    }
-
-    _unsubscribeAll();
-    state = {};
-  }
-
-  void _unsubscribeAll() {
-    final msg = To();
-    msg.subscribe = To_Subscribe();
-    ref.read(walletProvider).sendMsg(msg);
-  }
-
-  bool isSubscribed(String assetId) {
-    return state.any((element) => element.assetId == assetId);
+    return _equality().hashCode;
   }
 }
 
 @riverpod
-MarketsHelper marketsHelper(MarketsHelperRef ref) {
-  return MarketsHelper(ref);
-}
-
-class MarketsHelper {
-  final Ref ref;
-
-  MarketsHelper(this.ref);
-
-  Future<void> onModifyPrice(WidgetRef ref, RequestOrder? requestOrder) async {
-    if (requestOrder == null) {
-      return;
-    }
-
-    final price =
-        ref.read(marketRequestOrderByIdProvider(requestOrder.orderId))?.price ??
-            0;
-    final priceStr = priceStrForEdit(price);
-
-    final TextEditingController controller = TextEditingController()
-      ..text = priceStr;
-
-    final context = ref.read(navigatorKeyProvider).currentContext;
-    if (context == null) {
-      return;
-    }
-
-    await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Consumer(
-          builder: (context, ref, _) {
-            final assetId = requestOrder.assetId;
-            final asset = ref
-                .watch(assetsStateProvider.select((value) => value[assetId]));
-            final liquidAsset =
-                ref.watch(assetUtilsProvider).regularLiquidAsset();
-            final priceAsset = asset?.swapMarket == true ? asset : liquidAsset;
-            final icon = ref
-                .watch(assetImageProvider)
-                .getSmallImage(priceAsset?.assetId);
-            final assetPrecision = ref
-                .watch(assetUtilsProvider)
-                .getPrecisionForAssetId(assetId: requestOrder.assetId);
-            final orderDetailsData =
-                OrderDetailsData.fromRequestOrder(requestOrder, assetPrecision);
-
-            return ModifyPriceDialog(
-              controller: controller,
-              orderDetailsData: orderDetailsData,
-              asset: priceAsset,
-              productAsset: asset,
-              icon: icon,
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-@Riverpod(keepAlive: true)
-class MarketsIndexPriceNotifier extends _$MarketsIndexPriceNotifier {
+class MarketOrderAmountControllerNotifier
+    extends _$MarketOrderAmountControllerNotifier {
   @override
-  Map<String, double> build() {
-    return {};
-  }
+  String build() {
+    // cleanup when asset pair changed or order submit success
+    ref.watch(marketSubscribedAssetPairNotifierProvider);
+    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(marketTypeSwitchStateNotifierProvider);
 
-  void setIndexPrice(String assetId, double? ind) {
-    if (assetId.isEmpty) {
-      return;
-    }
-
-    final indexPriceMap = {...state};
-
-    if (ind != null) {
-      indexPriceMap[assetId] = ind;
-      state = indexPriceMap;
-      return;
-    }
-
-    indexPriceMap.remove(assetId);
-    state = indexPriceMap;
-  }
-}
-
-@riverpod
-IndexPriceForAsset indexPriceForAsset(
-    IndexPriceForAssetRef ref, String? assetId) {
-  final indexPrice = ref.watch(marketsIndexPriceNotifierProvider);
-  final isAmp = ref.watch(assetUtilsProvider).isAmpMarket(assetId: assetId);
-  return IndexPriceForAsset(indexPrice[assetId] ?? 0, assetId, isAmp);
-}
-
-class IndexPriceForAsset {
-  final double indexPrice;
-  final String? assetId;
-  final bool isAmp;
-
-  IndexPriceForAsset(this.indexPrice, this.assetId, this.isAmp);
-
-  String getIndexPriceStr() {
-    if (indexPrice == 0) {
-      return '';
-    }
-    return priceStr(indexPrice, isAmp);
-  }
-
-  String calculateTrackingPrice(double sliderValue) {
-    final indexPrice = getIndexPriceStr();
-    final indexPriceValue = double.tryParse(indexPrice) ?? 0;
-
-    final trackingPriceValue =
-        indexPriceValue + indexPriceValue * (sliderValue / 100);
-    return trackingPriceValue.toStringAsFixed(2);
-  }
-}
-
-@Riverpod(keepAlive: true)
-class MarketsLastIndexPriceNotifier extends _$MarketsLastIndexPriceNotifier {
-  @override
-  Map<String, double> build() {
-    return {};
-  }
-
-  void setLastIndexPrice(String assetId, double? last) {
-    if (assetId.isEmpty) {
-      return;
-    }
-
-    final lastIndexPriceMap = {...state};
-
-    if (last != null) {
-      lastIndexPriceMap[assetId] = last;
-      state = lastIndexPriceMap;
-      return;
-    }
-
-    lastIndexPriceMap.remove(assetId);
-    state = lastIndexPriceMap;
-  }
-}
-
-@riverpod
-double lastIndexPriceForAsset(LastIndexPriceForAssetRef ref, String? assetId) {
-  final lastIndexPriceMap = ref.watch(marketsLastIndexPriceNotifierProvider);
-  return lastIndexPriceMap[assetId] ?? 0;
-}
-
-@riverpod
-String lastStringIndexPriceForAsset(
-    LastStringIndexPriceForAssetRef ref, String? assetId) {
-  final lastIndexPrice = ref.watch(lastIndexPriceForAssetProvider(assetId));
-
-  if (lastIndexPrice == 0) {
     return '';
   }
 
-  final asset = ref.watch(assetsStateProvider)[assetId];
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+OrderAmount marketOrderAmount(Ref ref) {
+  final subscribedAssetPair = ref.watch(
+    marketSubscribedAssetPairNotifierProvider,
+  );
+  final amountString = ref.watch(marketOrderAmountControllerNotifierProvider);
+  final marketSideState = ref.watch(marketSideStateNotifierProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return subscribedAssetPair.match(
+    () => () {
+      return OrderAmount(
+        amount: Decimal.zero,
+        satoshi: 0,
+        assetId: '',
+        assetPair: AssetPair(),
+      );
+    },
+    (assetPair) => () {
+      final assetId =
+          marketSideState == MarketSideStateBase()
+              ? assetPair.base
+              : assetPair.quote;
+      final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
+      final amountSatoshi = satoshiRepository.satoshiForAmount(
+        amount: amountDecimal.toString(),
+        assetId: assetId,
+      );
+
+      return OrderAmount(
+        amount: amountDecimal,
+        satoshi: amountSatoshi,
+        assetId: assetId,
+        assetPair: assetPair,
+      );
+    },
+  )();
+}
+
+@riverpod
+bool marketOrderTradeButtonEnabled(Ref ref) {
+  final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
+  final marketOrderAmount = ref.watch(marketOrderAmountProvider);
+
+  return optionQuoteSuccess.match(
+    () => false,
+    (quoteSuccess) => marketOrderAmount.amount != Decimal.zero,
+  );
+}
+
+@riverpod
+class MarketQuoteNotifier extends _$MarketQuoteNotifier {
+  @override
+  Option<From_Quote> build() {
+    ref.onDispose(() {
+      _stopQuotes();
+    });
+
+    ref.listen(marketTypeSwitchStateNotifierProvider, (_, __) {
+      _stopQuotes();
+    });
+
+    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, __) {
+      _startQuotes();
+    });
+
+    ref.listen(marketOrderAmountProvider, (_, next) {
+      /// * Calling stop quotes here cause issue for app links on app startup!
+      _startQuotes();
+    });
+
+    ref.listen(marketSideStateNotifierProvider, (_, __) {
+      _stopQuotes();
+    });
+
+    ref.listen(tradeDirStateNotifierProvider, (_, __) {
+      _stopQuotes();
+    });
+
+    return Option.none();
+  }
+
+  void setQuote(From_Quote quote) {
+    state = Option.of(quote);
+  }
+
+  void _startQuotes() {
+    final optionSubscribedAssetPair = ref.read(
+      marketSubscribedAssetPairNotifierProvider,
+    );
+    final marketOrderAmount = ref.read(marketOrderAmountProvider);
+    final marketSideState = ref.read(marketSideStateNotifierProvider);
+    final tradeDir = ref.read(tradeDirStateNotifierProvider);
+
+    optionSubscribedAssetPair.match(
+      () => () {
+        _stopQuotes();
+      },
+      (assetPair) => () {
+        if (state.isSome()) {
+          _stopQuotes();
+        }
+
+        final assetId =
+            marketSideState == MarketSideStateBase()
+                ? assetPair.base
+                : assetPair.quote;
+        if (marketOrderAmount.assetPair != assetPair ||
+            marketOrderAmount.assetId != assetId) {
+          return;
+        }
+
+        if (marketOrderAmount.asSatoshi() == 0) {
+          return;
+        }
+
+        final amount = Int64(marketOrderAmount.asSatoshi());
+        final msg = To();
+        msg.startQuotes = To_StartQuotes(
+          assetPair: assetPair,
+          assetType:
+              marketSideState == MarketSideStateBase()
+                  ? AssetType.BASE
+                  : AssetType.QUOTE,
+          amount: amount,
+          tradeDir: tradeDir,
+        );
+
+        ref.read(walletProvider).sendMsg(msg);
+      },
+    )();
+  }
+
+  void _stopQuotes() {
+    final msg = To();
+    msg.stopQuotes = Empty();
+    ref.read(walletProvider).sendMsg(msg);
+    state = Option.none();
+  }
+}
+
+@freezed
+sealed class QuoteError with _$QuoteError {
+  const factory QuoteError({
+    @Default('') String error,
+    @Default(0) int orderId,
+  }) = _QuoteError;
+}
+
+@riverpod
+Option<QuoteError> marketQuoteError(Ref ref) {
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+
+  return optionStartOrderId.match(
+    () =>
+        optionQuote.match(
+          () => () {
+            return Option<QuoteError>.none();
+          },
+          (quote) => () {
+            if (!quote.hasError()) {
+              return Option<QuoteError>.none();
+            }
+
+            return Option.of(
+              QuoteError(error: quote.error, orderId: quote.orderId.toInt()),
+            );
+          },
+        )(),
+    (_) => Option.none(),
+  );
+}
+
+class ConvertAmount {
+  final AmountToString amountToString;
+
+  ConvertAmount(this.amountToString);
+
+  String convertAmountForAsset(
+    int amount,
+    Option<Asset> optionAsset, {
+    bool trailingZeroes = true,
+  }) {
+    return optionAsset.match(
+      () => () {
+        return '';
+      },
+      (asset) => () {
+        final amountStr = amountToString.amountToString(
+          AmountToStringParameters(
+            amount: amount,
+            precision: asset.precision,
+            trailingZeroes: trailingZeroes,
+          ),
+        );
+        return amountStr;
+      },
+    )();
+  }
+}
+
+class QuoteLowBalance extends ConvertAmount {
+  final From_Quote_LowBalance _quoteLowBalance;
+  final AssetPair assetPair;
+  final AssetType assetType;
+  final TradeDir tradeDir;
+  final AssetType feeAsset;
+  final Map<String, Asset> assetsState;
+  final int orderId;
+
+  QuoteLowBalance(
+    super.amountToString,
+    this._quoteLowBalance,
+    this.assetPair,
+    this.assetType,
+    this.tradeDir,
+    this.feeAsset,
+    this.assetsState,
+    this.orderId,
+  );
+
+  From_Quote_LowBalance get quoteLowBalance => _quoteLowBalance;
+
+  Option<Asset> get baseAsset {
+    final asset = assetsState[assetPair.base];
+    if (asset == null) {
+      return Option.none();
+    }
+
+    return Option.of(asset);
+  }
+
+  Option<Asset> get quoteAsset {
+    final asset = assetsState[assetPair.quote];
+    if (asset == null) {
+      return Option.none();
+    }
+
+    return Option.of(asset);
+  }
+
+  int get baseAmount => _quoteLowBalance.baseAmount.toInt();
+  int get quoteAmount => _quoteLowBalance.quoteAmount.toInt();
+  int get serverFee => _quoteLowBalance.serverFee.toInt();
+  int get fixedFee => _quoteLowBalance.fixedFee.toInt();
+  int get totalFee =>
+      (_quoteLowBalance.serverFee + _quoteLowBalance.fixedFee).toInt();
+  int get available => _quoteLowBalance.available.toInt();
+
+  String get availableAmount {
+    return convertAmountForAsset(available, deliverAsset);
+  }
+
+  Option<Asset> get deliverAsset => switch (assetType) {
+    AssetType.BASE => switch (tradeDir) {
+      TradeDir.SELL => baseAsset,
+      _ => quoteAsset,
+    },
+    _ => switch (tradeDir) {
+      TradeDir.SELL => quoteAsset,
+      _ => baseAsset,
+    },
+  };
+
+  String get deliverAmount => switch (feeAsset == assetType) {
+    true => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount + totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
+      },
+      _ => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+    },
+    false => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+      _ => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount + totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
+      },
+    },
+  };
+
+  Option<Asset> get receiveAsset => switch (assetType) {
+    AssetType.BASE => switch (tradeDir) {
+      TradeDir.SELL => quoteAsset,
+      _ => baseAsset,
+    },
+    _ => switch (tradeDir) {
+      TradeDir.SELL => baseAsset,
+      _ => quoteAsset,
+    },
+  };
+
+  String get receiveAmount => switch (feeAsset == assetType) {
+    true => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+      _ => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount - totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
+      },
+    },
+    false => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount - totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
+      },
+      _ => switch (feeAsset) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+    },
+  };
+}
+
+@riverpod
+Option<QuoteLowBalance> marketQuoteLowBalanceError(Ref ref) {
+  final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final amountToString = ref.watch(amountToStringProvider);
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+
+  return optionStartOrderId.match(
+    () => optionAssetPair.match(
+      () => Option<QuoteLowBalance>.none(),
+      (assetPair) =>
+          optionQuote.match(
+            () => () {
+              return Option<QuoteLowBalance>.none();
+            },
+            (quote) => () {
+              if (!quote.hasLowBalance()) {
+                return Option<QuoteLowBalance>.none();
+              }
+
+              if (quote.assetPair != assetPair) {
+                return Option<QuoteLowBalance>.none();
+              }
+
+              return optionSubscribedMarket.match(
+                () => Option<QuoteLowBalance>.none(),
+                (marketInfo) => Option.of(
+                  QuoteLowBalance(
+                    amountToString,
+                    quote.lowBalance,
+                    quote.assetPair,
+                    quote.assetType,
+                    quote.tradeDir,
+                    marketInfo.feeAsset,
+                    assetsState,
+                    quote.orderId.toInt(),
+                  ),
+                ),
+              );
+            },
+          )(),
+    ),
+    (_) => Option.none(),
+  );
+}
+
+class QuoteSuccess extends ConvertAmount {
+  final From_Quote_Success _quoteSuccess;
+  final DateTime _timestamp;
+  final AssetPair assetPair;
+  final AssetType assetType;
+  final TradeDir tradeDir;
+  final AssetType feeAssetType;
+  final Map<String, Asset> assetsState;
+  final int orderId;
+
+  QuoteSuccess(
+    super.amountToString,
+    this._quoteSuccess,
+    this.assetPair,
+    this.assetType,
+    this.tradeDir,
+    this.feeAssetType,
+    this.assetsState,
+    this.orderId,
+  ) : _timestamp = DateTime.timestamp();
+
+  From_Quote_Success get quoteSuccess => _quoteSuccess;
+  int get quoteId => _quoteSuccess.quoteId.toInt();
+
+  DateTime get timestamp => _timestamp;
+
+  Option<Asset> get baseAsset {
+    final asset = assetsState[assetPair.base];
+    if (asset == null) {
+      return Option.none();
+    }
+
+    return Option.of(asset);
+  }
+
+  Option<Asset> get quoteAsset {
+    final asset = assetsState[assetPair.quote];
+    if (asset == null) {
+      return Option.none();
+    }
+
+    return Option.of(asset);
+  }
+
+  int get ttlMilliseconds => _quoteSuccess.ttlMilliseconds.toInt();
+  int get baseAmount => _quoteSuccess.baseAmount.toInt();
+  int get quoteAmount => _quoteSuccess.quoteAmount.toInt();
+  int get serverFee => _quoteSuccess.serverFee.toInt();
+  int get fixedFee => _quoteSuccess.fixedFee.toInt();
+  int get totalFee =>
+      (_quoteSuccess.serverFee + _quoteSuccess.fixedFee).toInt();
+
+  Option<Asset> get deliverAsset => switch (assetType) {
+    AssetType.BASE => switch (tradeDir) {
+      TradeDir.SELL => baseAsset,
+      _ => quoteAsset,
+    },
+    _ => switch (tradeDir) {
+      TradeDir.SELL => quoteAsset,
+      _ => baseAsset,
+    },
+  };
+
+  String get deliverAmount => switch (feeAssetType == assetType) {
+    true => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount + totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
+      },
+      _ => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+    },
+    false => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+      _ => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount + totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
+      },
+    },
+  };
+
+  Option<Asset> get receiveAsset => switch (assetType) {
+    AssetType.BASE => switch (tradeDir) {
+      TradeDir.SELL => quoteAsset,
+      _ => baseAsset,
+    },
+    _ => switch (tradeDir) {
+      TradeDir.SELL => baseAsset,
+      _ => quoteAsset,
+    },
+  };
+
+  String get receiveAmount => switch (feeAssetType == assetType) {
+    true => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+      _ => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount - totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
+      },
+    },
+    false => switch (tradeDir) {
+      TradeDir.SELL => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(
+          baseAmount - totalFee,
+          baseAsset,
+        ),
+        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
+      },
+      _ => switch (feeAssetType) {
+        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
+        _ => convertAmountForAsset(baseAmount, baseAsset),
+      },
+    },
+  };
+
+  Option<Asset> get feeAsset => switch (feeAssetType) {
+    AssetType.BASE => baseAsset,
+    _ => quoteAsset,
+  };
+
+  String get fixedFeeString => convertAmountForAsset(fixedFee, feeAsset);
+  String get serverFeeString => convertAmountForAsset(serverFee, feeAsset);
+}
+
+@riverpod
+Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
+  final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final amountToString = ref.watch(amountToStringProvider);
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+
+  return optionStartOrderId.match(
+    () => optionAssetPair.match(
+      () => Option.none(),
+      (assetPair) =>
+          optionQuote.match(
+            () => () {
+              return Option<QuoteSuccess>.none();
+            },
+            (quote) => () {
+              if (!quote.hasSuccess()) {
+                return Option<QuoteSuccess>.none();
+              }
+
+              if (quote.assetPair != assetPair) {
+                return Option<QuoteSuccess>.none();
+              }
+
+              return optionSubscribedMarket.match(
+                () => Option<QuoteSuccess>.none(),
+                (marketInfo) => Option.of(
+                  QuoteSuccess(
+                    amountToString,
+                    quote.success,
+                    quote.assetPair,
+                    quote.assetType,
+                    quote.tradeDir,
+                    marketInfo.feeAsset,
+                    assetsState,
+                    quote.orderId.toInt(),
+                  ),
+                ),
+              );
+            },
+          )(),
+    ),
+    (_) => Option.none(),
+  );
+}
+
+class QuoteUnregisteredGaid {
+  final From_Quote_UnregisteredGaid quoteUnregisteredGaid;
+
+  QuoteUnregisteredGaid({required this.quoteUnregisteredGaid});
+
+  String get domainAgent => quoteUnregisteredGaid.domainAgent;
+}
+
+@riverpod
+Option<QuoteUnregisteredGaid> marketQuoteUnregisteredGaid(Ref ref) {
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+
+  return optionStartOrderId.match(
+    () =>
+        optionQuote.match(
+          () => () {
+            return Option<QuoteUnregisteredGaid>.none();
+          },
+          (quote) => () {
+            if (!quote.hasUnregisteredGaid()) {
+              return Option<QuoteUnregisteredGaid>.none();
+            }
+
+            return Option.of(
+              QuoteUnregisteredGaid(
+                quoteUnregisteredGaid: quote.unregisteredGaid,
+              ),
+            );
+          },
+        )(),
+    (_) => Option.none(),
+  );
+}
+
+@Riverpod(keepAlive: true)
+class MarketPreviewOrderQuoteNotifier
+    extends _$MarketPreviewOrderQuoteNotifier {
+  @override
+  Option<QuoteSuccess> build() {
+    return Option.none();
+  }
+
+  void setState(QuoteSuccess quoteSuccess) {
+    state = Option.of(quoteSuccess);
+  }
+}
+
+@riverpod
+class MarketPreviewOrderTtl extends _$MarketPreviewOrderTtl {
+  @override
+  int build() {
+    ref.watch(marketPreviewOrderQuoteNotifierProvider);
+
+    final timer = Timer.periodic(Duration(seconds: 1), (_) => updateState());
+    ref.onDispose(() => timer.cancel());
+
+    return updateState();
+  }
+
+  int updateState() {
+    final optionQuoteSuccess = ref.read(
+      marketPreviewOrderQuoteNotifierProvider,
+    );
+
+    state =
+        optionQuoteSuccess.match(
+          () => () {
+            return 0;
+          },
+          (quoteSuccess) => () {
+            final timestamp = quoteSuccess.timestamp;
+            final seconds = (quoteSuccess.ttlMilliseconds / 1000).round();
+            final futuredTimestamp = timestamp.add(Duration(seconds: seconds));
+            final now = DateTime.timestamp();
+            final diff = futuredTimestamp.difference(now);
+            return diff.inSeconds < 0 ? 0 : diff.inSeconds;
+          },
+        )();
+
+    return state;
+  }
+}
+
+@riverpod
+class MarketAcceptQuoteNotifier extends _$MarketAcceptQuoteNotifier {
+  @override
+  Option<From_AcceptQuote> build() {
+    return Option.none();
+  }
+
+  void setState(From_AcceptQuote acceptQuote) {
+    state = Option.of(acceptQuote);
+  }
+}
+
+@riverpod
+Option<String> marketAcceptQuoteSuccess(Ref ref) {
+  final optionAcceptQuote = ref.watch(marketAcceptQuoteNotifierProvider);
+
+  return optionAcceptQuote.match(
+    () => () {
+      return Option<String>.none();
+    },
+    (acceptQuote) => () {
+      if (acceptQuote.hasSuccess()) {
+        return Option.of(acceptQuote.success.txid);
+      }
+
+      return Option<String>.none();
+    },
+  )();
+}
+
+@riverpod
+class MarketAcceptQuoteSuccessShowDialogNotifier
+    extends _$MarketAcceptQuoteSuccessShowDialogNotifier {
+  @override
+  bool build() {
+    final optionAccepQuoteSuccess = ref.watch(marketAcceptQuoteSuccessProvider);
+    return optionAccepQuoteSuccess.match(() => false, (_) => true);
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+}
+
+@riverpod
+Option<String> acceptQuoteError(Ref ref) {
+  final optionAcceptQuote = ref.watch(marketAcceptQuoteNotifierProvider);
+
+  return optionAcceptQuote.match(
+    () => () {
+      return Option<String>.none();
+    },
+    (acceptQuote) => () {
+      if (acceptQuote.hasError()) {
+        return Option.of(acceptQuote.error);
+      }
+
+      return Option<String>.none();
+    },
+  )();
+}
+
+/// Limit order
+
+@freezed
+sealed class LimitTtlFlag with _$LimitTtlFlag {
+  const LimitTtlFlag._();
+
+  const factory LimitTtlFlag.oneHour() = LimitTtlFlagOneHour;
+  const factory LimitTtlFlag.sixHours() = LimitTtlFlagSixHours;
+  const factory LimitTtlFlag.twelveHours() = LimitTtlFlagTwelveHours;
+  const factory LimitTtlFlag.twentyFourHours() = LimitTtlFlagTwentyFourHours;
+  const factory LimitTtlFlag.threeDays() = LimitTtlFlagThreeDays;
+  const factory LimitTtlFlag.oneWeek() = LimitTtlFlagOneWeek;
+  const factory LimitTtlFlag.oneMonth() = LimitTtlFlagOneMonth;
+  const factory LimitTtlFlag.unlimited() = LimitTtlFlagUnlimited;
+
+  Int64? seconds() {
+    return switch (this) {
+      LimitTtlFlagOneHour() => Int64(3600),
+      LimitTtlFlagSixHours() => Int64(21600),
+      LimitTtlFlagTwelveHours() => Int64(43200),
+      LimitTtlFlagTwentyFourHours() => Int64(86400),
+      LimitTtlFlagThreeDays() => Int64(259200),
+      LimitTtlFlagOneWeek() => Int64(604800),
+      LimitTtlFlagOneMonth() => Int64(2592000), // 30 days
+      LimitTtlFlagUnlimited() => null,
+    };
+  }
+
+  String description() {
+    return switch (this) {
+      LimitTtlFlagOneHour() => '1h',
+      LimitTtlFlagSixHours() => '6h',
+      LimitTtlFlagTwelveHours() => '12h',
+      LimitTtlFlagTwentyFourHours() => '24h',
+      LimitTtlFlagThreeDays() => '1d',
+      LimitTtlFlagOneWeek() => '7d',
+      LimitTtlFlagOneMonth() => '30d',
+      LimitTtlFlagUnlimited() => 'Unlimited',
+    };
+  }
+}
+
+@riverpod
+class LimitTtlFlagNotifier extends _$LimitTtlFlagNotifier {
+  @override
+  LimitTtlFlag build() {
+    return LimitTtlFlag.unlimited();
+  }
+
+  void setState(LimitTtlFlag value) {
+    state = value;
+  }
+}
+
+@riverpod
+class LimitOrderAmountControllerNotifier
+    extends _$LimitOrderAmountControllerNotifier {
+  @override
+  String build() {
+    // cleanup when asset pair changed or order submit success
+    ref.watch(marketSubscribedAssetPairNotifierProvider);
+    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(marketTypeSwitchStateNotifierProvider);
+
+    return '';
+  }
+
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+OrderAmount limitOrderAmount(Ref ref) {
+  final subscribedAssetPair = ref.watch(
+    marketSubscribedAssetPairNotifierProvider,
+  );
+  final amountString = ref.watch(limitOrderAmountControllerNotifierProvider);
+  final marketSideState = ref.watch(marketSideStateNotifierProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return subscribedAssetPair.match(
+    () => () {
+      return OrderAmount(
+        amount: Decimal.zero,
+        satoshi: 0,
+        assetId: '',
+        assetPair: AssetPair(),
+      );
+    },
+    (assetPair) => () {
+      final assetId =
+          marketSideState == MarketSideStateBase()
+              ? assetPair.base
+              : assetPair.quote;
+      final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
+      final amountSatoshi = satoshiRepository.satoshiForAmount(
+        amount: amountDecimal.toString(),
+        assetId: assetId,
+      );
+
+      return OrderAmount(
+        amount: amountDecimal,
+        satoshi: amountSatoshi,
+        assetId: assetId,
+        assetPair: assetPair,
+      );
+    },
+  )();
+}
+
+@riverpod
+class LimitOrderPriceAmountControllerNotifier
+    extends _$LimitOrderPriceAmountControllerNotifier {
+  @override
+  String build() {
+    // cleanup when asset pair changed or order submit success
+    ref.watch(marketSubscribedAssetPairNotifierProvider);
+    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(marketTypeSwitchStateNotifierProvider);
+
+    return '';
+  }
+
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+OrderAmount limitPriceAmount(Ref ref) {
+  final subscribedAssetPair = ref.watch(
+    marketSubscribedAssetPairNotifierProvider,
+  );
+  final amountString = ref.watch(
+    limitOrderPriceAmountControllerNotifierProvider,
+  );
+  final marketSideState = ref.watch(marketSideStateNotifierProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return subscribedAssetPair.match(
+    () => () {
+      return OrderAmount(
+        amount: Decimal.zero,
+        satoshi: 0,
+        assetId: '',
+        assetPair: AssetPair(),
+      );
+    },
+    (assetPair) => () {
+      final assetId =
+          marketSideState == MarketSideStateBase()
+              ? assetPair.quote
+              : assetPair.base;
+      final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
+      final amountSatoshi = satoshiRepository.satoshiForAmount(
+        amount: amountDecimal.toString(),
+        assetId: assetId,
+      );
+
+      return OrderAmount(
+        amount: amountDecimal,
+        satoshi: amountSatoshi,
+        assetId: assetId,
+        assetPair: assetPair,
+      );
+    },
+  )();
+}
+
+@riverpod
+bool limitOrderTradeButtonEnabled(Ref ref) {
+  final insufficientAmount = ref.watch(limitInsufficientAmountProvider);
+  final insufficientPrice = ref.watch(limitInsufficientPriceProvider);
+  if (insufficientAmount || insufficientPrice) {
+    return false;
+  }
+
+  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+  if (optionOrderSubmit.isSome()) {
+    return false;
+  }
+
+  final limitAmount = ref.watch(limitOrderAmountProvider);
+  final limitPrice = ref.watch(limitPriceAmountProvider);
+
+  if (limitAmount.amount == Decimal.zero || limitPrice.amount == Decimal.zero) {
+    return false;
+  }
+
+  return true;
+}
+
+@riverpod
+class OrderSubmitNotifier extends _$OrderSubmitNotifier {
+  @override
+  Option<From_OrderSubmit> build() {
+    return Option.none();
+  }
+
+  void setState(From_OrderSubmit orderSubmit) {
+    state = Option.of(orderSubmit);
+  }
+}
+
+@riverpod
+Option<UiOwnOrder> orderSubmitSuccess(Ref ref) {
+  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+  final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
+
+  return optionOrderSubmit.match(
+    () => () {
+      return Option<UiOwnOrder>.none();
+    },
+    (orderSubmit) => () {
+      if (orderSubmit.hasSubmitSucceed()) {
+        final uiOwnOrder = uiOwnOrders.firstWhereOrNull(
+          (e) => e.ownOrder.orderId == orderSubmit.submitSucceed.orderId,
+        );
+        if (uiOwnOrder == null) {
+          return Option<UiOwnOrder>.none();
+        }
+
+        return Option.of(
+          uiOwnOrder.copyWith(ownOrder: orderSubmit.submitSucceed),
+        );
+      }
+
+      return Option<UiOwnOrder>.none();
+    },
+  )();
+}
+
+@riverpod
+Option<String> orderSubmitError(Ref ref) {
+  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+  return optionOrderSubmit.match(
+    () => () {
+      return Option<String>.none();
+    },
+    (orderSubmit) => () {
+      if (orderSubmit.hasError() && orderSubmit.error.isNotEmpty) {
+        return Option.of(orderSubmit.error);
+      }
+
+      return Option<String>.none();
+    },
+  )();
+}
+
+@riverpod
+Option<String> orderSubmitUnregisteredGaid(Ref ref) {
+  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+  return optionOrderSubmit.match(
+    () => () {
+      return Option<String>.none();
+    },
+    (orderSubmit) => () {
+      if (orderSubmit.hasUnregisteredGaid()) {
+        return Option.of(orderSubmit.unregisteredGaid.domainAgent);
+      }
+
+      return Option<String>.none();
+    },
+  )();
+}
+
+@riverpod
+class MarketEditOrderErrorNotifier extends _$MarketEditOrderErrorNotifier {
+  @override
+  Option<String> build() {
+    return Option.none();
+  }
+
+  void setState(String errorMsg) {
+    state = Option.of(errorMsg);
+  }
+}
+
+/// Edit order
+
+@Riverpod(keepAlive: true)
+class MarketEditDetailsOrderNotifier extends _$MarketEditDetailsOrderNotifier {
+  @override
+  Option<UiOwnOrder> build() {
+    return Option.none();
+  }
+
+  void setState(UiOwnOrder uiOwnOrder) {
+    state = Option.of(uiOwnOrder);
+  }
+}
+
+@riverpod
+class MarketEditOrderAmountControllerNotifier
+    extends _$MarketEditOrderAmountControllerNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+Option<OrderAmount> marketEditOrderAmount(Ref ref) {
+  final optionOrder = ref.watch(marketEditDetailsOrderNotifierProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return optionOrder.match(
+    () => () {
+      return Option<OrderAmount>.none();
+    },
+    (order) => () {
+      final assetId = order.assetPair.base;
+
+      final amountString = ref.watch(
+        marketEditOrderAmountControllerNotifierProvider,
+      );
+      final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
+      final amountSatoshi = satoshiRepository.satoshiForAmount(
+        amount: amountDecimal.toString(),
+        assetId: assetId,
+      );
+
+      return Option.of(
+        OrderAmount(
+          amount: amountDecimal,
+          satoshi: amountSatoshi,
+          assetId: assetId,
+          assetPair: order.assetPair,
+        ),
+      );
+    },
+  )();
+}
+
+@riverpod
+class MarketEditOrderPriceControllerNotifier
+    extends _$MarketEditOrderPriceControllerNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+Option<OrderAmount> marketEditOrderPrice(Ref ref) {
+  final optionOrder = ref.watch(marketEditDetailsOrderNotifierProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+  return optionOrder.match(
+    () => () {
+      return Option<OrderAmount>.none();
+    },
+    (order) => () {
+      final assetId = order.assetPair.quote;
+
+      final amountString = ref.watch(
+        marketEditOrderPriceControllerNotifierProvider,
+      );
+      final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
+      final amountSatoshi = satoshiRepository.satoshiForAmount(
+        amount: amountDecimal.toString(),
+        assetId: assetId,
+      );
+
+      return Option.of(
+        OrderAmount(
+          amount: amountDecimal,
+          satoshi: amountSatoshi,
+          assetId: assetId,
+          assetPair: order.assetPair,
+        ),
+      );
+    },
+  )();
+}
+
+@riverpod
+bool marketEditOrderAcceptEnabled(Ref ref) {
+  final optionAmount = ref.watch(marketEditOrderAmountProvider);
+  final optionPrice = ref.watch(marketEditOrderPriceProvider);
+
+  return optionAmount.match(
+    () => () {
+      return false;
+    },
+    (amount) => () {
+      if (amount.asSatoshi() == 0) {
+        return false;
+      }
+
+      return optionPrice.match(
+        () => () {
+          return false;
+        },
+        (price) => () {
+          if (price.asSatoshi() == 0) {
+            return false;
+          }
+
+          return true;
+        },
+      )();
+    },
+  )();
+}
+
+@freezed
+class OrderType with _$OrderType {
+  const factory OrderType.public() = OrderTypePublic;
+  const factory OrderType.private() = OrderTypePrivate;
+}
+
+@riverpod
+class MarketLimitOrderTypeNotifier extends _$MarketLimitOrderTypeNotifier {
+  @override
+  OrderType build() {
+    return OrderType.public();
+  }
+
+  void setState(OrderType orderType) {
+    state = orderType;
+  }
+}
+
+@freezed
+class OfflineSwapType with _$OfflineSwapType {
+  const factory OfflineSwapType.empty() = OfflineSwapTypeEmpty;
+  const factory OfflineSwapType.twoStep() = OfflineSwapTypeTwoStep;
+}
+
+@riverpod
+class MarketLimitOfflineSwap extends _$MarketLimitOfflineSwap {
+  @override
+  OfflineSwapType build() {
+    final isJadeWallet = ref.watch(isJadeWalletProvider);
+    final isMobile = !FlavorConfig.isDesktop;
+
+    return switch (isJadeWallet || isMobile) {
+      true => OfflineSwapType.twoStep(),
+      false => OfflineSwapType.empty(),
+    };
+  }
+
+  void setState(OfflineSwapType offlineSwapType) {
+    state = offlineSwapType;
+  }
+}
+
+@riverpod
+String addressToShareByOrder(Ref ref, UiOwnOrder order) {
+  const swapAddress = 'https://app.sideswap.io/swap/?';
+  return switch (order.orderType) {
+    OrderTypePrivate() =>
+      '${swapAddress}order_id=${order.orderId.id}&private_id=${order.privateId}',
+    _ => '${swapAddress}order_id=${order.orderId.id}',
+  };
+}
+
+@riverpod
+class MarketHistoryTotal extends _$MarketHistoryTotal {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setState(int total) {
+    state = total;
+  }
+}
+
+@riverpod
+class MarketHistoryOrderNotifier extends _$MarketHistoryOrderNotifier {
+  @override
+  List<HistoryOrder> build() {
+    // also listen on total items, they will be always available when ui will watch on history order provider
+    ref.listen(marketHistoryTotalProvider, (_, __) {});
+    return [];
+  }
+
+  void loadHistory(From_LoadHistory loadHistory) {
+    final newList = [...state];
+
+    for (final historyOrder in loadHistory.list) {
+      final index = newList.indexWhere((e) => e.id == historyOrder.id);
+
+      if (index < 0) {
+        newList.add(historyOrder);
+        continue;
+      }
+
+      newList[index] = historyOrder;
+    }
+
+    state = newList;
+  }
+
+  void historyUpdated(From_HistoryUpdated historyUpdated) {
+    final newList = [...state];
+
+    final index = newList.indexWhere((e) => e.id == historyUpdated.order.id);
+
+    if (index < 0) {
+      newList.add(historyUpdated.order);
+    } else {
+      newList[index] = historyUpdated.order;
+    }
+
+    state = newList;
+  }
+}
+
+@riverpod
+List<UiHistoryOrder> marketUiHistoryOrders(Ref ref) {
+  final amountToString = ref.read(amountToStringProvider);
+  final assetsState = ref.read(assetsStateProvider);
+  final assetImageRepository = ref.watch(assetImageRepositoryProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
   final assetUtils = ref.watch(assetUtilsProvider);
 
-  final precision = assetUtils.getPrecisionForAssetId(assetId: asset?.assetId);
-  final isPricedInLiquid = assetUtils.isPricedInLiquid(asset: asset);
+  final historyOrders = ref.watch(marketHistoryOrderNotifierProvider);
+  return historyOrders
+      .map(
+        (e) => UiHistoryOrder(
+          amountToString: amountToString,
+          assetsState: assetsState,
+          assetImageRepository: assetImageRepository,
+          satoshiRepository: satoshiRepository,
+          assetUtils: assetUtils,
+          historyOrder: e,
+        ),
+      )
+      .toList();
+}
 
-  return priceStr(lastIndexPrice, isPricedInLiquid,
-      precision: precision == 0 ? 8 : precision);
+@riverpod
+String orderExpireDescription(Ref ref, Option<UiOwnOrder> optionOrder) {
+  final timer = Timer.periodic(
+    Duration(seconds: 1),
+    (_) => ref.invalidateSelf(),
+  );
+
+  ref.onDispose(() => timer.cancel());
+
+  return optionOrder.match(() => '', (order) => order.expireDescription);
 }
 
 @riverpod
@@ -537,574 +1825,376 @@ class IndexPriceButtonAsyncNotifier extends _$IndexPriceButtonAsyncNotifier {
 }
 
 @Riverpod(keepAlive: true)
-class MarketsRequestOrdersNotifier extends _$MarketsRequestOrdersNotifier {
+class MarketStartOrderNotifier extends _$MarketStartOrderNotifier {
   @override
-  Map<String, RequestOrder> build() {
-    return {};
+  Option<int> build() {
+    return Option.none();
   }
 
-  void insertOrder(RequestOrder order) {
-    final marketsRequestOrders = {...state};
-    marketsRequestOrders[order.orderId] = order;
-
-    state = marketsRequestOrders;
-
-    if (ref.read(currentRequestOrderViewProvider)?.orderId == order.orderId) {
-      ref
-          .read(currentRequestOrderViewProvider.notifier)
-          .setCurrentRequestOrderView(order);
-    }
+  void setState(int orderId) {
+    state = Option.of(orderId);
   }
+}
 
-  void removeOrder(String orderId) {
-    final marketsRequestOrders = {...state};
-    marketsRequestOrders.remove(orderId);
-
-    state = marketsRequestOrders;
-
-    if (orderId == ref.read(currentRequestOrderViewProvider)?.orderId) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.registered);
-    }
-  }
-
-  void clearOrders() {
-    state = {};
-  }
+@freezed
+sealed class StartOrderError with _$StartOrderError {
+  const factory StartOrderError({
+    @Default('') String error,
+    @Default(0) int orderId,
+  }) = _StartOrderError;
 }
 
 @riverpod
-List<RequestOrder> marketRequestOrderList(MarketRequestOrderListRef ref) {
-  final marketRequestOrders = ref.watch(marketsRequestOrdersNotifierProvider);
-
-  return marketRequestOrders.values.toList();
-}
-
-@riverpod
-RequestOrder? marketRequestOrderById(
-    MarketRequestOrderByIdRef ref, String orderId) {
-  final marketRequestOrders = ref.watch(marketsRequestOrdersNotifierProvider);
-  return marketRequestOrders[orderId];
-}
-
-@riverpod
-List<RequestOrder> marketOwnRequestOrders(MarketOwnRequestOrdersRef ref) {
-  final marketRequestOrders = ref.watch(marketRequestOrderListProvider);
-  return marketRequestOrders.where((e) => e.own == true).toList();
-}
-
-@Riverpod(keepAlive: true)
-class MarketSelectedAccountAssetState
-    extends _$MarketSelectedAccountAssetState {
+class MarketStartOrderErrorNotifier extends _$MarketStartOrderErrorNotifier {
   @override
-  AccountAsset build() {
-    final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
-    return AccountAsset(AccountType.reg, tetherAssetId);
+  Option<StartOrderError> build() {
+    return Option.none();
   }
 
-  void setSelectedAccountAsset(AccountAsset accountAsset) {
-    state = accountAsset;
-  }
-}
-
-@riverpod
-AccountAsset? makeOrderBalanceAccountAsset(
-    MakeOrderBalanceAccountAssetRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final selectedAsset =
-      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-  final pricedInLiquid =
-      ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
-  final makeOrderSide = ref.watch(makeOrderSideStateProvider);
-  final isSell = makeOrderSide == MakeOrderSide.sell;
-  final balanceAssetAccount = pricedInLiquid == isSell
-      ? selectedAccountAsset
-      : AccountAsset(selectedAccountAsset.account, liquidAssetId);
-  final allAccountAssets = ref.watch(allAccountAssetsProvider);
-
-  return allAccountAssets.where((e) => e == balanceAssetAccount).firstOrNull;
-}
-
-class MakeOrderBalance {
-  late final String balanceString;
-  late final int balanceSatoshi;
-  late final String ticker;
-  late final String assetId;
-
-  MakeOrderBalance({
-    required this.balanceString,
-    required this.balanceSatoshi,
-    required this.ticker,
-    required this.assetId,
-  });
-
-  double asDouble() {
-    return double.tryParse(balanceString) ?? 0.0;
-  }
-
-  Decimal asDecimal() {
-    return Decimal.tryParse(balanceString) ?? Decimal.zero;
-  }
-
-  (String, int, String) _equality() => (balanceString, balanceSatoshi, ticker);
-
-  @override
-  bool operator ==(covariant MakeOrderBalance other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other._equality() == _equality();
-  }
-
-  @override
-  int get hashCode {
-    return _equality().hashCode;
+  void setState(StartOrderError value) {
+    state = Option.of(value);
   }
 }
 
 @riverpod
-MakeOrderBalance makeOrderBalance(MakeOrderBalanceRef ref) {
-  final accountAsset = ref.watch(makeOrderBalanceAccountAssetProvider);
+Option<QuoteSuccess> marketStartOrderQuoteSuccess(Ref ref) {
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final amountToString = ref.watch(amountToStringProvider);
 
-  return switch (accountAsset) {
-    final accountAsset? => () {
-        final assetPrecision = ref
-            .watch(assetUtilsProvider)
-            .getPrecisionForAssetId(assetId: accountAsset.assetId);
-        final balance = ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
-        final amountProvider = ref.watch(amountToStringProvider);
-        final ticker = ref.watch(assetsStateProvider
-            .select((value) => value[accountAsset.assetId]?.ticker ?? ''));
-        final balanceStr = amountProvider.amountToString(
-            AmountToStringParameters(
-                amount: balance, precision: assetPrecision));
+  return optionQuote.match(
+    () {
+      return Option.none();
+    },
+    (quote) {
+      if (!quote.hasSuccess()) {
+        return Option.none();
+      }
 
-        return MakeOrderBalance(
-          balanceString: balanceStr,
-          balanceSatoshi: balance,
-          ticker: ticker,
-          assetId: accountAsset.assetId ?? '',
-        );
-      }(),
-    _ => MakeOrderBalance(
-        balanceString: '0',
-        balanceSatoshi: 0,
-        ticker: '',
-        assetId: '',
-      ),
-  };
-}
+      if (optionStartOrderId.toNullable() != quote.orderId.toInt()) {
+        return Option.none();
+      }
 
-enum MakeOrderSide {
-  sell,
-  buy,
-}
-
-@Riverpod(keepAlive: true)
-class MakeOrderSideState extends _$MakeOrderSideState {
-  @override
-  MakeOrderSide build() {
-    return MakeOrderSide.buy;
-  }
-
-  void setSide(MakeOrderSide side) {
-    state = side;
-  }
-}
-
-@riverpod
-AccountAsset? marketOrderAggregateVolumeAccountAsset(
-    MarketOrderAggregateVolumeAccountAssetRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final selectedAsset =
-      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-  final pricedInLiquid =
-      ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
-  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-  final allAccountAssets = ref.watch(allAccountAssetsProvider);
-
-  final assetId = pricedInLiquid ? liquidAssetId : selectedAccountAsset.assetId;
-
-  return allAccountAssets.where((e) => e.assetId == assetId).firstOrNull;
-}
-
-@riverpod
-String marketOrderAggregateVolumeTicker(
-    MarketOrderAggregateVolumeTickerRef ref) {
-  final accountAsset =
-      ref.watch(marketOrderAggregateVolumeAccountAssetProvider);
-  final assetState = ref.watch(assetsStateProvider);
-
-  return switch (accountAsset) {
-    final accountAsset? => assetState[accountAsset.assetId]?.ticker ?? '',
-    _ => '',
-  };
-}
-
-@riverpod
-MarketOrderAggregateVolumeProvider marketOrderAggregateVolume(
-    MarketOrderAggregateVolumeRef ref) {
-  final amount = ref.watch(marketOrderAmountNotifierProvider);
-  final price = ref.watch(marketOrderPriceNotifierProvider);
-  final accountAsset =
-      ref.watch(marketOrderAggregateVolumeAccountAssetProvider);
-  final assetPrecision = ref
-      .watch(assetUtilsProvider)
-      .getPrecisionForAssetId(assetId: accountAsset?.assetId);
-
-  return MarketOrderAggregateVolumeProvider(
-    amount: amount.asString(),
-    price: price.asString(),
-    accountAsset: accountAsset,
-    assetPrecision: assetPrecision,
-  );
-}
-
-class MarketOrderAggregateVolumeProvider {
-  final String amount;
-  final String price;
-  final AccountAsset? accountAsset;
-  final int assetPrecision;
-  late Decimal amountWithPrecision;
-  late Decimal multipliedInSat;
-  late Decimal power;
-
-  MarketOrderAggregateVolumeProvider({
-    required this.amount,
-    required this.price,
-    required this.accountAsset,
-    required this.assetPrecision,
-  }) {
-    final amountDecimal = Decimal.tryParse(amount) ?? Decimal.zero;
-    final priceDecimal = Decimal.tryParse(price) ?? Decimal.zero;
-    multipliedInSat = amountDecimal * priceDecimal * Decimal.fromInt(kCoin);
-    power = Decimal.tryParse(
-            pow(10, assetPrecision).toStringAsFixed(assetPrecision)) ??
-        Decimal.zero;
-    amountWithPrecision = (multipliedInSat / power).toDecimal();
-  }
-
-  String asString() {
-    if (assetPrecision == 0) {
-      return amountWithPrecision.toBigInt().toString();
-    }
-
-    return (multipliedInSat / power)
-        .toDecimal()
-        .toStringAsFixed(assetPrecision);
-  }
-
-  double asDouble() {
-    return double.tryParse(asString()) ?? 0.0;
-  }
-
-  (String, String, AccountAsset?, int, Decimal, Decimal, Decimal) _equality() =>
-      (
-        amount,
-        price,
-        accountAsset,
-        assetPrecision,
-        amountWithPrecision,
-        multipliedInSat,
-        power
+      return Option.of(
+        QuoteSuccess(
+          amountToString,
+          quote.success,
+          quote.assetPair,
+          quote.assetType,
+          quote.tradeDir,
+          quote.assetType,
+          assetsState,
+          quote.orderId.toInt(),
+        ),
       );
-
-  @override
-  bool operator ==(covariant MarketOrderAggregateVolumeProvider other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other._equality() == _equality();
-  }
-
-  @override
-  int get hashCode {
-    return _equality().hashCode;
-  }
-}
-
-@riverpod
-String marketOrderAggregateVolumeWithTicker(
-    MarketOrderAggregateVolumeWithTickerRef ref) {
-  final ticker = ref.watch(marketOrderAggregateVolumeTickerProvider);
-  final aggregateVolume = ref.watch(marketOrderAggregateVolumeProvider);
-
-  return '${aggregateVolume.asString()} $ticker';
-}
-
-class MarketOrderAmount {
-  late final Decimal amount;
-
-  MarketOrderAmount({required String value}) {
-    amount = Decimal.tryParse(value) ?? Decimal.zero;
-  }
-
-  String asString() {
-    return amount.toString();
-  }
-
-  double asDouble() {
-    return amount.toDouble();
-  }
-
-  (Decimal,) _equality() => (amount,);
-
-  @override
-  bool operator ==(covariant MarketOrderAmount other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other._equality() == _equality();
-  }
-
-  @override
-  int get hashCode {
-    return _equality().hashCode;
-  }
-}
-
-@riverpod
-class MarketOrderAmountNotifier extends _$MarketOrderAmountNotifier {
-  @override
-  MarketOrderAmount build() {
-    return MarketOrderAmount(value: '0.0');
-  }
-
-  void setOrderAmount(String amount) {
-    final amountDecimal = Decimal.tryParse(amount) ?? Decimal.zero;
-    if (state.amount != amountDecimal) {
-      state = MarketOrderAmount(value: amount);
-    }
-  }
-}
-
-@riverpod
-class MarketOrderPriceNotifier extends _$MarketOrderPriceNotifier {
-  @override
-  MarketOrderAmount build() {
-    return MarketOrderAmount(value: '0.0');
-  }
-
-  void setOrderPrice(String price) {
-    final priceDecimal = Decimal.tryParse(price) ?? Decimal.zero;
-    if (state.amount != priceDecimal) {
-      state = MarketOrderAmount(value: price);
-    }
-  }
-}
-
-@riverpod
-bool makeOrderAggregateVolumeTooHigh(MakeOrderAggregateVolumeTooHighRef ref) {
-  final aggregateVolume = ref.watch(marketOrderAggregateVolumeProvider);
-  final balance = ref.watch(makeOrderBalanceProvider);
-
-  return aggregateVolume.asDouble() > balance.asDouble();
-}
-
-@riverpod
-AccountAsset? makeOrderLiquidAccountAsset(MakeOrderLiquidAccountAssetRef ref) {
-  final allAccountAssets = ref.watch(allAccountAssetsProvider);
-  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-
-  return allAccountAssets.where((e) => e.assetId == liquidAssetId).firstOrNull;
-}
-
-@riverpod
-bool selectedAssetIsToken(SelectedAssetIsTokenRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final asset = ref.watch(assetsStateProvider
-      .select((value) => value[selectedAccountAsset.assetId]));
-  return asset?.ampMarket == false && asset?.swapMarket == false;
-}
-
-@riverpod
-String targetIndexPrice(TargetIndexPriceRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-  final isPricedInLiquid =
-      ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
-
-  final indexPrice = ref
-      .watch(indexPriceForAssetProvider(selectedAccountAsset.assetId))
-      .indexPrice;
-  final lastPrice =
-      ref.watch(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
-  final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
-  final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
-  final targetIndexPriceStr = indexPrice != 0 ? indexPriceStr : lastPriceStr;
-  return targetIndexPriceStr;
-}
-
-@riverpod
-String selectedAssetTicker(SelectedAssetTickerRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final ticker = ref.watch(assetsStateProvider
-      .select((value) => value[selectedAccountAsset.assetId]?.ticker ?? ''));
-  return ticker;
-}
-
-@riverpod
-OrderEntryCallbackHandlers orderEntryCallbackHandlers(
-    OrderEntryCallbackHandlersRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final makeOrderSide = ref.watch(makeOrderSideStateProvider);
-  final isSell = makeOrderSide == MakeOrderSide.sell;
-  final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-  final stokrGaidState = ref.watch(stokrGaidNotifierProvider);
-  final stokrSettingsModel =
-      ref.watch(configurationProvider).stokrSettingsModel;
-  final stokrSecurities = ref.watch(stokrSecuritiesProvider);
-
-  return OrderEntryCallbackHandlers(
-    ref: ref,
-    selectedAccountAsset: selectedAccountAsset,
-    isSell: isSell,
-    asset: asset,
-    stokrGaidState: stokrGaidState,
-    stokrSettingsModel: stokrSettingsModel,
-    stokrSecurities: stokrSecurities,
+    },
   );
 }
 
-class OrderEntryCallbackHandlers {
-  final Ref ref;
-  final AccountAsset selectedAccountAsset;
-  final bool isSell;
-  final Asset? asset;
-  final StokrGaidState stokrGaidState;
-  final StokrSettingsModel? stokrSettingsModel;
-  final List<SecuritiesItem> stokrSecurities;
+@riverpod
+Option<QuoteLowBalance> marketStartOrderLowBalanceError(Ref ref) {
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final amountToString = ref.watch(amountToStringProvider);
 
-  OrderEntryCallbackHandlers({
-    required this.ref,
-    required this.selectedAccountAsset,
-    required this.isSell,
-    required this.asset,
-    required this.stokrGaidState,
-    required this.stokrSettingsModel,
-    required this.stokrSecurities,
-  });
+  return optionQuote.match(
+    () {
+      return Option.none();
+    },
+    (quote) {
+      if (!quote.hasLowBalance()) {
+        return Option.none();
+      }
 
-  void reset(
-    TextEditingController controllerAmount,
-    TextEditingController controllerPrice,
-    ValueNotifier<double> trackingValue,
-    ValueNotifier<bool> trackingToggled,
-  ) {
-    controllerAmount.clear();
-    controllerPrice.clear();
-    trackingValue.value = 0.0;
-    trackingToggled.value = false;
-  }
+      if (optionStartOrderId.toNullable() != quote.orderId.toInt()) {
+        return Option.none();
+      }
 
-  void submit(
-    TextEditingController controllerAmount,
-    TextEditingController controllerPrice,
-    ValueNotifier<bool> trackingToggled,
-    ValueNotifier<double> trackingValue,
-  ) {
-    final amount = double.tryParse(controllerAmount.text) ?? 0.0;
-    final price = double.tryParse(controllerPrice.text) ?? 0.0;
-    final isAssetAmount = !(asset?.swapMarket == true);
-    final indexPrice = trackingToggled.value
-        ? trackerValueToIndexPrice(trackingValue.value)
-        : null;
-    final account = ref.read(accountAssetFromAssetProvider(asset));
-    final sign = isSell ? -1 : 1;
-    final amountWithSign = amount * sign;
+      return Option.of(
+        QuoteLowBalance(
+          amountToString,
+          quote.lowBalance,
+          quote.assetPair,
+          quote.assetType,
+          quote.tradeDir,
+          quote.assetType,
+          assetsState,
+          quote.orderId.toInt(),
+        ),
+      );
+    },
+  );
+}
 
-    ref.read(walletProvider).submitOrder(
-          selectedAccountAsset.assetId,
-          amountWithSign,
-          price,
-          isAssetAmount: isAssetAmount,
-          indexPrice: indexPrice,
-          account: account.account,
-        );
-    ref.invalidate(indexPriceButtonAsyncNotifierProvider);
-    reset(controllerAmount, controllerPrice, trackingValue, trackingToggled);
-  }
+@riverpod
+Option<QuoteError> marketStartOrderQuoteError(Ref ref) {
+  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuoteError = ref.watch(marketQuoteErrorProvider);
 
-  bool stokrAssetRestrictedPopup() {
-    // is stokr asset
-    final isStokrAsset =
-        stokrSecurities.any((element) => element.assetId == asset?.assetId);
-    final hasAssetRestrictions = asset?.hasAmpAssetRestrictions() ?? false;
+  return optionQuoteError.match(
+    () {
+      return Option.none();
+    },
+    (quoteError) {
+      if (optionStartOrderId.toNullable() != quoteError.orderId) {
+        return Option.none();
+      }
 
-    if (!isStokrAsset || !hasAssetRestrictions) {
-      return false;
-    }
+      return optionQuoteError;
+    },
+  );
+}
 
-    if (stokrSettingsModel?.firstRun != false) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.stokrRestrictionsInfo);
-      return true;
-    }
-
+@riverpod
+class MarketOneTimeAuthorized extends _$MarketOneTimeAuthorized {
+  @override
+  bool build() {
     return false;
   }
 
-  void handleMax(
-      TextEditingController controllerAmount, FocusNode focusNodePrice) {
-    final assetPrecision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: selectedAccountAsset.assetId);
-    final isPricedInLiquid =
-        ref.read(assetUtilsProvider).isPricedInLiquid(asset: asset);
+  void setState(bool value) {
+    state = value;
+  }
 
-    final marketSide = ref.read(makeOrderSideStateProvider);
-    // on buy side calculate max amount based on index price and buying power
-    if (marketSide == MakeOrderSide.buy) {
-      final price = ref.read(marketOrderPriceNotifierProvider);
-      final indexPrice = ref
-          .read(indexPriceForAssetProvider(selectedAccountAsset.assetId))
-          .indexPrice;
-      final lastPrice = ref
-          .read(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
-      final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
-      final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
-      final targetIndexPriceStr =
-          indexPrice != 0 ? indexPriceStr : lastPriceStr;
-
-      if (price.amount == Decimal.zero) {
-        ref
-            .read(indexPriceButtonAsyncNotifierProvider.notifier)
-            .setIndexPrice(targetIndexPriceStr);
-      }
-
-      final orderBalance = ref.read(makeOrderBalanceProvider);
-
-      final targetIndexPrice =
-          Decimal.tryParse(targetIndexPriceStr) ?? Decimal.zero;
-      final balance = orderBalance.asDecimal();
-      if (targetIndexPrice != Decimal.zero) {
-        final targetAmount = (balance / targetIndexPrice)
-            .toDecimal(scaleOnInfinitePrecision: assetPrecision)
-            .toStringAsFixed(assetPrecision);
-        setControllerValue(controllerAmount, targetAmount);
-        return;
-      }
+  Future<bool> authorize() async {
+    if (state) {
+      return true;
     }
 
-    // for sell side insert max balance only
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final account = isPricedInLiquid
-        ? ref.read(accountAssetFromAssetProvider(asset))
-        : AccountAsset(AccountType.reg, liquidAssetId);
-    final balance = ref.read(balancesNotifierProvider)[account] ?? 0;
-    final amountProvider = ref.read(amountToStringProvider);
-    final balanceStr = amountProvider.amountToString(
-        AmountToStringParameters(amount: balance, precision: assetPrecision));
-    setControllerValue(controllerAmount, balanceStr);
-    focusNodePrice.requestFocus();
+    ref.read(authInProgressStateNotifierProvider.notifier).setState(true);
+    final authSucceed = await ref.read(walletProvider).isAuthenticated();
+    ref.invalidate(authInProgressStateNotifierProvider);
+    state = authSucceed;
+
+    return state;
   }
+}
+
+abstract class AbstractMarketTradeRepository {
+  Future<void> makeSwapTrade({
+    required BuildContext context,
+    required Option<QuoteSuccess> optionQuoteSuccess,
+  });
+}
+
+class MarketTradeRepository implements AbstractMarketTradeRepository {
+  final Ref ref;
+
+  MarketTradeRepository({required this.ref});
+
+  @override
+  Future<void> makeSwapTrade({
+    required BuildContext context,
+    required Option<QuoteSuccess> optionQuoteSuccess,
+  }) async {
+    await optionQuoteSuccess.match(
+      () => () {},
+      (quoteSuccess) => () async {
+        var authorized = ref.read(marketOneTimeAuthorizedProvider);
+
+        if (!ref.read(marketOneTimeAuthorizedProvider)) {
+          authorized =
+              await ref
+                  .read(marketOneTimeAuthorizedProvider.notifier)
+                  .authorize();
+        }
+
+        if (!authorized) {
+          return;
+        }
+
+        if (context.mounted) {
+          ref
+              .read(marketPreviewOrderQuoteNotifierProvider.notifier)
+              .setState(quoteSuccess);
+
+          if (FlavorConfig.isDesktop) {
+            await showDialog<void>(
+              context: context,
+              builder: (context) {
+                return DPreviewOrderDialog();
+              },
+              routeSettings: RouteSettings(name: desktopOrderPreviewRouteName),
+              useRootNavigator: false,
+            );
+          } else {
+            await showDialog<void>(
+              context: context,
+              builder: (context) {
+                return MobileOrderPreviewDialog();
+              },
+              routeSettings: RouteSettings(name: mobileOrderPreviewRouteName),
+              useRootNavigator: false,
+            );
+          }
+
+          final isJadeWallet = ref.read(isJadeWalletProvider);
+
+          if (isJadeWallet) {
+            // cleanup on jade sign dialog close
+            return;
+          }
+
+          ref.invalidate(marketPreviewOrderQuoteNotifierProvider);
+        }
+      },
+    )();
+  }
+}
+
+@riverpod
+AbstractMarketTradeRepository marketTradeRepository(Ref ref) {
+  return MarketTradeRepository(ref: ref);
+}
+
+@Riverpod(keepAlive: true)
+class MarketMinimalAmountsNotfier extends _$MarketMinimalAmountsNotfier {
+  @override
+  Map<String, int> build() {
+    return {};
+  }
+
+  void setState(From_MinMarketAmounts minMarketAmounts) {
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+    final tetherAssetId = ref.read(tetherAssetIdStateProvider);
+    final eurxAssetId = ref.read(eurxAssetIdStateProvider);
+
+    final minAmounts = <String, int>{
+      liquidAssetId: minMarketAmounts.lbtc.toInt(),
+      tetherAssetId: minMarketAmounts.usdt.toInt(),
+      eurxAssetId: minMarketAmounts.eurx.toInt(),
+    };
+    state = minAmounts;
+  }
+}
+
+@riverpod
+Option<Asset> limitFeeAsset(Ref ref) {
+  final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
+  final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
+  final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
+
+  return optionSubscribedMarket.match(
+    () => Option.none(),
+    (marketInfo) => optionBaseAsset.match(
+      () => Option.none(),
+      (baseAsset) => optionQuoteAsset.match(
+        () {
+          return Option.none();
+        },
+        (quoteAsset) {
+          final feeAsset =
+              marketInfo.feeAsset == AssetType.BASE ? baseAsset : quoteAsset;
+          return Option.of(feeAsset);
+        },
+      ),
+    ),
+  );
+}
+
+@riverpod
+String limitMinimumFeeAmount(Ref ref) {
+  final minimalAmounts = ref.watch(marketMinimalAmountsNotfierProvider);
+  final optionFeeAsset = ref.watch(limitFeeAssetProvider);
+  final amountToString = ref.watch(amountToStringProvider);
+
+  return optionFeeAsset.match(
+    () {
+      return '';
+    },
+    (feeAsset) {
+      final satoshi = minimalAmounts[feeAsset.assetId] ?? 0;
+      return amountToString.amountToString(
+        AmountToStringParameters(
+          amount: satoshi,
+          precision: feeAsset.precision,
+        ),
+      );
+    },
+  );
+}
+
+@riverpod
+bool limitInsufficientAmount(Ref ref) {
+  final optionFeeAsset = ref.watch(limitFeeAssetProvider);
+  final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
+  final orderAmount = ref.watch(limitOrderAmountProvider);
+  final minimalAmounts = ref.watch(marketMinimalAmountsNotfierProvider);
+
+  if (orderAmount.amount == Decimal.zero) {
+    return false;
+  }
+
+  return optionFeeAsset.match(
+    () {
+      return false;
+    },
+    (feeAsset) {
+      return optionBaseAsset.match(
+        () {
+          return false;
+        },
+        (baseAsset) {
+          final minimalAmount = minimalAmounts[feeAsset.assetId] ?? 0;
+          if (feeAsset.assetId == baseAsset.assetId &&
+              feeAsset.assetId == orderAmount.assetId &&
+              orderAmount.satoshi < minimalAmount) {
+            return true;
+          }
+
+          return false;
+        },
+      );
+    },
+  );
+}
+
+@riverpod
+bool limitInsufficientPrice(Ref ref) {
+  final optionFeeAsset = ref.watch(limitFeeAssetProvider);
+  final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
+  final minimalAmounts = ref.watch(marketMinimalAmountsNotfierProvider);
+  final priceAmount = ref.watch(limitPriceAmountProvider);
+  final orderAmount = ref.watch(limitOrderAmountProvider);
+
+  if (priceAmount.amount == Decimal.zero) {
+    return false;
+  }
+
+  return optionFeeAsset.match(
+    () {
+      return false;
+    },
+    (feeAsset) {
+      return optionQuoteAsset.match(
+        () {
+          return false;
+        },
+        (quoteAsset) {
+          if ((orderAmount.amount * priceAmount.amount) == Decimal.zero) {
+            return false;
+          }
+
+          final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+
+          final multipliedAmount = (orderAmount.amount * priceAmount.amount);
+          final multipliedSatoshi = satoshiRepository.satoshiForAmount(
+            amount: multipliedAmount.toString(),
+            assetId: feeAsset.assetId,
+          );
+
+          final minimalAmount = minimalAmounts[feeAsset.assetId] ?? 0;
+          if (feeAsset.assetId == quoteAsset.assetId &&
+              feeAsset.assetId == priceAmount.assetId &&
+              multipliedSatoshi < minimalAmount) {
+            return true;
+          }
+
+          return false;
+        },
+      );
+    },
+  );
 }

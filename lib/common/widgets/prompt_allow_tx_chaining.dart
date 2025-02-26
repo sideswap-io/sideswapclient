@@ -18,9 +18,7 @@ Future<bool> allowTxChaining(BuildContext context, WidgetRef ref) async {
     context: context,
     builder: (BuildContext context) {
       return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: const AllowTxChainingWidget(),
       );
     },
@@ -33,16 +31,10 @@ Future<bool> allowTxChaining(BuildContext context, WidgetRef ref) async {
   return result == AllowTxChaining.always || result == AllowTxChaining.once;
 }
 
-enum AllowTxChaining {
-  no,
-  once,
-  always,
-}
+enum AllowTxChaining { no, once, always }
 
 class AllowTxChainingWidget extends StatelessWidget {
-  const AllowTxChainingWidget({
-    super.key,
-  });
+  const AllowTxChainingWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +42,7 @@ class AllowTxChainingWidget extends StatelessWidget {
       width: 343,
       height: 460,
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
         color: SideSwapColors.blumine,
       ),
       child: Padding(
@@ -63,11 +53,7 @@ class AllowTxChainingWidget extends StatelessWidget {
             CircleAvatar(
               backgroundColor: Colors.white,
               radius: 28,
-              child: SvgPicture.asset(
-                'assets/info.svg',
-                width: 13,
-                height: 32,
-              ),
+              child: SvgPicture.asset('assets/info.svg', width: 13, height: 32),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 24),

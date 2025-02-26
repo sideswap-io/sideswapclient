@@ -12,7 +12,8 @@ part of 'notification_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 FCMPayload _$FCMPayloadFromJson(Map<String, dynamic> json) {
   return _FCMPayload.fromJson(json);
@@ -23,8 +24,12 @@ mixin _$FCMPayload {
   FCMPayloadType? get type => throw _privateConstructorUsedError;
   String? get txid => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMPayload to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMPayload
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMPayloadCopyWith<FCMPayload> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -32,8 +37,9 @@ mixin _$FCMPayload {
 /// @nodoc
 abstract class $FCMPayloadCopyWith<$Res> {
   factory $FCMPayloadCopyWith(
-          FCMPayload value, $Res Function(FCMPayload) then) =
-      _$FCMPayloadCopyWithImpl<$Res, FCMPayload>;
+    FCMPayload value,
+    $Res Function(FCMPayload) then,
+  ) = _$FCMPayloadCopyWithImpl<$Res, FCMPayload>;
   @useResult
   $Res call({FCMPayloadType? type, String? txid});
 }
@@ -48,22 +54,26 @@ class _$FCMPayloadCopyWithImpl<$Res, $Val extends FCMPayload>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMPayload
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? type = freezed,
-    Object? txid = freezed,
-  }) {
-    return _then(_value.copyWith(
-      type: freezed == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as FCMPayloadType?,
-      txid: freezed == txid
-          ? _value.txid
-          : txid // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? type = freezed, Object? txid = freezed}) {
+    return _then(
+      _value.copyWith(
+            type:
+                freezed == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as FCMPayloadType?,
+            txid:
+                freezed == txid
+                    ? _value.txid
+                    : txid // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -71,8 +81,9 @@ class _$FCMPayloadCopyWithImpl<$Res, $Val extends FCMPayload>
 abstract class _$$FCMPayloadImplCopyWith<$Res>
     implements $FCMPayloadCopyWith<$Res> {
   factory _$$FCMPayloadImplCopyWith(
-          _$FCMPayloadImpl value, $Res Function(_$FCMPayloadImpl) then) =
-      __$$FCMPayloadImplCopyWithImpl<$Res>;
+    _$FCMPayloadImpl value,
+    $Res Function(_$FCMPayloadImpl) then,
+  ) = __$$FCMPayloadImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FCMPayloadType? type, String? txid});
@@ -83,25 +94,29 @@ class __$$FCMPayloadImplCopyWithImpl<$Res>
     extends _$FCMPayloadCopyWithImpl<$Res, _$FCMPayloadImpl>
     implements _$$FCMPayloadImplCopyWith<$Res> {
   __$$FCMPayloadImplCopyWithImpl(
-      _$FCMPayloadImpl _value, $Res Function(_$FCMPayloadImpl) _then)
-      : super(_value, _then);
+    _$FCMPayloadImpl _value,
+    $Res Function(_$FCMPayloadImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMPayload
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? type = freezed,
-    Object? txid = freezed,
-  }) {
-    return _then(_$FCMPayloadImpl(
-      type: freezed == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as FCMPayloadType?,
-      txid: freezed == txid
-          ? _value.txid
-          : txid // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? type = freezed, Object? txid = freezed}) {
+    return _then(
+      _$FCMPayloadImpl(
+        type:
+            freezed == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as FCMPayloadType?,
+        txid:
+            freezed == txid
+                ? _value.txid
+                : txid // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -132,11 +147,13 @@ class _$FCMPayloadImpl extends _FCMPayload {
             (identical(other.txid, txid) || other.txid == txid));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, type, txid);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMPayload
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMPayloadImplCopyWith<_$FCMPayloadImpl> get copyWith =>
@@ -144,9 +161,7 @@ class _$FCMPayloadImpl extends _FCMPayload {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMPayloadImplToJson(
-      this,
-    );
+    return _$$FCMPayloadImplToJson(this);
   }
 }
 
@@ -162,8 +177,11 @@ abstract class _FCMPayload extends FCMPayload {
   FCMPayloadType? get type;
   @override
   String? get txid;
+
+  /// Create a copy of FCMPayload
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMPayloadImplCopyWith<_$FCMPayloadImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -177,8 +195,12 @@ mixin _$FCMNotification {
   String? get title => throw _privateConstructorUsedError;
   String? get body => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMNotification to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMNotification
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMNotificationCopyWith<FCMNotification> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -186,8 +208,9 @@ mixin _$FCMNotification {
 /// @nodoc
 abstract class $FCMNotificationCopyWith<$Res> {
   factory $FCMNotificationCopyWith(
-          FCMNotification value, $Res Function(FCMNotification) then) =
-      _$FCMNotificationCopyWithImpl<$Res, FCMNotification>;
+    FCMNotification value,
+    $Res Function(FCMNotification) then,
+  ) = _$FCMNotificationCopyWithImpl<$Res, FCMNotification>;
   @useResult
   $Res call({String? title, String? body});
 }
@@ -202,31 +225,36 @@ class _$FCMNotificationCopyWithImpl<$Res, $Val extends FCMNotification>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMNotification
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? title = freezed,
-    Object? body = freezed,
-  }) {
-    return _then(_value.copyWith(
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      body: freezed == body
-          ? _value.body
-          : body // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? title = freezed, Object? body = freezed}) {
+    return _then(
+      _value.copyWith(
+            title:
+                freezed == title
+                    ? _value.title
+                    : title // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            body:
+                freezed == body
+                    ? _value.body
+                    : body // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FCMNotificationImplCopyWith<$Res>
     implements $FCMNotificationCopyWith<$Res> {
-  factory _$$FCMNotificationImplCopyWith(_$FCMNotificationImpl value,
-          $Res Function(_$FCMNotificationImpl) then) =
-      __$$FCMNotificationImplCopyWithImpl<$Res>;
+  factory _$$FCMNotificationImplCopyWith(
+    _$FCMNotificationImpl value,
+    $Res Function(_$FCMNotificationImpl) then,
+  ) = __$$FCMNotificationImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? title, String? body});
@@ -237,25 +265,29 @@ class __$$FCMNotificationImplCopyWithImpl<$Res>
     extends _$FCMNotificationCopyWithImpl<$Res, _$FCMNotificationImpl>
     implements _$$FCMNotificationImplCopyWith<$Res> {
   __$$FCMNotificationImplCopyWithImpl(
-      _$FCMNotificationImpl _value, $Res Function(_$FCMNotificationImpl) _then)
-      : super(_value, _then);
+    _$FCMNotificationImpl _value,
+    $Res Function(_$FCMNotificationImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMNotification
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? title = freezed,
-    Object? body = freezed,
-  }) {
-    return _then(_$FCMNotificationImpl(
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      body: freezed == body
-          ? _value.body
-          : body // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? title = freezed, Object? body = freezed}) {
+    return _then(
+      _$FCMNotificationImpl(
+        title:
+            freezed == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        body:
+            freezed == body
+                ? _value.body
+                : body // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -286,22 +318,24 @@ class _$FCMNotificationImpl implements _FCMNotification {
             (identical(other.body, body) || other.body == body));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, title, body);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMNotification
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMNotificationImplCopyWith<_$FCMNotificationImpl> get copyWith =>
       __$$FCMNotificationImplCopyWithImpl<_$FCMNotificationImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMNotificationImplToJson(
-      this,
-    );
+    return _$$FCMNotificationImplToJson(this);
   }
 }
 
@@ -316,8 +350,11 @@ abstract class _FCMNotification implements FCMNotification {
   String? get title;
   @override
   String? get body;
+
+  /// Create a copy of FCMNotification
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMNotificationImplCopyWith<_$FCMNotificationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -330,8 +367,12 @@ FCMData _$FCMDataFromJson(Map<String, dynamic> json) {
 mixin _$FCMData {
   FCMDetails? get details => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMDataCopyWith<FCMData> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -355,19 +396,25 @@ class _$FCMDataCopyWithImpl<$Res, $Val extends FCMData>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMData
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? details = freezed,
-  }) {
-    return _then(_value.copyWith(
-      details: freezed == details
-          ? _value.details
-          : details // ignore: cast_nullable_to_non_nullable
-              as FCMDetails?,
-    ) as $Val);
+  $Res call({Object? details = freezed}) {
+    return _then(
+      _value.copyWith(
+            details:
+                freezed == details
+                    ? _value.details
+                    : details // ignore: cast_nullable_to_non_nullable
+                        as FCMDetails?,
+          )
+          as $Val,
+    );
   }
 
+  /// Create a copy of FCMData
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMDetailsCopyWith<$Res>? get details {
@@ -384,8 +431,9 @@ class _$FCMDataCopyWithImpl<$Res, $Val extends FCMData>
 /// @nodoc
 abstract class _$$FCMDataImplCopyWith<$Res> implements $FCMDataCopyWith<$Res> {
   factory _$$FCMDataImplCopyWith(
-          _$FCMDataImpl value, $Res Function(_$FCMDataImpl) then) =
-      __$$FCMDataImplCopyWithImpl<$Res>;
+    _$FCMDataImpl value,
+    $Res Function(_$FCMDataImpl) then,
+  ) = __$$FCMDataImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FCMDetails? details});
@@ -399,20 +447,24 @@ class __$$FCMDataImplCopyWithImpl<$Res>
     extends _$FCMDataCopyWithImpl<$Res, _$FCMDataImpl>
     implements _$$FCMDataImplCopyWith<$Res> {
   __$$FCMDataImplCopyWithImpl(
-      _$FCMDataImpl _value, $Res Function(_$FCMDataImpl) _then)
-      : super(_value, _then);
+    _$FCMDataImpl _value,
+    $Res Function(_$FCMDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMData
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? details = freezed,
-  }) {
-    return _then(_$FCMDataImpl(
-      details: freezed == details
-          ? _value.details
-          : details // ignore: cast_nullable_to_non_nullable
-              as FCMDetails?,
-    ));
+  $Res call({Object? details = freezed}) {
+    return _then(
+      _$FCMDataImpl(
+        details:
+            freezed == details
+                ? _value.details
+                : details // ignore: cast_nullable_to_non_nullable
+                    as FCMDetails?,
+      ),
+    );
   }
 }
 
@@ -440,11 +492,13 @@ class _$FCMDataImpl implements _FCMData {
             (identical(other.details, details) || other.details == details));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, details);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMData
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMDataImplCopyWith<_$FCMDataImpl> get copyWith =>
@@ -452,9 +506,7 @@ class _$FCMDataImpl implements _FCMData {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMDataImplToJson(
-      this,
-    );
+    return _$$FCMDataImplToJson(this);
   }
 }
 
@@ -465,8 +517,11 @@ abstract class _FCMData implements FCMData {
 
   @override
   FCMDetails? get details;
+
+  /// Create a copy of FCMData
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMDataImplCopyWith<_$FCMDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -485,8 +540,12 @@ mixin _$FCMDetails {
   @JsonKey(name: 'order_cancelled')
   FCMOrderCancelled? get orderCancelled => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMDetails to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMDetailsCopyWith<FCMDetails> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -494,14 +553,16 @@ mixin _$FCMDetails {
 /// @nodoc
 abstract class $FCMDetailsCopyWith<$Res> {
   factory $FCMDetailsCopyWith(
-          FCMDetails value, $Res Function(FCMDetails) then) =
-      _$FCMDetailsCopyWithImpl<$Res, FCMDetails>;
+    FCMDetails value,
+    $Res Function(FCMDetails) then,
+  ) = _$FCMDetailsCopyWithImpl<$Res, FCMDetails>;
   @useResult
-  $Res call(
-      {FCMTx? tx,
-      @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
-      @JsonKey(name: 'peg_detected') FCMPeg? pegDetected,
-      @JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled});
+  $Res call({
+    FCMTx? tx,
+    @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
+    @JsonKey(name: 'peg_detected') FCMPeg? pegDetected,
+    @JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled,
+  });
 
   $FCMTxCopyWith<$Res>? get tx;
   $FCMPegCopyWith<$Res>? get pegPayout;
@@ -519,6 +580,8 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -527,26 +590,35 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
     Object? pegDetected = freezed,
     Object? orderCancelled = freezed,
   }) {
-    return _then(_value.copyWith(
-      tx: freezed == tx
-          ? _value.tx
-          : tx // ignore: cast_nullable_to_non_nullable
-              as FCMTx?,
-      pegPayout: freezed == pegPayout
-          ? _value.pegPayout
-          : pegPayout // ignore: cast_nullable_to_non_nullable
-              as FCMPeg?,
-      pegDetected: freezed == pegDetected
-          ? _value.pegDetected
-          : pegDetected // ignore: cast_nullable_to_non_nullable
-              as FCMPeg?,
-      orderCancelled: freezed == orderCancelled
-          ? _value.orderCancelled
-          : orderCancelled // ignore: cast_nullable_to_non_nullable
-              as FCMOrderCancelled?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            tx:
+                freezed == tx
+                    ? _value.tx
+                    : tx // ignore: cast_nullable_to_non_nullable
+                        as FCMTx?,
+            pegPayout:
+                freezed == pegPayout
+                    ? _value.pegPayout
+                    : pegPayout // ignore: cast_nullable_to_non_nullable
+                        as FCMPeg?,
+            pegDetected:
+                freezed == pegDetected
+                    ? _value.pegDetected
+                    : pegDetected // ignore: cast_nullable_to_non_nullable
+                        as FCMPeg?,
+            orderCancelled:
+                freezed == orderCancelled
+                    ? _value.orderCancelled
+                    : orderCancelled // ignore: cast_nullable_to_non_nullable
+                        as FCMOrderCancelled?,
+          )
+          as $Val,
+    );
   }
 
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMTxCopyWith<$Res>? get tx {
@@ -559,6 +631,8 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
     });
   }
 
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMPegCopyWith<$Res>? get pegPayout {
@@ -571,6 +645,8 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
     });
   }
 
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMPegCopyWith<$Res>? get pegDetected {
@@ -583,6 +659,8 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
     });
   }
 
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMOrderCancelledCopyWith<$Res>? get orderCancelled {
@@ -600,15 +678,17 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
 abstract class _$$FCMDetailsImplCopyWith<$Res>
     implements $FCMDetailsCopyWith<$Res> {
   factory _$$FCMDetailsImplCopyWith(
-          _$FCMDetailsImpl value, $Res Function(_$FCMDetailsImpl) then) =
-      __$$FCMDetailsImplCopyWithImpl<$Res>;
+    _$FCMDetailsImpl value,
+    $Res Function(_$FCMDetailsImpl) then,
+  ) = __$$FCMDetailsImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {FCMTx? tx,
-      @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
-      @JsonKey(name: 'peg_detected') FCMPeg? pegDetected,
-      @JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled});
+  $Res call({
+    FCMTx? tx,
+    @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
+    @JsonKey(name: 'peg_detected') FCMPeg? pegDetected,
+    @JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled,
+  });
 
   @override
   $FCMTxCopyWith<$Res>? get tx;
@@ -625,9 +705,12 @@ class __$$FCMDetailsImplCopyWithImpl<$Res>
     extends _$FCMDetailsCopyWithImpl<$Res, _$FCMDetailsImpl>
     implements _$$FCMDetailsImplCopyWith<$Res> {
   __$$FCMDetailsImplCopyWithImpl(
-      _$FCMDetailsImpl _value, $Res Function(_$FCMDetailsImpl) _then)
-      : super(_value, _then);
+    _$FCMDetailsImpl _value,
+    $Res Function(_$FCMDetailsImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -636,35 +719,42 @@ class __$$FCMDetailsImplCopyWithImpl<$Res>
     Object? pegDetected = freezed,
     Object? orderCancelled = freezed,
   }) {
-    return _then(_$FCMDetailsImpl(
-      tx: freezed == tx
-          ? _value.tx
-          : tx // ignore: cast_nullable_to_non_nullable
-              as FCMTx?,
-      pegPayout: freezed == pegPayout
-          ? _value.pegPayout
-          : pegPayout // ignore: cast_nullable_to_non_nullable
-              as FCMPeg?,
-      pegDetected: freezed == pegDetected
-          ? _value.pegDetected
-          : pegDetected // ignore: cast_nullable_to_non_nullable
-              as FCMPeg?,
-      orderCancelled: freezed == orderCancelled
-          ? _value.orderCancelled
-          : orderCancelled // ignore: cast_nullable_to_non_nullable
-              as FCMOrderCancelled?,
-    ));
+    return _then(
+      _$FCMDetailsImpl(
+        tx:
+            freezed == tx
+                ? _value.tx
+                : tx // ignore: cast_nullable_to_non_nullable
+                    as FCMTx?,
+        pegPayout:
+            freezed == pegPayout
+                ? _value.pegPayout
+                : pegPayout // ignore: cast_nullable_to_non_nullable
+                    as FCMPeg?,
+        pegDetected:
+            freezed == pegDetected
+                ? _value.pegDetected
+                : pegDetected // ignore: cast_nullable_to_non_nullable
+                    as FCMPeg?,
+        orderCancelled:
+            freezed == orderCancelled
+                ? _value.orderCancelled
+                : orderCancelled // ignore: cast_nullable_to_non_nullable
+                    as FCMOrderCancelled?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FCMDetailsImpl implements _FCMDetails {
-  const _$FCMDetailsImpl(
-      {this.tx,
-      @JsonKey(name: 'peg_payout') this.pegPayout,
-      @JsonKey(name: 'peg_detected') this.pegDetected,
-      @JsonKey(name: 'order_cancelled') this.orderCancelled});
+  const _$FCMDetailsImpl({
+    this.tx,
+    @JsonKey(name: 'peg_payout') this.pegPayout,
+    @JsonKey(name: 'peg_detected') this.pegDetected,
+    @JsonKey(name: 'order_cancelled') this.orderCancelled,
+  });
 
   factory _$FCMDetailsImpl.fromJson(Map<String, dynamic> json) =>
       _$$FCMDetailsImplFromJson(json);
@@ -700,12 +790,14 @@ class _$FCMDetailsImpl implements _FCMDetails {
                 other.orderCancelled == orderCancelled));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, tx, pegPayout, pegDetected, orderCancelled);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMDetailsImplCopyWith<_$FCMDetailsImpl> get copyWith =>
@@ -713,19 +805,17 @@ class _$FCMDetailsImpl implements _FCMDetails {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMDetailsImplToJson(
-      this,
-    );
+    return _$$FCMDetailsImplToJson(this);
   }
 }
 
 abstract class _FCMDetails implements FCMDetails {
-  const factory _FCMDetails(
-      {final FCMTx? tx,
-      @JsonKey(name: 'peg_payout') final FCMPeg? pegPayout,
-      @JsonKey(name: 'peg_detected') final FCMPeg? pegDetected,
-      @JsonKey(name: 'order_cancelled')
-      final FCMOrderCancelled? orderCancelled}) = _$FCMDetailsImpl;
+  const factory _FCMDetails({
+    final FCMTx? tx,
+    @JsonKey(name: 'peg_payout') final FCMPeg? pegPayout,
+    @JsonKey(name: 'peg_detected') final FCMPeg? pegDetected,
+    @JsonKey(name: 'order_cancelled') final FCMOrderCancelled? orderCancelled,
+  }) = _$FCMDetailsImpl;
 
   factory _FCMDetails.fromJson(Map<String, dynamic> json) =
       _$FCMDetailsImpl.fromJson;
@@ -741,8 +831,11 @@ abstract class _FCMDetails implements FCMDetails {
   @override
   @JsonKey(name: 'order_cancelled')
   FCMOrderCancelled? get orderCancelled;
+
+  /// Create a copy of FCMDetails
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMDetailsImplCopyWith<_$FCMDetailsImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -758,8 +851,12 @@ mixin _$FCMTx {
   @JsonKey(name: 'txid')
   String? get txId => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMTx to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMTx
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMTxCopyWith<FCMTx> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -768,9 +865,10 @@ abstract class $FCMTxCopyWith<$Res> {
   factory $FCMTxCopyWith(FCMTx value, $Res Function(FCMTx) then) =
       _$FCMTxCopyWithImpl<$Res, FCMTx>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'tx_type') FCMTxType? txType,
-      @JsonKey(name: 'txid') String? txId});
+  $Res call({
+    @JsonKey(name: 'tx_type') FCMTxType? txType,
+    @JsonKey(name: 'txid') String? txId,
+  });
 }
 
 /// @nodoc
@@ -783,35 +881,41 @@ class _$FCMTxCopyWithImpl<$Res, $Val extends FCMTx>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMTx
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? txType = freezed,
-    Object? txId = freezed,
-  }) {
-    return _then(_value.copyWith(
-      txType: freezed == txType
-          ? _value.txType
-          : txType // ignore: cast_nullable_to_non_nullable
-              as FCMTxType?,
-      txId: freezed == txId
-          ? _value.txId
-          : txId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? txType = freezed, Object? txId = freezed}) {
+    return _then(
+      _value.copyWith(
+            txType:
+                freezed == txType
+                    ? _value.txType
+                    : txType // ignore: cast_nullable_to_non_nullable
+                        as FCMTxType?,
+            txId:
+                freezed == txId
+                    ? _value.txId
+                    : txId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FCMTxImplCopyWith<$Res> implements $FCMTxCopyWith<$Res> {
   factory _$$FCMTxImplCopyWith(
-          _$FCMTxImpl value, $Res Function(_$FCMTxImpl) then) =
-      __$$FCMTxImplCopyWithImpl<$Res>;
+    _$FCMTxImpl value,
+    $Res Function(_$FCMTxImpl) then,
+  ) = __$$FCMTxImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'tx_type') FCMTxType? txType,
-      @JsonKey(name: 'txid') String? txId});
+  $Res call({
+    @JsonKey(name: 'tx_type') FCMTxType? txType,
+    @JsonKey(name: 'txid') String? txId,
+  });
 }
 
 /// @nodoc
@@ -819,34 +923,39 @@ class __$$FCMTxImplCopyWithImpl<$Res>
     extends _$FCMTxCopyWithImpl<$Res, _$FCMTxImpl>
     implements _$$FCMTxImplCopyWith<$Res> {
   __$$FCMTxImplCopyWithImpl(
-      _$FCMTxImpl _value, $Res Function(_$FCMTxImpl) _then)
-      : super(_value, _then);
+    _$FCMTxImpl _value,
+    $Res Function(_$FCMTxImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMTx
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? txType = freezed,
-    Object? txId = freezed,
-  }) {
-    return _then(_$FCMTxImpl(
-      txType: freezed == txType
-          ? _value.txType
-          : txType // ignore: cast_nullable_to_non_nullable
-              as FCMTxType?,
-      txId: freezed == txId
-          ? _value.txId
-          : txId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? txType = freezed, Object? txId = freezed}) {
+    return _then(
+      _$FCMTxImpl(
+        txType:
+            freezed == txType
+                ? _value.txType
+                : txType // ignore: cast_nullable_to_non_nullable
+                    as FCMTxType?,
+        txId:
+            freezed == txId
+                ? _value.txId
+                : txId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FCMTxImpl implements _FCMTx {
-  const _$FCMTxImpl(
-      {@JsonKey(name: 'tx_type') this.txType,
-      @JsonKey(name: 'txid') this.txId});
+  const _$FCMTxImpl({
+    @JsonKey(name: 'tx_type') this.txType,
+    @JsonKey(name: 'txid') this.txId,
+  });
 
   factory _$FCMTxImpl.fromJson(Map<String, dynamic> json) =>
       _$$FCMTxImplFromJson(json);
@@ -872,11 +981,13 @@ class _$FCMTxImpl implements _FCMTx {
             (identical(other.txId, txId) || other.txId == txId));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, txType, txId);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMTx
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMTxImplCopyWith<_$FCMTxImpl> get copyWith =>
@@ -884,16 +995,15 @@ class _$FCMTxImpl implements _FCMTx {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMTxImplToJson(
-      this,
-    );
+    return _$$FCMTxImplToJson(this);
   }
 }
 
 abstract class _FCMTx implements FCMTx {
-  const factory _FCMTx(
-      {@JsonKey(name: 'tx_type') final FCMTxType? txType,
-      @JsonKey(name: 'txid') final String? txId}) = _$FCMTxImpl;
+  const factory _FCMTx({
+    @JsonKey(name: 'tx_type') final FCMTxType? txType,
+    @JsonKey(name: 'txid') final String? txId,
+  }) = _$FCMTxImpl;
 
   factory _FCMTx.fromJson(Map<String, dynamic> json) = _$FCMTxImpl.fromJson;
 
@@ -903,8 +1013,11 @@ abstract class _FCMTx implements FCMTx {
   @override
   @JsonKey(name: 'txid')
   String? get txId;
+
+  /// Create a copy of FCMTx
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMTxImplCopyWith<_$FCMTxImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -928,8 +1041,12 @@ mixin _$FCMPeg {
   String? get payoutTxId => throw _privateConstructorUsedError;
   int? get payout => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMPeg to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMPeg
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMPegCopyWith<FCMPeg> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -938,14 +1055,15 @@ abstract class $FCMPegCopyWith<$Res> {
   factory $FCMPegCopyWith(FCMPeg value, $Res Function(FCMPeg) then) =
       _$FCMPegCopyWithImpl<$Res, FCMPeg>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'order_id') String? orderId,
-      @JsonKey(name: 'peg_in') bool? pegIn,
-      @JsonKey(name: 'tx_hash') String? txHash,
-      int? vout,
-      @JsonKey(name: 'created_at') int? createdAt,
-      @JsonKey(name: 'payout_txid') String? payoutTxId,
-      int? payout});
+  $Res call({
+    @JsonKey(name: 'order_id') String? orderId,
+    @JsonKey(name: 'peg_in') bool? pegIn,
+    @JsonKey(name: 'tx_hash') String? txHash,
+    int? vout,
+    @JsonKey(name: 'created_at') int? createdAt,
+    @JsonKey(name: 'payout_txid') String? payoutTxId,
+    int? payout,
+  });
 }
 
 /// @nodoc
@@ -958,6 +1076,8 @@ class _$FCMPegCopyWithImpl<$Res, $Val extends FCMPeg>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMPeg
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -969,54 +1089,66 @@ class _$FCMPegCopyWithImpl<$Res, $Val extends FCMPeg>
     Object? payoutTxId = freezed,
     Object? payout = freezed,
   }) {
-    return _then(_value.copyWith(
-      orderId: freezed == orderId
-          ? _value.orderId
-          : orderId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pegIn: freezed == pegIn
-          ? _value.pegIn
-          : pegIn // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      txHash: freezed == txHash
-          ? _value.txHash
-          : txHash // ignore: cast_nullable_to_non_nullable
-              as String?,
-      vout: freezed == vout
-          ? _value.vout
-          : vout // ignore: cast_nullable_to_non_nullable
-              as int?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as int?,
-      payoutTxId: freezed == payoutTxId
-          ? _value.payoutTxId
-          : payoutTxId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      payout: freezed == payout
-          ? _value.payout
-          : payout // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            orderId:
+                freezed == orderId
+                    ? _value.orderId
+                    : orderId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            pegIn:
+                freezed == pegIn
+                    ? _value.pegIn
+                    : pegIn // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            txHash:
+                freezed == txHash
+                    ? _value.txHash
+                    : txHash // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            vout:
+                freezed == vout
+                    ? _value.vout
+                    : vout // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            createdAt:
+                freezed == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            payoutTxId:
+                freezed == payoutTxId
+                    ? _value.payoutTxId
+                    : payoutTxId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            payout:
+                freezed == payout
+                    ? _value.payout
+                    : payout // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FCMPegImplCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
   factory _$$FCMPegImplCopyWith(
-          _$FCMPegImpl value, $Res Function(_$FCMPegImpl) then) =
-      __$$FCMPegImplCopyWithImpl<$Res>;
+    _$FCMPegImpl value,
+    $Res Function(_$FCMPegImpl) then,
+  ) = __$$FCMPegImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'order_id') String? orderId,
-      @JsonKey(name: 'peg_in') bool? pegIn,
-      @JsonKey(name: 'tx_hash') String? txHash,
-      int? vout,
-      @JsonKey(name: 'created_at') int? createdAt,
-      @JsonKey(name: 'payout_txid') String? payoutTxId,
-      int? payout});
+  $Res call({
+    @JsonKey(name: 'order_id') String? orderId,
+    @JsonKey(name: 'peg_in') bool? pegIn,
+    @JsonKey(name: 'tx_hash') String? txHash,
+    int? vout,
+    @JsonKey(name: 'created_at') int? createdAt,
+    @JsonKey(name: 'payout_txid') String? payoutTxId,
+    int? payout,
+  });
 }
 
 /// @nodoc
@@ -1024,9 +1156,12 @@ class __$$FCMPegImplCopyWithImpl<$Res>
     extends _$FCMPegCopyWithImpl<$Res, _$FCMPegImpl>
     implements _$$FCMPegImplCopyWith<$Res> {
   __$$FCMPegImplCopyWithImpl(
-      _$FCMPegImpl _value, $Res Function(_$FCMPegImpl) _then)
-      : super(_value, _then);
+    _$FCMPegImpl _value,
+    $Res Function(_$FCMPegImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMPeg
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1038,50 +1173,60 @@ class __$$FCMPegImplCopyWithImpl<$Res>
     Object? payoutTxId = freezed,
     Object? payout = freezed,
   }) {
-    return _then(_$FCMPegImpl(
-      orderId: freezed == orderId
-          ? _value.orderId
-          : orderId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pegIn: freezed == pegIn
-          ? _value.pegIn
-          : pegIn // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      txHash: freezed == txHash
-          ? _value.txHash
-          : txHash // ignore: cast_nullable_to_non_nullable
-              as String?,
-      vout: freezed == vout
-          ? _value.vout
-          : vout // ignore: cast_nullable_to_non_nullable
-              as int?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as int?,
-      payoutTxId: freezed == payoutTxId
-          ? _value.payoutTxId
-          : payoutTxId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      payout: freezed == payout
-          ? _value.payout
-          : payout // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+    return _then(
+      _$FCMPegImpl(
+        orderId:
+            freezed == orderId
+                ? _value.orderId
+                : orderId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        pegIn:
+            freezed == pegIn
+                ? _value.pegIn
+                : pegIn // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        txHash:
+            freezed == txHash
+                ? _value.txHash
+                : txHash // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        vout:
+            freezed == vout
+                ? _value.vout
+                : vout // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        createdAt:
+            freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        payoutTxId:
+            freezed == payoutTxId
+                ? _value.payoutTxId
+                : payoutTxId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        payout:
+            freezed == payout
+                ? _value.payout
+                : payout // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FCMPegImpl implements _FCMPeg {
-  const _$FCMPegImpl(
-      {@JsonKey(name: 'order_id') this.orderId,
-      @JsonKey(name: 'peg_in') this.pegIn,
-      @JsonKey(name: 'tx_hash') this.txHash,
-      this.vout,
-      @JsonKey(name: 'created_at') this.createdAt,
-      @JsonKey(name: 'payout_txid') this.payoutTxId,
-      this.payout});
+  const _$FCMPegImpl({
+    @JsonKey(name: 'order_id') this.orderId,
+    @JsonKey(name: 'peg_in') this.pegIn,
+    @JsonKey(name: 'tx_hash') this.txHash,
+    this.vout,
+    @JsonKey(name: 'created_at') this.createdAt,
+    @JsonKey(name: 'payout_txid') this.payoutTxId,
+    this.payout,
+  });
 
   factory _$FCMPegImpl.fromJson(Map<String, dynamic> json) =>
       _$$FCMPegImplFromJson(json);
@@ -1127,12 +1272,22 @@ class _$FCMPegImpl implements _FCMPeg {
             (identical(other.payout, payout) || other.payout == payout));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, orderId, pegIn, txHash, vout, createdAt, payoutTxId, payout);
+    runtimeType,
+    orderId,
+    pegIn,
+    txHash,
+    vout,
+    createdAt,
+    payoutTxId,
+    payout,
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMPeg
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMPegImplCopyWith<_$FCMPegImpl> get copyWith =>
@@ -1140,21 +1295,20 @@ class _$FCMPegImpl implements _FCMPeg {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMPegImplToJson(
-      this,
-    );
+    return _$$FCMPegImplToJson(this);
   }
 }
 
 abstract class _FCMPeg implements FCMPeg {
-  const factory _FCMPeg(
-      {@JsonKey(name: 'order_id') final String? orderId,
-      @JsonKey(name: 'peg_in') final bool? pegIn,
-      @JsonKey(name: 'tx_hash') final String? txHash,
-      final int? vout,
-      @JsonKey(name: 'created_at') final int? createdAt,
-      @JsonKey(name: 'payout_txid') final String? payoutTxId,
-      final int? payout}) = _$FCMPegImpl;
+  const factory _FCMPeg({
+    @JsonKey(name: 'order_id') final String? orderId,
+    @JsonKey(name: 'peg_in') final bool? pegIn,
+    @JsonKey(name: 'tx_hash') final String? txHash,
+    final int? vout,
+    @JsonKey(name: 'created_at') final int? createdAt,
+    @JsonKey(name: 'payout_txid') final String? payoutTxId,
+    final int? payout,
+  }) = _$FCMPegImpl;
 
   factory _FCMPeg.fromJson(Map<String, dynamic> json) = _$FCMPegImpl.fromJson;
 
@@ -1177,8 +1331,11 @@ abstract class _FCMPeg implements FCMPeg {
   String? get payoutTxId;
   @override
   int? get payout;
+
+  /// Create a copy of FCMPeg
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMPegImplCopyWith<_$FCMPegImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1192,8 +1349,12 @@ mixin _$FCMOrderCancelled {
   @JsonKey(name: 'order_id')
   String? get orderId => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMOrderCancelled to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMOrderCancelled
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMOrderCancelledCopyWith<FCMOrderCancelled> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1201,8 +1362,9 @@ mixin _$FCMOrderCancelled {
 /// @nodoc
 abstract class $FCMOrderCancelledCopyWith<$Res> {
   factory $FCMOrderCancelledCopyWith(
-          FCMOrderCancelled value, $Res Function(FCMOrderCancelled) then) =
-      _$FCMOrderCancelledCopyWithImpl<$Res, FCMOrderCancelled>;
+    FCMOrderCancelled value,
+    $Res Function(FCMOrderCancelled) then,
+  ) = _$FCMOrderCancelledCopyWithImpl<$Res, FCMOrderCancelled>;
   @useResult
   $Res call({@JsonKey(name: 'order_id') String? orderId});
 }
@@ -1217,26 +1379,31 @@ class _$FCMOrderCancelledCopyWithImpl<$Res, $Val extends FCMOrderCancelled>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMOrderCancelled
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? orderId = freezed,
-  }) {
-    return _then(_value.copyWith(
-      orderId: freezed == orderId
-          ? _value.orderId
-          : orderId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? orderId = freezed}) {
+    return _then(
+      _value.copyWith(
+            orderId:
+                freezed == orderId
+                    ? _value.orderId
+                    : orderId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FCMOrderCancelledImplCopyWith<$Res>
     implements $FCMOrderCancelledCopyWith<$Res> {
-  factory _$$FCMOrderCancelledImplCopyWith(_$FCMOrderCancelledImpl value,
-          $Res Function(_$FCMOrderCancelledImpl) then) =
-      __$$FCMOrderCancelledImplCopyWithImpl<$Res>;
+  factory _$$FCMOrderCancelledImplCopyWith(
+    _$FCMOrderCancelledImpl value,
+    $Res Function(_$FCMOrderCancelledImpl) then,
+  ) = __$$FCMOrderCancelledImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({@JsonKey(name: 'order_id') String? orderId});
@@ -1246,21 +1413,25 @@ abstract class _$$FCMOrderCancelledImplCopyWith<$Res>
 class __$$FCMOrderCancelledImplCopyWithImpl<$Res>
     extends _$FCMOrderCancelledCopyWithImpl<$Res, _$FCMOrderCancelledImpl>
     implements _$$FCMOrderCancelledImplCopyWith<$Res> {
-  __$$FCMOrderCancelledImplCopyWithImpl(_$FCMOrderCancelledImpl _value,
-      $Res Function(_$FCMOrderCancelledImpl) _then)
-      : super(_value, _then);
+  __$$FCMOrderCancelledImplCopyWithImpl(
+    _$FCMOrderCancelledImpl _value,
+    $Res Function(_$FCMOrderCancelledImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMOrderCancelled
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? orderId = freezed,
-  }) {
-    return _then(_$FCMOrderCancelledImpl(
-      orderId: freezed == orderId
-          ? _value.orderId
-          : orderId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? orderId = freezed}) {
+    return _then(
+      _$FCMOrderCancelledImpl(
+        orderId:
+            freezed == orderId
+                ? _value.orderId
+                : orderId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -1289,29 +1460,31 @@ class _$FCMOrderCancelledImpl implements _FCMOrderCancelled {
             (identical(other.orderId, orderId) || other.orderId == orderId));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, orderId);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMOrderCancelled
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMOrderCancelledImplCopyWith<_$FCMOrderCancelledImpl> get copyWith =>
       __$$FCMOrderCancelledImplCopyWithImpl<_$FCMOrderCancelledImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMOrderCancelledImplToJson(
-      this,
-    );
+    return _$$FCMOrderCancelledImplToJson(this);
   }
 }
 
 abstract class _FCMOrderCancelled implements FCMOrderCancelled {
-  const factory _FCMOrderCancelled(
-          {@JsonKey(name: 'order_id') final String? orderId}) =
-      _$FCMOrderCancelledImpl;
+  const factory _FCMOrderCancelled({
+    @JsonKey(name: 'order_id') final String? orderId,
+  }) = _$FCMOrderCancelledImpl;
 
   factory _FCMOrderCancelled.fromJson(Map<String, dynamic> json) =
       _$FCMOrderCancelledImpl.fromJson;
@@ -1319,8 +1492,11 @@ abstract class _FCMOrderCancelled implements FCMOrderCancelled {
   @override
   @JsonKey(name: 'order_id')
   String? get orderId;
+
+  /// Create a copy of FCMOrderCancelled
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMOrderCancelledImplCopyWith<_$FCMOrderCancelledImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1334,8 +1510,12 @@ mixin _$FCMMessage {
   FCMNotification? get notification => throw _privateConstructorUsedError;
   FCMData? get data => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMMessage to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMMessageCopyWith<FCMMessage> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1343,8 +1523,9 @@ mixin _$FCMMessage {
 /// @nodoc
 abstract class $FCMMessageCopyWith<$Res> {
   factory $FCMMessageCopyWith(
-          FCMMessage value, $Res Function(FCMMessage) then) =
-      _$FCMMessageCopyWithImpl<$Res, FCMMessage>;
+    FCMMessage value,
+    $Res Function(FCMMessage) then,
+  ) = _$FCMMessageCopyWithImpl<$Res, FCMMessage>;
   @useResult
   $Res call({FCMNotification? notification, FCMData? data});
 
@@ -1362,24 +1543,30 @@ class _$FCMMessageCopyWithImpl<$Res, $Val extends FCMMessage>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? notification = freezed,
-    Object? data = freezed,
-  }) {
-    return _then(_value.copyWith(
-      notification: freezed == notification
-          ? _value.notification
-          : notification // ignore: cast_nullable_to_non_nullable
-              as FCMNotification?,
-      data: freezed == data
-          ? _value.data
-          : data // ignore: cast_nullable_to_non_nullable
-              as FCMData?,
-    ) as $Val);
+  $Res call({Object? notification = freezed, Object? data = freezed}) {
+    return _then(
+      _value.copyWith(
+            notification:
+                freezed == notification
+                    ? _value.notification
+                    : notification // ignore: cast_nullable_to_non_nullable
+                        as FCMNotification?,
+            data:
+                freezed == data
+                    ? _value.data
+                    : data // ignore: cast_nullable_to_non_nullable
+                        as FCMData?,
+          )
+          as $Val,
+    );
   }
 
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMNotificationCopyWith<$Res>? get notification {
@@ -1392,6 +1579,8 @@ class _$FCMMessageCopyWithImpl<$Res, $Val extends FCMMessage>
     });
   }
 
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FCMDataCopyWith<$Res>? get data {
@@ -1409,8 +1598,9 @@ class _$FCMMessageCopyWithImpl<$Res, $Val extends FCMMessage>
 abstract class _$$FCMMessageImplCopyWith<$Res>
     implements $FCMMessageCopyWith<$Res> {
   factory _$$FCMMessageImplCopyWith(
-          _$FCMMessageImpl value, $Res Function(_$FCMMessageImpl) then) =
-      __$$FCMMessageImplCopyWithImpl<$Res>;
+    _$FCMMessageImpl value,
+    $Res Function(_$FCMMessageImpl) then,
+  ) = __$$FCMMessageImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FCMNotification? notification, FCMData? data});
@@ -1426,25 +1616,29 @@ class __$$FCMMessageImplCopyWithImpl<$Res>
     extends _$FCMMessageCopyWithImpl<$Res, _$FCMMessageImpl>
     implements _$$FCMMessageImplCopyWith<$Res> {
   __$$FCMMessageImplCopyWithImpl(
-      _$FCMMessageImpl _value, $Res Function(_$FCMMessageImpl) _then)
-      : super(_value, _then);
+    _$FCMMessageImpl _value,
+    $Res Function(_$FCMMessageImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? notification = freezed,
-    Object? data = freezed,
-  }) {
-    return _then(_$FCMMessageImpl(
-      notification: freezed == notification
-          ? _value.notification
-          : notification // ignore: cast_nullable_to_non_nullable
-              as FCMNotification?,
-      data: freezed == data
-          ? _value.data
-          : data // ignore: cast_nullable_to_non_nullable
-              as FCMData?,
-    ));
+  $Res call({Object? notification = freezed, Object? data = freezed}) {
+    return _then(
+      _$FCMMessageImpl(
+        notification:
+            freezed == notification
+                ? _value.notification
+                : notification // ignore: cast_nullable_to_non_nullable
+                    as FCMNotification?,
+        data:
+            freezed == data
+                ? _value.data
+                : data // ignore: cast_nullable_to_non_nullable
+                    as FCMData?,
+      ),
+    );
   }
 }
 
@@ -1476,11 +1670,13 @@ class _$FCMMessageImpl implements _FCMMessage {
             (identical(other.data, data) || other.data == data));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, notification, data);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMMessageImplCopyWith<_$FCMMessageImpl> get copyWith =>
@@ -1488,16 +1684,15 @@ class _$FCMMessageImpl implements _FCMMessage {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMMessageImplToJson(
-      this,
-    );
+    return _$$FCMMessageImplToJson(this);
   }
 }
 
 abstract class _FCMMessage implements FCMMessage {
-  const factory _FCMMessage(
-      {final FCMNotification? notification,
-      final FCMData? data}) = _$FCMMessageImpl;
+  const factory _FCMMessage({
+    final FCMNotification? notification,
+    final FCMData? data,
+  }) = _$FCMMessageImpl;
 
   factory _FCMMessage.fromJson(Map<String, dynamic> json) =
       _$FCMMessageImpl.fromJson;
@@ -1506,8 +1701,11 @@ abstract class _FCMMessage implements FCMMessage {
   FCMNotification? get notification;
   @override
   FCMData? get data;
+
+  /// Create a copy of FCMMessage
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMMessageImplCopyWith<_$FCMMessageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1523,8 +1721,12 @@ mixin _$FCMRemoteMessage {
   String? get title => throw _privateConstructorUsedError;
   Map<String, dynamic>? get data => throw _privateConstructorUsedError;
 
+  /// Serializes this FCMRemoteMessage to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FCMRemoteMessage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $FCMRemoteMessageCopyWith<FCMRemoteMessage> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1532,14 +1734,16 @@ mixin _$FCMRemoteMessage {
 /// @nodoc
 abstract class $FCMRemoteMessageCopyWith<$Res> {
   factory $FCMRemoteMessageCopyWith(
-          FCMRemoteMessage value, $Res Function(FCMRemoteMessage) then) =
-      _$FCMRemoteMessageCopyWithImpl<$Res, FCMRemoteMessage>;
+    FCMRemoteMessage value,
+    $Res Function(FCMRemoteMessage) then,
+  ) = _$FCMRemoteMessageCopyWithImpl<$Res, FCMRemoteMessage>;
   @useResult
-  $Res call(
-      {dynamic details,
-      String? body,
-      String? title,
-      Map<String, dynamic>? data});
+  $Res call({
+    dynamic details,
+    String? body,
+    String? title,
+    Map<String, dynamic>? data,
+  });
 }
 
 /// @nodoc
@@ -1552,6 +1756,8 @@ class _$FCMRemoteMessageCopyWithImpl<$Res, $Val extends FCMRemoteMessage>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of FCMRemoteMessage
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1560,50 +1766,62 @@ class _$FCMRemoteMessageCopyWithImpl<$Res, $Val extends FCMRemoteMessage>
     Object? title = freezed,
     Object? data = freezed,
   }) {
-    return _then(_value.copyWith(
-      details: freezed == details
-          ? _value.details
-          : details // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      body: freezed == body
-          ? _value.body
-          : body // ignore: cast_nullable_to_non_nullable
-              as String?,
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      data: freezed == data
-          ? _value.data
-          : data // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            details:
+                freezed == details
+                    ? _value.details
+                    : details // ignore: cast_nullable_to_non_nullable
+                        as dynamic,
+            body:
+                freezed == body
+                    ? _value.body
+                    : body // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            title:
+                freezed == title
+                    ? _value.title
+                    : title // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            data:
+                freezed == data
+                    ? _value.data
+                    : data // ignore: cast_nullable_to_non_nullable
+                        as Map<String, dynamic>?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FCMRemoteMessageImplCopyWith<$Res>
     implements $FCMRemoteMessageCopyWith<$Res> {
-  factory _$$FCMRemoteMessageImplCopyWith(_$FCMRemoteMessageImpl value,
-          $Res Function(_$FCMRemoteMessageImpl) then) =
-      __$$FCMRemoteMessageImplCopyWithImpl<$Res>;
+  factory _$$FCMRemoteMessageImplCopyWith(
+    _$FCMRemoteMessageImpl value,
+    $Res Function(_$FCMRemoteMessageImpl) then,
+  ) = __$$FCMRemoteMessageImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {dynamic details,
-      String? body,
-      String? title,
-      Map<String, dynamic>? data});
+  $Res call({
+    dynamic details,
+    String? body,
+    String? title,
+    Map<String, dynamic>? data,
+  });
 }
 
 /// @nodoc
 class __$$FCMRemoteMessageImplCopyWithImpl<$Res>
     extends _$FCMRemoteMessageCopyWithImpl<$Res, _$FCMRemoteMessageImpl>
     implements _$$FCMRemoteMessageImplCopyWith<$Res> {
-  __$$FCMRemoteMessageImplCopyWithImpl(_$FCMRemoteMessageImpl _value,
-      $Res Function(_$FCMRemoteMessageImpl) _then)
-      : super(_value, _then);
+  __$$FCMRemoteMessageImplCopyWithImpl(
+    _$FCMRemoteMessageImpl _value,
+    $Res Function(_$FCMRemoteMessageImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of FCMRemoteMessage
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1612,33 +1830,42 @@ class __$$FCMRemoteMessageImplCopyWithImpl<$Res>
     Object? title = freezed,
     Object? data = freezed,
   }) {
-    return _then(_$FCMRemoteMessageImpl(
-      details: freezed == details
-          ? _value.details
-          : details // ignore: cast_nullable_to_non_nullable
-              as dynamic,
-      body: freezed == body
-          ? _value.body
-          : body // ignore: cast_nullable_to_non_nullable
-              as String?,
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      data: freezed == data
-          ? _value._data
-          : data // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-    ));
+    return _then(
+      _$FCMRemoteMessageImpl(
+        details:
+            freezed == details
+                ? _value.details
+                : details // ignore: cast_nullable_to_non_nullable
+                    as dynamic,
+        body:
+            freezed == body
+                ? _value.body
+                : body // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        title:
+            freezed == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        data:
+            freezed == data
+                ? _value._data
+                : data // ignore: cast_nullable_to_non_nullable
+                    as Map<String, dynamic>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$FCMRemoteMessageImpl implements _FCMRemoteMessage {
-  const _$FCMRemoteMessageImpl(
-      {this.details, this.body, this.title, final Map<String, dynamic>? data})
-      : _data = data;
+  const _$FCMRemoteMessageImpl({
+    this.details,
+    this.body,
+    this.title,
+    final Map<String, dynamic>? data,
+  }) : _data = data;
 
   factory _$FCMRemoteMessageImpl.fromJson(Map<String, dynamic> json) =>
       _$$FCMRemoteMessageImplFromJson(json);
@@ -1675,36 +1902,40 @@ class _$FCMRemoteMessageImpl implements _FCMRemoteMessage {
             const DeepCollectionEquality().equals(other._data, _data));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(details),
-      body,
-      title,
-      const DeepCollectionEquality().hash(_data));
+    runtimeType,
+    const DeepCollectionEquality().hash(details),
+    body,
+    title,
+    const DeepCollectionEquality().hash(_data),
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FCMRemoteMessage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FCMRemoteMessageImplCopyWith<_$FCMRemoteMessageImpl> get copyWith =>
       __$$FCMRemoteMessageImplCopyWithImpl<_$FCMRemoteMessageImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FCMRemoteMessageImplToJson(
-      this,
-    );
+    return _$$FCMRemoteMessageImplToJson(this);
   }
 }
 
 abstract class _FCMRemoteMessage implements FCMRemoteMessage {
-  const factory _FCMRemoteMessage(
-      {final dynamic details,
-      final String? body,
-      final String? title,
-      final Map<String, dynamic>? data}) = _$FCMRemoteMessageImpl;
+  const factory _FCMRemoteMessage({
+    final dynamic details,
+    final String? body,
+    final String? title,
+    final Map<String, dynamic>? data,
+  }) = _$FCMRemoteMessageImpl;
 
   factory _FCMRemoteMessage.fromJson(Map<String, dynamic> json) =
       _$FCMRemoteMessageImpl.fromJson;
@@ -1717,8 +1948,11 @@ abstract class _FCMRemoteMessage implements FCMRemoteMessage {
   String? get title;
   @override
   Map<String, dynamic>? get data;
+
+  /// Create a copy of FCMRemoteMessage
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FCMRemoteMessageImplCopyWith<_$FCMRemoteMessageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

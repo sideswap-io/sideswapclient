@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class RowTxDetail extends StatelessWidget {
-  const RowTxDetail({
-    super.key,
-    required this.name,
-    required this.value,
-  });
+  const RowTxDetail({super.key, required this.name, required this.value});
 
   final String name;
   final String value;
@@ -16,10 +12,7 @@ class RowTxDetail extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(name),
-          Text(value),
-        ],
+        children: [Text(name), Text(value)],
       ),
     );
   }

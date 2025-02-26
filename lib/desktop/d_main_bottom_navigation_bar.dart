@@ -109,9 +109,10 @@ class ToolbarButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSelected = selectedIndex == index;
-    final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .mainBottomNavigationBarButtonStyle;
+    final buttonStyle =
+        ref
+            .watch(desktopAppThemeNotifierProvider)
+            .mainBottomNavigationBarButtonStyle;
 
     return DButton(
       style: buttonStyle,
@@ -136,9 +137,10 @@ class ToolbarButton extends ConsumerWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             style: TextStyle(
-              color: isSelected
-                  ? SideSwapColors.brightTurquoise
-                  : const Color(0xFF68839E),
+              color:
+                  isSelected
+                      ? SideSwapColors.brightTurquoise
+                      : const Color(0xFF68839E),
               fontSize: 10,
             ),
           ),

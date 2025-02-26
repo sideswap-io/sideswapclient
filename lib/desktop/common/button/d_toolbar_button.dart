@@ -28,37 +28,37 @@ class DTopToolbarButton extends StatelessWidget {
           child: DFocusBorder(
             focused: states.isFocused,
             child: Container(
-              color: states.isHovering
-                  ? states.isPressing
-                      ? Colors.transparent.toAccentColor().darker
-                      : Colors.transparent.toAccentColor().dark
-                  : Colors.transparent,
+              color:
+                  states.isHovering
+                      ? states.isPressing
+                          ? Colors.transparent.toAccentColor().darker
+                          : Colors.transparent.toAccentColor().dark
+                      : Colors.transparent,
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 12,
+                ),
                 child: SizedBox(
                   height: 34,
                   child: Center(
                     child: Row(
                       children: [
-                        SvgPicture.asset(
-                          icon,
-                          width: 18,
-                          height: 18,
-                        ),
+                        SvgPicture.asset(icon, width: 18, height: 18),
                         ...switch (name.isNotEmpty) {
                           true => [
-                              const SizedBox(width: 6),
-                              Text(
-                                name,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: states.isHovering
-                                      ? SideSwapColors.brightTurquoise
-                                      : Colors.white,
-                                ),
+                            const SizedBox(width: 6),
+                            Text(
+                              name,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    states.isHovering
+                                        ? SideSwapColors.brightTurquoise
+                                        : Colors.white,
                               ),
-                            ],
+                            ),
+                          ],
                           _ => [const SizedBox()],
                         },
                       ],

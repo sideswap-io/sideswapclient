@@ -26,9 +26,7 @@ class Home extends ConsumerWidget {
                     padding: const EdgeInsets.only(top: 16),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Container(),
-                        ),
+                        Expanded(child: Container()),
                         Padding(
                           padding: const EdgeInsets.only(right: 16),
                           child: RoundedButton(
@@ -53,10 +51,8 @@ class Home extends ConsumerWidget {
                       child: SvgPicture.asset('assets/logo.svg'),
                     ),
                   ),
-                  Expanded(
-                    child: Container(),
-                  ),
-                  const HomeBottomPanel()
+                  Expanded(child: Container()),
+                  const HomeBottomPanel(),
                 ],
               ),
             ),

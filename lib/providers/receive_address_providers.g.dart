@@ -13,14 +13,15 @@ String _$currentReceiveAddressHash() =>
 @ProviderFor(CurrentReceiveAddress)
 final currentReceiveAddressProvider =
     NotifierProvider<CurrentReceiveAddress, ReceiveAddress>.internal(
-  CurrentReceiveAddress.new,
-  name: r'currentReceiveAddressProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$currentReceiveAddressHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      CurrentReceiveAddress.new,
+      name: r'currentReceiveAddressProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$currentReceiveAddressHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$CurrentReceiveAddress = Notifier<ReceiveAddress>;
 String _$regularAccountAddressesHash() =>
@@ -30,15 +31,16 @@ String _$regularAccountAddressesHash() =>
 @ProviderFor(RegularAccountAddresses)
 final regularAccountAddressesProvider =
     NotifierProvider<RegularAccountAddresses, List<ReceiveAddress>>.internal(
-  RegularAccountAddresses.new,
-  name: r'regularAccountAddressesProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$regularAccountAddressesHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      RegularAccountAddresses.new,
+      name: r'regularAccountAddressesProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$regularAccountAddressesHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$RegularAccountAddresses = Notifier<List<ReceiveAddress>>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

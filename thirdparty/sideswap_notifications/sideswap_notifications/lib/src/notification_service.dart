@@ -12,10 +12,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final fcmRemoteMessage = FCMRemoteMessage(
-      details: message.data['details'],
-      body: message.notification?.body,
-      title: message.notification?.title,
-      data: message.data);
+    details: message.data['details'],
+    body: message.notification?.body,
+    title: message.notification?.title,
+    data: message.data,
+  );
   _notificationBackgroundHandler?.call(fcmRemoteMessage);
 }
 
@@ -29,9 +30,9 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // resume?
-    await FirebaseMessaging.instance
-        .getInitialMessage()
-        .then((RemoteMessage? message) {
+    await FirebaseMessaging.instance.getInitialMessage().then((
+      RemoteMessage? message,
+    ) {
       if (message == null) {
         return;
       }
@@ -39,14 +40,17 @@ class NotificationService {
       logger.d('onResume: $message');
 
       final fcmRemoteMessage = FCMRemoteMessage(
-          details: message.data['details'],
-          body: message.notification?.body,
-          title: message.notification?.title,
-          data: message.data);
+        details: message.data['details'],
+        body: message.notification?.body,
+        title: message.notification?.title,
+        data: message.data,
+      );
 
       if (handleIncomingNotification != null) {
         handleIncomingNotification(
-            IncomingNotificationType.resume, fcmRemoteMessage);
+          IncomingNotificationType.resume,
+          fcmRemoteMessage,
+        );
       }
     });
 
@@ -54,14 +58,17 @@ class NotificationService {
       logger.d('onMessage: $message');
 
       final fcmRemoteMessage = FCMRemoteMessage(
-          details: message.data['details'],
-          body: message.notification?.body,
-          title: message.notification?.title,
-          data: message.data);
+        details: message.data['details'],
+        body: message.notification?.body,
+        title: message.notification?.title,
+        data: message.data,
+      );
 
       if (handleIncomingNotification != null) {
         handleIncomingNotification(
-            IncomingNotificationType.message, fcmRemoteMessage);
+          IncomingNotificationType.message,
+          fcmRemoteMessage,
+        );
       }
     });
 
@@ -69,14 +76,17 @@ class NotificationService {
       logger.d('onLaunch: $message');
 
       final fcmRemoteMessage = FCMRemoteMessage(
-          details: message.data['details'],
-          body: message.notification?.body,
-          title: message.notification?.title,
-          data: message.data);
+        details: message.data['details'],
+        body: message.notification?.body,
+        title: message.notification?.title,
+        data: message.data,
+      );
 
       if (handleIncomingNotification != null) {
         handleIncomingNotification(
-            IncomingNotificationType.launch, fcmRemoteMessage);
+          IncomingNotificationType.launch,
+          fcmRemoteMessage,
+        );
       }
     });
   }

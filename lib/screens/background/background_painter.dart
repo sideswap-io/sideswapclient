@@ -21,29 +21,25 @@ class BackgroundPainter extends CustomPainter {
       paint.shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF005474),
-          Color(0xFF00203F),
-        ],
+        colors: [Color(0xFF005474), Color(0xFF00203F)],
         stops: [0.0, 1.0],
       ).createShader(rect);
     } else {
       paint.shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          Color(0xFF005474),
-          Color(0xFF00203F),
-        ],
+        colors: [Color(0xFF005474), Color(0xFF00203F)],
         stops: [0.0, 1.0],
       ).createShader(rect);
     }
 
     canvas.drawRect(rect, paint);
 
-    var path = Path()
-      ..addPath(
-          parseSvgPathData(svgPath), Offset(14, -topPadding + topPadding / 2));
+    var path =
+        Path()..addPath(
+          parseSvgPathData(svgPath),
+          Offset(14, -topPadding + topPadding / 2),
+        );
 
     paint = Paint();
 
@@ -52,8 +48,8 @@ class BackgroundPainter extends CustomPainter {
         begin: const Alignment(0.5, 0.0713),
         end: const Alignment(0.75, 1.0),
         colors: [
-          const Color(0xFFE6F5FE).withOpacity(0.02),
-          const Color(0xFFE6F5FE).withOpacity(0),
+          const Color(0xFFE6F5FE).withValues(alpha: 0.02),
+          const Color(0xFFE6F5FE).withValues(alpha: 0),
         ],
       ).createShader(rect);
 
@@ -64,8 +60,8 @@ class BackgroundPainter extends CustomPainter {
         begin: const Alignment(0.25, 0.0713),
         end: const Alignment(0.5, 1.0),
         colors: [
-          const Color(0xFFE6F5FE).withOpacity(0.02),
-          const Color(0xFFE6F5FE).withOpacity(0),
+          const Color(0xFFE6F5FE).withValues(alpha: 0.02),
+          const Color(0xFFE6F5FE).withValues(alpha: 0),
         ],
       ).createShader(rect);
     }

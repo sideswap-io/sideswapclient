@@ -33,7 +33,7 @@ class DSettings extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -52,12 +52,12 @@ class DSettings extends ConsumerWidget {
               children: [
                 switch (isJade) {
                   false => DSettingsButton(
-                      title: 'View my recovery phrase'.tr(),
-                      onPressed: () {
-                        ref.read(walletProvider).settingsViewBackup();
-                      },
-                      icon: DSettingsButtonIcon.recovery,
-                    ),
+                    title: 'View my recovery phrase'.tr(),
+                    onPressed: () {
+                      ref.read(walletProvider).settingsViewBackup();
+                    },
+                    icon: DSettingsButtonIcon.recovery,
+                  ),
                   _ => const SizedBox(),
                 },
                 Padding(
@@ -72,39 +72,42 @@ class DSettings extends ConsumerWidget {
                 ),
                 switch (isJade) {
                   false => Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: DSettingsButton(
-                            title: 'PIN protection'.tr(),
-                            onPressed: () async {
-                              if (isPinEnabled) {
-                                final navigator = Navigator.of(context);
-                                final ret = await ref
-                                    .read(walletProvider)
-                                    .disablePinProtection();
-                                if (ret) {
-                                  ref
-                                      .read(pageStatusNotifierProvider.notifier)
-                                      .setStatus(Status.registered);
-                                  navigator.pushAndRemoveUntil(
-                                      RawDialogRoute<Widget>(
-                                        pageBuilder: (_, __, ___) =>
-                                            const DSettingsPinDisableSuccess(),
-                                      ),
-                                      (route) => route.isFirst);
-                                }
-                              } else {
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: DSettingsButton(
+                          title: 'PIN protection'.tr(),
+                          onPressed: () async {
+                            if (isPinEnabled) {
+                              final navigator = Navigator.of(context);
+                              final ret =
+                                  await ref
+                                      .read(walletProvider)
+                                      .disablePinProtection();
+                              if (ret) {
                                 ref
-                                    .read(pinHelperProvider)
-                                    .initPinSetupSettings();
+                                    .read(pageStatusNotifierProvider.notifier)
+                                    .setStatus(Status.registered);
+                                navigator.pushAndRemoveUntil(
+                                  RawDialogRoute<Widget>(
+                                    pageBuilder:
+                                        (_, __, ___) =>
+                                            const DSettingsPinDisableSuccess(),
+                                  ),
+                                  (route) => route.isFirst,
+                                );
                               }
-                            },
-                            icon: DSettingsButtonIcon.password,
-                          ),
+                            } else {
+                              ref
+                                  .read(pinHelperProvider)
+                                  .initPinSetupSettings();
+                            }
+                          },
+                          icon: DSettingsButtonIcon.password,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
                   _ => const SizedBox(),
                 },
                 Padding(
@@ -135,27 +138,30 @@ class DSettings extends ConsumerWidget {
                     title: 'Language'.tr(),
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).push<void>(
-                          DialogRoute(
-                              builder: ((context) => const Languages()),
-                              context: context));
+                        DialogRoute(
+                          builder: ((context) => const Languages()),
+                          context: context,
+                        ),
+                      );
                     },
                     icon: DSettingsButtonIcon.language,
                   ),
                 ),
                 switch (isJade) {
                   true => Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: DSettingsButton(
-                        title: 'Jade device',
-                        onPressed: () {
-                          Navigator.of(context, rootNavigator: true).push<void>(
-                              DialogRoute(
-                                  builder: ((context) =>
-                                      const DSettingsJadeDevice()),
-                                  context: context));
-                        },
-                      ),
+                    padding: const EdgeInsets.only(top: 10),
+                    child: DSettingsButton(
+                      title: 'Jade device',
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push<void>(
+                          DialogRoute(
+                            builder: ((context) => const DSettingsJadeDevice()),
+                            context: context,
+                          ),
+                        );
+                      },
                     ),
+                  ),
                   false => const SizedBox(),
                 },
                 Padding(
@@ -184,49 +190,49 @@ class DSettings extends ConsumerWidget {
                 ),
                 switch (FlavorConfig.enableLocalEndpoint) {
                   true => Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: DSettingsButton(
-                        title: 'Use local api server',
-                        forward: false,
-                        onPressed: () {
+                    padding: const EdgeInsets.only(top: 10),
+                    child: DSettingsButton(
+                      title: 'Use local api server',
+                      forward: false,
+                      onPressed: () {
+                        final enableEndpoint =
+                            ref.read(configurationProvider).enableEndpoint;
+                        ref
+                            .read(configurationProvider.notifier)
+                            .setEnableEndpoint(!enableEndpoint);
+                      },
+                      child: Consumer(
+                        builder: (context, ref, child) {
                           final enableEndpoint =
-                              ref.read(configurationProvider).enableEndpoint;
-                          ref
-                              .read(configurationProvider.notifier)
-                              .setEnableEndpoint(!enableEndpoint);
-                        },
-                        child: Consumer(
-                          builder: (context, ref, child) {
-                            final enableEndpoint =
-                                ref.watch(configurationProvider).enableEndpoint;
-                            return IgnorePointer(
-                              child: FlutterSwitch(
-                                value: enableEndpoint,
-                                onToggle: (value) {
-                                  if (value) {
-                                    ref
-                                        .read(configurationProvider.notifier)
-                                        .setEnableEndpoint(!true);
-                                    return;
-                                  }
-
+                              ref.watch(configurationProvider).enableEndpoint;
+                          return IgnorePointer(
+                            child: FlutterSwitch(
+                              value: enableEndpoint,
+                              onToggle: (value) {
+                                if (value) {
                                   ref
                                       .read(configurationProvider.notifier)
-                                      .setEnableEndpoint(false);
-                                },
-                                width: 40,
-                                height: 22,
-                                toggleSize: 18,
-                                padding: 2,
-                                activeColor: SideSwapColors.brightTurquoise,
-                                inactiveColor: const Color(0xFF0B4160),
-                                toggleColor: Colors.white,
-                              ),
-                            );
-                          },
-                        ),
+                                      .setEnableEndpoint(!true);
+                                  return;
+                                }
+
+                                ref
+                                    .read(configurationProvider.notifier)
+                                    .setEnableEndpoint(false);
+                              },
+                              width: 40,
+                              height: 22,
+                              toggleSize: 18,
+                              padding: 2,
+                              activeColor: SideSwapColors.brightTurquoise,
+                              inactiveColor: const Color(0xFF0B4160),
+                              toggleColor: Colors.white,
+                            ),
+                          );
+                        },
                       ),
                     ),
+                  ),
                   false => const SizedBox(),
                 },
                 const Spacer(),
@@ -237,10 +243,12 @@ class DSettings extends ConsumerWidget {
                     title: 'Delete wallet'.tr(),
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil<Widget>(
-                          RawDialogRoute(
-                              pageBuilder: (_, __, ___) =>
-                                  const DSettingsDeleteWallet()),
-                          (route) => route.isFirst);
+                        RawDialogRoute(
+                          pageBuilder:
+                              (_, __, ___) => const DSettingsDeleteWallet(),
+                        ),
+                        (route) => route.isFirst,
+                      );
                     },
                     icon: DSettingsButtonIcon.delete,
                   ),

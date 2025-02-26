@@ -61,38 +61,42 @@ class CustomCheckBoxRowState extends State<CustomCheckBoxRow>
 
     radius = widget.radius ?? const Radius.circular(4);
     size = widget.size ?? 16;
-    icon = widget.icon ??
-        const Icon(
-          Icons.check,
-          size: 13,
-        );
+    icon = widget.icon ?? const Icon(Icons.check, size: 13);
 
     frameColorController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    frameColorCurve =
-        CurvedAnimation(parent: frameColorController, curve: Curves.easeOut);
-    frameColorAnimation =
-        ColorTween(begin: widget.frameUnchecked, end: widget.frameChecked)
-            .animate(frameColorCurve)
-          ..addListener(() {
-            setState(() {});
-          });
+    frameColorCurve = CurvedAnimation(
+      parent: frameColorController,
+      curve: Curves.easeOut,
+    );
+    frameColorAnimation = ColorTween(
+      begin: widget.frameUnchecked,
+      end: widget.frameChecked,
+    ).animate(frameColorCurve)..addListener(() {
+      setState(() {});
+    });
 
     backgroundColorController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
     backgroundColorCurve = CurvedAnimation(
-        parent: backgroundColorController, curve: Curves.easeOut);
+      parent: backgroundColorController,
+      curve: Curves.easeOut,
+    );
     backgroundColorAnimation = ColorTween(
-            begin: widget.backgroundUnchecked, end: widget.backgroundChecked)
-        .animate(backgroundColorCurve)
-      ..addListener(() {
-        setState(() {});
-      });
+      begin: widget.backgroundUnchecked,
+      end: widget.backgroundChecked,
+    ).animate(backgroundColorCurve)..addListener(() {
+      setState(() {});
+    });
 
     fadeController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
     fadeCurve = CurvedAnimation(parent: fadeController, curve: Curves.easeOut);
     fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(fadeController)
       ..addListener(() {
@@ -154,9 +158,7 @@ class CustomCheckBoxRowState extends State<CustomCheckBoxRow>
                     border: Border.all(
                       color: frameColorAnimation.value ?? Colors.transparent,
                     ),
-                    borderRadius: BorderRadius.all(
-                      radius,
-                    ),
+                    borderRadius: BorderRadius.all(radius),
                     color: backgroundColorAnimation.value ?? Colors.transparent,
                   ),
                   child: Center(

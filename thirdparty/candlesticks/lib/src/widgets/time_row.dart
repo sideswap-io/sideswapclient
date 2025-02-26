@@ -68,10 +68,7 @@ class _TimeRowState extends State<TimeRow> {
   Text _monthDayText(DateTime time, Color color) {
     return Text(
       "${numberFormat(time.month)}/${numberFormat(time.day)}",
-      style: TextStyle(
-        color: color,
-        fontSize: 12,
-      ),
+      style: TextStyle(color: color, fontSize: 12),
     );
   }
 
@@ -79,10 +76,7 @@ class _TimeRowState extends State<TimeRow> {
   Text _hourMinuteText(DateTime time, Color color) {
     return Text(
       "${numberFormat(time.hour)}:${numberFormat(time.minute)}",
-      style: TextStyle(
-        color: color,
-        fontSize: 12,
-      ),
+      style: TextStyle(color: color, fontSize: 12),
     );
   }
 
@@ -103,7 +97,8 @@ class _TimeRowState extends State<TimeRow> {
   Widget build(BuildContext context) {
     int step = _stepCalculator();
     final dif = widget.candles[0].date.difference(
-        widget.candles[math.min(step, widget.candles.length - 1)].date);
+      widget.candles[math.min(step, widget.candles.length - 1)].date,
+    );
     return Padding(
       padding: const EdgeInsets.only(right: priceBarWidth + 1.0),
       child: Stack(
@@ -129,7 +124,9 @@ class _TimeRowState extends State<TimeRow> {
                   dif.compareTo(const Duration(days: 1)) > 0
                       ? _monthDayText(time, Theme.of(context).scaleNumbersColor)
                       : _hourMinuteText(
-                          time, Theme.of(context).scaleNumbersColor),
+                        time,
+                        Theme.of(context).scaleNumbersColor,
+                      ),
                 ],
               );
             },
@@ -137,23 +134,23 @@ class _TimeRowState extends State<TimeRow> {
           widget.indicatorX == null
               ? Container()
               : Positioned(
-                  bottom: 0,
-                  left: math.max(widget.indicatorX! - 55, 0),
-                  child: Container(
-                    color: Theme.of(context).hoverIndicatorBackgroundColor,
-                    width: 110,
-                    height: 20,
-                    child: Center(
-                      child: Text(
-                        dateFormatter(widget.indicatorTime!),
-                        style: TextStyle(
-                          color: Theme.of(context).hoverIndicatorTextColor,
-                          fontSize: 12,
-                        ),
+                bottom: 0,
+                left: math.max(widget.indicatorX! - 55, 0),
+                child: Container(
+                  color: Theme.of(context).hoverIndicatorBackgroundColor,
+                  width: 110,
+                  height: 20,
+                  child: Center(
+                    child: Text(
+                      dateFormatter(widget.indicatorTime!),
+                      style: TextStyle(
+                        color: Theme.of(context).hoverIndicatorTextColor,
+                        fontSize: 12,
                       ),
                     ),
                   ),
                 ),
+              ),
         ],
       ),
     );

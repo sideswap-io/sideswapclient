@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/home/widgets/d_tx_and_orders_panel.dart';
 import 'package:sideswap/desktop/main/d_charts.dart';
-import 'package:sideswap/desktop/markets/widgets/make_order_panel.dart';
-import 'package:sideswap/desktop/markets/widgets/orders_panel.dart';
+import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
+import 'package:sideswap/desktop/markets/widgets/orders_view.dart';
 import 'package:sideswap/listeners/markets_page_listener.dart';
+import 'package:sideswap/providers/chart_providers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 
 class DMarkets extends HookConsumerWidget {
@@ -13,13 +13,17 @@ class DMarkets extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showCharts = useState(false);
+    final chartsSubscriptionFlag = ref.watch(
+      chartsSubscriptionFlagNotifierProvider,
+    );
+    final showCharts =
+        chartsSubscriptionFlag == ChartsSubscriptionFlagSubscribed();
 
     return Stack(
       children: [
         const MarketsPageListener(),
         Offstage(
-          offstage: showCharts.value,
+          offstage: showCharts,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Column(
@@ -27,14 +31,19 @@ class DMarkets extends HookConsumerWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      const MakeOrderPanel(),
+                      const MarketOrderPanel(),
                       const SizedBox(width: 20),
                       Expanded(
                         child: Align(
                           alignment: Alignment.topCenter,
-                          child: OrdersPanel(
+                          child: OrdersView(
                             onChartsPressed: () {
-                              showCharts.value = true;
+                              ref
+                                  .read(
+                                    chartsSubscriptionFlagNotifierProvider
+                                        .notifier,
+                                  )
+                                  .subscribe();
                             },
                           ),
                         ),
@@ -43,26 +52,33 @@ class DMarkets extends HookConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const DTxAndOrdersPanel(
-                  onlyWorkingOrders: true,
-                ),
+                const DTxAndOrdersPanel(onlyWorkingOrders: true),
               ],
             ),
           ),
         ),
-        if (showCharts.value)
-          Consumer(
-            builder: (context, ref, child) {
-              final selectedAccountAsset =
-                  ref.watch(marketSelectedAccountAssetStateProvider);
-              return DCharts(
-                assetId: selectedAccountAsset.assetId,
+        Consumer(
+          builder: (context, ref, child) {
+            final optionAssetPair = ref.watch(
+              marketSubscribedAssetPairNotifierProvider,
+            );
+
+            if (!showCharts) {
+              return SizedBox();
+            }
+
+            return optionAssetPair.match(
+              () => SizedBox(),
+              (assetPair) => DCharts(
                 onBackPressed: () {
-                  showCharts.value = false;
+                  ref
+                      .read(chartsSubscriptionFlagNotifierProvider.notifier)
+                      .unsubscribe();
                 },
-              );
-            },
-          )
+              ),
+            );
+          },
+        ),
       ],
     );
   }

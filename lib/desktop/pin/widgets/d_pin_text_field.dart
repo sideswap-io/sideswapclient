@@ -39,7 +39,8 @@ class DPinTextField extends HookConsumerWidget {
 
     controller.text = pin;
     controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: controller.text.length));
+      TextPosition(offset: controller.text.length),
+    );
 
     return SizedBox(
       width: 344,
@@ -70,14 +71,16 @@ class DPinTextField extends HookConsumerWidget {
                   obscureText.value = !obscureText.value;
                 },
               ),
-              focusedBorder: error
-                  ? OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          const BorderSide(color: SideSwapColors.bitterSweet),
-                      gapPadding: 0,
-                    )
-                  : null,
+              focusedBorder:
+                  error
+                      ? OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: SideSwapColors.bitterSweet,
+                        ),
+                        gapPadding: 0,
+                      )
+                      : null,
             ),
             onChanged: onChanged,
             onSubmitted: onSubmitted,

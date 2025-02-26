@@ -3,15 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-enum ShareIconType {
-  share,
-  link,
-}
+enum ShareIconType { share, link }
 
-enum BlindType {
-  unblinded,
-  both,
-}
+enum BlindType { unblinded, both }
 
 class ShareExternalExplorerDialog extends StatelessWidget {
   const ShareExternalExplorerDialog({
@@ -76,7 +70,7 @@ class ShareExternalExplorerDialog extends StatelessWidget {
                         type: BlindedButtonType.unblinded,
                         onPressed: onUnblindedPressed,
                         shareIconType: shareIconType,
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -89,10 +83,7 @@ class ShareExternalExplorerDialog extends StatelessWidget {
   }
 }
 
-enum BlindedButtonType {
-  blinded,
-  unblinded,
-}
+enum BlindedButtonType { blinded, unblinded }
 
 class BlindedButton extends StatelessWidget {
   const BlindedButton({
@@ -122,17 +113,18 @@ class BlindedButton extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: type == BlindedButtonType.blinded
-                        ? SvgPicture.asset(
-                            'assets/blinded.svg',
-                            width: 22,
-                            height: 20,
-                          )
-                        : SvgPicture.asset(
-                            'assets/unblinded.svg',
-                            width: 22,
-                            height: 16,
-                          ),
+                    child:
+                        type == BlindedButtonType.blinded
+                            ? SvgPicture.asset(
+                              'assets/blinded.svg',
+                              width: 22,
+                              height: 20,
+                            )
+                            : SvgPicture.asset(
+                              'assets/unblinded.svg',
+                              width: 22,
+                              height: 16,
+                            ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 10),
@@ -150,17 +142,18 @@ class BlindedButton extends StatelessWidget {
                   const Spacer(),
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: shareIconType == ShareIconType.share
-                        ? SvgPicture.asset(
-                            'assets/share3.svg',
-                            width: 24,
-                            height: 24,
-                          )
-                        : SvgPicture.asset(
-                            'assets/link.svg',
-                            width: 24,
-                            height: 24,
-                          ),
+                    child:
+                        shareIconType == ShareIconType.share
+                            ? SvgPicture.asset(
+                              'assets/share3.svg',
+                              width: 24,
+                              height: 24,
+                            )
+                            : SvgPicture.asset(
+                              'assets/link.svg',
+                              width: 24,
+                              height: 24,
+                            ),
                   ),
                 ],
               ),

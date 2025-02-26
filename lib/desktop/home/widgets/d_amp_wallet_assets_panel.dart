@@ -18,16 +18,21 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
         children: [
           Consumer(
             builder: (context, ref, _) {
-              final ampAccountAssets =
-                  ref.watch(ampVisibleAccountAssetsProvider);
+              final ampAccountAssets = ref.watch(
+                ampVisibleAccountAssetsProvider,
+              );
               final defaultCurrencyConversion = ref.watch(
-                  accountAssetsTotalDefaultCurrencyBalanceStringProvider(
-                      ampAccountAssets));
-              final defaultCurrencyTicker =
-                  ref.watch(defaultCurrencyTickerProvider);
+                accountAssetsTotalDefaultCurrencyBalanceStringProvider(
+                  ampAccountAssets,
+                ),
+              );
+              final defaultCurrencyTicker = ref.watch(
+                defaultCurrencyTickerProvider,
+              );
 
               final lbtcConversion = ref.watch(
-                  accountAssetsTotalLbtcBalanceProvider(ampAccountAssets));
+                accountAssetsTotalLbtcBalanceProvider(ampAccountAssets),
+              );
 
               return DAssetsPanelHeader(
                 title: 'AMP Securities wallet'.tr(),
@@ -42,9 +47,7 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
             child: Consumer(
               builder: (context, ref, _) {
                 final ampAccounts = ref.watch(ampVisibleAccountAssetsProvider);
-                return DAssetsList(
-                  accountAssets: ampAccounts,
-                );
+                return DAssetsList(accountAssets: ampAccounts);
               },
             ),
           ),

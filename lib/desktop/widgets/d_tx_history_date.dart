@@ -25,21 +25,24 @@ class DTxHistoryDate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timestampCopy =
-        DateTime.fromMillisecondsSinceEpoch(tx.createdAt.toInt());
-    return Row(children: [
-      Text(
-        dateFormatDate.format(timestampCopy),
-        style: dateTextStyle?.merge(const TextStyle(
-          color: SideSwapColors.airSuperiorityBlue,
-        )),
-      ),
-      Text(
-        dateFormatTime.format(timestampCopy),
-        style: timeTextStyle?.merge(const TextStyle(
-          color: SideSwapColors.airSuperiorityBlue,
-        )),
-      ),
-    ]);
+    final timestampCopy = DateTime.fromMillisecondsSinceEpoch(
+      tx.createdAt.toInt(),
+    );
+    return Row(
+      children: [
+        Text(
+          dateFormatDate.format(timestampCopy),
+          style: dateTextStyle?.merge(
+            const TextStyle(color: SideSwapColors.airSuperiorityBlue),
+          ),
+        ),
+        Text(
+          dateFormatTime.format(timestampCopy),
+          style: timeTextStyle?.merge(
+            const TextStyle(color: SideSwapColors.airSuperiorityBlue),
+          ),
+        ),
+      ],
+    );
   }
 }

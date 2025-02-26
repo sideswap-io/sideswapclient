@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -28,29 +27,40 @@ class SwapDeliverAmount extends HookConsumerWidget {
         .getPrecisionForAssetId(assetId: swapDeliverAsset.asset.assetId);
     final amountProvider = ref.watch(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
-        AmountToStringParameters(amount: balance, precision: precision));
+      AmountToStringParameters(amount: balance, precision: precision),
+    );
     final swapSendWallet = ref.watch(swapSendWalletProvider);
     final swapState = ref.watch(swapStateNotifierProvider);
     final swapType = ref.watch(swapTypeProvider);
     final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
-    final serverError = subscribe == const SwapPriceSubscribeState.recv()
-        ? ''
-        : ref.watch(swapNetworkErrorNotifierProvider);
+    final serverError =
+        subscribe == const SwapPriceSubscribeState.recv()
+            ? ''
+            : ref.watch(swapNetworkErrorNotifierProvider);
     final showInsufficientFunds = ref.watch(showInsufficientFundsProvider);
 
     final swapSendAmountController = useTextEditingController();
 
     ref.listen(swapSendTextAmountNotifierProvider, (previous, next) {
-      swapSendAmountController.text = next;
+      final oldSelection = swapSendAmountController.selection;
+      swapSendAmountController.value = TextEditingValue(
+        text: next,
+        selection: oldSelection,
+      );
     });
 
     final showDeliverDefaultCurrencyConversion =
         swapType == const SwapType.pegOut();
 
-    final defaultCurrencyConversion2 = showDeliverDefaultCurrencyConversion
-        ? ref.watch(defaultCurrencyConversionFromStringProvider(
-            swapDeliverAsset.asset.assetId, swapSendAmountController.text))
-        : null;
+    final defaultCurrencyConversion2 =
+        showDeliverDefaultCurrencyConversion
+            ? ref.watch(
+              defaultCurrencyConversionFromStringProvider(
+                swapDeliverAsset.asset.assetId,
+                swapSendAmountController.text,
+              ),
+            )
+            : null;
 
     return SwapSideAmount(
       text: 'Deliver'.tr(),
@@ -59,7 +69,8 @@ class SwapDeliverAmount extends HookConsumerWidget {
       focusNode: deliverFocusNode,
       isMaxVisible: true,
       balance: balanceStr,
-      readOnly: swapSendWallet == const SwapWallet.extern() ||
+      readOnly:
+          swapSendWallet == const SwapWallet.extern() ||
           swapState != const SwapState.idle(),
       onEditingCompleted: () {
         if (ref.read(swapEnabledStateProvider)) {

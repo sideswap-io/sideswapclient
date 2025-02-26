@@ -7,10 +7,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/fee_suggestions.dart';
 
 class FeeRatesDropdown extends StatelessWidget {
-  const FeeRatesDropdown({
-    super.key,
-    this.borderDecoration,
-  });
+  const FeeRatesDropdown({super.key, this.borderDecoration});
 
   final BoxDecoration? borderDecoration;
 
@@ -42,12 +39,16 @@ class FeeRatesDropdown extends StatelessWidget {
               const SizedBox(width: 8),
               Consumer(
                 builder: ((context, ref, child) {
-                  final currentFeeRate =
-                      ref.watch(bitcoinCurrentFeeRateStateNotifierProvider);
+                  final currentFeeRate = ref.watch(
+                    bitcoinCurrentFeeRateNotifierProvider,
+                  );
                   if (currentFeeRate is SwapCurrentFeeRateData) {
                     return Text(
-                      ref.read(bitcoinFeeRateDescriptionProvider(
-                          currentFeeRate.feeRate)),
+                      ref.read(
+                        bitcoinFeeRateDescriptionProvider(
+                          currentFeeRate.feeRate,
+                        ),
+                      ),
                       overflow: TextOverflow.clip,
                       maxLines: 1,
                       style: const TextStyle(
@@ -60,10 +61,7 @@ class FeeRatesDropdown extends StatelessWidget {
                   return const SizedBox();
                 }),
               ),
-              const Icon(
-                Icons.keyboard_arrow_down,
-                size: 16,
-              ),
+              const Icon(Icons.keyboard_arrow_down, size: 16),
               const SizedBox(width: 8),
             ],
           ),

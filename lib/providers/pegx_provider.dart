@@ -112,26 +112,28 @@ class PegxWebsocketClient {
       };
 
       logger.d('Pegx API endpoint: $apiUrl');
-      WebSocket.connect(apiUrl).then((ws) {
-        ws.pingInterval = Duration(seconds: _heartbeatInterval);
-        _client = IOWebSocketChannel(ws);
-        if (_client != null) {
-          _reconnectTimer?.cancel();
-          _listenToMessage();
-          _isConnected = true;
-          _startHeartBeatTimer();
-          while (_sendBuffer.isNotEmpty) {
-            Req buffer = _sendBuffer.first;
-            _sendBuffer.remove(buffer);
-            _send(buffer);
-          }
-        }
-      }).onError((error, stackTrace) {
-        logger.e(error);
-        logger.e(stackTrace);
-        disconnect();
-        _reconnect();
-      });
+      WebSocket.connect(apiUrl)
+          .then((ws) {
+            ws.pingInterval = Duration(seconds: _heartbeatInterval);
+            _client = IOWebSocketChannel(ws);
+            if (_client != null) {
+              _reconnectTimer?.cancel();
+              _listenToMessage();
+              _isConnected = true;
+              _startHeartBeatTimer();
+              while (_sendBuffer.isNotEmpty) {
+                Req buffer = _sendBuffer.first;
+                _sendBuffer.remove(buffer);
+                _send(buffer);
+              }
+            }
+          })
+          .onError((error, stackTrace) {
+            logger.e(error);
+            logger.e(stackTrace);
+            disconnect();
+            _reconnect();
+          });
     }
   }
 
@@ -139,7 +141,7 @@ class PegxWebsocketClient {
     _client?.stream.listen(
       (dynamic message) {
         final response = Res.fromBuffer(message as Uint8List);
-        logger.d("Pegx RESPONSE: $response");
+        // logger.d("Pegx RESPONSE: $response");
         switch (response.whichBody()) {
           case Res_Body.resp:
             handleResp(response.resp);
@@ -201,8 +203,11 @@ class PegxWebsocketClient {
       case Resp_Body.loginOrRegister:
         // logger.d('Pegx <= $resp');
         // logger.w('Resp login');
-        ref.read(pegxLoginStateNotifierProvider.notifier).setState(
-            PegxLoginStateLogin(requestId: resp.loginOrRegister.requestId));
+        ref
+            .read(pegxLoginStateNotifierProvider.notifier)
+            .setState(
+              PegxLoginStateLogin(requestId: resp.loginOrRegister.requestId),
+            );
 
         break;
       case Resp_Body.resume:
@@ -276,15 +281,17 @@ class PegxWebsocketClient {
     if ((_reconnectTimer == null || !(_reconnectTimer?.isActive == true)) &&
         _reconnectCount > 0) {
       _reconnectTimer = Timer.periodic(
-          Duration(milliseconds: _reconnectIntervalMs), (Timer timer) async {
-        logger.d('Pegx reconnecting...');
-        if (_reconnectCount == 0) {
-          _reconnectTimer?.cancel();
-          return;
-        }
-        await connectToSocket();
-        _reconnectCount--;
-      });
+        Duration(milliseconds: _reconnectIntervalMs),
+        (Timer timer) async {
+          logger.d('Pegx reconnecting...');
+          if (_reconnectCount == 0) {
+            _reconnectTimer?.cancel();
+            return;
+          }
+          await connectToSocket();
+          _reconnectCount--;
+        },
+      );
     }
   }
 
@@ -294,7 +301,7 @@ class PegxWebsocketClient {
           .read(pegxLoginStateNotifierProvider.notifier)
           .setState(const PegxLoginStateLoading());
       logger.d('Pegx disconnected.');
-      _client?.sink.close(status.goingAway);
+      _client?.sink.close(status.normalClosure);
       _heartBeatTimer?.cancel();
       _reconnectTimer?.cancel();
       _isConnected = false;
@@ -302,8 +309,9 @@ class PegxWebsocketClient {
   }
 
   void _startHeartBeatTimer() {
-    _heartBeatTimer =
-        Timer.periodic(Duration(seconds: _heartbeatInterval), (Timer timer) {
+    _heartBeatTimer = Timer.periodic(Duration(seconds: _heartbeatInterval), (
+      Timer timer,
+    ) {
       final buffer = Req(loadAssets: Req_LoadAssets());
       _send(buffer);
     });
@@ -350,10 +358,7 @@ class PegxWebsocketClient {
 
     _lastAddGaidId = _randomId();
     final reqAddGaid = Req(
-      addGaid: Req_AddGaid(
-        gaid: ampId,
-        accountKey: _accountKey,
-      ),
+      addGaid: Req_AddGaid(gaid: ampId, accountKey: _accountKey),
       id: _lastAddGaidId,
     );
     _send(reqAddGaid);
@@ -374,7 +379,8 @@ class PegxWebsocketClient {
 
     if (min > max) {
       throw ArgumentError(
-          'Value passed for `min` ($min) must be less than value passed for `max` ($max)');
+        'Value passed for `min` ($min) must be less than value passed for `max` ($max)',
+      );
     }
 
     final rng = math.Random();

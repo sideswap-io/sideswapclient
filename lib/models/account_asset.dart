@@ -3,9 +3,7 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class AccountType {
   final int id;
-  const AccountType(
-    this.id,
-  );
+  const AccountType(this.id);
 
   static AccountType get reg => const AccountType(0);
   static AccountType get amp => const AccountType(1);
@@ -37,10 +35,7 @@ class AccountAsset implements Comparable<AccountAsset> {
   final AccountType account;
   final String? assetId;
 
-  AccountAsset(
-    this.account,
-    this.assetId,
-  );
+  AccountAsset(this.account, this.assetId);
 
   (AccountType, String?) _equality() => (account, assetId);
 
@@ -60,8 +55,10 @@ class AccountAsset implements Comparable<AccountAsset> {
     if (result != 0) {
       return result;
     }
-    result =
-        compareBool(assetId == liquidAssetId, other.assetId == liquidAssetId);
+    result = compareBool(
+      assetId == liquidAssetId,
+      other.assetId == liquidAssetId,
+    );
     if (result != 0) {
       return -result;
     }

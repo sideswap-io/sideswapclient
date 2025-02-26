@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
@@ -40,11 +41,12 @@ class AccountItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: disabled
-              ? null
-              : () {
-                  onSelected(accountAsset);
-                },
+          onPressed:
+              disabled
+                  ? null
+                  : () {
+                    onSelected(accountAsset);
+                  },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
@@ -55,7 +57,7 @@ class AccountItem extends StatelessWidget {
                   child: Consumer(
                     builder: (context, ref, child) {
                       final icon = ref
-                          .watch(assetImageProvider)
+                          .watch(assetImageRepositoryProvider)
                           .getBigImage(accountAsset.assetId);
                       return icon;
                     },
@@ -77,8 +79,11 @@ class AccountItem extends StatelessWidget {
                                   child: Consumer(
                                     builder: (context, ref, child) {
                                       final asset = ref.watch(
-                                          assetsStateProvider.select((value) =>
-                                              value[accountAsset.assetId]));
+                                        assetsStateProvider.select(
+                                          (value) =>
+                                              value[accountAsset.assetId],
+                                        ),
+                                      );
 
                                       return Text(
                                         asset?.name ?? '',
@@ -117,10 +122,7 @@ class AccountItem extends StatelessWidget {
 }
 
 class AccountItemConversion extends StatelessWidget {
-  const AccountItemConversion({
-    super.key,
-    required this.accountAsset,
-  });
+  const AccountItemConversion({super.key, required this.accountAsset});
 
   final AccountAsset accountAsset;
 
@@ -133,8 +135,11 @@ class AccountItemConversion extends StatelessWidget {
           children: [
             Consumer(
               builder: (context, ref, child) {
-                final asset = ref.watch(assetsStateProvider
-                    .select((value) => value[accountAsset.assetId]));
+                final asset = ref.watch(
+                  assetsStateProvider.select(
+                    (value) => value[accountAsset.assetId],
+                  ),
+                );
 
                 return Text(
                   asset?.ticker ?? '',
@@ -160,10 +165,13 @@ class AccountItemConversion extends StatelessWidget {
         Consumer(
           builder: (context, ref, child) {
             final defaultCurrencyAssetBalance = ref.watch(
-                accountAssetBalanceWithInputsInDefaultCurrencyStringProvider(
-                    accountAsset));
-            final defaultCurrencyTicker =
-                ref.watch(defaultCurrencyTickerProvider);
+              accountAssetBalanceWithInputsInDefaultCurrencyStringProvider(
+                accountAsset,
+              ),
+            );
+            final defaultCurrencyTicker = ref.watch(
+              defaultCurrencyTickerProvider,
+            );
 
             return Text(
               '$defaultCurrencyAssetBalance $defaultCurrencyTicker',
@@ -192,8 +200,9 @@ class AccountItemAmount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetBalance =
-        ref.watch(balanceStringWithInputsForAccountAssetProvider(accountAsset));
+    final assetBalance = ref.watch(
+      balanceStringWithInputsForAccountAssetProvider(accountAsset),
+    );
 
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
 

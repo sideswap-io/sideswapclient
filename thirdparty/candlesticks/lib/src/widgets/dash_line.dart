@@ -21,19 +21,22 @@ class DashLine extends StatelessWidget {
       height: isVertical ? length : thickness,
       width: isVertical ? thickness : length,
       child: ListView.builder(
-          scrollDirection: direction,
-          itemCount: length ~/ 2,
-          itemBuilder: (context, index) {
-            if (index % 2 == 0) {
-              return SizedBox(
-                  width: isVertical ? null : 2, height: isVertical ? 2 : null);
-            }
-            return Container(
-              width: isVertical ? thickness : 2,
-              height: isVertical ? 2 : thickness,
-              color: color,
+        scrollDirection: direction,
+        itemCount: length ~/ 2,
+        itemBuilder: (context, index) {
+          if (index % 2 == 0) {
+            return SizedBox(
+              width: isVertical ? null : 2,
+              height: isVertical ? 2 : null,
             );
-          }),
+          }
+          return Container(
+            width: isVertical ? thickness : 2,
+            height: isVertical ? 2 : thickness,
+            color: color,
+          );
+        },
+      ),
     );
   }
 }

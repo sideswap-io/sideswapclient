@@ -6,8 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/common/utils/use_async_effect.dart';
-
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/widgets/amp_id_panel.dart';
@@ -32,11 +30,9 @@ class Settings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
-      appBar: CustomAppBar(
-        title: 'Settings'.tr(),
-      ),
+      appBar: CustomAppBar(title: 'Settings'.tr()),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -79,34 +75,17 @@ class Settings extends ConsumerWidget {
                           final isJadeWallet = ref.watch(isJadeWalletProvider);
                           return switch (isJadeWallet) {
                             false => SettingsButton(
-                                type: SettingsButtonType.recovery,
-                                text: 'View my recovery phrase'.tr(),
-                                onPressed: () {
-                                  ref.read(walletProvider).settingsViewBackup();
-                                },
-                              ),
+                              type: SettingsButtonType.recovery,
+                              text: 'View my recovery phrase'.tr(),
+                              onPressed: () {
+                                ref.read(walletProvider).settingsViewBackup();
+                              },
+                            ),
                             _ => const SizedBox(),
                           };
                         },
                       ),
                     ),
-                    if (FlavorConfig.isProduction &&
-                        FlavorConfig.enableOnboardingUserFeatures) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Consumer(
-                          builder: (context, ref, _) {
-                            return SettingsButton(
-                              type: SettingsButtonType.userDetails,
-                              text: 'User details'.tr(),
-                              onPressed: () {
-                                ref.read(walletProvider).settingsUserDetails();
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Consumer(
@@ -126,66 +105,83 @@ class Settings extends ConsumerWidget {
                         HookConsumer(
                           builder: (context, ref, _) {
                             final isBiometricAvailable = useState(false);
-                            final isBiometricEnabled =
-                                ref.watch(isBiometricEnabledProvider);
+                            final isBiometricEnabled = ref.watch(
+                              isBiometricEnabledProvider,
+                            );
+                            final isBiometricAvailableAsync = ref.watch(
+                              isBiometricAvailableProvider,
+                            );
 
-                            useAsyncEffect(() async {
-                              isBiometricAvailable.value = await ref
-                                  .watch(walletProvider)
-                                  .isBiometricAvailable();
-
-                              return;
-                            }, []);
+                            (switch (isBiometricAvailableAsync) {
+                              AsyncValue(
+                                hasValue: true,
+                                value: bool available,
+                              ) =>
+                                () {
+                                  isBiometricAvailable.value = available;
+                                },
+                              _ => () {},
+                            })();
 
                             return switch (isBiometricAvailable.value) {
                               true => SettingsSecurity(
-                                  icon: Icons.fingerprint,
-                                  description: 'Biometric protection'.tr(),
-                                  value: isBiometricEnabled,
-                                  onTap: () async {
-                                    if (isBiometricEnabled) {
+                                icon: Icons.fingerprint,
+                                description: 'Biometric protection'.tr(),
+                                value: isBiometricEnabled,
+                                onTap: () async {
+                                  if (isBiometricEnabled) {
+                                    await ref
+                                        .read(walletProvider)
+                                        .settingsDisableBiometric();
+                                  } else {
+                                    // disable pin to be sure!
+                                    // pin could be enabled when biometric is unavailable
+                                    // but in the mean time biometric could be enabled in device settings
+                                    // then we need to display in settings both options
+                                    if (await ref
+                                        .read(walletProvider)
+                                        .disablePinProtection()) {
                                       await ref
                                           .read(walletProvider)
-                                          .settingsDisableBiometric();
-                                    } else {
-                                      // disable pin to be sure!
-                                      // pin could be enabled when biometric is unavailable
-                                      // but in the mean time biometric could be enabled in device settings
-                                      // then we need to display in settings both options
-                                      if (await ref
-                                          .read(walletProvider)
-                                          .disablePinProtection()) {
-                                        await ref
-                                            .read(walletProvider)
-                                            .settingsEnableBiometric();
-                                      }
+                                          .settingsEnableBiometric();
                                     }
-                                  },
-                                ),
+                                  }
+                                },
+                              ),
                               false => const SizedBox(),
                             };
                           },
                         ),
-                        Consumer(builder: (context, ref, _) {
-                          final isPinEnabled = ref.watch(pinAvailableProvider);
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final isPinAvailable = ref.watch(
+                              isPinAvailableProvider,
+                            );
+                            final isPinEnabled = ref.watch(
+                              pinAvailableProvider,
+                            );
 
-                          return SettingsSecurity(
-                            icon: Icons.fiber_pin_outlined,
-                            description: 'PIN protection'.tr(),
-                            value: isPinEnabled,
-                            onTap: () async {
-                              if (isPinEnabled) {
-                                await ref
-                                    .read(walletProvider)
-                                    .disablePinProtection();
-                              } else {
-                                ref
-                                    .read(pinHelperProvider)
-                                    .initPinSetupSettings();
-                              }
-                            },
-                          );
-                        }),
+                            return switch (isPinAvailable) {
+                              true => SettingsSecurity(
+                                icon: Icons.fiber_pin_outlined,
+                                description: 'PIN protection'.tr(),
+                                value: isPinEnabled,
+                                onTap: () async {
+                                  if (isPinEnabled) {
+                                    await ref
+                                        .read(walletProvider)
+                                        .disablePinProtection();
+                                  } else {
+                                    ref
+                                        .read(pinHelperProvider)
+                                        .initPinSetupSettings();
+                                  }
+                                },
+                              ),
+                              _ => SizedBox(),
+                            };
+                          },
+                        ),
                       ],
                     ),
                     if (FlavorConfig.enableNetworkSettings) ...[
@@ -213,9 +209,11 @@ class Settings extends ConsumerWidget {
                         text: 'Language'.tr(),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).push<void>(
-                              DialogRoute(
-                                  builder: ((context) => const Languages()),
-                                  context: context));
+                            DialogRoute(
+                              builder: ((context) => const Languages()),
+                              context: context,
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -226,9 +224,11 @@ class Settings extends ConsumerWidget {
                         text: 'Logs'.tr(),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).push<void>(
-                              DialogRoute(
-                                  builder: ((context) => const SettingsLogs()),
-                                  context: context));
+                            DialogRoute(
+                              builder: ((context) => const SettingsLogs()),
+                              context: context,
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -258,7 +258,7 @@ class Settings extends ConsumerWidget {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -267,9 +267,7 @@ class Settings extends ConsumerWidget {
 }
 
 class SettingsLogoWithAppVersion extends StatelessWidget {
-  const SettingsLogoWithAppVersion({
-    super.key,
-  });
+  const SettingsLogoWithAppVersion({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -277,20 +275,13 @@ class SettingsLogoWithAppVersion extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: SideSwapColors.blumine,
-          width: 1,
-        ),
+        border: Border.all(color: SideSwapColors.blumine, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
         child: Stack(
           children: [
-            SvgPicture.asset(
-              'assets/logo.svg',
-              width: 32,
-              height: 32,
-            ),
+            SvgPicture.asset('assets/logo.svg', width: 32, height: 32),
             Align(
               alignment: Alignment.center,
               child: Column(
@@ -310,12 +301,13 @@ class SettingsLogoWithAppVersion extends StatelessWidget {
                     child: const Text(
                       SettingsAboutUsData.urlWebText,
                       style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal,
-                          color: SideSwapColors.brightTurquoise,
-                          decoration: TextDecoration.underline),
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: SideSwapColors.brightTurquoise,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

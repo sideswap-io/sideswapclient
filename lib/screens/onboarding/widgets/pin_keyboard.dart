@@ -7,10 +7,7 @@ import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 
 class PinKeyboard extends ConsumerStatefulWidget {
-  const PinKeyboard({
-    super.key,
-    this.acceptType = PinKeyboardAcceptType.icon,
-  });
+  const PinKeyboard({super.key, this.acceptType = PinKeyboardAcceptType.icon});
 
   final PinKeyboardAcceptType acceptType;
 
@@ -51,14 +48,9 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
               size: 28,
             );
           } else if (index == 10) {
-            child = Text(
-              '0',
-              style: _buttonStyle,
-            );
+            child = Text('0', style: _buttonStyle);
           } else if (index == 11) {
-            const textStyle = TextStyle(
-              fontSize: 18,
-            );
+            const textStyle = TextStyle(fontSize: 18);
             switch (widget.acceptType) {
               case PinKeyboardAcceptType.icon:
                 child = const Icon(
@@ -68,35 +60,20 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
                 );
                 break;
               case PinKeyboardAcceptType.enable:
-                child = Text(
-                  'ENABLE'.tr(),
-                  style: textStyle,
-                );
+                child = Text('ENABLE'.tr(), style: textStyle);
                 break;
               case PinKeyboardAcceptType.disable:
-                child = Text(
-                  'DISABLE'.tr(),
-                  style: textStyle,
-                );
+                child = Text('DISABLE'.tr(), style: textStyle);
                 break;
               case PinKeyboardAcceptType.unlock:
-                child = Text(
-                  'UNLOCK'.tr(),
-                  style: textStyle,
-                );
+                child = Text('UNLOCK'.tr(), style: textStyle);
                 break;
               case PinKeyboardAcceptType.save:
-                child = Text(
-                  'SAVE'.tr(),
-                  style: textStyle,
-                );
+                child = Text('SAVE'.tr(), style: textStyle);
                 break;
             }
           } else {
-            child = Text(
-              '${index + 1}',
-              style: _buttonStyle,
-            );
+            child = Text('${index + 1}', style: _buttonStyle);
           }
 
           return Material(
@@ -112,16 +89,13 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
-                  border: Border.all(
-                    color: const Color(0xFF23729D),
-                  ),
-                  color: index == 11
-                      ? SideSwapColors.brightTurquoise
-                      : Colors.transparent,
+                  border: Border.all(color: const Color(0xFF23729D)),
+                  color:
+                      index == 11
+                          ? SideSwapColors.brightTurquoise
+                          : Colors.transparent,
                 ),
-                child: Center(
-                  child: child,
-                ),
+                child: Center(child: child),
               ),
             ),
           );

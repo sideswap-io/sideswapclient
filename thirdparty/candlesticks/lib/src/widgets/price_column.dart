@@ -34,7 +34,10 @@ class _PriceColumnState extends State<PriceColumn> {
   ScrollController scrollController = ScrollController();
 
   double calcutePriceIndicatorTopPadding(
-      double chartHeight, double low, double high) {
+    double chartHeight,
+    double low,
+    double high,
+  ) {
     return chartHeight +
         10 -
         (widget.lastCandle.close - low) / (high - low) * chartHeight;
@@ -50,48 +53,53 @@ class _PriceColumnState extends State<PriceColumn> {
       },
       child: AbsorbPointer(
         child: Padding(
-          padding:
-              EdgeInsets.symmetric(vertical: widget.additionalVerticalPadding),
+          padding: EdgeInsets.symmetric(
+            vertical: widget.additionalVerticalPadding,
+          ),
           child: Stack(
             children: [
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 300),
                 top: mainChartVerticalPadding - priceTileHeight / 2,
-                height: widget.chartHeight +
+                height:
+                    widget.chartHeight +
                     mainChartVerticalPadding +
                     priceTileHeight / 2,
                 width: widget.width,
                 child: ListView(
                   controller: scrollController,
-                  children: List<Widget>.generate(20, (i) {
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      height: priceTileHeight,
-                      width: double.infinity,
-                      child: Center(
-                        child: Row(
-                          children: [
-                            Container(
-                              width: widget.width - priceBarWidth,
-                              height: 0.05,
-                              color: Theme.of(context).grayColor,
-                            ),
-                            Expanded(
-                              child: Text(
-                                HelperFunctions.priceToString(
-                                    widget.high - widget.priceScale * i),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Theme.of(context).scaleNumbersColor,
-                                  fontSize: 11,
+                  children:
+                      List<Widget>.generate(20, (i) {
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          height: priceTileHeight,
+                          width: double.infinity,
+                          child: Center(
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: widget.width - priceBarWidth,
+                                  height: 0.05,
+                                  color: Theme.of(context).grayColor,
                                 ),
-                              ),
+                                Expanded(
+                                  child: Text(
+                                    HelperFunctions.priceToString(
+                                      widget.high - widget.priceScale * i,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).scaleNumbersColor,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                          ),
+                        );
+                      }).toList(),
                 ),
               ),
               AnimatedPositioned(
@@ -105,15 +113,17 @@ class _PriceColumnState extends State<PriceColumn> {
                 child: Row(
                   children: [
                     Container(
-                      color: widget.lastCandle.isBull
-                          ? Theme.of(context).primaryGreen
-                          : Theme.of(context).primaryRed,
+                      color:
+                          widget.lastCandle.isBull
+                              ? Theme.of(context).primaryGreen
+                              : Theme.of(context).primaryRed,
                       width: priceBarWidth,
                       height: priceIndicatorHeight,
                       child: Center(
                         child: Text(
                           HelperFunctions.priceToString(
-                              widget.lastCandle.close),
+                            widget.lastCandle.close,
+                          ),
                           style: TextStyle(
                             color: Theme.of(context).currentPriceColor,
                             fontSize: 11,

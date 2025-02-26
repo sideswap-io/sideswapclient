@@ -3,10 +3,12 @@ import 'package:sideswap/common/helpers.dart';
 extension DurationExtensions on Duration? {
   String toStringCustom() {
     final duration = this;
-    if (duration == null || duration.inSeconds == 0) {
+    if (duration == null) {
       return unlimitedTtl;
     }
-
+    if (duration.inSeconds == 0) {
+      return '0s';
+    }
     if (duration.inDays > 0) {
       return '${duration.inDays}d ${duration.inHours.remainder(24)}h';
     }
@@ -21,10 +23,12 @@ extension DurationExtensions on Duration? {
 
   String toStringCustomShort() {
     final duration = this;
-    if (duration == null || duration.inSeconds == 0) {
+    if (duration == null) {
       return unlimitedTtl;
     }
-
+    if (duration.inSeconds == 0) {
+      return '0s';
+    }
     if (duration.inDays > 0) {
       return '${duration.inDays}d';
     }

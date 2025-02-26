@@ -19,29 +19,30 @@ class JadeBluetoothPermission extends HookConsumerWidget {
   const JadeBluetoothPermission({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bluetoothPermissionState =
-        ref.watch(jadeBluetoothPermissionStateNotifierProvider);
+    final bluetoothPermissionState = ref.watch(
+      jadeBluetoothPermissionStateNotifierProvider,
+    );
     final jadeDeviceState = ref.watch(jadeDeviceNotifierProvider);
 
     useEffect(() {
       (switch (jadeDeviceState) {
         JadeDevicesStateUnavailable() => () {}(),
         _ => () {
-            // has device port, remove listener
-            Future.microtask(() {
-              ref.invalidate(jadeBluetoothPermissionStateNotifierProvider);
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.jadeDevices);
-            });
-          }(),
+          // has device port, remove listener
+          Future.microtask(() {
+            ref.invalidate(jadeBluetoothPermissionStateNotifierProvider);
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.jadeDevices);
+          });
+        }(),
       });
 
       return;
     }, [jadeDeviceState]);
 
     return SideSwapScaffold(
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -66,21 +67,30 @@ class JadeBluetoothPermission extends HookConsumerWidget {
                   JadePermissionPageTwo(),
                 ],
                 startIndex: 0,
-                buildFooter: (context, dragDistance, pagesLength, currentIndex,
-                    setIndex, sd) {
+                buildFooter: (
+                  context,
+                  dragDistance,
+                  pagesLength,
+                  currentIndex,
+                  setIndex,
+                  sd,
+                ) {
                   return Indicator(
-                      painter: CirclePainter(
-                    netDragPercent: dragDistance,
-                    pagesLength: pagesLength,
-                    currentPageIndex: currentIndex,
-                    slideDirection: SlideDirection.left_to_right,
-                    activePainter: Paint()
-                      ..color = Colors.white
-                      ..style = PaintingStyle.fill,
-                    inactivePainter: Paint()
-                      ..color = Colors.grey
-                      ..style = PaintingStyle.fill,
-                  ));
+                    painter: CirclePainter(
+                      netDragPercent: dragDistance,
+                      pagesLength: pagesLength,
+                      currentPageIndex: currentIndex,
+                      slideDirection: SlideDirection.left_to_right,
+                      activePainter:
+                          Paint()
+                            ..color = Colors.white
+                            ..style = PaintingStyle.fill,
+                      inactivePainter:
+                          Paint()
+                            ..color = Colors.grey
+                            ..style = PaintingStyle.fill,
+                    ),
+                  );
                 },
               ),
             ),
@@ -95,18 +105,18 @@ class JadeBluetoothPermission extends HookConsumerWidget {
                         .tr(),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'More info'.tr(),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: SideSwapColors.brightTurquoise,
-                          decoration: TextDecoration.underline,
-                        ),
+                      fontWeight: FontWeight.w500,
+                      color: SideSwapColors.brightTurquoise,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -124,16 +134,15 @@ class JadePermissionPageTwo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bluetoothPermissionState =
-        ref.watch(jadeBluetoothPermissionStateNotifierProvider);
+    final bluetoothPermissionState = ref.watch(
+      jadeBluetoothPermissionStateNotifierProvider,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
-          color: Colors.transparent,
-          border: Border.all(
-            width: 0,
-            color: Colors.transparent,
-          )),
+        color: Colors.transparent,
+        border: Border.all(width: 0, color: Colors.transparent),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -147,25 +156,24 @@ class JadePermissionPageTwo extends ConsumerWidget {
             Text(
               'Step 2'.tr(),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: SideSwapColors.brightTurquoise),
+                fontWeight: FontWeight.w500,
+                color: SideSwapColors.brightTurquoise,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Follow the instructions on Jade'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             Text(
               'Select initialize and choose to create a New wallet'.tr(),
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontSize: 16),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16),
             ),
             const Spacer(),
             ...switch (bluetoothPermissionState) {
@@ -205,7 +213,8 @@ class JadePermissionPageTwo extends ConsumerWidget {
                 ref
                     .read(jadeBluetoothPermissionStateNotifierProvider.notifier)
                     .setPermissionState(
-                        const JadeBluetoothPermissionState.request());
+                      const JadeBluetoothPermissionState.request(),
+                    );
               },
             ),
             const SizedBox(height: 32),
@@ -223,44 +232,36 @@ class JadePermissionPageOne extends HookConsumerWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.transparent,
-        border: Border.all(
-          width: 0,
-          color: Colors.transparent,
-        ),
+        border: Border.all(width: 0, color: Colors.transparent),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
-            SvgPicture.asset(
-              'assets/power_jade.svg',
-              width: 215,
-              height: 155,
-            ),
+            SvgPicture.asset('assets/power_jade.svg', width: 215, height: 155),
             const SizedBox(height: 30),
             Text(
               'Step 1'.tr(),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: SideSwapColors.brightTurquoise),
+                fontWeight: FontWeight.w500,
+                color: SideSwapColors.brightTurquoise,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Power on Jade'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             Text(
               'Hold the green button in the bottom of Jade until it boots up'
                   .tr(),
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontSize: 16),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16),
             ),
           ],
         ),

@@ -6,7 +6,7 @@ class AccentColor extends ColorSwatch<String> {
   final String primary;
   final Map<String, Color> swatch;
   AccentColor(this.primary, this.swatch)
-      : super(swatch[primary]!.value, swatch);
+    : super(swatch[primary]!.toARGB32(), swatch);
 
   Color get darkest => swatch['darkest'] ?? darker;
   Color get darker => swatch['darker'] ?? dark;
@@ -54,14 +54,14 @@ class AccentColor extends ColorSwatch<String> {
         return level == 0
             ? light
             : level == 1
-                ? lighter
-                : lightest;
+            ? lighter
+            : lightest;
       case Brightness.dark:
         return level == 0
             ? dark
             : level == 1
-                ? darker
-                : darkest;
+            ? darker
+            : darkest;
     }
   }
 
@@ -71,14 +71,14 @@ class AccentColor extends ColorSwatch<String> {
         return level == 0
             ? light
             : level == 1
-                ? lighter
-                : lightest;
+            ? lighter
+            : lightest;
       case Brightness.light:
         return level == 0
             ? dark
             : level == 1
-                ? darker
-                : darkest;
+            ? darker
+            : darkest;
     }
   }
 }

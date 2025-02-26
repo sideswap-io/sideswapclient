@@ -28,7 +28,8 @@ class DAmpRegister extends HookConsumerWidget {
     final pegxItems = ref.watch(pegxSecuritiesProvider);
     final ampId = ref.watch(ampIdNotifierProvider);
     final textTheme = ref.watch(
-        desktopAppThemeNotifierProvider.select((value) => value.textTheme));
+      desktopAppThemeNotifierProvider.select((value) => value.textTheme),
+    );
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
     final registerFailedReason = ref.watch(pegxRegisterFailedNotifierProvider);
     final checkAmpStatus = ref.watch(checkAmpStatusProvider);
@@ -65,16 +66,17 @@ class DAmpRegister extends HookConsumerWidget {
 
     useEffect(() {
       if (registerFailedReason.isNotEmpty) {
+        final snackBar = SnackBar(
+          content: Text(
+            registerFailedReason,
+            style: textTheme.titleSmall?.copyWith(color: Colors.white),
+          ),
+          duration: const Duration(seconds: 3),
+          backgroundColor: SideSwapColors.chathamsBlue,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
         Future.microtask(() {
-          final snackBar = SnackBar(
-            content: Text(
-              registerFailedReason,
-              style: textTheme.titleSmall?.copyWith(color: Colors.white),
-            ),
-            duration: const Duration(seconds: 3),
-            backgroundColor: SideSwapColors.chathamsBlue,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
           ref.read(pegxRegisterFailedNotifierProvider.notifier).setState('');
         });
       }
@@ -96,12 +98,7 @@ class DAmpRegister extends HookConsumerWidget {
                 padding: const EdgeInsets.only(top: 18),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AmpIdPanel(
-                      width: 360,
-                      ampId: ampId,
-                    ),
-                  ],
+                  children: [AmpIdPanel(width: 360, ampId: ampId)],
                 ),
               ),
               Padding(
@@ -114,50 +111,61 @@ class DAmpRegister extends HookConsumerWidget {
                     children: [
                       Consumer(
                         builder: (context, ref, child) {
-                          final stokrGaidState =
-                              ref.watch(stokrGaidNotifierProvider);
+                          final stokrGaidState = ref.watch(
+                            stokrGaidNotifierProvider,
+                          );
 
                           return AmpServiceRegisterBox(
                             boxLogo: 'assets/stokr_logo.svg',
-                            onPressed: (stokrGaidState ==
-                                    const StokrGaidStateUnregistered())
-                                ? () {
-                                    ref
-                                        .read(
-                                            pageStatusNotifierProvider.notifier)
-                                        .setStatus(Status.stokrLogin);
-                                  }
-                                : null,
+                            onPressed:
+                                (stokrGaidState ==
+                                        const StokrGaidStateUnregistered())
+                                    ? () {
+                                      ref
+                                          .read(
+                                            pageStatusNotifierProvider.notifier,
+                                          )
+                                          .setStatus(Status.stokrLogin);
+                                    }
+                                    : null,
                             items: stokrItems,
-                            registered: (stokrGaidState ==
-                                const StokrGaidStateRegistered()),
-                            loading: (stokrGaidState ==
-                                const StokrGaidStateLoading()),
+                            registered:
+                                (stokrGaidState ==
+                                    const StokrGaidStateRegistered()),
+                            loading:
+                                (stokrGaidState ==
+                                    const StokrGaidStateLoading()),
                           );
                         },
                       ),
                       Consumer(
                         builder: (context, ref, child) {
-                          final pegxGaidState =
-                              ref.watch(pegxGaidNotifierProvider);
+                          final pegxGaidState = ref.watch(
+                            pegxGaidNotifierProvider,
+                          );
                           final env = ref.watch(envProvider);
                           return AmpServiceRegisterBox(
                             boxLogo: 'assets/pegx_logo.svg',
-                            onPressed: (pegxGaidState ==
-                                        const PegxGaidStateUnregistered()) ||
-                                    (env == SIDESWAP_ENV_TESTNET ||
-                                        env == SIDESWAP_ENV_LOCAL_TESTNET)
-                                ? () {
-                                    ref
-                                        .read(pegxLoginStateNotifierProvider
-                                            .notifier)
-                                        .setState(
-                                            const PegxLoginStateLoginDialog());
-                                  }
-                                : null,
+                            onPressed:
+                                (pegxGaidState ==
+                                            const PegxGaidStateUnregistered()) ||
+                                        (env == SIDESWAP_ENV_TESTNET ||
+                                            env == SIDESWAP_ENV_LOCAL_TESTNET)
+                                    ? () {
+                                      ref
+                                          .read(
+                                            pegxLoginStateNotifierProvider
+                                                .notifier,
+                                          )
+                                          .setState(
+                                            const PegxLoginStateLoginDialog(),
+                                          );
+                                    }
+                                    : null,
                             items: pegxItems,
-                            registered: (pegxGaidState ==
-                                const PegxGaidStateRegistered()),
+                            registered:
+                                (pegxGaidState ==
+                                    const PegxGaidStateRegistered()),
                             loading:
                                 (pegxGaidState == const PegxGaidStateLoading()),
                           );
@@ -186,8 +194,10 @@ class DAmpRegister extends HookConsumerWidget {
                               .read(pageStatusNotifierProvider.notifier)
                               .setStatus(Status.registered);
                         },
-                        child:
-                            Text('CONTINUE'.tr(), style: textTheme.labelLarge),
+                        child: Text(
+                          'CONTINUE'.tr(),
+                          style: textTheme.labelLarge,
+                        ),
                       );
                     },
                     orElse: () {
@@ -203,10 +213,8 @@ class DAmpRegister extends HookConsumerWidget {
                         },
                         child: Text(
                           'NOT NOW'.tr(),
-                          style:
-                              Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: SideSwapColors.brightTurquoise,
-                                  ),
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(color: SideSwapColors.brightTurquoise),
                         ),
                       );
                     },
@@ -219,7 +227,9 @@ class DAmpRegister extends HookConsumerWidget {
                   'If you skip this step, you can do so at a later date by pressing the AMP ID "icon" on desktop'
                       .tr(),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: SideSwapColors.hippieBlue, fontSize: 13),
+                    color: SideSwapColors.hippieBlue,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],

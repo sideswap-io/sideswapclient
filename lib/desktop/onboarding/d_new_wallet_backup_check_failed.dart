@@ -18,7 +18,7 @@ class DNewWalletBackupCheckFailed extends ConsumerWidget {
         ref.read(walletProvider).newWalletBackupPrompt();
       },
       backgroundContent: const DNewWalletBackupLogoBackground(),
-      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 418),
+      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 420),
       content: Center(
         child: Column(
           children: [
@@ -47,9 +47,7 @@ class DNewWalletBackupCheckFailed extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(
-              height: 95,
-            ),
+            const SizedBox(height: 95),
           ],
         ),
       ),
@@ -62,18 +60,14 @@ class DNewWalletBackupCheckFailed extends ConsumerWidget {
               onPressed: () {
                 ref.read(walletProvider).backupNewWalletEnable();
               },
-              child: Text(
-                'SEE MY 12 WORDS AGAIN'.tr(),
-              ),
+              child: Text('SEE MY 12 WORDS AGAIN'.tr()),
             ),
             DCustomFilledBigButton(
               width: 266,
               onPressed: () {
                 ref.read(walletProvider).backupNewWalletCheck();
               },
-              child: Text(
-                'RETRY'.tr(),
-              ),
+              child: Text('RETRY'.tr()),
             ),
           ],
         ),

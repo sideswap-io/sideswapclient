@@ -22,10 +22,13 @@ class DWalletBackupState extends ConsumerState<DNewWalletBackup> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final words = ref.read(walletProvider).getMnemonicWords();
-      final wordItems = Map<int, WordItem>.fromEntries(List.generate(
+      final wordItems = Map<int, WordItem>.fromEntries(
+        List.generate(
           words.length,
           (index) =>
-              MapEntry(index, WordItem(word: words[index], isCorrect: true))));
+              MapEntry(index, WordItem(word: words[index], isCorrect: true)),
+        ),
+      );
       ref.read(mnemonicWordItemsNotifierProvider.notifier).setItems(wordItems);
     });
   }
@@ -68,10 +71,9 @@ class DWalletBackupState extends ConsumerState<DNewWalletBackup> {
               ),
               const Padding(
                 padding: EdgeInsets.only(top: 32),
-                child: DMnemonicTable(
-                  enabled: false,
-                ),
+                child: DMnemonicTable(enabled: false),
               ),
+              SizedBox(height: 24),
             ],
           ),
         ),
@@ -84,9 +86,7 @@ class DWalletBackupState extends ConsumerState<DNewWalletBackup> {
             onPressed: () {
               ref.read(walletProvider).backupNewWalletCheck();
             },
-            child: Text(
-              'CONFIRM YOUR WORDS'.tr(),
-            ),
+            child: Text('CONFIRM YOUR WORDS'.tr()),
           ),
         ),
       ],

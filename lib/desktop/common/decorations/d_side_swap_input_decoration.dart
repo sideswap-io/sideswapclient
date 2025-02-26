@@ -50,10 +50,10 @@ class DSideSwapInputDecoration extends InputDecoration {
 
   @override
   TextStyle? get errorStyle => const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.normal,
-        color: SideSwapColors.bitterSweet,
-      );
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    color: SideSwapColors.bitterSweet,
+  );
 
   @override
   String get hintText => super.hintText ?? '';
@@ -87,12 +87,8 @@ class DSideSwapInputDecoration extends InputDecoration {
   InputBorder get border =>
       super.border ??
       const OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(
-          color: Colors.transparent,
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderSide: BorderSide(color: Colors.transparent),
       );
 
   @override
@@ -100,8 +96,6 @@ class DSideSwapInputDecoration extends InputDecoration {
       super.focusedBorder ??
       const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(8)),
-        borderSide: BorderSide(
-          color: Colors.transparent,
-        ),
+        borderSide: BorderSide(color: Colors.transparent),
       );
 }

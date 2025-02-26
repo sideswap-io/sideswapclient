@@ -7,22 +7,15 @@ class TxItem implements Comparable<TxItem> {
 
   int get createdAt => _createdAt;
 
-  TxItem({
-    required this.item,
-    this.showDate = false,
-    int? createdAt,
-  }) : _createdAt = item.createdAt.toInt();
+  TxItem({required this.item, this.showDate = false, int? createdAt})
+    : _createdAt = item.createdAt.toInt();
 
   @override
   int compareTo(TxItem other) {
     return _createdAt.compareTo(other._createdAt);
   }
 
-  TxItem copyWith({
-    TransItem? item,
-    bool? showDate,
-    int? createdAt,
-  }) {
+  TxItem copyWith({TransItem? item, bool? showDate, int? createdAt}) {
     return TxItem(
       item: item ?? this.item,
       showDate: showDate ?? this.showDate,

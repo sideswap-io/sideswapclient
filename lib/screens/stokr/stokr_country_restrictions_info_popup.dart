@@ -15,15 +15,12 @@ import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
   const StokrCountryRestrictionsInfoPopup({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountAsset =
-        ref.watch(marketSelectedAccountAssetStateProvider);
-    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    final baseAsset = ref.watch(marketSubscribedBaseAssetProvider).toNullable();
 
     return SideSwapPopup(
       onClose: () {
@@ -37,10 +34,9 @@ class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
             const SizedBox(height: 16),
             Text(
               'This asset has country restrictions'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontSize: 20),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontSize: 20),
             ),
             const SizedBox(height: 32),
             Align(
@@ -48,9 +44,10 @@ class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
               child: Text(
                 'Blocked countries'.tr(),
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: SideSwapColors.brightTurquoise),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: SideSwapColors.brightTurquoise,
+                ),
               ),
             ),
             CustomBigButton(
@@ -81,16 +78,12 @@ class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
                       children: [
                         Text(
                           'Open the list'.tr(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(fontSize: 16),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.copyWith(fontSize: 16),
                         ),
                         const Spacer(),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: Colors.white,
-                        ),
+                        const Icon(Icons.chevron_right, color: Colors.white),
                       ],
                     ),
                   ),
@@ -105,15 +98,15 @@ class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
                 height: 54,
                 backgroundColor: SideSwapColors.brightTurquoise,
                 onPressed: () {
-                  if (asset != null) {
-                    openUrl(asset.domainAgentLink);
+                  if (baseAsset != null) {
+                    openUrl(baseAsset.domainAgentLink);
                   }
                 },
                 child: Text(
                   'REGISTER ON STOKR'.tr(),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -127,14 +120,15 @@ class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
                   ref
                       .read(configurationProvider.notifier)
                       .setStokrSettingsModel(
-                          const StokrSettingsModel(firstRun: false));
+                        const StokrSettingsModel(firstRun: false),
+                      );
                   ref.read(walletProvider).goBack();
                 },
                 child: Text(
                   'DON\'T SHOW AGAIN'.tr(),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -155,10 +149,7 @@ class StokrExclamationIcon extends StatelessWidget {
       height: 66,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: SideSwapColors.yellowOrange,
-          width: 3,
-        ),
+        border: Border.all(color: SideSwapColors.yellowOrange, width: 3),
       ),
       child: Center(
         child: SvgPicture.asset(
@@ -166,7 +157,9 @@ class StokrExclamationIcon extends StatelessWidget {
           width: 27,
           height: 27,
           colorFilter: const ColorFilter.mode(
-              SideSwapColors.yellowOrange, BlendMode.srcIn),
+            SideSwapColors.yellowOrange,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     );
@@ -206,7 +199,8 @@ class StokrBlockedCountriesPopup extends HookConsumerWidget {
       controller.addListener(() async {
         if (controller.text.isNotEmpty) {
           final found = await ref.read(
-              stokrCountryBlacklistSearchProvider(controller.text).future);
+            stokrCountryBlacklistSearchProvider(controller.text).future,
+          );
           blacklistedCountries.value = found;
           return;
         }
@@ -237,33 +231,35 @@ class StokrBlockedCountriesPopup extends HookConsumerWidget {
                 decoration: SideSwapInputDecoration(
                   hintText: 'Search'.tr(),
                   suffixIcon: SizedBox(
-                      width: 17,
-                      height: 17,
-                      child: Center(
-                          child: SvgPicture.asset('assets/search2.svg'))),
+                    width: 17,
+                    height: 17,
+                    child: Center(
+                      child: SvgPicture.asset('assets/search2.svg'),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               Flexible(
-                  child: CustomScrollView(
-                slivers: [
-                  SliverList.builder(
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 2, bottom: 2),
-                        child: Text(
-                          '${blacklistedCountries.value[index].english ?? ''} (${blacklistedCountries.value[index].name ?? ''})',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontSize: 18),
-                        ),
-                      );
-                    },
-                    itemCount: blacklistedCountries.value.length,
-                  ),
-                ],
-              )),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverList.builder(
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 2, bottom: 2),
+                          child: Text(
+                            '${blacklistedCountries.value[index].english ?? ''} (${blacklistedCountries.value[index].name ?? ''})',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(fontSize: 18),
+                          ),
+                        );
+                      },
+                      itemCount: blacklistedCountries.value.length,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

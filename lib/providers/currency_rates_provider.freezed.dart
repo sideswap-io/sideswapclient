@@ -12,14 +12,17 @@ part of 'currency_rates_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$ConversionRate {
   String get name => throw _privateConstructorUsedError;
   Decimal get rate => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ConversionRate
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ConversionRateCopyWith<ConversionRate> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -27,8 +30,9 @@ mixin _$ConversionRate {
 /// @nodoc
 abstract class $ConversionRateCopyWith<$Res> {
   factory $ConversionRateCopyWith(
-          ConversionRate value, $Res Function(ConversionRate) then) =
-      _$ConversionRateCopyWithImpl<$Res, ConversionRate>;
+    ConversionRate value,
+    $Res Function(ConversionRate) then,
+  ) = _$ConversionRateCopyWithImpl<$Res, ConversionRate>;
   @useResult
   $Res call({String name, Decimal rate});
 }
@@ -43,31 +47,36 @@ class _$ConversionRateCopyWithImpl<$Res, $Val extends ConversionRate>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ConversionRate
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? name = null,
-    Object? rate = null,
-  }) {
-    return _then(_value.copyWith(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      rate: null == rate
-          ? _value.rate
-          : rate // ignore: cast_nullable_to_non_nullable
-              as Decimal,
-    ) as $Val);
+  $Res call({Object? name = null, Object? rate = null}) {
+    return _then(
+      _value.copyWith(
+            name:
+                null == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String,
+            rate:
+                null == rate
+                    ? _value.rate
+                    : rate // ignore: cast_nullable_to_non_nullable
+                        as Decimal,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$ConversionRateImplCopyWith<$Res>
     implements $ConversionRateCopyWith<$Res> {
-  factory _$$ConversionRateImplCopyWith(_$ConversionRateImpl value,
-          $Res Function(_$ConversionRateImpl) then) =
-      __$$ConversionRateImplCopyWithImpl<$Res>;
+  factory _$$ConversionRateImplCopyWith(
+    _$ConversionRateImpl value,
+    $Res Function(_$ConversionRateImpl) then,
+  ) = __$$ConversionRateImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String name, Decimal rate});
@@ -78,25 +87,29 @@ class __$$ConversionRateImplCopyWithImpl<$Res>
     extends _$ConversionRateCopyWithImpl<$Res, _$ConversionRateImpl>
     implements _$$ConversionRateImplCopyWith<$Res> {
   __$$ConversionRateImplCopyWithImpl(
-      _$ConversionRateImpl _value, $Res Function(_$ConversionRateImpl) _then)
-      : super(_value, _then);
+    _$ConversionRateImpl _value,
+    $Res Function(_$ConversionRateImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of ConversionRate
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? name = null,
-    Object? rate = null,
-  }) {
-    return _then(_$ConversionRateImpl(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      rate: null == rate
-          ? _value.rate
-          : rate // ignore: cast_nullable_to_non_nullable
-              as Decimal,
-    ));
+  $Res call({Object? name = null, Object? rate = null}) {
+    return _then(
+      _$ConversionRateImpl(
+        name:
+            null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String,
+        rate:
+            null == rate
+                ? _value.rate
+                : rate // ignore: cast_nullable_to_non_nullable
+                    as Decimal,
+      ),
+    );
   }
 }
 
@@ -127,25 +140,33 @@ class _$ConversionRateImpl implements _ConversionRate {
   @override
   int get hashCode => Object.hash(runtimeType, name, rate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ConversionRate
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ConversionRateImplCopyWith<_$ConversionRateImpl> get copyWith =>
       __$$ConversionRateImplCopyWithImpl<_$ConversionRateImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _ConversionRate implements ConversionRate {
-  const factory _ConversionRate(
-      {required final String name,
-      required final Decimal rate}) = _$ConversionRateImpl;
+  const factory _ConversionRate({
+    required final String name,
+    required final Decimal rate,
+  }) = _$ConversionRateImpl;
 
   @override
   String get name;
   @override
   Decimal get rate;
+
+  /// Create a copy of ConversionRate
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ConversionRateImplCopyWith<_$ConversionRateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -155,7 +176,9 @@ mixin _$ConversionRates {
   List<ConversionRate> get usdConversionRates =>
       throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ConversionRates
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ConversionRatesCopyWith<ConversionRates> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -163,8 +186,9 @@ mixin _$ConversionRates {
 /// @nodoc
 abstract class $ConversionRatesCopyWith<$Res> {
   factory $ConversionRatesCopyWith(
-          ConversionRates value, $Res Function(ConversionRates) then) =
-      _$ConversionRatesCopyWithImpl<$Res, ConversionRates>;
+    ConversionRates value,
+    $Res Function(ConversionRates) then,
+  ) = _$ConversionRatesCopyWithImpl<$Res, ConversionRates>;
   @useResult
   $Res call({List<ConversionRate> usdConversionRates});
 }
@@ -179,26 +203,31 @@ class _$ConversionRatesCopyWithImpl<$Res, $Val extends ConversionRates>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ConversionRates
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? usdConversionRates = null,
-  }) {
-    return _then(_value.copyWith(
-      usdConversionRates: null == usdConversionRates
-          ? _value.usdConversionRates
-          : usdConversionRates // ignore: cast_nullable_to_non_nullable
-              as List<ConversionRate>,
-    ) as $Val);
+  $Res call({Object? usdConversionRates = null}) {
+    return _then(
+      _value.copyWith(
+            usdConversionRates:
+                null == usdConversionRates
+                    ? _value.usdConversionRates
+                    : usdConversionRates // ignore: cast_nullable_to_non_nullable
+                        as List<ConversionRate>,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$UsdConversionRatesImplCopyWith<$Res>
     implements $ConversionRatesCopyWith<$Res> {
-  factory _$$UsdConversionRatesImplCopyWith(_$UsdConversionRatesImpl value,
-          $Res Function(_$UsdConversionRatesImpl) then) =
-      __$$UsdConversionRatesImplCopyWithImpl<$Res>;
+  factory _$$UsdConversionRatesImplCopyWith(
+    _$UsdConversionRatesImpl value,
+    $Res Function(_$UsdConversionRatesImpl) then,
+  ) = __$$UsdConversionRatesImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({List<ConversionRate> usdConversionRates});
@@ -208,30 +237,34 @@ abstract class _$$UsdConversionRatesImplCopyWith<$Res>
 class __$$UsdConversionRatesImplCopyWithImpl<$Res>
     extends _$ConversionRatesCopyWithImpl<$Res, _$UsdConversionRatesImpl>
     implements _$$UsdConversionRatesImplCopyWith<$Res> {
-  __$$UsdConversionRatesImplCopyWithImpl(_$UsdConversionRatesImpl _value,
-      $Res Function(_$UsdConversionRatesImpl) _then)
-      : super(_value, _then);
+  __$$UsdConversionRatesImplCopyWithImpl(
+    _$UsdConversionRatesImpl _value,
+    $Res Function(_$UsdConversionRatesImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of ConversionRates
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? usdConversionRates = null,
-  }) {
-    return _then(_$UsdConversionRatesImpl(
-      usdConversionRates: null == usdConversionRates
-          ? _value._usdConversionRates
-          : usdConversionRates // ignore: cast_nullable_to_non_nullable
-              as List<ConversionRate>,
-    ));
+  $Res call({Object? usdConversionRates = null}) {
+    return _then(
+      _$UsdConversionRatesImpl(
+        usdConversionRates:
+            null == usdConversionRates
+                ? _value._usdConversionRates
+                : usdConversionRates // ignore: cast_nullable_to_non_nullable
+                    as List<ConversionRate>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$UsdConversionRatesImpl implements _UsdConversionRates {
-  const _$UsdConversionRatesImpl(
-      {required final List<ConversionRate> usdConversionRates})
-      : _usdConversionRates = usdConversionRates;
+  const _$UsdConversionRatesImpl({
+    required final List<ConversionRate> usdConversionRates,
+  }) : _usdConversionRates = usdConversionRates;
 
   final List<ConversionRate> _usdConversionRates;
   @override
@@ -252,31 +285,42 @@ class _$UsdConversionRatesImpl implements _UsdConversionRates {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$UsdConversionRatesImpl &&
-            const DeepCollectionEquality()
-                .equals(other._usdConversionRates, _usdConversionRates));
+            const DeepCollectionEquality().equals(
+              other._usdConversionRates,
+              _usdConversionRates,
+            ));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_usdConversionRates));
+    runtimeType,
+    const DeepCollectionEquality().hash(_usdConversionRates),
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ConversionRates
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$UsdConversionRatesImplCopyWith<_$UsdConversionRatesImpl> get copyWith =>
       __$$UsdConversionRatesImplCopyWithImpl<_$UsdConversionRatesImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _UsdConversionRates implements ConversionRates {
-  const factory _UsdConversionRates(
-          {required final List<ConversionRate> usdConversionRates}) =
-      _$UsdConversionRatesImpl;
+  const factory _UsdConversionRates({
+    required final List<ConversionRate> usdConversionRates,
+  }) = _$UsdConversionRatesImpl;
 
   @override
   List<ConversionRate> get usdConversionRates;
+
+  /// Create a copy of ConversionRates
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UsdConversionRatesImplCopyWith<_$UsdConversionRatesImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

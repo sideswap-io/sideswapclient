@@ -59,14 +59,14 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'All'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: walletTypeFlag ==
-                                    const AddressesWalletTypeFlagAll()
+                        fontSize: 13,
+                        color:
+                            walletTypeFlag == const AddressesWalletTypeFlagAll()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -96,14 +96,15 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'Regular'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: walletTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            walletTypeFlag ==
                                     const AddressesWalletTypeFlagRegular()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -133,14 +134,14 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'AMP'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: walletTypeFlag ==
-                                    const AddressesWalletTypeFlagAmp()
+                        fontSize: 13,
+                        color:
+                            walletTypeFlag == const AddressesWalletTypeFlagAmp()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -159,33 +160,44 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
 
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).addressesButtonStyle(false);
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .addressesButtonStyle(false);
 
     final walletTypeFlag = ref.watch(addressesWalletTypeFlagNotifierProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Wallet'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(color: SideSwapColors.cornFlower, fontSize: 12)),
+        Text(
+          'Wallet'.tr(),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: SideSwapColors.cornFlower,
+            fontSize: 12,
+          ),
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 32,
           child: DButton(
             key: buttonKey,
-            style: clicked.value
-                ? buttonStyle?.merge(DButtonStyle(
-                    backgroundColor:
-                        ButtonState.all(SideSwapColors.prussianBlue)))
-                : buttonStyle,
+            style:
+                clicked.value
+                    ? buttonStyle?.merge(
+                      DButtonStyle(
+                        backgroundColor: ButtonState.all(
+                          SideSwapColors.prussianBlue,
+                        ),
+                      ),
+                    )
+                    : buttonStyle,
             onPressed: () async {
               clicked.value = true;
-              final result =
-                  await showSortMenu(context, buttonKey, walletTypeFlag);
+              final result = await showSortMenu(
+                context,
+                buttonKey,
+                walletTypeFlag,
+              );
               (switch (result) {
                 AddressesWalletTypeFlag result => ref
                     .read(addressesWalletTypeFlagNotifierProvider.notifier)
@@ -208,14 +220,15 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                       AddressesWalletTypeFlagAmp() => 'AMP'.tr(),
                       _ => 'All'.tr(),
                     },
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelMedium
-                        ?.copyWith(fontSize: 13),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMedium?.copyWith(fontSize: 13),
                   ),
                   const SizedBox(width: 6),
                   AnimatedDropdownArrow(
-                      target: clicked.value ? 0 : 1, initFrom: 1),
+                    target: clicked.value ? 0 : 1,
+                    initFrom: 1,
+                  ),
                 ],
               ),
             ),

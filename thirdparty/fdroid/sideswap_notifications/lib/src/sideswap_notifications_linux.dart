@@ -20,14 +20,13 @@ class SideswapNotificationsLinuxPlugin
   @override
   InitializationSettings getLocalNotificationsInitializationSettings({
     Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
+    onDidReceiveLocalNotification,
   }) {
     final initializationSettingsLinux = LinuxInitializationSettings(
-        defaultActionName: '',
-        defaultIcon: AssetsLinuxIcon('assets/icon/icon_linux.png'));
-
-    return InitializationSettings(
-      linux: initializationSettingsLinux,
+      defaultActionName: '',
+      defaultIcon: AssetsLinuxIcon('assets/icon/icon_linux.png'),
     );
+
+    return InitializationSettings(linux: initializationSettingsLinux);
   }
 }

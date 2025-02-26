@@ -7,21 +7,24 @@ part of 'ui_state_args_provider.dart';
 // **************************************************************************
 
 String _$uiStateArgsNotifierHash() =>
-    r'88a6c1efdddae55e48d9262af63029f4aa62a5fa';
+    r'942aa310a047c6262afa94d25942b0b1ed575c6b';
 
 /// See also [UiStateArgsNotifier].
 @ProviderFor(UiStateArgsNotifier)
 final uiStateArgsNotifierProvider = AutoDisposeNotifierProvider<
-    UiStateArgsNotifier, WalletMainArguments>.internal(
+  UiStateArgsNotifier,
+  WalletMainArguments
+>.internal(
   UiStateArgsNotifier.new,
   name: r'uiStateArgsNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$uiStateArgsNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$uiStateArgsNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$UiStateArgsNotifier = AutoDisposeNotifier<WalletMainArguments>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

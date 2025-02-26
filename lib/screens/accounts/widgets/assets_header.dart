@@ -10,27 +10,28 @@ import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class AssetsHeader extends HookConsumerWidget {
-  const AssetsHeader({
-    super.key,
-    required this.accountAssets,
-  });
+  const AssetsHeader({super.key, required this.accountAssets});
 
   final List<AccountAsset> accountAssets;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultCurrencyConversion = ref.watch(
-        accountAssetsTotalDefaultCurrencyBalanceStringProvider(accountAssets));
+      accountAssetsTotalDefaultCurrencyBalanceStringProvider(accountAssets),
+    );
     final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
 
-    final lbtcConversion =
-        ref.watch(accountAssetsTotalLbtcBalanceProvider(accountAssets));
+    final lbtcConversion = ref.watch(
+      accountAssetsTotalLbtcBalanceProvider(accountAssets),
+    );
 
     return Container(
       height: 120,
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
         color: SideSwapColors.chathamsBlue,
       ),
       padding: const EdgeInsets.only(left: 16, right: 16),
@@ -46,15 +47,15 @@ class AssetsHeader extends HookConsumerWidget {
               Text(
                 'Total Value'.tr(),
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 14,
-                      color: SideSwapColors.airSuperiorityBlue,
-                    ),
+                  fontSize: 14,
+                  color: SideSwapColors.airSuperiorityBlue,
+                ),
               ),
               Text(
                 '$lbtcConversion L-BTC',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontSize: 28,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontSize: 28),
               ),
               Text(
                 '$defaultCurrencyTicker $defaultCurrencyConversion',
@@ -64,12 +65,7 @@ class AssetsHeader extends HookConsumerWidget {
           ),
           const Padding(
             padding: EdgeInsets.only(top: 13),
-            child: Row(
-              children: [
-                SizedBox(width: 6),
-                WalletTransactions(),
-              ],
-            ),
+            child: Row(children: [SizedBox(width: 6), WalletTransactions()]),
           ),
         ],
       ),
@@ -96,7 +92,9 @@ class WalletFilter extends ConsumerWidget {
           child: SvgPicture.asset(
             'assets/filter.svg',
             colorFilter: const ColorFilter.mode(
-                SideSwapColors.brightTurquoise, BlendMode.srcIn),
+              SideSwapColors.brightTurquoise,
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ),
@@ -130,7 +128,9 @@ class WalletTransactions extends HookConsumerWidget {
           child: SvgPicture.asset(
             'assets/transactions_mobile.svg',
             colorFilter: const ColorFilter.mode(
-                SideSwapColors.brightTurquoise, BlendMode.srcIn),
+              SideSwapColors.brightTurquoise,
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ),

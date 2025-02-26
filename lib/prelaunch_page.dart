@@ -17,14 +17,8 @@ class PreLaunchPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (FlavorConfig.isDesktop) {
-      true => const SideSwapScaffoldPage(
-          content: PreLauchAnimation(),
-        ),
-      _ => const SideSwapScaffold(
-          body: SafeArea(
-            child: PreLauchAnimation(),
-          ),
-        ),
+      true => const SideSwapScaffoldPage(content: PreLauchAnimation()),
+      _ => const SideSwapScaffold(body: SafeArea(child: PreLauchAnimation())),
     };
   }
 }
@@ -33,9 +27,9 @@ class PreLauchAnimation extends HookConsumerWidget {
   const PreLauchAnimation({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller =
-        useAnimationController(duration: const Duration(milliseconds: 1200))
-          ..repeat();
+    final controller = useAnimationController(
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
     final delays = useMemoized(() => [.0, .25, .5, .75, 1.0]);
     const counter = 5;
 
@@ -56,16 +50,16 @@ class PreLauchAnimation extends HookConsumerWidget {
         FlavorConfig.isDesktop
             ? Container()
             : Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: Text(
-                  'Wallet loading...'.tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
+              padding: const EdgeInsets.only(top: 30),
+              child: Text(
+                'Wallet loading...'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
+            ),
         Center(
           child: Padding(
             padding: const EdgeInsets.only(top: 241),
@@ -78,9 +72,11 @@ class PreLauchAnimation extends HookConsumerWidget {
                   ...List<Widget>.generate(
                     counter,
                     (i) => FadeTransition(
-                      opacity:
-                          DelayTween(begin: 0.2, end: 1.0, delay: delays[i])
-                              .animate(controller),
+                      opacity: DelayTween(
+                        begin: 0.2,
+                        end: 1.0,
+                        delay: delays[i],
+                      ).animate(controller),
                       child: Container(
                         width: 10,
                         height: 10,

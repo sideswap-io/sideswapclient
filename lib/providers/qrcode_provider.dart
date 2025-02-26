@@ -27,14 +27,11 @@ class QrCodeResultModelNotifier extends _$QrCodeResultModelNotifier {
 }
 
 @riverpod
-QrCodeHelper qrcodeHelper(QrcodeHelperRef ref) {
+QrCodeHelper qrcodeHelper(Ref ref) {
   return QrCodeHelper(ref);
 }
 
-enum QrCodeResultType {
-  merchant,
-  client,
-}
+enum QrCodeResultType { merchant, client }
 
 class QrCodeResult {
   String? address;
@@ -147,7 +144,8 @@ class QrCodeHelper {
   QrCodeHelper(this.ref);
 
   Future<Either<Exception, QrCodeResult>> parseDynamicQrCode(
-      String qrCode) async {
+    String qrCode,
+  ) async {
     if (qrCode.isEmpty) {
       return Right(_emitError('Empty qr code'.tr()));
     }
@@ -171,8 +169,9 @@ class QrCodeHelper {
       final url = Uri.parse(qrCode);
 
       if (url.scheme == 'bitcoin') {
-        final bip21Result =
-            ref.read(parseBIP21Provider(qrCode, BIP21AddressTypeEnum.bitcoin));
+        final bip21Result = ref.read(
+          parseBIP21Provider(qrCode, BIP21AddressTypeEnum.bitcoin),
+        );
         return bip21Result.match(
           (l) => Left(l),
           (r) => Right(
@@ -191,7 +190,8 @@ class QrCodeHelper {
 
       if (url.scheme == 'liquidnetwork') {
         final bip21Result = ref.read(
-            parseBIP21Provider(qrCode, BIP21AddressTypeEnum.liquidnetwork));
+          parseBIP21Provider(qrCode, BIP21AddressTypeEnum.liquidnetwork),
+        );
         return bip21Result.match(
           (l) => Left(l),
           (r) => Right(
@@ -235,11 +235,14 @@ class QrCodeHelper {
           .read(outputsReaderNotifierProvider.notifier)
           .decodeJsonString(qrCode);
       final outputsData = ref.read(outputsReaderNotifierProvider);
-      return outputsData.match((l) {
-        return Right(_emitError(l.message ?? ''));
-      }, (r) {
-        return Right(QrCodeResult(outputsData: r));
-      });
+      return outputsData.match(
+        (l) {
+          return Right(_emitError(l.message ?? ''));
+        },
+        (r) {
+          return Right(QrCodeResult(outputsData: r));
+        },
+      );
     } catch (e) {
       logger.e(e);
 

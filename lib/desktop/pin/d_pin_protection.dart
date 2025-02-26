@@ -37,14 +37,14 @@ class DPinProtection extends HookConsumerWidget {
       return switch (pinUnlockState) {
         PinUnlockStateEmpty() => () {}(),
         PinUnlockStateSuccess() => () {
-            Navigator.of(context).pop(true);
-          }(),
+          Navigator.of(context).pop(true);
+        }(),
         PinUnlockStateFailed() => () {
-            Navigator.of(context).pop(false);
-          }(),
+          Navigator.of(context).pop(false);
+        }(),
         PinUnlockStateWrong() => () {
-            focusNode.requestFocus();
-          }(),
+          focusNode.requestFocus();
+        }(),
       };
     }, [pinUnlockState]);
 
@@ -99,8 +99,9 @@ class DPinProtection extends HookConsumerWidget {
                   padding: const EdgeInsets.only(top: 8),
                   child: Consumer(
                     builder: ((context, ref, child) {
-                      final pinProtectionState =
-                          ref.watch(pinProtectionStateNotifierProvider);
+                      final pinProtectionState = ref.watch(
+                        pinProtectionStateNotifierProvider,
+                      );
 
                       return DPinTextField(
                         focusNode: focusNode,
@@ -109,7 +110,8 @@ class DPinProtection extends HookConsumerWidget {
                           LengthLimitingTextInputFormatter(8),
                         ],
                         pin: pinCode,
-                        enabled: pinProtectionState !=
+                        enabled:
+                            pinProtectionState !=
                             const PinProtectionState.waiting(),
                         error: pinProtectionState is PinProtectionStateError,
                         errorMessage:
@@ -132,10 +134,12 @@ class DPinProtection extends HookConsumerWidget {
                   padding: const EdgeInsets.only(top: 24),
                   child: Consumer(
                     builder: (context, ref, child) {
-                      final firstLaunchState =
-                          ref.watch(firstLaunchStateNotifierProvider);
-                      final pinFieldState =
-                          ref.watch(pinFieldStateNotifierProvider);
+                      final firstLaunchState = ref.watch(
+                        firstLaunchStateNotifierProvider,
+                      );
+                      final pinFieldState = ref.watch(
+                        pinFieldStateNotifierProvider,
+                      );
 
                       return DPinKeyboard(
                         width: 260,
@@ -156,20 +160,21 @@ class DPinProtection extends HookConsumerWidget {
           ),
         ),
       ),
-      actions: showBackButton
-          ? [
-              Center(
-                child: DCustomTextBigButton(
-                  width: 260,
-                  height: 44,
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: Text('Back'.tr()),
+      actions:
+          showBackButton
+              ? [
+                Center(
+                  child: DCustomTextBigButton(
+                    width: 260,
+                    height: 44,
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: Text('Back'.tr()),
+                  ),
                 ),
-              )
-            ]
-          : null,
+              ]
+              : null,
     );
   }
 }

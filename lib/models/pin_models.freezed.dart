@@ -12,7 +12,8 @@ part of 'pin_models.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$PinSetupCallerState {
@@ -22,16 +23,14 @@ mixin _$PinSetupCallerState {
     required TResult Function() settings,
     required TResult Function() pinWelcome,
     required TResult Function() newWalletPinWelcome,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? settings,
     TResult? Function()? pinWelcome,
     TResult? Function()? newWalletPinWelcome,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -39,43 +38,40 @@ mixin _$PinSetupCallerState {
     TResult Function()? pinWelcome,
     TResult Function()? newWalletPinWelcome,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinSetupCallerStateEmpty value) empty,
     required TResult Function(PinSetupCallerStateSettings value) settings,
     required TResult Function(PinSetupCallerStatePinWelcome value) pinWelcome,
     required TResult Function(PinSetupCallerStateNewWalletPinWelcome value)
-        newWalletPinWelcome,
-  }) =>
-      throw _privateConstructorUsedError;
+    newWalletPinWelcome,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinSetupCallerStateEmpty value)? empty,
     TResult? Function(PinSetupCallerStateSettings value)? settings,
     TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
-  }) =>
-      throw _privateConstructorUsedError;
+    newWalletPinWelcome,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinSetupCallerStateEmpty value)? empty,
     TResult Function(PinSetupCallerStateSettings value)? settings,
     TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinSetupCallerStateCopyWith<$Res> {
   factory $PinSetupCallerStateCopyWith(
-          PinSetupCallerState value, $Res Function(PinSetupCallerState) then) =
-      _$PinSetupCallerStateCopyWithImpl<$Res, PinSetupCallerState>;
+    PinSetupCallerState value,
+    $Res Function(PinSetupCallerState) then,
+  ) = _$PinSetupCallerStateCopyWithImpl<$Res, PinSetupCallerState>;
 }
 
 /// @nodoc
@@ -87,25 +83,31 @@ class _$PinSetupCallerStateCopyWithImpl<$Res, $Val extends PinSetupCallerState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinSetupCallerState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinSetupCallerStateEmptyImplCopyWith<$Res> {
   factory _$$PinSetupCallerStateEmptyImplCopyWith(
-          _$PinSetupCallerStateEmptyImpl value,
-          $Res Function(_$PinSetupCallerStateEmptyImpl) then) =
-      __$$PinSetupCallerStateEmptyImplCopyWithImpl<$Res>;
+    _$PinSetupCallerStateEmptyImpl value,
+    $Res Function(_$PinSetupCallerStateEmptyImpl) then,
+  ) = __$$PinSetupCallerStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupCallerStateEmptyImplCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res,
-        _$PinSetupCallerStateEmptyImpl>
+    extends
+        _$PinSetupCallerStateCopyWithImpl<$Res, _$PinSetupCallerStateEmptyImpl>
     implements _$$PinSetupCallerStateEmptyImplCopyWith<$Res> {
   __$$PinSetupCallerStateEmptyImplCopyWithImpl(
-      _$PinSetupCallerStateEmptyImpl _value,
-      $Res Function(_$PinSetupCallerStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$PinSetupCallerStateEmptyImpl _value,
+    $Res Function(_$PinSetupCallerStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupCallerState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -172,7 +174,7 @@ class _$PinSetupCallerStateEmptyImpl implements PinSetupCallerStateEmpty {
     required TResult Function(PinSetupCallerStateSettings value) settings,
     required TResult Function(PinSetupCallerStatePinWelcome value) pinWelcome,
     required TResult Function(PinSetupCallerStateNewWalletPinWelcome value)
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return empty(this);
   }
@@ -184,7 +186,7 @@ class _$PinSetupCallerStateEmptyImpl implements PinSetupCallerStateEmpty {
     TResult? Function(PinSetupCallerStateSettings value)? settings,
     TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return empty?.call(this);
   }
@@ -196,7 +198,7 @@ class _$PinSetupCallerStateEmptyImpl implements PinSetupCallerStateEmpty {
     TResult Function(PinSetupCallerStateSettings value)? settings,
     TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
     required TResult orElse(),
   }) {
     if (empty != null) {
@@ -213,20 +215,26 @@ abstract class PinSetupCallerStateEmpty implements PinSetupCallerState {
 /// @nodoc
 abstract class _$$PinSetupCallerStateSettingsImplCopyWith<$Res> {
   factory _$$PinSetupCallerStateSettingsImplCopyWith(
-          _$PinSetupCallerStateSettingsImpl value,
-          $Res Function(_$PinSetupCallerStateSettingsImpl) then) =
-      __$$PinSetupCallerStateSettingsImplCopyWithImpl<$Res>;
+    _$PinSetupCallerStateSettingsImpl value,
+    $Res Function(_$PinSetupCallerStateSettingsImpl) then,
+  ) = __$$PinSetupCallerStateSettingsImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupCallerStateSettingsImplCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res,
-        _$PinSetupCallerStateSettingsImpl>
+    extends
+        _$PinSetupCallerStateCopyWithImpl<
+          $Res,
+          _$PinSetupCallerStateSettingsImpl
+        >
     implements _$$PinSetupCallerStateSettingsImplCopyWith<$Res> {
   __$$PinSetupCallerStateSettingsImplCopyWithImpl(
-      _$PinSetupCallerStateSettingsImpl _value,
-      $Res Function(_$PinSetupCallerStateSettingsImpl) _then)
-      : super(_value, _then);
+    _$PinSetupCallerStateSettingsImpl _value,
+    $Res Function(_$PinSetupCallerStateSettingsImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupCallerState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -293,7 +301,7 @@ class _$PinSetupCallerStateSettingsImpl implements PinSetupCallerStateSettings {
     required TResult Function(PinSetupCallerStateSettings value) settings,
     required TResult Function(PinSetupCallerStatePinWelcome value) pinWelcome,
     required TResult Function(PinSetupCallerStateNewWalletPinWelcome value)
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return settings(this);
   }
@@ -305,7 +313,7 @@ class _$PinSetupCallerStateSettingsImpl implements PinSetupCallerStateSettings {
     TResult? Function(PinSetupCallerStateSettings value)? settings,
     TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return settings?.call(this);
   }
@@ -317,7 +325,7 @@ class _$PinSetupCallerStateSettingsImpl implements PinSetupCallerStateSettings {
     TResult Function(PinSetupCallerStateSettings value)? settings,
     TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
     required TResult orElse(),
   }) {
     if (settings != null) {
@@ -335,20 +343,26 @@ abstract class PinSetupCallerStateSettings implements PinSetupCallerState {
 /// @nodoc
 abstract class _$$PinSetupCallerStatePinWelcomeImplCopyWith<$Res> {
   factory _$$PinSetupCallerStatePinWelcomeImplCopyWith(
-          _$PinSetupCallerStatePinWelcomeImpl value,
-          $Res Function(_$PinSetupCallerStatePinWelcomeImpl) then) =
-      __$$PinSetupCallerStatePinWelcomeImplCopyWithImpl<$Res>;
+    _$PinSetupCallerStatePinWelcomeImpl value,
+    $Res Function(_$PinSetupCallerStatePinWelcomeImpl) then,
+  ) = __$$PinSetupCallerStatePinWelcomeImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupCallerStatePinWelcomeImplCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res,
-        _$PinSetupCallerStatePinWelcomeImpl>
+    extends
+        _$PinSetupCallerStateCopyWithImpl<
+          $Res,
+          _$PinSetupCallerStatePinWelcomeImpl
+        >
     implements _$$PinSetupCallerStatePinWelcomeImplCopyWith<$Res> {
   __$$PinSetupCallerStatePinWelcomeImplCopyWithImpl(
-      _$PinSetupCallerStatePinWelcomeImpl _value,
-      $Res Function(_$PinSetupCallerStatePinWelcomeImpl) _then)
-      : super(_value, _then);
+    _$PinSetupCallerStatePinWelcomeImpl _value,
+    $Res Function(_$PinSetupCallerStatePinWelcomeImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupCallerState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -416,7 +430,7 @@ class _$PinSetupCallerStatePinWelcomeImpl
     required TResult Function(PinSetupCallerStateSettings value) settings,
     required TResult Function(PinSetupCallerStatePinWelcome value) pinWelcome,
     required TResult Function(PinSetupCallerStateNewWalletPinWelcome value)
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return pinWelcome(this);
   }
@@ -428,7 +442,7 @@ class _$PinSetupCallerStatePinWelcomeImpl
     TResult? Function(PinSetupCallerStateSettings value)? settings,
     TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return pinWelcome?.call(this);
   }
@@ -440,7 +454,7 @@ class _$PinSetupCallerStatePinWelcomeImpl
     TResult Function(PinSetupCallerStateSettings value)? settings,
     TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
     required TResult orElse(),
   }) {
     if (pinWelcome != null) {
@@ -458,20 +472,26 @@ abstract class PinSetupCallerStatePinWelcome implements PinSetupCallerState {
 /// @nodoc
 abstract class _$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWith<$Res> {
   factory _$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWith(
-          _$PinSetupCallerStateNewWalletPinWelcomeImpl value,
-          $Res Function(_$PinSetupCallerStateNewWalletPinWelcomeImpl) then) =
-      __$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWithImpl<$Res>;
+    _$PinSetupCallerStateNewWalletPinWelcomeImpl value,
+    $Res Function(_$PinSetupCallerStateNewWalletPinWelcomeImpl) then,
+  ) = __$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res,
-        _$PinSetupCallerStateNewWalletPinWelcomeImpl>
+    extends
+        _$PinSetupCallerStateCopyWithImpl<
+          $Res,
+          _$PinSetupCallerStateNewWalletPinWelcomeImpl
+        >
     implements _$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWith<$Res> {
   __$$PinSetupCallerStateNewWalletPinWelcomeImplCopyWithImpl(
-      _$PinSetupCallerStateNewWalletPinWelcomeImpl _value,
-      $Res Function(_$PinSetupCallerStateNewWalletPinWelcomeImpl) _then)
-      : super(_value, _then);
+    _$PinSetupCallerStateNewWalletPinWelcomeImpl _value,
+    $Res Function(_$PinSetupCallerStateNewWalletPinWelcomeImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupCallerState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -539,7 +559,7 @@ class _$PinSetupCallerStateNewWalletPinWelcomeImpl
     required TResult Function(PinSetupCallerStateSettings value) settings,
     required TResult Function(PinSetupCallerStatePinWelcome value) pinWelcome,
     required TResult Function(PinSetupCallerStateNewWalletPinWelcome value)
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return newWalletPinWelcome(this);
   }
@@ -551,7 +571,7 @@ class _$PinSetupCallerStateNewWalletPinWelcomeImpl
     TResult? Function(PinSetupCallerStateSettings value)? settings,
     TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
   }) {
     return newWalletPinWelcome?.call(this);
   }
@@ -563,7 +583,7 @@ class _$PinSetupCallerStateNewWalletPinWelcomeImpl
     TResult Function(PinSetupCallerStateSettings value)? settings,
     TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
     TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
-        newWalletPinWelcome,
+    newWalletPinWelcome,
     required TResult orElse(),
   }) {
     if (newWalletPinWelcome != null) {
@@ -586,52 +606,47 @@ mixin _$PinSetupExitState {
     required TResult Function() empty,
     required TResult Function() back,
     required TResult Function() success,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? back,
     TResult? Function()? success,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? back,
     TResult Function()? success,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinSetupExitStateEmpty value) empty,
     required TResult Function(PinSetupExitStateBack value) back,
     required TResult Function(PinSetupExitStateSuccess value) success,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinSetupExitStateEmpty value)? empty,
     TResult? Function(PinSetupExitStateBack value)? back,
     TResult? Function(PinSetupExitStateSuccess value)? success,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinSetupExitStateEmpty value)? empty,
     TResult Function(PinSetupExitStateBack value)? back,
     TResult Function(PinSetupExitStateSuccess value)? success,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinSetupExitStateCopyWith<$Res> {
   factory $PinSetupExitStateCopyWith(
-          PinSetupExitState value, $Res Function(PinSetupExitState) then) =
-      _$PinSetupExitStateCopyWithImpl<$Res, PinSetupExitState>;
+    PinSetupExitState value,
+    $Res Function(PinSetupExitState) then,
+  ) = _$PinSetupExitStateCopyWithImpl<$Res, PinSetupExitState>;
 }
 
 /// @nodoc
@@ -643,14 +658,17 @@ class _$PinSetupExitStateCopyWithImpl<$Res, $Val extends PinSetupExitState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinSetupExitState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinSetupExitStateEmptyImplCopyWith<$Res> {
   factory _$$PinSetupExitStateEmptyImplCopyWith(
-          _$PinSetupExitStateEmptyImpl value,
-          $Res Function(_$PinSetupExitStateEmptyImpl) then) =
-      __$$PinSetupExitStateEmptyImplCopyWithImpl<$Res>;
+    _$PinSetupExitStateEmptyImpl value,
+    $Res Function(_$PinSetupExitStateEmptyImpl) then,
+  ) = __$$PinSetupExitStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -658,9 +676,12 @@ class __$$PinSetupExitStateEmptyImplCopyWithImpl<$Res>
     extends _$PinSetupExitStateCopyWithImpl<$Res, _$PinSetupExitStateEmptyImpl>
     implements _$$PinSetupExitStateEmptyImplCopyWith<$Res> {
   __$$PinSetupExitStateEmptyImplCopyWithImpl(
-      _$PinSetupExitStateEmptyImpl _value,
-      $Res Function(_$PinSetupExitStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$PinSetupExitStateEmptyImpl _value,
+    $Res Function(_$PinSetupExitStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupExitState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -759,18 +780,22 @@ abstract class PinSetupExitStateEmpty implements PinSetupExitState {
 /// @nodoc
 abstract class _$$PinSetupExitStateBackImplCopyWith<$Res> {
   factory _$$PinSetupExitStateBackImplCopyWith(
-          _$PinSetupExitStateBackImpl value,
-          $Res Function(_$PinSetupExitStateBackImpl) then) =
-      __$$PinSetupExitStateBackImplCopyWithImpl<$Res>;
+    _$PinSetupExitStateBackImpl value,
+    $Res Function(_$PinSetupExitStateBackImpl) then,
+  ) = __$$PinSetupExitStateBackImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupExitStateBackImplCopyWithImpl<$Res>
     extends _$PinSetupExitStateCopyWithImpl<$Res, _$PinSetupExitStateBackImpl>
     implements _$$PinSetupExitStateBackImplCopyWith<$Res> {
-  __$$PinSetupExitStateBackImplCopyWithImpl(_$PinSetupExitStateBackImpl _value,
-      $Res Function(_$PinSetupExitStateBackImpl) _then)
-      : super(_value, _then);
+  __$$PinSetupExitStateBackImplCopyWithImpl(
+    _$PinSetupExitStateBackImpl _value,
+    $Res Function(_$PinSetupExitStateBackImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupExitState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -869,20 +894,23 @@ abstract class PinSetupExitStateBack implements PinSetupExitState {
 /// @nodoc
 abstract class _$$PinSetupExitStateSuccessImplCopyWith<$Res> {
   factory _$$PinSetupExitStateSuccessImplCopyWith(
-          _$PinSetupExitStateSuccessImpl value,
-          $Res Function(_$PinSetupExitStateSuccessImpl) then) =
-      __$$PinSetupExitStateSuccessImplCopyWithImpl<$Res>;
+    _$PinSetupExitStateSuccessImpl value,
+    $Res Function(_$PinSetupExitStateSuccessImpl) then,
+  ) = __$$PinSetupExitStateSuccessImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupExitStateSuccessImplCopyWithImpl<$Res>
-    extends _$PinSetupExitStateCopyWithImpl<$Res,
-        _$PinSetupExitStateSuccessImpl>
+    extends
+        _$PinSetupExitStateCopyWithImpl<$Res, _$PinSetupExitStateSuccessImpl>
     implements _$$PinSetupExitStateSuccessImplCopyWith<$Res> {
   __$$PinSetupExitStateSuccessImplCopyWithImpl(
-      _$PinSetupExitStateSuccessImpl _value,
-      $Res Function(_$PinSetupExitStateSuccessImpl) _then)
-      : super(_value, _then);
+    _$PinSetupExitStateSuccessImpl _value,
+    $Res Function(_$PinSetupExitStateSuccessImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupExitState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -984,47 +1012,42 @@ mixin _$PinFieldState {
   TResult when<TResult extends Object?>({
     required TResult Function() first,
     required TResult Function() second,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? first,
     TResult? Function()? second,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? first,
     TResult Function()? second,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinFieldStateFirst value) first,
     required TResult Function(PinFieldStateSecond value) second,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinFieldStateFirst value)? first,
     TResult? Function(PinFieldStateSecond value)? second,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinFieldStateFirst value)? first,
     TResult Function(PinFieldStateSecond value)? second,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinFieldStateCopyWith<$Res> {
   factory $PinFieldStateCopyWith(
-          PinFieldState value, $Res Function(PinFieldState) then) =
-      _$PinFieldStateCopyWithImpl<$Res, PinFieldState>;
+    PinFieldState value,
+    $Res Function(PinFieldState) then,
+  ) = _$PinFieldStateCopyWithImpl<$Res, PinFieldState>;
 }
 
 /// @nodoc
@@ -1036,22 +1059,30 @@ class _$PinFieldStateCopyWithImpl<$Res, $Val extends PinFieldState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinFieldState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinFieldStateFirstImplCopyWith<$Res> {
-  factory _$$PinFieldStateFirstImplCopyWith(_$PinFieldStateFirstImpl value,
-          $Res Function(_$PinFieldStateFirstImpl) then) =
-      __$$PinFieldStateFirstImplCopyWithImpl<$Res>;
+  factory _$$PinFieldStateFirstImplCopyWith(
+    _$PinFieldStateFirstImpl value,
+    $Res Function(_$PinFieldStateFirstImpl) then,
+  ) = __$$PinFieldStateFirstImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinFieldStateFirstImplCopyWithImpl<$Res>
     extends _$PinFieldStateCopyWithImpl<$Res, _$PinFieldStateFirstImpl>
     implements _$$PinFieldStateFirstImplCopyWith<$Res> {
-  __$$PinFieldStateFirstImplCopyWithImpl(_$PinFieldStateFirstImpl _value,
-      $Res Function(_$PinFieldStateFirstImpl) _then)
-      : super(_value, _then);
+  __$$PinFieldStateFirstImplCopyWithImpl(
+    _$PinFieldStateFirstImpl _value,
+    $Res Function(_$PinFieldStateFirstImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinFieldState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1142,18 +1173,23 @@ abstract class PinFieldStateFirst implements PinFieldState {
 
 /// @nodoc
 abstract class _$$PinFieldStateSecondImplCopyWith<$Res> {
-  factory _$$PinFieldStateSecondImplCopyWith(_$PinFieldStateSecondImpl value,
-          $Res Function(_$PinFieldStateSecondImpl) then) =
-      __$$PinFieldStateSecondImplCopyWithImpl<$Res>;
+  factory _$$PinFieldStateSecondImplCopyWith(
+    _$PinFieldStateSecondImpl value,
+    $Res Function(_$PinFieldStateSecondImpl) then,
+  ) = __$$PinFieldStateSecondImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinFieldStateSecondImplCopyWithImpl<$Res>
     extends _$PinFieldStateCopyWithImpl<$Res, _$PinFieldStateSecondImpl>
     implements _$$PinFieldStateSecondImplCopyWith<$Res> {
-  __$$PinFieldStateSecondImplCopyWithImpl(_$PinFieldStateSecondImpl _value,
-      $Res Function(_$PinFieldStateSecondImpl) _then)
-      : super(_value, _then);
+  __$$PinFieldStateSecondImplCopyWithImpl(
+    _$PinFieldStateSecondImpl _value,
+    $Res Function(_$PinFieldStateSecondImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinFieldState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1250,52 +1286,47 @@ mixin _$PinSetupState {
     required TResult Function() idle,
     required TResult Function(String message) error,
     required TResult Function() done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
     TResult? Function(String message)? error,
     TResult? Function()? done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
     TResult Function(String message)? error,
     TResult Function()? done,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinSetupStateIdle value) idle,
     required TResult Function(PinSetupStateError value) error,
     required TResult Function(PinSetupStateDone value) done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinSetupStateIdle value)? idle,
     TResult? Function(PinSetupStateError value)? error,
     TResult? Function(PinSetupStateDone value)? done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinSetupStateIdle value)? idle,
     TResult Function(PinSetupStateError value)? error,
     TResult Function(PinSetupStateDone value)? done,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinSetupStateCopyWith<$Res> {
   factory $PinSetupStateCopyWith(
-          PinSetupState value, $Res Function(PinSetupState) then) =
-      _$PinSetupStateCopyWithImpl<$Res, PinSetupState>;
+    PinSetupState value,
+    $Res Function(PinSetupState) then,
+  ) = _$PinSetupStateCopyWithImpl<$Res, PinSetupState>;
 }
 
 /// @nodoc
@@ -1307,22 +1338,30 @@ class _$PinSetupStateCopyWithImpl<$Res, $Val extends PinSetupState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinSetupState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinSetupStateIdleImplCopyWith<$Res> {
-  factory _$$PinSetupStateIdleImplCopyWith(_$PinSetupStateIdleImpl value,
-          $Res Function(_$PinSetupStateIdleImpl) then) =
-      __$$PinSetupStateIdleImplCopyWithImpl<$Res>;
+  factory _$$PinSetupStateIdleImplCopyWith(
+    _$PinSetupStateIdleImpl value,
+    $Res Function(_$PinSetupStateIdleImpl) then,
+  ) = __$$PinSetupStateIdleImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupStateIdleImplCopyWithImpl<$Res>
     extends _$PinSetupStateCopyWithImpl<$Res, _$PinSetupStateIdleImpl>
     implements _$$PinSetupStateIdleImplCopyWith<$Res> {
-  __$$PinSetupStateIdleImplCopyWithImpl(_$PinSetupStateIdleImpl _value,
-      $Res Function(_$PinSetupStateIdleImpl) _then)
-      : super(_value, _then);
+  __$$PinSetupStateIdleImplCopyWithImpl(
+    _$PinSetupStateIdleImpl _value,
+    $Res Function(_$PinSetupStateIdleImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1419,9 +1458,10 @@ abstract class PinSetupStateIdle implements PinSetupState {
 
 /// @nodoc
 abstract class _$$PinSetupStateErrorImplCopyWith<$Res> {
-  factory _$$PinSetupStateErrorImplCopyWith(_$PinSetupStateErrorImpl value,
-          $Res Function(_$PinSetupStateErrorImpl) then) =
-      __$$PinSetupStateErrorImplCopyWithImpl<$Res>;
+  factory _$$PinSetupStateErrorImplCopyWith(
+    _$PinSetupStateErrorImpl value,
+    $Res Function(_$PinSetupStateErrorImpl) then,
+  ) = __$$PinSetupStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -1430,21 +1470,25 @@ abstract class _$$PinSetupStateErrorImplCopyWith<$Res> {
 class __$$PinSetupStateErrorImplCopyWithImpl<$Res>
     extends _$PinSetupStateCopyWithImpl<$Res, _$PinSetupStateErrorImpl>
     implements _$$PinSetupStateErrorImplCopyWith<$Res> {
-  __$$PinSetupStateErrorImplCopyWithImpl(_$PinSetupStateErrorImpl _value,
-      $Res Function(_$PinSetupStateErrorImpl) _then)
-      : super(_value, _then);
+  __$$PinSetupStateErrorImplCopyWithImpl(
+    _$PinSetupStateErrorImpl _value,
+    $Res Function(_$PinSetupStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of PinSetupState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = null,
-  }) {
-    return _then(_$PinSetupStateErrorImpl(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? message = null}) {
+    return _then(
+      _$PinSetupStateErrorImpl(
+        message:
+            null == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
@@ -1472,12 +1516,16 @@ class _$PinSetupStateErrorImpl implements PinSetupStateError {
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PinSetupState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PinSetupStateErrorImplCopyWith<_$PinSetupStateErrorImpl> get copyWith =>
       __$$PinSetupStateErrorImplCopyWithImpl<_$PinSetupStateErrorImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -1553,25 +1601,33 @@ abstract class PinSetupStateError implements PinSetupState {
       _$PinSetupStateErrorImpl;
 
   String get message;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PinSetupState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PinSetupStateErrorImplCopyWith<_$PinSetupStateErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$PinSetupStateDoneImplCopyWith<$Res> {
-  factory _$$PinSetupStateDoneImplCopyWith(_$PinSetupStateDoneImpl value,
-          $Res Function(_$PinSetupStateDoneImpl) then) =
-      __$$PinSetupStateDoneImplCopyWithImpl<$Res>;
+  factory _$$PinSetupStateDoneImplCopyWith(
+    _$PinSetupStateDoneImpl value,
+    $Res Function(_$PinSetupStateDoneImpl) then,
+  ) = __$$PinSetupStateDoneImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinSetupStateDoneImplCopyWithImpl<$Res>
     extends _$PinSetupStateCopyWithImpl<$Res, _$PinSetupStateDoneImpl>
     implements _$$PinSetupStateDoneImplCopyWith<$Res> {
-  __$$PinSetupStateDoneImplCopyWithImpl(_$PinSetupStateDoneImpl _value,
-      $Res Function(_$PinSetupStateDoneImpl) _then)
-      : super(_value, _then);
+  __$$PinSetupStateDoneImplCopyWithImpl(
+    _$PinSetupStateDoneImpl _value,
+    $Res Function(_$PinSetupStateDoneImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinSetupState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1676,8 +1732,12 @@ PinDataState _$PinDataStateFromJson(Map<String, dynamic> json) {
       return PinDataStateData.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'PinDataState',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(
+        json,
+        'runtimeType',
+        'PinDataState',
+        'Invalid union type "${json['runtimeType']}"!',
+      );
   }
 }
 
@@ -1687,60 +1747,69 @@ mixin _$PinDataState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String hmac)
-        data,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )
+    data,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinDataStateEmpty value) empty,
     required TResult Function(PinDataStateError value) error,
     required TResult Function(PinDataStateData value) data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinDataStateEmpty value)? empty,
     TResult? Function(PinDataStateError value)? error,
     TResult? Function(PinDataStateData value)? data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinDataStateEmpty value)? empty,
     TResult Function(PinDataStateError value)? error,
     TResult Function(PinDataStateData value)? data,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
+
+  /// Serializes this PinDataState to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinDataStateCopyWith<$Res> {
   factory $PinDataStateCopyWith(
-          PinDataState value, $Res Function(PinDataState) then) =
-      _$PinDataStateCopyWithImpl<$Res, PinDataState>;
+    PinDataState value,
+    $Res Function(PinDataState) then,
+  ) = _$PinDataStateCopyWithImpl<$Res, PinDataState>;
 }
 
 /// @nodoc
@@ -1752,29 +1821,37 @@ class _$PinDataStateCopyWithImpl<$Res, $Val extends PinDataState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinDataStateEmptyImplCopyWith<$Res> {
-  factory _$$PinDataStateEmptyImplCopyWith(_$PinDataStateEmptyImpl value,
-          $Res Function(_$PinDataStateEmptyImpl) then) =
-      __$$PinDataStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$PinDataStateEmptyImplCopyWith(
+    _$PinDataStateEmptyImpl value,
+    $Res Function(_$PinDataStateEmptyImpl) then,
+  ) = __$$PinDataStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinDataStateEmptyImplCopyWithImpl<$Res>
     extends _$PinDataStateCopyWithImpl<$Res, _$PinDataStateEmptyImpl>
     implements _$$PinDataStateEmptyImplCopyWith<$Res> {
-  __$$PinDataStateEmptyImplCopyWithImpl(_$PinDataStateEmptyImpl _value,
-      $Res Function(_$PinDataStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$PinDataStateEmptyImplCopyWithImpl(
+    _$PinDataStateEmptyImpl _value,
+    $Res Function(_$PinDataStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   const _$PinDataStateEmptyImpl({final String? $type})
-      : $type = $type ?? 'empty';
+    : $type = $type ?? 'empty';
 
   factory _$PinDataStateEmptyImpl.fromJson(Map<String, dynamic> json) =>
       _$$PinDataStateEmptyImplFromJson(json);
@@ -1793,7 +1870,7 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
         (other.runtimeType == runtimeType && other is _$PinDataStateEmptyImpl);
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => runtimeType.hashCode;
 
@@ -1802,9 +1879,13 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String hmac)
-        data,
+    required TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )
+    data,
   }) {
     return empty();
   }
@@ -1814,9 +1895,13 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult? Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
   }) {
     return empty?.call();
   }
@@ -1826,9 +1911,13 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
     required TResult orElse(),
   }) {
     if (empty != null) {
@@ -1873,9 +1962,7 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PinDataStateEmptyImplToJson(
-      this,
-    );
+    return _$$PinDataStateEmptyImplToJson(this);
   }
 }
 
@@ -1888,9 +1975,10 @@ abstract class PinDataStateEmpty implements PinDataState {
 
 /// @nodoc
 abstract class _$$PinDataStateErrorImplCopyWith<$Res> {
-  factory _$$PinDataStateErrorImplCopyWith(_$PinDataStateErrorImpl value,
-          $Res Function(_$PinDataStateErrorImpl) then) =
-      __$$PinDataStateErrorImplCopyWithImpl<$Res>;
+  factory _$$PinDataStateErrorImplCopyWith(
+    _$PinDataStateErrorImpl value,
+    $Res Function(_$PinDataStateErrorImpl) then,
+  ) = __$$PinDataStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -1899,21 +1987,25 @@ abstract class _$$PinDataStateErrorImplCopyWith<$Res> {
 class __$$PinDataStateErrorImplCopyWithImpl<$Res>
     extends _$PinDataStateCopyWithImpl<$Res, _$PinDataStateErrorImpl>
     implements _$$PinDataStateErrorImplCopyWith<$Res> {
-  __$$PinDataStateErrorImplCopyWithImpl(_$PinDataStateErrorImpl _value,
-      $Res Function(_$PinDataStateErrorImpl) _then)
-      : super(_value, _then);
+  __$$PinDataStateErrorImplCopyWithImpl(
+    _$PinDataStateErrorImpl _value,
+    $Res Function(_$PinDataStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = null,
-  }) {
-    return _then(_$PinDataStateErrorImpl(
-      message: null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? message = null}) {
+    return _then(
+      _$PinDataStateErrorImpl(
+        message:
+            null == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
@@ -1921,7 +2013,7 @@ class __$$PinDataStateErrorImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PinDataStateErrorImpl implements PinDataStateError {
   const _$PinDataStateErrorImpl({required this.message, final String? $type})
-      : $type = $type ?? 'error';
+    : $type = $type ?? 'error';
 
   factory _$PinDataStateErrorImpl.fromJson(Map<String, dynamic> json) =>
       _$$PinDataStateErrorImplFromJson(json);
@@ -1945,25 +2037,33 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
             (identical(other.message, message) || other.message == message));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PinDataStateErrorImplCopyWith<_$PinDataStateErrorImpl> get copyWith =>
       __$$PinDataStateErrorImplCopyWithImpl<_$PinDataStateErrorImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String hmac)
-        data,
+    required TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )
+    data,
   }) {
     return error(message);
   }
@@ -1973,9 +2073,13 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult? Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
   }) {
     return error?.call(message);
   }
@@ -1985,9 +2089,13 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -2032,9 +2140,7 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PinDataStateErrorImplToJson(
-      this,
-    );
+    return _$$PinDataStateErrorImplToJson(this);
   }
 }
 
@@ -2046,29 +2152,40 @@ abstract class PinDataStateError implements PinDataState {
       _$PinDataStateErrorImpl.fromJson;
 
   String get message;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PinDataStateErrorImplCopyWith<_$PinDataStateErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$PinDataStateDataImplCopyWith<$Res> {
-  factory _$$PinDataStateDataImplCopyWith(_$PinDataStateDataImpl value,
-          $Res Function(_$PinDataStateDataImpl) then) =
-      __$$PinDataStateDataImplCopyWithImpl<$Res>;
+  factory _$$PinDataStateDataImplCopyWith(
+    _$PinDataStateDataImpl value,
+    $Res Function(_$PinDataStateDataImpl) then,
+  ) = __$$PinDataStateDataImplCopyWithImpl<$Res>;
   @useResult
-  $Res call(
-      {String salt, String encryptedData, String pinIdentifier, String hmac});
+  $Res call({
+    String salt,
+    String encryptedData,
+    String pinIdentifier,
+    String hmac,
+  });
 }
 
 /// @nodoc
 class __$$PinDataStateDataImplCopyWithImpl<$Res>
     extends _$PinDataStateCopyWithImpl<$Res, _$PinDataStateDataImpl>
     implements _$$PinDataStateDataImplCopyWith<$Res> {
-  __$$PinDataStateDataImplCopyWithImpl(_$PinDataStateDataImpl _value,
-      $Res Function(_$PinDataStateDataImpl) _then)
-      : super(_value, _then);
+  __$$PinDataStateDataImplCopyWithImpl(
+    _$PinDataStateDataImpl _value,
+    $Res Function(_$PinDataStateDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2077,37 +2194,43 @@ class __$$PinDataStateDataImplCopyWithImpl<$Res>
     Object? pinIdentifier = null,
     Object? hmac = null,
   }) {
-    return _then(_$PinDataStateDataImpl(
-      salt: null == salt
-          ? _value.salt
-          : salt // ignore: cast_nullable_to_non_nullable
-              as String,
-      encryptedData: null == encryptedData
-          ? _value.encryptedData
-          : encryptedData // ignore: cast_nullable_to_non_nullable
-              as String,
-      pinIdentifier: null == pinIdentifier
-          ? _value.pinIdentifier
-          : pinIdentifier // ignore: cast_nullable_to_non_nullable
-              as String,
-      hmac: null == hmac
-          ? _value.hmac
-          : hmac // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _$PinDataStateDataImpl(
+        salt:
+            null == salt
+                ? _value.salt
+                : salt // ignore: cast_nullable_to_non_nullable
+                    as String,
+        encryptedData:
+            null == encryptedData
+                ? _value.encryptedData
+                : encryptedData // ignore: cast_nullable_to_non_nullable
+                    as String,
+        pinIdentifier:
+            null == pinIdentifier
+                ? _value.pinIdentifier
+                : pinIdentifier // ignore: cast_nullable_to_non_nullable
+                    as String,
+        hmac:
+            null == hmac
+                ? _value.hmac
+                : hmac // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$PinDataStateDataImpl implements PinDataStateData {
-  const _$PinDataStateDataImpl(
-      {required this.salt,
-      required this.encryptedData,
-      required this.pinIdentifier,
-      required this.hmac,
-      final String? $type})
-      : $type = $type ?? 'data';
+  const _$PinDataStateDataImpl({
+    required this.salt,
+    required this.encryptedData,
+    required this.pinIdentifier,
+    required this.hmac,
+    final String? $type,
+  }) : $type = $type ?? 'data';
 
   factory _$PinDataStateDataImpl.fromJson(Map<String, dynamic> json) =>
       _$$PinDataStateDataImplFromJson(json);
@@ -2142,26 +2265,34 @@ class _$PinDataStateDataImpl implements PinDataStateData {
             (identical(other.hmac, hmac) || other.hmac == hmac));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, salt, encryptedData, pinIdentifier, hmac);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PinDataStateDataImplCopyWith<_$PinDataStateDataImpl> get copyWith =>
       __$$PinDataStateDataImplCopyWithImpl<_$PinDataStateDataImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String hmac)
-        data,
+    required TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )
+    data,
   }) {
     return data(salt, encryptedData, pinIdentifier, hmac);
   }
@@ -2171,9 +2302,13 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult? Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
   }) {
     return data?.call(salt, encryptedData, pinIdentifier, hmac);
   }
@@ -2183,9 +2318,13 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String hmac)?
-        data,
+    TResult Function(
+      String salt,
+      String encryptedData,
+      String pinIdentifier,
+      String hmac,
+    )?
+    data,
     required TResult orElse(),
   }) {
     if (data != null) {
@@ -2230,18 +2369,17 @@ class _$PinDataStateDataImpl implements PinDataStateData {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PinDataStateDataImplToJson(
-      this,
-    );
+    return _$$PinDataStateDataImplToJson(this);
   }
 }
 
 abstract class PinDataStateData implements PinDataState {
-  const factory PinDataStateData(
-      {required final String salt,
-      required final String encryptedData,
-      required final String pinIdentifier,
-      required final String hmac}) = _$PinDataStateDataImpl;
+  const factory PinDataStateData({
+    required final String salt,
+    required final String encryptedData,
+    required final String pinIdentifier,
+    required final String hmac,
+  }) = _$PinDataStateDataImpl;
 
   factory PinDataStateData.fromJson(Map<String, dynamic> json) =
       _$PinDataStateDataImpl.fromJson;
@@ -2250,7 +2388,10 @@ abstract class PinDataStateData implements PinDataState {
   String get encryptedData;
   String get pinIdentifier;
   String get hmac;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PinDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PinDataStateDataImplCopyWith<_$PinDataStateDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -2262,52 +2403,47 @@ mixin _$PinProtectionState {
     required TResult Function() idle,
     required TResult Function() waiting,
     required TResult Function(String? message) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
     TResult? Function()? waiting,
     TResult? Function(String? message)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
     TResult Function()? waiting,
     TResult Function(String? message)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinProtectionStateIdle value) idle,
     required TResult Function(PinProtectionStateWaiting value) waiting,
     required TResult Function(PinProtectionStateError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinProtectionStateIdle value)? idle,
     TResult? Function(PinProtectionStateWaiting value)? waiting,
     TResult? Function(PinProtectionStateError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinProtectionStateIdle value)? idle,
     TResult Function(PinProtectionStateWaiting value)? waiting,
     TResult Function(PinProtectionStateError value)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinProtectionStateCopyWith<$Res> {
   factory $PinProtectionStateCopyWith(
-          PinProtectionState value, $Res Function(PinProtectionState) then) =
-      _$PinProtectionStateCopyWithImpl<$Res, PinProtectionState>;
+    PinProtectionState value,
+    $Res Function(PinProtectionState) then,
+  ) = _$PinProtectionStateCopyWithImpl<$Res, PinProtectionState>;
 }
 
 /// @nodoc
@@ -2319,14 +2455,17 @@ class _$PinProtectionStateCopyWithImpl<$Res, $Val extends PinProtectionState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinProtectionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinProtectionStateIdleImplCopyWith<$Res> {
   factory _$$PinProtectionStateIdleImplCopyWith(
-          _$PinProtectionStateIdleImpl value,
-          $Res Function(_$PinProtectionStateIdleImpl) then) =
-      __$$PinProtectionStateIdleImplCopyWithImpl<$Res>;
+    _$PinProtectionStateIdleImpl value,
+    $Res Function(_$PinProtectionStateIdleImpl) then,
+  ) = __$$PinProtectionStateIdleImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -2334,9 +2473,12 @@ class __$$PinProtectionStateIdleImplCopyWithImpl<$Res>
     extends _$PinProtectionStateCopyWithImpl<$Res, _$PinProtectionStateIdleImpl>
     implements _$$PinProtectionStateIdleImplCopyWith<$Res> {
   __$$PinProtectionStateIdleImplCopyWithImpl(
-      _$PinProtectionStateIdleImpl _value,
-      $Res Function(_$PinProtectionStateIdleImpl) _then)
-      : super(_value, _then);
+    _$PinProtectionStateIdleImpl _value,
+    $Res Function(_$PinProtectionStateIdleImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinProtectionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2435,20 +2577,23 @@ abstract class PinProtectionStateIdle implements PinProtectionState {
 /// @nodoc
 abstract class _$$PinProtectionStateWaitingImplCopyWith<$Res> {
   factory _$$PinProtectionStateWaitingImplCopyWith(
-          _$PinProtectionStateWaitingImpl value,
-          $Res Function(_$PinProtectionStateWaitingImpl) then) =
-      __$$PinProtectionStateWaitingImplCopyWithImpl<$Res>;
+    _$PinProtectionStateWaitingImpl value,
+    $Res Function(_$PinProtectionStateWaitingImpl) then,
+  ) = __$$PinProtectionStateWaitingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinProtectionStateWaitingImplCopyWithImpl<$Res>
-    extends _$PinProtectionStateCopyWithImpl<$Res,
-        _$PinProtectionStateWaitingImpl>
+    extends
+        _$PinProtectionStateCopyWithImpl<$Res, _$PinProtectionStateWaitingImpl>
     implements _$$PinProtectionStateWaitingImplCopyWith<$Res> {
   __$$PinProtectionStateWaitingImplCopyWithImpl(
-      _$PinProtectionStateWaitingImpl _value,
-      $Res Function(_$PinProtectionStateWaitingImpl) _then)
-      : super(_value, _then);
+    _$PinProtectionStateWaitingImpl _value,
+    $Res Function(_$PinProtectionStateWaitingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinProtectionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2547,34 +2692,37 @@ abstract class PinProtectionStateWaiting implements PinProtectionState {
 /// @nodoc
 abstract class _$$PinProtectionStateErrorImplCopyWith<$Res> {
   factory _$$PinProtectionStateErrorImplCopyWith(
-          _$PinProtectionStateErrorImpl value,
-          $Res Function(_$PinProtectionStateErrorImpl) then) =
-      __$$PinProtectionStateErrorImplCopyWithImpl<$Res>;
+    _$PinProtectionStateErrorImpl value,
+    $Res Function(_$PinProtectionStateErrorImpl) then,
+  ) = __$$PinProtectionStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String? message});
 }
 
 /// @nodoc
 class __$$PinProtectionStateErrorImplCopyWithImpl<$Res>
-    extends _$PinProtectionStateCopyWithImpl<$Res,
-        _$PinProtectionStateErrorImpl>
+    extends
+        _$PinProtectionStateCopyWithImpl<$Res, _$PinProtectionStateErrorImpl>
     implements _$$PinProtectionStateErrorImplCopyWith<$Res> {
   __$$PinProtectionStateErrorImplCopyWithImpl(
-      _$PinProtectionStateErrorImpl _value,
-      $Res Function(_$PinProtectionStateErrorImpl) _then)
-      : super(_value, _then);
+    _$PinProtectionStateErrorImpl _value,
+    $Res Function(_$PinProtectionStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of PinProtectionState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$PinProtectionStateErrorImpl(
-      message: freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$PinProtectionStateErrorImpl(
+        message:
+            freezed == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -2602,12 +2750,15 @@ class _$PinProtectionStateErrorImpl implements PinProtectionStateError {
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PinProtectionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PinProtectionStateErrorImplCopyWith<_$PinProtectionStateErrorImpl>
-      get copyWith => __$$PinProtectionStateErrorImplCopyWithImpl<
-          _$PinProtectionStateErrorImpl>(this, _$identity);
+  get copyWith => __$$PinProtectionStateErrorImplCopyWithImpl<
+    _$PinProtectionStateErrorImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2683,7 +2834,10 @@ abstract class PinProtectionStateError implements PinProtectionState {
       _$PinProtectionStateErrorImpl;
 
   String? get message;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PinProtectionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PinProtectionStateErrorImplCopyWith<_$PinProtectionStateErrorImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

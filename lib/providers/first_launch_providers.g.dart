@@ -13,15 +13,16 @@ String _$firstLaunchStateNotifierHash() =>
 @ProviderFor(FirstLaunchStateNotifier)
 final firstLaunchStateNotifierProvider =
     NotifierProvider<FirstLaunchStateNotifier, FirstLaunchState>.internal(
-  FirstLaunchStateNotifier.new,
-  name: r'firstLaunchStateNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$firstLaunchStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      FirstLaunchStateNotifier.new,
+      name: r'firstLaunchStateNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$firstLaunchStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$FirstLaunchStateNotifier = Notifier<FirstLaunchState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

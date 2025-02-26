@@ -5,10 +5,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/markets/widgets/product_columns.dart';
 
 class MarketSelectPopup extends StatelessWidget {
-  const MarketSelectPopup({
-    super.key,
-    this.onAssetSelected,
-  });
+  const MarketSelectPopup({super.key, this.onAssetSelected});
 
   final VoidCallback? onAssetSelected;
 
@@ -30,7 +27,7 @@ class MarketSelectPopup extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(top: 24),
           child: ProductColumns(
-            onAssetSelected: () {
+            onMarketSelected: () {
               if (onAssetSelected != null) {
                 onAssetSelected!();
               }

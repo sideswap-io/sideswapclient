@@ -9,16 +9,13 @@ import 'package:ffi/ffi.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/enums.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/models/jade_model.dart';
@@ -28,25 +25,23 @@ import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
-import 'package:sideswap/providers/asset_selector_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/chart_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/currency_rates_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/encryption_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/login_provider.dart';
-import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
-import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -58,15 +53,12 @@ import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
-import 'package:vibration/vibration.dart';
 
 import 'package:sideswap/common/bitmap_helper.dart';
 import 'package:sideswap/common/encryption.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/providers/config_provider.dart';
-import 'package:sideswap/providers/contact_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
-import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -74,7 +66,6 @@ import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/models/client_ffi.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
 part 'wallet.g.dart';
@@ -113,10 +104,7 @@ List<int> envValues() {
       SIDESWAP_ENV_LOCAL_TESTNET,
     ];
   }
-  return [
-    SIDESWAP_ENV_PROD,
-    SIDESWAP_ENV_TESTNET,
-  ];
+  return [SIDESWAP_ENV_PROD, SIDESWAP_ENV_TESTNET];
 }
 
 String envName(int env) {
@@ -143,20 +131,6 @@ AccountType getAccountType(Account account) {
   return AccountType(account.id);
 }
 
-MarketType getMarketType(Asset? asset) {
-  if (asset == null) {
-    return MarketType.token;
-  }
-
-  if (asset.swapMarket) {
-    return MarketType.stablecoin;
-  }
-  if (asset.ampMarket) {
-    return MarketType.amp;
-  }
-  return MarketType.token;
-}
-
 class PinDecryptedData {
   final From_DecryptPin_Error? error;
   final bool success;
@@ -169,24 +143,51 @@ class PinDecryptedData {
       'PinDecryptedData(error: $error, success: $success, mnemonic: $mnemonic)';
 }
 
-typedef DartPostCObject = ffi.Pointer Function(
-    ffi.Pointer<
+typedef DartPostCObject =
+    ffi.Pointer Function(
+      ffi.Pointer<
         ffi.NativeFunction<
-            ffi.Int8 Function(ffi.Int64, ffi.Pointer<ffi.Dart_CObject>)>>);
+          ffi.Int8 Function(ffi.Int64, ffi.Pointer<ffi.Dart_CObject>)
+        >
+      >,
+    );
 
 const kBackupCheckLineCount = 4;
 const kBackupCheckWordCount = 3;
 
-final walletProvider = ChangeNotifierProvider<WalletChangeNotifier>((ref) {
-  return WalletChangeNotifier(ref);
-});
+class MnemonicRepository {
+  String _mnemonic = '';
 
-class WalletChangeNotifier with ChangeNotifier {
+  bool get isEmpty => _mnemonic.isEmpty;
+  List<String> get split => _mnemonic.split(' ');
+
+  String mnemonic() {
+    return _mnemonic;
+  }
+
+  void setMnemonic(String value) {
+    _mnemonic = value;
+  }
+
+  void clear() {
+    _mnemonic = '';
+  }
+}
+
+@Riverpod(keepAlive: true)
+SideswapWallet wallet(Ref ref) {
+  final encryptionRepository = ref.watch(encryptionRepositoryProvider);
+  return SideswapWallet(ref, encryptionRepository);
+}
+
+class SideswapWallet {
+  SideswapWallet(this.ref, this._encryption);
+
   final Ref ref;
 
-  final _encryption = Encryption();
+  final AbstractEncryptionRepository _encryption;
 
-  String _mnemonic = '';
+  final mnemonicRepository = MnemonicRepository();
 
   ServerStatus? _serverStatus;
   ServerStatus? get serverStatus => _serverStatus;
@@ -212,11 +213,8 @@ class WalletChangeNotifier with ChangeNotifier {
   final _txMemoUpdates = <String, String>{};
   String _currentTxMemoUpdate = '';
 
-  bool settingsBiometricAvailable = false;
-
   PublishSubject<String> explorerUrlSubject = PublishSubject<String>();
 
-  SwapDetails? swapDetails;
   bool swapPromptWaitingTx = false;
 
   void sendMsg(To to) {
@@ -239,8 +237,6 @@ class WalletChangeNotifier with ChangeNotifier {
     calloc.free(pointer);
   }
 
-  WalletChangeNotifier(this.ref);
-
   late ReceivePort _receivePort;
   StreamSubscription<dynamic>? _receivePortSubscription;
 
@@ -249,6 +245,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
     ref.invalidate(defaultAccountsStateProvider);
     ref.invalidate(assetsStateProvider);
+    ref.invalidate(serverConnectionNotifierProvider);
 
     ref
         .read(pageStatusNotifierProvider.notifier)
@@ -258,12 +255,17 @@ class WalletChangeNotifier with ChangeNotifier {
     _receivePortSubscription?.cancel();
 
     _recvSubscription = _recvSubject.listen((value) async {
-      await _recvMsg(value);
+      try {
+        await _recvMsg(value);
+      } catch (e) {
+        logger.e(e);
+      }
     });
 
     final storeDartPostCObject = Lib.dynLib
         .lookupFunction<DartPostCObject, DartPostCObject>(
-            'store_dart_post_cobject');
+          'store_dart_post_cobject',
+        );
     storeDartPostCObject(ffi.NativeApi.postCObject);
 
     _receivePort = ReceivePort();
@@ -273,8 +275,12 @@ class WalletChangeNotifier with ChangeNotifier {
     final workDir = await getApplicationSupportDirectory();
     final workPath = workDir.absolute.path.toNativeUtf8();
 
-    final clientId = Lib.lib.sideswap_client_start(env, workPath.cast(),
-        appVersionFull.toNativeUtf8().cast(), _receivePort.sendPort.nativePort);
+    final clientId = Lib.lib.sideswap_client_start(
+      env,
+      workPath.cast(),
+      appVersionFull.toNativeUtf8().cast(),
+      _receivePort.sendPort.nativePort,
+    );
     ref.read(libClientIdProvider.notifier).setClientId(clientId);
 
     await _addBtcAsset();
@@ -291,9 +297,10 @@ class WalletChangeNotifier with ChangeNotifier {
     processPendingPushMessages();
 
     final appResetRequired = await _encryption.appResetRequired(
-        hasEncryptedMnemonic:
-            ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty,
-        usePinProtection: ref.read(configurationProvider).usePinProtection);
+      hasEncryptedMnemonic:
+          ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty,
+      usePinProtection: ref.read(configurationProvider).usePinProtection,
+    );
     if (appResetRequired) {
       await ref.read(configurationProvider.notifier).deleteConfig();
     }
@@ -327,9 +334,11 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     final plugin = SideswapNotificationsPlugin(
-        androidPlatform: FlavorConfig.isFdroid
-            ? AndroidPlatformEnum.fdroid
-            : AndroidPlatformEnum.android);
+      androidPlatform:
+          FlavorConfig.isFdroid
+              ? AndroidPlatformEnum.fdroid
+              : AndroidPlatformEnum.android,
+    );
     await plugin.firebaseRefreshToken(
       refreshTokenCallback: (token) {
         updatePushToken(token);
@@ -337,10 +346,9 @@ class WalletChangeNotifier with ChangeNotifier {
     );
   }
 
-  @override
   void notifyListeners() {
     logger.d('wallet notifyListeners()');
-    super.notifyListeners();
+    ref.notifyListeners();
   }
 
   void updateTxs(From_UpdatedTxs txs) {
@@ -379,10 +387,15 @@ class WalletChangeNotifier with ChangeNotifier {
         ref
             .read(eurxAssetIdStateProvider.notifier)
             .setState(from.envSettings.eurxAssetId);
-        AccountAsset.liquidAssetId = ref.read(liquidAssetIdStateProvider);
-        ref.read(defaultAccountsStateProvider.notifier).insertAccountAsset(
-            accountAsset: AccountAsset(
-                AccountType.reg, ref.read(liquidAssetIdStateProvider)));
+        AccountAsset.liquidAssetId = from.envSettings.policyAssetId;
+        ref
+            .read(defaultAccountsStateProvider.notifier)
+            .insertAccountAsset(
+              accountAsset: AccountAsset(
+                AccountType.reg,
+                from.envSettings.policyAssetId,
+              ),
+            );
         break;
       case From_Msg.updatedTxs:
         updateTxs(from.updatedTxs);
@@ -416,12 +429,6 @@ class WalletChangeNotifier with ChangeNotifier {
             .setState(from.swapFailed);
         notifyListeners();
         await ref.read(utilsProvider).showErrorDialog(from.swapFailed);
-        final status = ref.read(pageStatusNotifierProvider);
-        if (status == Status.swapPrompt) {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.registered);
-        }
         break;
 
       case From_Msg.swapSucceed:
@@ -455,7 +462,9 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.recvAddress:
         final accountType = getAccountType(from.recvAddress.account);
         final receiveAddress = ReceiveAddress(
-            accountType: accountType, recvAddress: from.recvAddress.addr.addr);
+          accountType: accountType,
+          recvAddress: from.recvAddress.addr.addr,
+        );
         ref
             .read(currentReceiveAddressProvider.notifier)
             .setRecvAddress(receiveAddress);
@@ -464,17 +473,21 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.createTxResult:
         (switch (from.createTxResult.whichResult()) {
           From_CreateTxResult_Result.errorMsg => () async {
-              logger.e(from.createTxResult.errorMsg);
-              ref.read(createTxStateNotifierProvider.notifier).setCreateTxState(
-                  CreateTxStateError(errorMsg: from.createTxResult.errorMsg));
-            }(),
+            logger.e(from.createTxResult.errorMsg);
+            ref
+                .read(createTxStateNotifierProvider.notifier)
+                .setCreateTxState(
+                  CreateTxStateError(errorMsg: from.createTxResult.errorMsg),
+                );
+          }(),
           From_CreateTxResult_Result.createdTx => ref
               .read(createTxStateNotifierProvider.notifier)
               .setCreateTxState(
-                  CreateTxStateCreated(from.createTxResult.createdTx)),
+                CreateTxStateCreated(from.createTxResult.createdTx),
+              ),
           From_CreateTxResult_Result.notSet => () {
-              throw Exception('invalid send result message');
-            }(),
+            throw Exception('invalid send result message');
+          }(),
         });
         break;
 
@@ -490,9 +503,12 @@ class WalletChangeNotifier with ChangeNotifier {
         }
         switch (from.sendResult.whichResult()) {
           case From_SendResult_Result.errorMsg:
-            await ref.read(utilsProvider).showErrorDialog(
-                from.sendResult.errorMsg,
-                buttonText: 'CONTINUE'.tr());
+            await ref
+                .read(utilsProvider)
+                .showErrorDialog(
+                  from.sendResult.errorMsg,
+                  buttonText: 'CONTINUE'.tr(),
+                );
             notifyListeners();
             break;
           case From_SendResult_Result.txItem:
@@ -501,8 +517,12 @@ class WalletChangeNotifier with ChangeNotifier {
               showTxDetails(transItem);
             } else {
               final allPegsById = ref.read(allPegsByIdProvider);
-              ref.read(desktopDialogProvider).showTx(transItem,
-                  isPeg: allPegsById.containsKey(transItem.id));
+              ref
+                  .read(desktopDialogProvider)
+                  .showTx(
+                    transItem,
+                    isPeg: allPegsById.containsKey(transItem.id),
+                  );
             }
             break;
           case From_SendResult_Result.notSet:
@@ -514,9 +534,12 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.blindedValues:
         switch (from.blindedValues.whichResult()) {
           case From_BlindedValues_Result.errorMsg:
-            await ref.read(utilsProvider).showErrorDialog(
-                from.blindedValues.errorMsg,
-                buttonText: 'CONTINUE'.tr());
+            await ref
+                .read(utilsProvider)
+                .showErrorDialog(
+                  from.blindedValues.errorMsg,
+                  buttonText: 'CONTINUE'.tr(),
+                );
             break;
           case From_BlindedValues_Result.blindedValues:
             final url = generateTxidUrl(
@@ -545,71 +568,15 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.priceUpdate:
         logger.d('from.priceupdate: ${from.priceUpdate}');
-
-        ref
-            .read(indexPriceSubscriberNotifierProvider.notifier)
-            .onPriceUpdate(from.priceUpdate);
-        break;
-
-      case From_Msg.registerPhone:
-        switch (from.registerPhone.whichResult()) {
-          case From_RegisterPhone_Result.phoneKey:
-            var phoneKey = From_RegisterPhone_Result.phoneKey;
-            logger.d('got phone key: $phoneKey');
-            await ref
-                .read(phoneProvider)
-                .receivedRegisterState(phoneKey: from.registerPhone.phoneKey);
-            break;
-          case From_RegisterPhone_Result.errorMsg:
-            var errorMsg = From_RegisterPhone_Result.errorMsg;
-            logger.e('registration failed: $errorMsg');
-            await ref
-                .read(phoneProvider)
-                .receivedRegisterState(errorMsg: from.registerPhone.errorMsg);
-            break;
-          case From_RegisterPhone_Result.notSet:
-            throw Exception('invalid registerPhone message');
-        }
-        break;
-
-      case From_Msg.verifyPhone:
-        switch (from.verifyPhone.whichResult()) {
-          case From_VerifyPhone_Result.success:
-            logger.d('phone verification succeed');
-            ref.read(phoneProvider).receivedVerifyState();
-            break;
-          case From_VerifyPhone_Result.errorMsg:
-            var errorMsg = From_VerifyPhone_Result.errorMsg;
-            logger.d('verification failed: $errorMsg');
-            ref
-                .read(phoneProvider)
-                .receivedVerifyState(errorMsg: from.verifyPhone.errorMsg);
-            break;
-          case From_VerifyPhone_Result.notSet:
-            throw Exception('invalid verifyPhone message');
-        }
-        break;
-
-      case From_Msg.uploadAvatar:
-        if (from.uploadAvatar.success) {
-          logger.d('Upload avatar success');
-        } else {
-          logger.e('Upload avatar error: ${from.uploadAvatar.errorMsg}');
-        }
-        break;
-      case From_Msg.uploadContacts:
-        if (from.uploadContacts.success) {
-          ref.read(contactProvider).onDone();
-        } else {
-          ref
-              .read(contactProvider)
-              .onError(error: from.uploadContacts.errorMsg);
-        }
         break;
 
       case From_Msg.showMessage:
-        await ref.read(utilsProvider).showErrorDialog(from.showMessage.text,
-            buttonText: 'CONTINUE'.tr());
+        await ref
+            .read(utilsProvider)
+            .showErrorDialog(
+              from.showMessage.text,
+              buttonText: 'CONTINUE'.tr(),
+            );
         break;
 
       case From_Msg.insufficientFunds:
@@ -625,10 +592,11 @@ class WalletChangeNotifier with ChangeNotifier {
         } else {
           final data = from.encryptPin.data;
           final pinData = PinDataStateData(
-              salt: data.salt,
-              encryptedData: data.encryptedData,
-              pinIdentifier: data.pinIdentifier,
-              hmac: data.hmac);
+            salt: data.salt,
+            encryptedData: data.encryptedData,
+            pinIdentifier: data.pinIdentifier,
+            hmac: data.hmac,
+          );
           ref.read(configurationProvider.notifier).setPinData(pinData);
           ref.read(pinHelperProvider).onPinData(pinData);
         }
@@ -636,146 +604,20 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.decryptPin:
         if (from.decryptPin.hasError()) {
-          ref.read(pinProtectionHelperProvider).onPinDecrypted(
-              PinDecryptedData(false, error: from.decryptPin.error));
-        } else {
-          _mnemonic = from.decryptPin.mnemonic;
           ref
               .read(pinProtectionHelperProvider)
-              .onPinDecrypted(PinDecryptedData(true, mnemonic: _mnemonic));
-        }
-
-        break;
-
-      case From_Msg.submitReview:
-        final sellBitcoin = from.submitReview.sellBitcoin;
-
-        var orderType = OrderDetailsDataType.submit;
-        switch (from.submitReview.step) {
-          case From_SubmitReview_Step.SUBMIT:
-            orderType = OrderDetailsDataType.submit;
-            break;
-          case From_SubmitReview_Step.QUOTE:
-            orderType = OrderDetailsDataType.quote;
-            break;
-          case From_SubmitReview_Step.SIGN:
-            orderType = OrderDetailsDataType.sign;
-            break;
-        }
-
-        final fromSr = from.submitReview;
-
-        final assetAmount = fromSr.assetAmount;
-        final assetId = fromSr.asset;
-        final bitcoinAmount = fromSr.bitcoinAmount;
-        final assetPrecision = ref
-            .read(assetUtilsProvider)
-            .getPrecisionForAssetId(assetId: assetId);
-        const bitcoinPrecision = 8;
-        final orderId = fromSr.orderId;
-        final indexPrice = from.submitReview.indexPrice;
-        const autoSign = true;
-        final asset = ref.read(assetsStateProvider)[fromSr.asset]!;
-
-        final orderDetailsData = OrderDetailsData(
-          bitcoinAmount: bitcoinAmount.toInt(),
-          bitcoinPrecision: bitcoinPrecision,
-          priceAmount: fromSr.price,
-          assetAmount: assetAmount.toInt(),
-          assetPrecision: assetPrecision,
-          assetId: assetId,
-          orderId: orderId,
-          orderType: orderType,
-          sellBitcoin: sellBitcoin,
-          fee: from.submitReview.serverFee.toInt(),
-          isTracking: indexPrice,
-          autoSign: autoSign,
-          marketType: getMarketType(asset),
-          twoStep: fromSr.twoStep,
-          txChainingRequired: fromSr.txChainingRequired,
-        );
-        ref
-            .read(orderDetailsDataNotifierProvider.notifier)
-            .setOrderDetailsData(orderDetailsData);
-
-        if (orderType == OrderDetailsDataType.quote ||
-            orderType == OrderDetailsDataType.sign) {
-          await setOrder();
+              .onPinDecrypted(
+                PinDecryptedData(false, error: from.decryptPin.error),
+              );
         } else {
-          setCreateOrder();
+          mnemonicRepository.setMnemonic(from.decryptPin.mnemonic);
+          ref
+              .read(pinProtectionHelperProvider)
+              .onPinDecrypted(
+                PinDecryptedData(true, mnemonic: mnemonicRepository.mnemonic()),
+              );
         }
-        break;
 
-      case From_Msg.submitResult:
-        switch (from.submitResult.whichResult()) {
-          case From_SubmitResult_Result.submitSucceed:
-            final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
-            if (!orderDetailsData.accept) {
-              return;
-            }
-
-            if (orderDetailsData.orderType == OrderDetailsDataType.submit) {
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.registered);
-            } else if (orderDetailsData.orderType ==
-                OrderDetailsDataType.quote) {
-              setResponseSuccess();
-            } else if (orderDetailsData.orderType ==
-                OrderDetailsDataType.sign) {
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.registered);
-            }
-            break;
-
-          case From_SubmitResult_Result.swapSucceed:
-            var txItem = from.submitResult.swapSucceed;
-            showSwapTxDetails(txItem);
-            break;
-
-          case From_SubmitResult_Result.error:
-            if (FlavorConfig.isDesktop) {
-              ref.read(desktopDialogProvider).closePopups();
-            }
-
-            final errorText = from.submitResult.error == 'id_insufficient_funds'
-                ? 'Insufficient L-BTC wallet balance'.tr()
-                : from.submitResult.error;
-            await ref
-                .read(utilsProvider)
-                .showErrorDialog(errorText, buttonText: 'CONTINUE'.tr());
-
-            break;
-          case From_SubmitResult_Result.unregisteredGaid:
-            if (FlavorConfig.isDesktop) {
-              ref.read(desktopDialogProvider).closePopups();
-            }
-            final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
-            final stokrSecurities = ref.read(stokrSecuritiesProvider);
-            if (stokrSecurities.any(
-                (element) => element.assetId == orderDetailsData.assetId)) {
-              // stokr asset
-              ref
-                  .read(stokrGaidNotifierProvider.notifier)
-                  .setStokrGaidState(const StokrGaidState.unregistered());
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.stokrNeedRegister);
-            } else {
-              // any other amp error
-              ref
-                  .read(pegxGaidNotifierProvider.notifier)
-                  .setState(const PegxGaidState.unregistered());
-              await ref
-                  .read(utilsProvider)
-                  .showUnregisteredGaid(from.submitResult.unregisteredGaid);
-            }
-
-            break;
-          case From_SubmitResult_Result.notSet:
-            throw Exception('invalid SubmitResult message');
-        }
         break;
 
       case From_Msg.walletLoaded:
@@ -798,7 +640,12 @@ class WalletChangeNotifier with ChangeNotifier {
         final initialUri = ref.read(universalLinkProvider).initialUri;
         if (initialUri != null) {
           logger.d('Initial uri found: $initialUri');
-          ref.read(universalLinkProvider).handleAppUri(initialUri);
+          final linkResultState = ref
+              .read(universalLinkProvider)
+              .handleAppUri(initialUri);
+          ref
+              .read(universalLinkResultStateNotifierProvider.notifier)
+              .setState(linkResultState);
         }
         break;
 
@@ -806,33 +653,6 @@ class WalletChangeNotifier with ChangeNotifier {
         ref.read(syncCompleteStateProvider.notifier).setState(true);
         break;
 
-      case From_Msg.contactCreated:
-        // TODO: Handle this case.
-        break;
-      case From_Msg.contactRemoved:
-        // TODO: Handle this case.
-        break;
-      case From_Msg.contactTransaction:
-        // TODO: Handle this case.
-        break;
-      case From_Msg.accountStatus:
-        if (!from.accountStatus.registered) {
-          removePhoneKey();
-        }
-        // TODO: Handle this case.
-        break;
-      case From_Msg.editOrder:
-        if (!from.editOrder.success) {
-          ref.read(utilsProvider).showErrorDialog(from.editOrder.errorMsg,
-              buttonText: 'CLOSE'.tr());
-        }
-        break;
-      case From_Msg.cancelOrder:
-        if (!from.cancelOrder.success) {
-          ref.read(utilsProvider).showErrorDialog(from.cancelOrder.errorMsg,
-              buttonText: 'CLOSE'.tr());
-        }
-        break;
       case From_Msg.serverConnected:
         ref
             .read(serverConnectionNotifierProvider.notifier)
@@ -840,108 +660,31 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.serverDisconnected:
         ref.invalidate(serverConnectionNotifierProvider);
-        ref.read(marketsRequestOrdersNotifierProvider.notifier).clearOrders();
-        break;
-      case From_Msg.orderCreated:
-        final oc = from.orderCreated;
-        final sendBitcoins = !oc.order.sendBitcoins;
-        var price = oc.order.price;
-        final asset = ref.read(assetsStateProvider)[oc.order.assetId];
-
-        if (asset == null) {
-          logger.w('Asset ${oc.order.assetId} not found!');
-          break;
-        }
-
-        final order = RequestOrder(
-          orderId: oc.order.orderId,
-          assetId: oc.order.assetId,
-          bitcoinAmount: oc.order.bitcoinAmount.toInt(),
-          serverFee: oc.order.serverFee.toInt(),
-          assetAmount: oc.order.assetAmount.toInt(),
-          price: price,
-          createdAt: oc.order.createdAt.toInt(),
-          expiresAt:
-              oc.order.hasExpiresAt() ? oc.order.expiresAt.toInt() : null,
-          private: oc.order.private,
-          sendBitcoins: sendBitcoins,
-          twoStep: oc.order.twoStep,
-          autoSign: oc.order.autoSign,
-          own: oc.order.own,
-          isNew: oc.new_2,
-          indexPrice: oc.order.indexPrice,
-          marketType: getMarketType(asset),
-        );
-
-        if (order.isNew && order.own) {
-          final assetPrecision = ref
-              .read(assetUtilsProvider)
-              .getPrecisionForAssetId(assetId: order.assetId);
-          final orderDetailsData =
-              OrderDetailsData.fromRequestOrder(order, assetPrecision);
-          ref
-              .read(orderDetailsDataNotifierProvider.notifier)
-              .setOrderDetailsData(orderDetailsData);
-          setCreateOrderSuccess();
-        }
-
-        ref
-            .read(marketsRequestOrdersNotifierProvider.notifier)
-            .insertOrder(order);
-
-        break;
-      case From_Msg.orderRemoved:
-        ref
-            .read(marketsRequestOrdersNotifierProvider.notifier)
-            .removeOrder(from.orderRemoved.orderId);
-        break;
-      case From_Msg.orderComplete:
-        // Used with headless client only
         break;
 
-      case From_Msg.notSet:
-        throw Exception('invalid empty message');
-
-      case From_Msg.indexPrice:
-        final ticker = ref
-            .read(assetUtilsProvider)
-            .tickerForAssetId(from.indexPrice.assetId);
-        logger.d(
-            'Index price: ${ticker.isEmpty ? from.indexPrice.assetId : ticker} ${from.indexPrice}');
-        ref.read(marketsIndexPriceNotifierProvider.notifier).setIndexPrice(
-            from.indexPrice.assetId,
-            from.indexPrice.hasInd() ? from.indexPrice.ind : null);
-        ref
-            .read(marketsLastIndexPriceNotifierProvider.notifier)
-            .setLastIndexPrice(from.indexPrice.assetId,
-                from.indexPrice.hasLast() ? from.indexPrice.last : null);
-        break;
       case From_Msg.assetDetails:
         logger.d("Asset details: ${from.assetDetails}");
         final assetDetailsData = AssetDetailsData(
           assetId: from.assetDetails.assetId,
-          stats: from.assetDetails.hasStats()
-              ? AssetDetailsStats(
-                  issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
-                  burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
-                  offlineAmount: from.assetDetails.stats.offlineAmount.toInt(),
-                  hasBlindedIssuances:
-                      from.assetDetails.stats.hasBlindedIssuances,
-                )
-              : null,
-          chartUrl: from.assetDetails.hasChartUrl()
-              ? from.assetDetails.chartUrl
-              : null,
-          chartStats: from.assetDetails.hasChartStats()
-              ? AssetChartStats(
-                  high: from.assetDetails.chartStats.high,
-                  low: from.assetDetails.chartStats.low,
-                  last: from.assetDetails.chartStats.last,
-                )
-              : null,
+          stats:
+              from.assetDetails.hasStats()
+                  ? AssetDetailsStats(
+                    issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
+                    burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
+                    offlineAmount:
+                        from.assetDetails.stats.offlineAmount.toInt(),
+                    hasBlindedIssuances:
+                        from.assetDetails.stats.hasBlindedIssuances,
+                  )
+                  : null,
+          chartUrl:
+              from.assetDetails.hasChartUrl()
+                  ? from.assetDetails.chartUrl
+                  : null,
+          chartStats: null,
         );
         ref
-            .read(tokenMarketAssetDetailsProvider.notifier)
+            .read(tokenMarketNotifierProvider.notifier)
             .insertAssetDetails(assetDetailsData);
         break;
       case From_Msg.updatePriceStream:
@@ -957,15 +700,6 @@ class WalletChangeNotifier with ChangeNotifier {
             .read(localNotificationsProvider)
             .showNotification(from.localMessage.title, from.localMessage.body);
         break;
-      case From_Msg.marketDataSubscribe:
-        ref
-            .read(marketDataProvider)
-            .marketDataResponse(from.marketDataSubscribe);
-        break;
-      case From_Msg.marketDataUpdate:
-        ref.read(marketDataProvider).marketDataUpdate(from.marketDataUpdate);
-        break;
-
       case From_Msg.jadePorts:
         final jadePorts = from.jadePorts.ports.toList();
         if (jadePorts.isNotEmpty) {
@@ -1032,23 +766,10 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.login:
         _handleLogin(from.login);
         break;
-      case From_Msg.startTimer:
-        if (from.startTimer.hasOrderId()) {
-          ref
-              .read(jadeOrderIdTimerNotifierProvider.notifier)
-              .setOrderId(from.startTimer.orderId);
-          return;
-        }
-        break;
       case From_Msg.portfolioPrices:
         ref
             .read(portfolioPricesNotifierProvider.notifier)
             .setPortfolioPrices(from.portfolioPrices.pricesUsd);
-        break;
-      case From_Msg.tokenMarketOrder:
-        ref
-            .read(tokenMarketOrderProvider.notifier)
-            .setTokenMarketOrder(from.tokenMarketOrder.assetIds);
         break;
       case From_Msg.conversionRates:
         ref
@@ -1062,9 +783,73 @@ class WalletChangeNotifier with ChangeNotifier {
         _handleLoadUtxos(from.loadUtxos);
         break;
       case From_Msg.marketAdded:
-      // TODO: Handle this case.
+        _handleMarketAdded(from.marketAdded);
+        break;
       case From_Msg.marketRemoved:
-      // TODO: Handle this case.
+        _handleMarketRemoved(from.marketRemoved);
+        break;
+      case From_Msg.marketList:
+        _handleMarketList(from.marketList);
+        break;
+      case From_Msg.publicOrders:
+        _handlePublicOrders(from.publicOrders);
+        break;
+      case From_Msg.publicOrderCreated:
+        _handlePublicOrderCreated(from.publicOrderCreated);
+        break;
+      case From_Msg.publicOrderRemoved:
+        _handlePublicOrderRemoved(from.publicOrderRemoved);
+        break;
+      case From_Msg.marketPrice:
+        _handleMarketPrice(from.marketPrice);
+        break;
+      case From_Msg.ownOrders:
+        _handleOwnOrders(from.ownOrders);
+        break;
+      case From_Msg.ownOrderCreated:
+        _handleOwnOrderCreated(from.ownOrderCreated);
+        break;
+      case From_Msg.ownOrderRemoved:
+        _handleOwnOrderRemoved(from.ownOrderRemoved);
+        break;
+      case From_Msg.quote:
+        _handleQuote(from.quote);
+        break;
+      case From_Msg.acceptQuote:
+        _handleAcceptQuote(from.acceptQuote);
+        break;
+      case From_Msg.orderSubmit:
+        _handleOrderSubmit(from.orderSubmit);
+        break;
+      case From_Msg.chartsSubscribe:
+        _handleChartsSubscribe(from.chartsSubscribe);
+        break;
+      case From_Msg.chartsUpdate:
+        _handleChartsUpdate(from.chartsUpdate);
+        break;
+      case From_Msg.loadHistory:
+        _handleLoadHistory(from.loadHistory);
+        break;
+      case From_Msg.historyUpdated:
+        _handleHistoryUpdated(from.historyUpdated);
+        break;
+      case From_Msg.orderEdit:
+        _handleEditOrder(from.orderEdit);
+        break;
+      case From_Msg.startOrder:
+        _handleStartOrder(from.startOrder);
+        break;
+      case From_Msg.minMarketAmounts:
+        _handleMinMarketAmounts(from.minMarketAmounts);
+        break;
+      case From_Msg.subscribedValue:
+        _handleSubscribedValue(from.subscribedValue);
+        break;
+      case From_Msg.orderCancel:
+        // TODO: Handle this case.
+        break;
+      case From_Msg.notSet:
+        throw UnimplementedError('invalid message: $from');
     }
   }
 
@@ -1091,7 +876,10 @@ class WalletChangeNotifier with ChangeNotifier {
     bitcoinAsset.ticker = kBitcoinTicker;
     bitcoinAsset.precision = kDefaultPrecision;
     final icon = await BitmapHelper.getPngBufferFromSvgAsset(
-        'assets/btc_logo.svg', 300, 300);
+      'assets/btc_logo.svg',
+      300,
+      300,
+    );
     bitcoinAsset.icon = base64Encode(icon);
     // TODO: fix icon
     _addAsset(bitcoinAsset, icon);
@@ -1100,34 +888,23 @@ class WalletChangeNotifier with ChangeNotifier {
   void _addAsset(Asset asset, Uint8List assetIcon) {
     logger.d('ASSET: ${asset.ticker} id: ${asset.assetId}');
     if (asset.swapMarket) {
-      ref.read(defaultAccountsStateProvider.notifier).insertAccountAsset(
-          accountAsset: AccountAsset(AccountType.reg, asset.assetId));
+      ref
+          .read(defaultAccountsStateProvider.notifier)
+          .insertAccountAsset(
+            accountAsset: AccountAsset(AccountType.reg, asset.assetId),
+          );
     }
     if (asset.ampMarket) {
-      ref.read(defaultAccountsStateProvider.notifier).insertAccountAsset(
-          accountAsset: AccountAsset(AccountType.amp, asset.assetId));
+      ref
+          .read(defaultAccountsStateProvider.notifier)
+          .insertAccountAsset(
+            accountAsset: AccountAsset(AccountType.amp, asset.assetId),
+          );
     }
 
     // Always update asset here as they might change
     // (amp_market could be set if server is down when app is started).
     ref.read(assetsStateProvider.notifier).addAsset(asset.assetId, asset);
-    // ref.read(swapHelperProvider).checkSelectedAsset();
-    // notifyListeners();
-  }
-
-  void registerPhone(String number) {
-    final msg = To();
-    msg.registerPhone = To_RegisterPhone();
-    msg.registerPhone.number = number;
-    sendMsg(msg);
-  }
-
-  void verifyPhone(String phoneKey, String code) {
-    final msg = To();
-    msg.verifyPhone = To_VerifyPhone();
-    msg.verifyPhone.phoneKey = phoneKey;
-    msg.verifyPhone.code = code;
-    sendMsg(msg);
   }
 
   String getNewMnemonic() {
@@ -1146,11 +923,11 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   List<String> getMnemonicWords() {
-    if (_mnemonic.isEmpty) {
+    if (mnemonicRepository.isEmpty) {
       return [];
     }
 
-    return _mnemonic.split(' ');
+    return mnemonicRepository.split;
   }
 
   Future<void> setReviewLicenseCreateWallet() async {
@@ -1187,7 +964,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> newWalletBiometricPrompt() async {
     assert(ref.read(configurationProvider).licenseAccepted == true);
-    _mnemonic = getNewMnemonic();
+    mnemonicRepository.setMnemonic(getNewMnemonic());
     if (await _encryption.canAuthenticate()) {
       ref
           .read(pageStatusNotifierProvider.notifier)
@@ -1209,10 +986,12 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void startMnemonicImport() {
     final status = ref.read(pageStatusNotifierProvider);
-    assert(status == Status.noWallet ||
-        status == Status.importWallet ||
-        status == Status.importWalletError ||
-        status == Status.reviewLicense);
+    assert(
+      status == Status.noWallet ||
+          status == Status.importWallet ||
+          status == Status.importWalletError ||
+          status == Status.reviewLicense,
+    );
     ref
         .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.importWallet);
@@ -1220,11 +999,13 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void importMnemonic(String mnemonic) {
     final status = ref.read(pageStatusNotifierProvider);
-    assert(status == Status.importWallet ||
-        status == Status.importWalletSuccess ||
-        status == Status.newWalletPinWelcome);
+    assert(
+      status == Status.importWallet ||
+          status == Status.importWalletSuccess ||
+          status == Status.newWalletPinWelcome,
+    );
 
-    _mnemonic = mnemonic;
+    mnemonicRepository.setMnemonic(mnemonic);
 
     if (FlavorConfig.isDesktop) {
       ref
@@ -1260,7 +1041,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> _registerWallet(bool enableBiometric) async {
-    if (_mnemonic.isEmpty) {
+    if (mnemonicRepository.isEmpty) {
       logger.e('Mnemonic is empty!');
       return false;
     }
@@ -1268,7 +1049,9 @@ class WalletChangeNotifier with ChangeNotifier {
     if (enableBiometric) {
       ref
           .read(configurationProvider.notifier)
-          .setMnemonicEncrypted(await _encryption.encryptBiometric(_mnemonic));
+          .setMnemonicEncrypted(
+            await _encryption.encryptBiometric(mnemonicRepository.mnemonic()),
+          );
 
       if (ref.read(configurationProvider).mnemonicEncrypted.isEmpty) {
         return false;
@@ -1278,7 +1061,9 @@ class WalletChangeNotifier with ChangeNotifier {
     } else {
       ref
           .read(configurationProvider.notifier)
-          .setMnemonicEncrypted(await _encryption.encryptFallback(_mnemonic));
+          .setMnemonicEncrypted(
+            await _encryption.encryptFallback(mnemonicRepository.mnemonic()),
+          );
       // Should not happen, something is very wrong
       if (ref.read(configurationProvider).mnemonicEncrypted.isEmpty) {
         return false;
@@ -1291,12 +1076,12 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void loginAndLoadMainPage() {
-    _login(mnemonic: _mnemonic);
+    _login(mnemonic: mnemonicRepository.mnemonic());
     // ref.read(swapProvider).checkSelectedAsset();
   }
 
   void login() {
-    _login(mnemonic: _mnemonic);
+    _login(mnemonic: mnemonicRepository.mnemonic());
   }
 
   void acceptLicense() {
@@ -1338,7 +1123,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   bool _validSelectedWords() {
-    final allWords = _mnemonic.split(' ');
+    final allWords = mnemonicRepository.split;
     for (var wordIndex in backupCheckAllWords.keys) {
       final correctWord = allWords[wordIndex];
       final selectedWordIndex = backupCheckSelectedWords[wordIndex];
@@ -1378,186 +1163,166 @@ class WalletChangeNotifier with ChangeNotifier {
     return switch (status) {
       Status.newWalletBackupCheck ||
       Status.newWalletBackupCheckFailed ||
-      Status.newWalletBackupCheckSucceed =>
-        () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.newWalletBackupView);
-          return false;
-        }(),
+      Status.newWalletBackupCheckSucceed => () {
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.newWalletBackupView);
+        return false;
+      }(),
       Status.importWalletError => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.importWallet);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.importWallet);
+        return false;
+      }(),
       Status.importWalletSuccess ||
       Status.importWallet ||
       Status.selectEnv ||
-      Status.importAvatar ||
-      Status.associatePhoneWelcome ||
       Status.reviewLicense ||
       Status.jadeImport ||
       Status.jadeBluetoothPermission ||
       Status.networkAccessOnboarding ||
       Status.newWalletBiometricPrompt ||
-      Status.importWalletBiometricPrompt =>
-        () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.noWallet);
-          return false;
-        }(),
-      Status.confirmPhone => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.associatePhoneWelcome);
-          return false;
-        }(),
+      Status.importWalletBiometricPrompt => () {
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.noWallet);
+        return false;
+      }(),
       Status.assetsSelect ||
       Status.transactions ||
-      Status.orderFilers ||
-      Status.orderPopup ||
-      Status.swapPrompt ||
       Status.settingsPage ||
       Status.registered ||
       Status.generateWalletAddress ||
       Status.stokrRestrictionsInfo ||
-      Status.stokrNeedRegister =>
-        () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.registered);
-          return false;
-        }(),
+      Status.stokrNeedRegister => () {
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.registered);
+        return false;
+      }(),
       Status.paymentSend => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.paymentAmountPage);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.paymentAmountPage);
+        return false;
+      }(),
       Status.paymentAmountPage => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.paymentPage);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.paymentPage);
+        return false;
+      }(),
       Status.paymentPage => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.assetDetails);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.assetDetails);
+        return false;
+      }(),
       Status.swapTxDetails ||
       Status.assetReceiveFromWalletMain ||
-      Status.orderSuccess ||
-      Status.orderResponseSuccess ||
-      Status.createOrderEntry ||
-      Status.orderRequestView ||
-      Status.assetDetails =>
-        () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.registered);
-          ref.read(uiStateArgsNotifierProvider.notifier).clear();
-          return false;
-        }(),
+      Status.assetDetails => () {
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.registered);
+        ref.invalidate(uiStateArgsNotifierProvider);
+        return false;
+      }(),
       Status.txDetails => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.transactions);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.transactions);
+        return false;
+      }(),
       Status.txEditMemo => () {
-          _applyTxMemoChange();
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.txDetails);
-          return false;
-        }(),
+        _applyTxMemoChange();
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.txDetails);
+        return false;
+      }(),
       Status.assetReceive => () {
-          ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
-                WalletMainArguments(
-                  currentIndex: 1,
-                  navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
-                ),
-              );
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.assetDetails);
-          return false;
-        }(),
+        ref
+            .read(uiStateArgsNotifierProvider.notifier)
+            .setWalletMainArguments(
+              WalletMainArguments(
+                currentIndex: 1,
+                navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
+              ),
+            );
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.assetDetails);
+        return false;
+      }(),
       Status.swapWaitPegTx => () {
-          ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
-                WalletMainArguments(
-                  currentIndex: 4,
-                  navigationItemEnum: WalletMainNavigationItemEnum.pegs,
-                ),
-              );
-          ref.read(swapHelperProvider).pegStop();
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.registered);
-          return false;
-        }(),
+        ref
+            .read(uiStateArgsNotifierProvider.notifier)
+            .setWalletMainArguments(
+              WalletMainArguments(
+                currentIndex: 4,
+                navigationItemEnum: WalletMainNavigationItemEnum.pegs,
+              ),
+            );
+        ref.read(swapHelperProvider).pegStop();
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.registered);
+        return false;
+      }(),
       Status.settingsBackup ||
       Status.settingsSecurity ||
       Status.settingsAboutUs ||
-      Status.settingsUserDetails ||
       Status.settingsNetwork ||
       Status.settingsLogs ||
-      Status.settingsCurrency =>
-        () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.settingsPage);
-          return false;
-        }(),
+      Status.settingsCurrency => () {
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.settingsPage);
+        return false;
+      }(),
       Status.newWalletBackupView => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.newWalletBackupPrompt);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.newWalletBackupPrompt);
+        return false;
+      }(),
       Status.walletLoading || Status.noWallet || Status.lockedWalet => true,
-      Status.createOrder => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.createOrderEntry);
-          return false;
-        }(),
       Status.stokrLogin ||
       Status.pegxRegister ||
       Status.pegxSubmitAmp ||
-      Status.pegxSubmitFinish =>
-        () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.ampRegister);
-          return false;
-        }(),
+      Status.pegxSubmitFinish => () {
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.ampRegister);
+        return false;
+      }(),
       Status.walletAddressDetail => () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.generateWalletAddress);
-          return false;
-        }(),
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.generateWalletAddress);
+        return false;
+      }(),
       Status.jadeDevices => () {
-          ref.invalidate(jadeDeviceNotifierProvider);
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.jadeBluetoothPermission);
-          return false;
-        }(),
+        ref.invalidate(jadeDeviceNotifierProvider);
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.jadeBluetoothPermission);
+        return false;
+      }(),
       Status.ampRegister => false,
       _ => () {
-          logger.w('Unhandled goBack status $status');
-          return false;
-        }(),
+        logger.w('Unhandled goBack status $status');
+        return false;
+      }(),
     };
   }
 
   void _login({String mnemonic = '', String jadeId = ''}) {
+    ref
+        .read(serverLoginNotifierProvider.notifier)
+        .setServerLoginState(ServerLoginStateLoginProcessing());
+
     final msg = To();
     msg.login = To_Login();
     if (mnemonic.isNotEmpty) {
@@ -1579,10 +1344,14 @@ class WalletChangeNotifier with ChangeNotifier {
 
     sendMsg(msg);
 
-    ref.read(loginStateNotifierProvider.notifier).setState(LoginState.login(
-          mnemonic: mnemonic.isEmpty ? null : mnemonic,
-          jadeId: jadeId.isEmpty ? null : jadeId,
-        ));
+    ref
+        .read(loginStateNotifierProvider.notifier)
+        .setState(
+          LoginState.login(
+            mnemonic: mnemonic.isEmpty ? null : mnemonic,
+            jadeId: jadeId.isEmpty ? null : jadeId,
+          ),
+        );
 
     notifyListeners();
   }
@@ -1785,22 +1554,20 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    final mnemonic = ref.read(configurationProvider).useBiometricProtection
-        ? await _encryption
-            .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted)
-        : await _encryption
-            .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
-    if (mnemonic == _mnemonic && validateMnemonic(mnemonic)) {
+    final mnemonic =
+        ref.read(configurationProvider).useBiometricProtection
+            ? await _encryption.decryptBiometric(
+              ref.read(configurationProvider).mnemonicEncrypted,
+            )
+            : await _encryption.decryptFallback(
+              ref.read(configurationProvider).mnemonicEncrypted,
+            );
+    if (mnemonic == mnemonicRepository.mnemonic() &&
+        validateMnemonic(mnemonic)) {
       ref
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.settingsBackup);
     }
-  }
-
-  void settingsUserDetails() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.settingsUserDetails);
   }
 
   void settingsViewPage() {
@@ -1816,38 +1583,27 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsViewSecurity() async {
-    settingsBiometricAvailable = await _encryption.canAuthenticate();
+    await _encryption.canAuthenticate();
     ref
         .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.settingsSecurity);
     notifyListeners();
   }
 
-  Future<bool> isBiometricAvailable() async {
-    settingsBiometricAvailable = await _encryption.canAuthenticate();
-    return settingsBiometricAvailable;
-  }
-
   Future<void> settingsDeletePromptConfirm() async {
     final navigatorKey = ref.read(navigatorKeyProvider);
 
-    Navigator.of(navigatorKey.currentContext!)
-        .popUntil((route) => route.isFirst);
+    Navigator.of(
+      navigatorKey.currentContext!,
+    ).popUntil((route) => route.isFirst);
 
     if (FlavorConfig.isDesktop) {
-      Navigator.of(navigatorKey.currentContext!)
-          .popUntil((route) => route.isFirst);
+      Navigator.of(
+        navigatorKey.currentContext!,
+      ).popUntil((route) => route.isFirst);
     }
 
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
-
-    // cancel all orders
-    final orders = ref.read(marketOwnRequestOrdersProvider);
-    for (var order in orders) {
-      cancelOrder(order.orderId);
-    }
-
-    unregisterPhone();
 
     await deleteWalletAndCleanup();
   }
@@ -1861,16 +1617,15 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void cleanAppStates() {
     logger.w('Clean app states');
-    ref.read(balancesNotifierProvider.notifier).clear();
-    ref.read(uiStateArgsNotifierProvider.notifier).clear();
-    ref.read(phoneProvider).clearData();
+    ref.invalidate(balancesNotifierProvider);
+    ref.invalidate(uiStateArgsNotifierProvider);
     ref.read(pinProtectionHelperProvider).resetCounter();
-    ref.read(allTxsNotifierProvider.notifier).clear();
-    ref.read(allPegsNotifierProvider.notifier).clear();
-    ref.read(ampIdNotifierProvider.notifier).setAmpId('');
+    ref.invalidate(allTxsNotifierProvider);
+    ref.invalidate(allPegsNotifierProvider);
+    ref.invalidate(ampIdNotifierProvider);
     ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
     ref.invalidate(firstLaunchStateNotifierProvider);
-    _mnemonic = "";
+    mnemonicRepository.clear();
     notifyListeners();
   }
 
@@ -1889,7 +1644,7 @@ class WalletChangeNotifier with ChangeNotifier {
       if (await ref
           .read(pinProtectionHelperProvider)
           .pinBlockadeUnlocked(showBackButton: false)) {
-        _login(mnemonic: _mnemonic);
+        _login(mnemonic: mnemonicRepository.mnemonic());
         return;
       }
 
@@ -1900,15 +1655,21 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     if (ref.read(configurationProvider).useBiometricProtection) {
-      _mnemonic = await _encryption
-          .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted);
+      mnemonicRepository.setMnemonic(
+        await _encryption.decryptBiometric(
+          ref.read(configurationProvider).mnemonicEncrypted,
+        ),
+      );
     } else {
-      _mnemonic = await _encryption
-          .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
+      mnemonicRepository.setMnemonic(
+        await _encryption.decryptFallback(
+          ref.read(configurationProvider).mnemonicEncrypted,
+        ),
+      );
     }
 
-    if (validateMnemonic(_mnemonic)) {
-      _login(mnemonic: _mnemonic);
+    if (validateMnemonic(mnemonicRepository.mnemonic())) {
+      _login(mnemonic: mnemonicRepository.mnemonic());
     } else {
       // TODO: Show error
       ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
@@ -1918,8 +1679,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsEnableBiometric() async {
-    final mnemonic = await _encryption
-        .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
+    final mnemonic = await _encryption.decryptFallback(
+      ref.read(configurationProvider).mnemonicEncrypted,
+    );
 
     if (mnemonic.isEmpty) {
       return;
@@ -1933,14 +1695,15 @@ class WalletChangeNotifier with ChangeNotifier {
     ref
         .read(configurationProvider.notifier)
         .setMnemonicEncrypted(mnemonicEncrypted);
-    _mnemonic = mnemonic;
+    mnemonicRepository.setMnemonic(mnemonic);
     ref.read(configurationProvider.notifier).setUseBiometricProtection(true);
     notifyListeners();
   }
 
   Future<void> settingsDisableBiometric() async {
-    final mnemonic = await _encryption
-        .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted);
+    final mnemonic = await _encryption.decryptBiometric(
+      ref.read(configurationProvider).mnemonicEncrypted,
+    );
     if (mnemonic.isEmpty) {
       return;
     }
@@ -1953,7 +1716,7 @@ class WalletChangeNotifier with ChangeNotifier {
     ref
         .read(configurationProvider.notifier)
         .setMnemonicEncrypted(mnemonicEncrypted);
-    _mnemonic = mnemonic;
+    mnemonicRepository.setMnemonic(mnemonic);
     ref.read(configurationProvider.notifier).setUseBiometricProtection(false);
     notifyListeners();
   }
@@ -1964,8 +1727,11 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     if (ref.read(configurationProvider).useBiometricProtection) {
-      _mnemonic = await _encryption
-          .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted);
+      mnemonicRepository.setMnemonic(
+        await _encryption.decryptBiometric(
+          ref.read(configurationProvider).mnemonicEncrypted,
+        ),
+      );
     } else {
       final mnemonicEncrypted =
           ref.read(configurationProvider).mnemonicEncrypted;
@@ -1973,10 +1739,12 @@ class WalletChangeNotifier with ChangeNotifier {
       if (mnemonicEncrypted.isEmpty) {
         return true;
       }
-      _mnemonic = await _encryption.decryptFallback(mnemonicEncrypted);
+      mnemonicRepository.setMnemonic(
+        await _encryption.decryptFallback(mnemonicEncrypted),
+      );
     }
 
-    if (validateMnemonic(_mnemonic)) {
+    if (validateMnemonic(mnemonicRepository.mnemonic())) {
       return true;
     }
 
@@ -2015,7 +1783,8 @@ class WalletChangeNotifier with ChangeNotifier {
     final clientId = ref.read(libClientIdProvider);
     if (clientId == 0) {
       logger.w(
-          'Client lib is not initialized. Are you trying to send message too early?');
+        'Client lib is not initialized. Are you trying to send message too early?',
+      );
       return;
     }
 
@@ -2029,194 +1798,12 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  bool isAmountUsdAvailable(String? assetId) {
-    if (assetId == ref.read(liquidAssetIdStateProvider)) {
-      return true;
-    }
-
-    final price = ref.read(walletAssetPricesNotifierProvider)[assetId];
-    if (price != null) {
-      return true;
-    }
-
-    return false;
-  }
-
   List<AccountAsset> sendAssets() {
     return sendAssetsWithBalance();
   }
 
-  void setImportAvatar() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.importAvatar);
-  }
-
-  void setImportAvatarSuccess() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.importAvatarSuccess);
-  }
-
-  void setAssociatePhoneWelcome() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.associatePhoneWelcome);
-  }
-
-  void setConfirmPhone() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.confirmPhone);
-  }
-
-  void setConfirmPhoneSuccess() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.confirmPhoneSuccess);
-  }
-
-  void setImportContacts() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.importContacts);
-  }
-
-  void setImportContactsSuccess() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.importContactsSuccess);
-  }
-
-  Future<void> setOrder() async {
-    final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
-
-    if (FlavorConfig.isDesktop) {
-      ref.read(desktopDialogProvider).orderReview(
-            orderDetailsData.orderType == OrderDetailsDataType.sign
-                ? ReviewScreen.sign
-                : ReviewScreen.quote,
-          );
-      return;
-    }
-
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
-
-    Future.microtask(() {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.orderPopup);
-
-      final instance = WidgetsBinding.instance;
-      if (orderDetailsData.orderType == OrderDetailsDataType.sign &&
-          instance.lifecycleState == AppLifecycleState.resumed) {
-        unawaited(FlutterRingtonePlayer().playNotification());
-        unawaited(Vibration.vibrate());
-      }
-    });
-  }
-
-  void setSubmitDecision({
-    required bool autosign,
-    bool twoStep = false,
-    bool accept = false,
-    bool private = true,
-    int ttlSeconds = kOneWeek,
-    bool allowTxChaining = false,
-  }) {
-    final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
-    final newOrderDetailsData =
-        orderDetailsData.copyWith(accept: accept, private: private);
-    if (newOrderDetailsData.orderId.isEmpty) {
-      return;
-    }
-
-    final msg = To();
-    msg.submitDecision = To_SubmitDecision();
-    msg.submitDecision.orderId = newOrderDetailsData.orderId;
-    msg.submitDecision.accept = accept;
-    msg.submitDecision.autoSign = autosign;
-    msg.submitDecision.twoStep = twoStep;
-    msg.submitDecision.private = newOrderDetailsData.private;
-    msg.submitDecision.ttlSeconds = Int64(ttlSeconds);
-    msg.submitDecision.txChainingAllowed = allowTxChaining;
-    sendMsg(msg);
-  }
-
-  void setOrderSuccess() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.orderSuccess);
-  }
-
-  void setResponseSuccess() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.orderResponseSuccess);
-  }
-
-  void submitOrder(
-    String? assetId,
-    double amount,
-    double price, {
-    bool isAssetAmount = false,
-    double? indexPrice,
-    AccountType account = const AccountType(0),
-  }) {
-    if (assetId == null) {
-      logger.w('Asset id is null!');
-      return;
-    }
-
-    final msg = To();
-    msg.submitOrder = To_SubmitOrder();
-    msg.submitOrder.assetId = assetId;
-
-    if (isAssetAmount) {
-      msg.submitOrder.assetAmount = amount;
-    } else {
-      msg.submitOrder.bitcoinAmount = amount;
-    }
-    msg.submitOrder.price = price;
-
-    if (indexPrice != null) {
-      msg.submitOrder.indexPrice = indexPrice;
-    }
-    msg.submitOrder.account = getAccount(account);
-
-    sendMsg(msg);
-  }
-
-  void linkOrder(String? orderId) {
-    if (orderId == null || orderId.isEmpty) {
-      return;
-    }
-
-    final msg = To();
-    msg.linkOrder = To_LinkOrder();
-    msg.linkOrder.orderId = orderId;
-    sendMsg(msg);
-  }
-
-  void uploadDeviceContacts(To_UploadContacts uploadContacts) {
-    uploadContacts.phoneKey = ref.read(configurationProvider).phoneKey;
-    final msg = To();
-    msg.uploadContacts = uploadContacts;
-    sendMsg(msg);
-  }
-
-  void uploadAvatar({required String avatar}) {
-    final uploadAvatar = To_UploadAvatar();
-    uploadAvatar.phoneKey = ref.read(configurationProvider).phoneKey;
-    uploadAvatar.image = avatar;
-
-    final msg = To();
-    msg.uploadAvatar = uploadAvatar;
-    sendMsg(msg);
-  }
-
   void setNewWalletPinWelcome() {
-    _mnemonic = getNewMnemonic();
+    mnemonicRepository.setMnemonic(getNewMnemonic());
     ref
         .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.newWalletPinWelcome);
@@ -2231,14 +1818,14 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   bool sendEncryptPin(String pin) {
-    if (_mnemonic.isEmpty) {
+    if (mnemonicRepository.isEmpty) {
       return false;
     }
 
     final msg = To();
     msg.encryptPin = To_EncryptPin();
     msg.encryptPin.pin = pin;
-    msg.encryptPin.mnemonic = _mnemonic;
+    msg.encryptPin.mnemonic = mnemonicRepository.mnemonic();
     sendMsg(msg);
 
     return true;
@@ -2268,9 +1855,12 @@ class WalletChangeNotifier with ChangeNotifier {
       return true;
     }
 
-    final ret = await ref.read(pinProtectionHelperProvider).pinBlockadeUnlocked(
-        iconType: PinKeyboardAcceptType.disable,
-        title: 'Disable PIN protection'.tr());
+    final ret = await ref
+        .read(pinProtectionHelperProvider)
+        .pinBlockadeUnlocked(
+          iconType: PinKeyboardAcceptType.disable,
+          title: 'Disable PIN protection'.tr(),
+        );
 
     if (ret) {
       final pinDecryptedData = ref.read(pinDecryptedDataNotifierProvider);
@@ -2278,8 +1868,11 @@ class WalletChangeNotifier with ChangeNotifier {
         // turn off pin and save encrypted mnemonic
         ref.read(configurationProvider.notifier).setUsePinProtection(false);
 
-        ref.read(configurationProvider.notifier).setMnemonicEncrypted(
-            await _encryption.encryptFallback(pinDecryptedData.mnemonic));
+        ref
+            .read(configurationProvider.notifier)
+            .setMnemonicEncrypted(
+              await _encryption.encryptFallback(pinDecryptedData.mnemonic),
+            );
       }
     }
 
@@ -2308,184 +1901,20 @@ class WalletChangeNotifier with ChangeNotifier {
     processPendingPushMessages();
   }
 
-  void setCreateOrderEntry() {
-    ref.read(requestOrderProvider).validateDeliverAsset();
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.createOrderEntry);
-  }
-
-  void setCreateOrder() {
-    if (FlavorConfig.isDesktop) {
-      ref.read(desktopDialogProvider).orderReview(ReviewScreen.submitStart);
-      return;
-    }
-
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.createOrder);
-  }
-
-  void setCreateOrderSuccess() {
-    final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
-
-    if (FlavorConfig.isDesktop) {
-      if (orderDetailsData.private) {
-        ref.read(desktopDialogProvider).orderReview(ReviewScreen.submitSucceed);
-      } else {
-        ref.read(desktopDialogProvider).closePopups();
-      }
-      return;
-    }
-
-    // omit create order success screen
-    // status = Status.createOrderSuccess;
-
-    if (orderDetailsData.private) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.createOrderSuccess);
-    } else {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.registered);
-    }
-  }
-
-  void unregisterPhone() {
-    final phoneKey = ref.read(configurationProvider).phoneKey;
-    if (phoneKey.isNotEmpty) {
-      var msg = To();
-      msg.unregisterPhone = To_UnregisterPhone();
-      msg.unregisterPhone.phoneKey = phoneKey;
-      sendMsg(msg);
-
-      removePhoneKey();
-    }
-  }
-
-  void removePhoneKey() {
-    ref.read(configurationProvider.notifier).setPhoneKey('');
-    ref.read(configurationProvider.notifier).setPhoneNumber('');
-  }
-
-  void cancelOrder(String orderId) {
-    final msg = To();
-    msg.cancelOrder = To_CancelOrder();
-    msg.cancelOrder.orderId = orderId;
-    sendMsg(msg);
-  }
-
-  void modifyOrderPrice(
-    String orderId, {
-    double? price,
-    double? indexPrice,
-  }) {
-    final orderDetailsData = OrderDetailsData.empty();
-    Future.microtask(() => ref
-        .read(orderDetailsDataNotifierProvider.notifier)
-        .setOrderDetailsData(orderDetailsData));
-
-    final msg = To();
-    msg.editOrder = To_EditOrder();
-    msg.editOrder.orderId = orderId;
-
-    if (indexPrice != null) {
-      msg.editOrder.indexPrice = indexPrice;
-    }
-
-    if (price != null) {
-      msg.editOrder.price = price;
-    }
-
-    sendMsg(msg);
-  }
-
-  void modifyOrderAutoSign(String orderId, bool autoSign) {
-    final msg = To();
-    msg.editOrder = To_EditOrder();
-    msg.editOrder.orderId = orderId;
-    msg.editOrder.autoSign = autoSign;
-    sendMsg(msg);
-  }
-
   List<AccountAsset> sendAssetsWithBalance() {
-    final allAssets = ref
-        .read(balancesNotifierProvider)
-        .entries
-        .where((e) => e.value > 0)
-        .map((e) => e.key)
-        .toList();
+    final allAssets =
+        ref
+            .read(balancesNotifierProvider)
+            .entries
+            .where((e) => e.value > 0)
+            .map((e) => e.key)
+            .toList();
     if (allAssets.isEmpty) {
       return [
-        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider))
+        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider)),
       ];
     }
     return allAssets;
-  }
-
-  void setOrderRequestView(RequestOrder requestOrder) {
-    ref
-        .read(currentRequestOrderViewProvider.notifier)
-        .setCurrentRequestOrderView(requestOrder);
-
-    if (FlavorConfig.isDesktop) {
-      final orderAsset = ref.read(assetsStateProvider)[requestOrder.assetId]!;
-      final orderDetailsData =
-          OrderDetailsData.fromRequestOrder(requestOrder, orderAsset.precision);
-      ref
-          .read(orderDetailsDataNotifierProvider.notifier)
-          .setOrderDetailsData(orderDetailsData);
-      notifyListeners();
-      ref.read(desktopDialogProvider).orderReview(ReviewScreen.edit);
-      return;
-    }
-
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.orderRequestView);
-  }
-
-  void verifySwap(SwapDetails swap) {
-    if (swap.sendAmount <= 0) {
-      throw ErrorDescription('Invalid send amount: $swap.sendAmount');
-    }
-    if (swap.recvAmount <= 0) {
-      throw ErrorDescription('Invalid recv amount: $swap.recvAmount');
-    }
-    if (swap.orderId.isEmpty) {
-      throw ErrorDescription('Order ID is empty');
-    }
-    if (swap.uploadUrl.isEmpty) {
-      throw ErrorDescription('Upload URL is empty');
-    }
-    if (swap.sendAsset == swap.recvAsset) {
-      throw ErrorDescription('Swap assets are same');
-    }
-
-    final assets = ref.read(assetsStateProvider);
-    if (assets[swap.sendAsset] == null) {
-      throw ErrorDescription('Asset is not known: $swap.sendAsset');
-    }
-    if (assets[swap.recvAsset] == null) {
-      throw ErrorDescription('Asset is not known: $swap.recvAsset');
-    }
-  }
-
-  void startSwapPrompt(SwapDetails swap) {
-    verifySwap(swap);
-    swapDetails = swap;
-    swapPromptWaitingTx = false;
-    notifyListeners();
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.swapPrompt);
-  }
-
-  void swapReviewAccept() {
-    swapPromptWaitingTx = true;
-    notifyListeners();
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.swapPrompt);
-
-    final msg = To();
-    msg.swapAccept = swapDetails!;
-    sendMsg(msg);
   }
 
   void getPegOutAmount(
@@ -2602,9 +2031,11 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void loadAddresses(Account account) {
-    Future.microtask(() => ref
-        .read(loadAddressesStateNotifierProvider.notifier)
-        .setLoadAddressesState(const LoadAddressesState.loading()));
+    Future.microtask(
+      () => ref
+          .read(loadAddressesStateNotifierProvider.notifier)
+          .setLoadAddressesState(const LoadAddressesState.loading()),
+    );
 
     final msg = To();
     msg.loadAddresses = account;
@@ -2616,7 +2047,8 @@ class WalletChangeNotifier with ChangeNotifier {
       ref
           .read(loadAddressesStateNotifierProvider.notifier)
           .setLoadAddressesState(
-              LoadAddressesState.error(loadAddresses.errorMsg));
+            LoadAddressesState.error(loadAddresses.errorMsg),
+          );
       return;
     }
 
@@ -2646,6 +2078,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void _handleLogin(From_Login login) {
     logger.d(login);
+
     (switch (login.whichResult()) {
       From_Login_Result.errorMsg
           when login.errorMsg == 'please initialize Jade first' ||
@@ -2655,37 +2088,168 @@ class WalletChangeNotifier with ChangeNotifier {
                   'Jade error: Network type inconsistent with prior usage' =>
         () {
           ref.read(configurationProvider.notifier).setJadeId('');
-          ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
-              ServerLoginStateError(message: login.errorMsg));
+          ref
+              .read(serverLoginNotifierProvider.notifier)
+              .setServerLoginState(
+                ServerLoginStateError(message: login.errorMsg),
+              );
         }(),
       From_Login_Result.errorMsg => () {
-          ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
-              ServerLoginStateError(message: login.errorMsg));
-        }(),
+        ref
+            .read(serverLoginNotifierProvider.notifier)
+            .setServerLoginState(
+              ServerLoginStateError(message: login.errorMsg),
+            );
+      }(),
       From_Login_Result.success => () {
-          // save jadeId once, when logged in
-          final loginState = ref.read(loginStateNotifierProvider);
-          (switch (loginState) {
-            LoginStateLogin(:final jadeId)
-                when jadeId != null &&
-                    jadeId.isNotEmpty &&
-                    ref.read(configurationProvider).jadeId.isEmpty =>
-              ref.read(configurationProvider.notifier).setJadeId(jadeId),
-            _ => () {}(),
-          });
+        // save jadeId once, when logged in
+        final loginState = ref.read(loginStateNotifierProvider);
+        (switch (loginState) {
+          LoginStateLogin(:final jadeId)
+              when jadeId != null &&
+                  jadeId.isNotEmpty &&
+                  ref.read(configurationProvider).jadeId.isEmpty =>
+            ref.read(configurationProvider.notifier).setJadeId(jadeId),
+          _ => () {}(),
+        });
 
-          ref
-              .read(serverLoginNotifierProvider.notifier)
-              .setServerLoginState(const ServerLoginStateLogin());
-          ref
-              .read(firstLaunchStateNotifierProvider.notifier)
-              .setFirstLaunchState(const FirstLaunchStateEmpty());
-        }(),
+        ref
+            .read(serverLoginNotifierProvider.notifier)
+            .setServerLoginState(const ServerLoginStateLogin());
+        ref
+            .read(firstLaunchStateNotifierProvider.notifier)
+            .setFirstLaunchState(const FirstLaunchStateEmpty());
+      }(),
       From_Login_Result.notSet => () {
-          ref
-              .read(serverLoginNotifierProvider.notifier)
-              .setServerLoginState(const ServerLoginStateError());
-        }(),
+        ref
+            .read(serverLoginNotifierProvider.notifier)
+            .setServerLoginState(const ServerLoginStateError());
+      }(),
     });
+  }
+
+  void _handleMarketList(From_MarketList marketList) async {
+    ref.read(marketsNotifierProvider.notifier).setState(marketList.markets);
+  }
+
+  void _handleMarketAdded(MarketInfo marketInfo) {
+    ref.read(marketsNotifierProvider.notifier).addMarketInfo(marketInfo);
+  }
+
+  void _handleMarketRemoved(AssetPair assetPair) {
+    ref.read(marketsNotifierProvider.notifier).removeAssetPair(assetPair);
+  }
+
+  void _handlePublicOrders(From_PublicOrders publicOrders) {
+    ref
+        .read(marketPublicOrdersNotifierProvider.notifier)
+        .setOrders(publicOrders.assetPair, publicOrders.list);
+  }
+
+  void _handlePublicOrderCreated(PublicOrder publicOrder) {
+    ref
+        .read(marketPublicOrdersNotifierProvider.notifier)
+        .orderCreated(publicOrder);
+  }
+
+  void _handlePublicOrderRemoved(OrderId orderId) {
+    ref.read(marketPublicOrdersNotifierProvider.notifier).removeOrder(orderId);
+  }
+
+  void _handleMarketPrice(From_MarketPrice marketPrice) {
+    logger.d(marketPrice);
+    ref.read(marketPriceNotifierProvider.notifier).setState(marketPrice);
+  }
+
+  void _handleOwnOrders(From_OwnOrders ownOrders) {
+    ref.read(marketOwnOrdersNotifierProvider.notifier).setState(ownOrders.list);
+  }
+
+  void _handleOwnOrderCreated(OwnOrder ownOrder) {
+    ref.read(marketOwnOrdersNotifierProvider.notifier).orderCreated(ownOrder);
+  }
+
+  void _handleOwnOrderRemoved(OrderId orderId) {
+    ref.read(marketOwnOrdersNotifierProvider.notifier).removeOrder(orderId);
+  }
+
+  void _handleQuote(From_Quote quote) {
+    logger.d('From_Quote: $quote');
+    ref.read(marketQuoteNotifierProvider.notifier).setQuote(quote);
+  }
+
+  void _handleAcceptQuote(From_AcceptQuote acceptQuote) {
+    ref.read(marketAcceptQuoteNotifierProvider.notifier).setState(acceptQuote);
+  }
+
+  void _handleOrderSubmit(From_OrderSubmit orderSubmit) {
+    ref.read(orderSubmitNotifierProvider.notifier).setState(orderSubmit);
+  }
+
+  void _handleChartsSubscribe(From_ChartsSubscribe chartsSubscribe) {
+    ref.read(chartsNotifierProvider.notifier).setChartsData(chartsSubscribe);
+  }
+
+  void _handleChartsUpdate(From_ChartsUpdate chartsUpdate) {
+    ref.read(chartsNotifierProvider.notifier).updateChartsData(chartsUpdate);
+  }
+
+  void _handleLoadHistory(From_LoadHistory loadHistory) {
+    ref
+        .read(marketHistoryOrderNotifierProvider.notifier)
+        .loadHistory(loadHistory);
+  }
+
+  void _handleHistoryUpdated(From_HistoryUpdated historyUpdated) {
+    ref
+        .read(marketHistoryOrderNotifierProvider.notifier)
+        .historyUpdated(historyUpdated);
+  }
+
+  void _handleEditOrder(GenericResponse orderEdit) {
+    if (orderEdit.success) {
+      return;
+    }
+
+    ref
+        .read(marketEditOrderErrorNotifierProvider.notifier)
+        .setState(orderEdit.errorMsg);
+  }
+
+  void _handleStartOrder(From_StartOrder startOrder) {
+    ref
+        .read(marketStartOrderNotifierProvider.notifier)
+        .setState(startOrder.orderId.toInt());
+
+    if (startOrder.hasSuccess()) {
+      return;
+    }
+
+    if (!startOrder.hasError()) {
+      return;
+    }
+
+    logger.w('Start order error: $startOrder');
+    ref
+        .read(marketStartOrderErrorNotifierProvider.notifier)
+        .setState(
+          StartOrderError(
+            error: startOrder.error,
+            orderId: startOrder.orderId.toInt(),
+          ),
+        );
+  }
+
+  void _handleMinMarketAmounts(From_MinMarketAmounts minMarketAmounts) {
+    ref
+        .read(marketMinimalAmountsNotfierProvider.notifier)
+        .setState(minMarketAmounts);
+  }
+
+  void _handleSubscribedValue(From_SubscribedValue subscribedValue) {
+    logger.d('PEGIN TEST RECEIVED: $subscribedValue');
+    ref
+        .read(pegSubscribedValueNotifierProvider.notifier)
+        .setState(subscribedValue);
   }
 }

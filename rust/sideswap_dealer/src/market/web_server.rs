@@ -4,10 +4,7 @@ use poem::{listener::TcpListener, Route, Server};
 use poem_openapi::{param::Query, payload::Json, ApiResponse, OpenApi, OpenApiService};
 use serde::Deserialize;
 use sideswap_api::mkt::OrdId;
-use sideswap_common::{
-    dealer_ticker::{dealer_ticker_from_asset_ticker, DealerTicker},
-    exchange_pair::ExchangePair,
-};
+use sideswap_common::{dealer_ticker::DealerTicker, exchange_pair::ExchangePair};
 use sideswap_types::{normal_float::NormalFloat, timestamp_ms::TimestampMs};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -35,8 +32,8 @@ impl From<Error> for ErrorResponse {
     }
 }
 
-fn parse_dealer_ticker(value: &str) -> Result<DealerTicker, Error> {
-    dealer_ticker_from_asset_ticker(value).ok_or_else(|| Error::UnknownTicker(value.to_owned()))
+fn parse_dealer_ticker(api: &Api, value: &str) -> Result<DealerTicker, Error> {
+    api.controller.parse_ticker(value)
 }
 
 fn parse_normal_float(value: f64) -> Result<NormalFloat, Error> {
@@ -61,8 +58,8 @@ impl Api {
         /// Quote asset ticker, must be from a known market
         quote: Query<String>,
     ) -> Result<Json<api::OrderBook>, ErrorResponse> {
-        let base = parse_dealer_ticker(&base.0)?;
-        let quote = parse_dealer_ticker(&quote.0)?;
+        let base = parse_dealer_ticker(&self, &base.0)?;
+        let quote = parse_dealer_ticker(&self, &quote.0)?;
         let exchange_pair = ExchangePair { base, quote };
         let resp = self.controller.order_book(exchange_pair).await?;
         Ok(Json(resp.into()))
@@ -97,8 +94,8 @@ impl Api {
         /// Client order id. If set, must be unique among all active and recent history orders.
         client_order_id: Query<Option<Box<String>>>,
     ) -> Result<Json<api::OwnOrder>, ErrorResponse> {
-        let base = parse_dealer_ticker(&base.0)?;
-        let quote = parse_dealer_ticker(&quote.0)?;
+        let base = parse_dealer_ticker(&self, &base.0)?;
+        let quote = parse_dealer_ticker(&self, &quote.0)?;
         let exchange_pair = ExchangePair { base, quote };
         let price = parse_normal_float(price.0)?;
         let resp = self

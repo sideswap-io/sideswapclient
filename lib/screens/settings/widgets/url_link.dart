@@ -16,12 +16,14 @@ class UrlLink extends StatelessWidget {
             openUrl(url);
           }
         },
-        child: Text(url,
-            style: const TextStyle(
-              decoration: TextDecoration.underline,
-              color: Colors.blue,
-              fontSize: 16,
-            )),
+        child: Text(
+          url,
+          style: const TextStyle(
+            decoration: TextDecoration.underline,
+            color: Colors.blue,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
   }

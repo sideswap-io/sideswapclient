@@ -192,7 +192,7 @@ pub async fn process_balancing(
         match balancing.state {
             TransferState::SendUsdtNew => {
                 let usdt_balance = wallet_balances_confirmed
-                    .get(&DealerTicker::USDt)
+                    .get(&DealerTicker::USDT)
                     .cloned()
                     .unwrap_or_default();
                 let bitcoin_balance = wallet_balances_confirmed

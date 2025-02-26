@@ -21,7 +21,7 @@ class DSettingsJadeDevice extends HookConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           Navigator.of(context).pop();
         }
@@ -33,8 +33,9 @@ class DSettingsJadeDevice extends HookConsumerWidget {
             Navigator.of(context).pop();
           },
         ),
-        style: const DContentDialogThemeData()
-            .merge(desktopAppTheme.defaultDialogTheme),
+        style: const DContentDialogThemeData().merge(
+          desktopAppTheme.defaultDialogTheme,
+        ),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
         content: Center(
           child: SizedBox(
@@ -50,46 +51,61 @@ class DSettingsJadeDevice extends HookConsumerWidget {
                 const SizedBox(height: 32),
                 Consumer(
                   builder: (context, ref, child) {
-                    final jadeDevicesState =
-                        ref.watch(jadeDeviceNotifierProvider);
+                    final jadeDevicesState = ref.watch(
+                      jadeDeviceNotifierProvider,
+                    );
 
                     return Column(
                       children: [
                         Text(
                           jadeDevicesState.maybeWhen(
-                              available: (devices) =>
-                                  'Jade is ready to start'.tr(),
-                              orElse: () =>
-                                  'Please connect your Jade device'.tr()),
+                            available:
+                                (devices) => 'Jade is ready to start'.tr(),
+                            orElse:
+                                () => 'Please connect your Jade device'.tr(),
+                          ),
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        jadeDevicesState.maybeWhen(available: (devices) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 24),
-                            child: Column(
-                              children: devices
-                                  .map(
-                                    (port) => JadeDevice(
-                                      key: ValueKey(port.port),
-                                      jadePort:
-                                          JadePort(fromJadePortsPort: port),
-                                      register: false,
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          );
-                        }, orElse: () {
-                          return const Padding(
-                            padding: EdgeInsets.only(top: 200),
-                            child: SpinKitFadingCircle(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          );
-                        }),
+                        jadeDevicesState.maybeWhen(
+                          available: (devices) => SizedBox(),
+                          orElse:
+                              () => Text(
+                                'Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.'
+                                    .tr(),
+                              ),
+                        ),
+                        jadeDevicesState.maybeWhen(
+                          available: (devices) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: Column(
+                                children:
+                                    devices
+                                        .map(
+                                          (port) => JadeDevice(
+                                            key: ValueKey(port.port),
+                                            jadePort: JadePort(
+                                              fromJadePortsPort: port,
+                                            ),
+                                            register: false,
+                                          ),
+                                        )
+                                        .toList(),
+                              ),
+                            );
+                          },
+                          orElse: () {
+                            return const Padding(
+                              padding: EdgeInsets.only(top: 200),
+                              child: SpinKitFadingCircle(
+                                color: SideSwapColors.brightTurquoise,
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     );
                   },

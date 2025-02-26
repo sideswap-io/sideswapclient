@@ -5,9 +5,6 @@ class EnterAmountSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 1,
-      color: const Color(0xFF5294B9),
-    );
+    return Container(height: 1, color: const Color(0xFF5294B9));
   }
 }

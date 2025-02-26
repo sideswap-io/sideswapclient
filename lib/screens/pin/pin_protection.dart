@@ -37,7 +37,7 @@ class PinProtection extends StatelessWidget {
         },
       ),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           Navigator.of(context).pop(false);
         }
@@ -52,9 +52,7 @@ class PinProtection extends StatelessWidget {
                   minHeight: constraints.maxHeight,
                 ),
                 child: IntrinsicHeight(
-                  child: PinProtectionBody(
-                    iconType: iconType,
-                  ),
+                  child: PinProtectionBody(iconType: iconType),
                 ),
               ),
             );
@@ -80,11 +78,10 @@ class PinProtectionBody extends HookConsumerWidget {
       return switch (pinUnlockState) {
         PinUnlockStateEmpty() ||
         PinUnlockStateWrong() ||
-        PinUnlockStateFailed() =>
-          () {}(),
+        PinUnlockStateFailed() => () {}(),
         PinUnlockStateSuccess() => () {
-            Navigator.of(context).pop(true);
-          }(),
+          Navigator.of(context).pop(true);
+        }(),
       };
     }, [pinUnlockState]);
 
@@ -110,11 +107,7 @@ class PinProtectionBody extends HookConsumerWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 24),
-            child: Divider(
-              thickness: 1,
-              height: 1,
-              color: Color(0xFF23729D),
-            ),
+            child: Divider(thickness: 1, height: 1, color: Color(0xFF23729D)),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 32),
@@ -132,8 +125,9 @@ class PinProtectionBody extends HookConsumerWidget {
             child: Consumer(
               builder: (context, ref, _) {
                 final pinCode = ref.watch(pinCodeProtectionNotifierProvider);
-                final pinProtectionState =
-                    ref.watch(pinProtectionStateNotifierProvider);
+                final pinProtectionState = ref.watch(
+                  pinProtectionStateNotifierProvider,
+                );
                 final errorMessage =
                     (pinProtectionState is PinProtectionStateError)
                         ? pinProtectionState.message ?? ''
@@ -156,15 +150,17 @@ class PinProtectionBody extends HookConsumerWidget {
             padding: const EdgeInsets.only(bottom: 32),
             child: Consumer(
               builder: ((context, ref, _) {
-                final firstLaunchState =
-                    ref.watch(firstLaunchStateNotifierProvider);
+                final firstLaunchState = ref.watch(
+                  firstLaunchStateNotifierProvider,
+                );
                 final pinFieldState = ref.watch(pinFieldStateNotifierProvider);
                 return PinKeyboard(
-                  acceptType: firstLaunchState != const FirstLaunchState.empty()
-                      ? pinFieldState == const PinFieldState.second()
-                          ? PinKeyboardAcceptType.save
-                          : PinKeyboardAcceptType.icon
-                      : iconType,
+                  acceptType:
+                      firstLaunchState != const FirstLaunchState.empty()
+                          ? pinFieldState == const PinFieldState.second()
+                              ? PinKeyboardAcceptType.save
+                              : PinKeyboardAcceptType.icon
+                          : iconType,
                 );
               }),
             ),

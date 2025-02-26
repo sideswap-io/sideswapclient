@@ -31,8 +31,12 @@ class DAssetsPanelHeader extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 13),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 13,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -42,19 +46,23 @@ class DAssetsPanelHeader extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Container(
                   height: 24,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: ShapeDecoration(
                     shape: RoundedRectangleBorder(
                       side: const BorderSide(
-                          width: 1, color: SideSwapColors.brightTurquoise),
+                        width: 1,
+                        color: SideSwapColors.brightTurquoise,
+                      ),
                       borderRadius: BorderRadius.circular(56),
                     ),
                   ),
@@ -76,27 +84,27 @@ class DAssetsPanelHeader extends StatelessWidget {
                     Text(
                       totalValueLabel,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: SideSwapColors.brightTurquoise,
-                            fontSize: 13,
-                            letterSpacing: 0.07,
-                          ),
+                        color: SideSwapColors.brightTurquoise,
+                        fontSize: 13,
+                        letterSpacing: 0.07,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       totalValue,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: SideSwapColors.cornFlower,
-                            fontSize: 13,
-                            letterSpacing: 0.07,
-                          ),
+                        color: SideSwapColors.cornFlower,
+                        fontSize: 13,
+                        letterSpacing: 0.07,
+                      ),
                     ),
                   ],
                 ),
                 Text(
                   totalBtcValue,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        letterSpacing: -0.2,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(letterSpacing: -0.2),
                 ),
               ],
             ),

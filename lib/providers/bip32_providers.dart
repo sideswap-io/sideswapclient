@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -51,16 +52,16 @@ class BIP21Result {
     return 'ParseBIP21Result(amount: $amount, label: $label, message: $message, assetId: $assetId, ticker: $ticker, address: $address, addressType: $addressType)';
   }
 
-  (
-    double,
-    String,
-    String,
-    String,
-    String,
-    String,
-    BIP21AddressTypeEnum
-  ) _equality() =>
-      (amount, label, message, assetId, ticker, address, addressType);
+  (double, String, String, String, String, String, BIP21AddressTypeEnum)
+  _equality() => (
+    amount,
+    label,
+    message,
+    assetId,
+    ticker,
+    address,
+    addressType,
+  );
 
   @override
   bool operator ==(covariant BIP21Result other) {
@@ -75,7 +76,10 @@ class BIP21Result {
 
 @riverpod
 Either<Exception, BIP21Result> parseBIP21(
-    ParseBIP21Ref ref, String address, BIP21AddressTypeEnum addressType) {
+  Ref ref,
+  String address,
+  BIP21AddressTypeEnum addressType,
+) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
   try {
@@ -114,13 +118,14 @@ Either<Exception, BIP21Result> parseBIP21(
 
     return Right(
       BIP21Result(
-          amount: amount,
-          label: label,
-          message: message,
-          assetId: assetId,
-          ticker: ticker,
-          address: parsedAddress,
-          addressType: addressType),
+        amount: amount,
+        label: label,
+        message: message,
+        assetId: assetId,
+        ticker: ticker,
+        address: parsedAddress,
+        addressType: addressType,
+      ),
     );
   } catch (e) {
     logger.e(e);

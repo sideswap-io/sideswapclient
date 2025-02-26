@@ -33,24 +33,19 @@ class SideswapNotificationsiOSPlugin
       return;
     }
 
-    notificationService!
-        .refreshToken(refreshTokenCallback: refreshTokenCallback);
+    notificationService!.refreshToken(
+      refreshTokenCallback: refreshTokenCallback,
+    );
   }
 
   @override
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
+  InitializationSettings getLocalNotificationsInitializationSettings() {
     final initializationSettingsIOS = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
-      onDidReceiveLocalNotification: onDidReceiveLocalNotification,
     );
 
-    return InitializationSettings(
-      iOS: initializationSettingsIOS,
-    );
+    return InitializationSettings(iOS: initializationSettingsIOS);
   }
 }

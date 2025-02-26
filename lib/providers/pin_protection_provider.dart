@@ -15,13 +15,7 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 part 'pin_protection_provider.g.dart';
 part 'pin_protection_provider.freezed.dart';
 
-enum PinKeyboardAcceptType {
-  icon,
-  enable,
-  disable,
-  unlock,
-  save,
-}
+enum PinKeyboardAcceptType { icon, enable, disable, unlock, save }
 
 @riverpod
 class PinProtectionStateNotifier extends _$PinProtectionStateNotifier {
@@ -80,7 +74,7 @@ class PinUnlockStateNotifier extends _$PinUnlockStateNotifier {
 }
 
 @Riverpod(keepAlive: true)
-PinProtectionHelper pinProtectionHelper(PinProtectionHelperRef ref) {
+PinProtectionHelper pinProtectionHelper(Ref ref) {
   return PinProtectionHelper(ref: ref);
 }
 
@@ -90,7 +84,7 @@ class PinProtectionHelper {
   PinProtectionHelper({required this.ref});
 
   Future<bool> Function(String?, bool, PinKeyboardAcceptType)?
-      onPinBlockadeCallback;
+  onPinBlockadeCallback;
   int wrongCount = 0;
 
   Future<bool> pinBlockadeUnlocked({
@@ -194,7 +188,8 @@ class PinProtectionHelper {
       ref
           .read(pinProtectionStateNotifierProvider.notifier)
           .setPinProtectionState(
-              PinProtectionState.error(message: 'PIN code is too short'.tr()));
+            PinProtectionState.error(message: 'PIN code is too short'.tr()),
+          );
       ref.invalidate(pinCodeProtectionNotifierProvider);
       return;
     }

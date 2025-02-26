@@ -12,7 +12,8 @@ part of 'jade_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$JadeOnboardingRegistrationState {
@@ -21,62 +22,61 @@ mixin _$JadeOnboardingRegistrationState {
     required TResult Function() idle,
     required TResult Function() processing,
     required TResult Function() done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
     TResult? Function()? processing,
     TResult? Function()? done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
     TResult Function()? processing,
     TResult Function()? done,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
     required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-        processing,
+    processing,
     required TResult Function(JadeOnboardingRegistrationStateDone value) done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult Function(JadeOnboardingRegistrationStateDone value)? done,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $JadeOnboardingRegistrationStateCopyWith<$Res> {
   factory $JadeOnboardingRegistrationStateCopyWith(
-          JadeOnboardingRegistrationState value,
-          $Res Function(JadeOnboardingRegistrationState) then) =
-      _$JadeOnboardingRegistrationStateCopyWithImpl<$Res,
-          JadeOnboardingRegistrationState>;
+    JadeOnboardingRegistrationState value,
+    $Res Function(JadeOnboardingRegistrationState) then,
+  ) =
+      _$JadeOnboardingRegistrationStateCopyWithImpl<
+        $Res,
+        JadeOnboardingRegistrationState
+      >;
 }
 
 /// @nodoc
-class _$JadeOnboardingRegistrationStateCopyWithImpl<$Res,
-        $Val extends JadeOnboardingRegistrationState>
+class _$JadeOnboardingRegistrationStateCopyWithImpl<
+  $Res,
+  $Val extends JadeOnboardingRegistrationState
+>
     implements $JadeOnboardingRegistrationStateCopyWith<$Res> {
   _$JadeOnboardingRegistrationStateCopyWithImpl(this._value, this._then);
 
@@ -84,25 +84,34 @@ class _$JadeOnboardingRegistrationStateCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of JadeOnboardingRegistrationState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$JadeOnboardingRegistrationStateIdleImplCopyWith<$Res> {
   factory _$$JadeOnboardingRegistrationStateIdleImplCopyWith(
-          _$JadeOnboardingRegistrationStateIdleImpl value,
-          $Res Function(_$JadeOnboardingRegistrationStateIdleImpl) then) =
-      __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl<$Res>;
+    _$JadeOnboardingRegistrationStateIdleImpl value,
+    $Res Function(_$JadeOnboardingRegistrationStateIdleImpl) then,
+  ) = __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl<$Res>
-    extends _$JadeOnboardingRegistrationStateCopyWithImpl<$Res,
-        _$JadeOnboardingRegistrationStateIdleImpl>
+    extends
+        _$JadeOnboardingRegistrationStateCopyWithImpl<
+          $Res,
+          _$JadeOnboardingRegistrationStateIdleImpl
+        >
     implements _$$JadeOnboardingRegistrationStateIdleImplCopyWith<$Res> {
   __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl(
-      _$JadeOnboardingRegistrationStateIdleImpl _value,
-      $Res Function(_$JadeOnboardingRegistrationStateIdleImpl) _then)
-      : super(_value, _then);
+    _$JadeOnboardingRegistrationStateIdleImpl _value,
+    $Res Function(_$JadeOnboardingRegistrationStateIdleImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeOnboardingRegistrationState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -165,7 +174,7 @@ class _$JadeOnboardingRegistrationStateIdleImpl
   TResult map<TResult extends Object?>({
     required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
     required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-        processing,
+    processing,
     required TResult Function(JadeOnboardingRegistrationStateDone value) done,
   }) {
     return idle(this);
@@ -176,7 +185,7 @@ class _$JadeOnboardingRegistrationStateIdleImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
   }) {
     return idle?.call(this);
@@ -187,7 +196,7 @@ class _$JadeOnboardingRegistrationStateIdleImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult Function(JadeOnboardingRegistrationStateDone value)? done,
     required TResult orElse(),
   }) {
@@ -207,20 +216,26 @@ abstract class JadeOnboardingRegistrationStateIdle
 /// @nodoc
 abstract class _$$JadeOnboardingRegistrationStateProcessingImplCopyWith<$Res> {
   factory _$$JadeOnboardingRegistrationStateProcessingImplCopyWith(
-          _$JadeOnboardingRegistrationStateProcessingImpl value,
-          $Res Function(_$JadeOnboardingRegistrationStateProcessingImpl) then) =
-      __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl<$Res>;
+    _$JadeOnboardingRegistrationStateProcessingImpl value,
+    $Res Function(_$JadeOnboardingRegistrationStateProcessingImpl) then,
+  ) = __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl<$Res>
-    extends _$JadeOnboardingRegistrationStateCopyWithImpl<$Res,
-        _$JadeOnboardingRegistrationStateProcessingImpl>
+    extends
+        _$JadeOnboardingRegistrationStateCopyWithImpl<
+          $Res,
+          _$JadeOnboardingRegistrationStateProcessingImpl
+        >
     implements _$$JadeOnboardingRegistrationStateProcessingImplCopyWith<$Res> {
   __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl(
-      _$JadeOnboardingRegistrationStateProcessingImpl _value,
-      $Res Function(_$JadeOnboardingRegistrationStateProcessingImpl) _then)
-      : super(_value, _then);
+    _$JadeOnboardingRegistrationStateProcessingImpl _value,
+    $Res Function(_$JadeOnboardingRegistrationStateProcessingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeOnboardingRegistrationState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -283,7 +298,7 @@ class _$JadeOnboardingRegistrationStateProcessingImpl
   TResult map<TResult extends Object?>({
     required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
     required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-        processing,
+    processing,
     required TResult Function(JadeOnboardingRegistrationStateDone value) done,
   }) {
     return processing(this);
@@ -294,7 +309,7 @@ class _$JadeOnboardingRegistrationStateProcessingImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
   }) {
     return processing?.call(this);
@@ -305,7 +320,7 @@ class _$JadeOnboardingRegistrationStateProcessingImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult Function(JadeOnboardingRegistrationStateDone value)? done,
     required TResult orElse(),
   }) {
@@ -325,20 +340,26 @@ abstract class JadeOnboardingRegistrationStateProcessing
 /// @nodoc
 abstract class _$$JadeOnboardingRegistrationStateDoneImplCopyWith<$Res> {
   factory _$$JadeOnboardingRegistrationStateDoneImplCopyWith(
-          _$JadeOnboardingRegistrationStateDoneImpl value,
-          $Res Function(_$JadeOnboardingRegistrationStateDoneImpl) then) =
-      __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl<$Res>;
+    _$JadeOnboardingRegistrationStateDoneImpl value,
+    $Res Function(_$JadeOnboardingRegistrationStateDoneImpl) then,
+  ) = __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl<$Res>
-    extends _$JadeOnboardingRegistrationStateCopyWithImpl<$Res,
-        _$JadeOnboardingRegistrationStateDoneImpl>
+    extends
+        _$JadeOnboardingRegistrationStateCopyWithImpl<
+          $Res,
+          _$JadeOnboardingRegistrationStateDoneImpl
+        >
     implements _$$JadeOnboardingRegistrationStateDoneImplCopyWith<$Res> {
   __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl(
-      _$JadeOnboardingRegistrationStateDoneImpl _value,
-      $Res Function(_$JadeOnboardingRegistrationStateDoneImpl) _then)
-      : super(_value, _then);
+    _$JadeOnboardingRegistrationStateDoneImpl _value,
+    $Res Function(_$JadeOnboardingRegistrationStateDoneImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeOnboardingRegistrationState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -401,7 +422,7 @@ class _$JadeOnboardingRegistrationStateDoneImpl
   TResult map<TResult extends Object?>({
     required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
     required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-        processing,
+    processing,
     required TResult Function(JadeOnboardingRegistrationStateDone value) done,
   }) {
     return done(this);
@@ -412,7 +433,7 @@ class _$JadeOnboardingRegistrationStateDoneImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
   }) {
     return done?.call(this);
@@ -423,7 +444,7 @@ class _$JadeOnboardingRegistrationStateDoneImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
     TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-        processing,
+    processing,
     TResult Function(JadeOnboardingRegistrationStateDone value)? done,
     required TResult orElse(),
   }) {
@@ -453,8 +474,8 @@ mixin _$JadeStatus {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function() signMessage,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? idle,
@@ -466,8 +487,8 @@ mixin _$JadeStatus {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function()? signMessage,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? idle,
@@ -479,9 +500,9 @@ mixin _$JadeStatus {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(JadeStatusIdle value) idle,
@@ -489,13 +510,13 @@ mixin _$JadeStatus {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function(JadeStatusSignMessage value) signMessage,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeStatusIdle value)? idle,
@@ -507,8 +528,8 @@ mixin _$JadeStatus {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeStatusIdle value)? idle,
@@ -520,16 +541,17 @@ mixin _$JadeStatus {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $JadeStatusCopyWith<$Res> {
   factory $JadeStatusCopyWith(
-          JadeStatus value, $Res Function(JadeStatus) then) =
-      _$JadeStatusCopyWithImpl<$Res, JadeStatus>;
+    JadeStatus value,
+    $Res Function(JadeStatus) then,
+  ) = _$JadeStatusCopyWithImpl<$Res, JadeStatus>;
 }
 
 /// @nodoc
@@ -541,13 +563,17 @@ class _$JadeStatusCopyWithImpl<$Res, $Val extends JadeStatus>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$JadeStatusIdleImplCopyWith<$Res> {
-  factory _$$JadeStatusIdleImplCopyWith(_$JadeStatusIdleImpl value,
-          $Res Function(_$JadeStatusIdleImpl) then) =
-      __$$JadeStatusIdleImplCopyWithImpl<$Res>;
+  factory _$$JadeStatusIdleImplCopyWith(
+    _$JadeStatusIdleImpl value,
+    $Res Function(_$JadeStatusIdleImpl) then,
+  ) = __$$JadeStatusIdleImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -555,8 +581,12 @@ class __$$JadeStatusIdleImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusIdleImpl>
     implements _$$JadeStatusIdleImplCopyWith<$Res> {
   __$$JadeStatusIdleImplCopyWithImpl(
-      _$JadeStatusIdleImpl _value, $Res Function(_$JadeStatusIdleImpl) _then)
-      : super(_value, _then);
+    _$JadeStatusIdleImpl _value,
+    $Res Function(_$JadeStatusIdleImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -590,6 +620,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return idle();
   }
@@ -606,6 +637,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return idle?.call();
   }
@@ -622,6 +654,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (idle != null) {
@@ -638,11 +671,12 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return idle(this);
   }
@@ -659,6 +693,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return idle?.call(this);
   }
@@ -675,6 +710,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (idle != null) {
@@ -691,18 +727,23 @@ abstract class JadeStatusIdle extends JadeStatus {
 
 /// @nodoc
 abstract class _$$JadeStatusReadStatusImplCopyWith<$Res> {
-  factory _$$JadeStatusReadStatusImplCopyWith(_$JadeStatusReadStatusImpl value,
-          $Res Function(_$JadeStatusReadStatusImpl) then) =
-      __$$JadeStatusReadStatusImplCopyWithImpl<$Res>;
+  factory _$$JadeStatusReadStatusImplCopyWith(
+    _$JadeStatusReadStatusImpl value,
+    $Res Function(_$JadeStatusReadStatusImpl) then,
+  ) = __$$JadeStatusReadStatusImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeStatusReadStatusImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusReadStatusImpl>
     implements _$$JadeStatusReadStatusImplCopyWith<$Res> {
-  __$$JadeStatusReadStatusImplCopyWithImpl(_$JadeStatusReadStatusImpl _value,
-      $Res Function(_$JadeStatusReadStatusImpl) _then)
-      : super(_value, _then);
+  __$$JadeStatusReadStatusImplCopyWithImpl(
+    _$JadeStatusReadStatusImpl _value,
+    $Res Function(_$JadeStatusReadStatusImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -737,6 +778,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return readStatus();
   }
@@ -753,6 +795,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return readStatus?.call();
   }
@@ -769,6 +812,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (readStatus != null) {
@@ -785,11 +829,12 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return readStatus(this);
   }
@@ -806,6 +851,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return readStatus?.call(this);
   }
@@ -822,6 +868,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (readStatus != null) {
@@ -838,18 +885,23 @@ abstract class JadeStatusReadStatus extends JadeStatus {
 
 /// @nodoc
 abstract class _$$JadeStatusAuthUserImplCopyWith<$Res> {
-  factory _$$JadeStatusAuthUserImplCopyWith(_$JadeStatusAuthUserImpl value,
-          $Res Function(_$JadeStatusAuthUserImpl) then) =
-      __$$JadeStatusAuthUserImplCopyWithImpl<$Res>;
+  factory _$$JadeStatusAuthUserImplCopyWith(
+    _$JadeStatusAuthUserImpl value,
+    $Res Function(_$JadeStatusAuthUserImpl) then,
+  ) = __$$JadeStatusAuthUserImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeStatusAuthUserImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusAuthUserImpl>
     implements _$$JadeStatusAuthUserImplCopyWith<$Res> {
-  __$$JadeStatusAuthUserImplCopyWithImpl(_$JadeStatusAuthUserImpl _value,
-      $Res Function(_$JadeStatusAuthUserImpl) _then)
-      : super(_value, _then);
+  __$$JadeStatusAuthUserImplCopyWithImpl(
+    _$JadeStatusAuthUserImpl _value,
+    $Res Function(_$JadeStatusAuthUserImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -883,6 +935,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return authUser();
   }
@@ -899,6 +952,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return authUser?.call();
   }
@@ -915,6 +969,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (authUser != null) {
@@ -931,11 +986,12 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return authUser(this);
   }
@@ -952,6 +1008,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return authUser?.call(this);
   }
@@ -968,6 +1025,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (authUser != null) {
@@ -984,18 +1042,23 @@ abstract class JadeStatusAuthUser extends JadeStatus {
 
 /// @nodoc
 abstract class _$$JadeStatusSignTxImplCopyWith<$Res> {
-  factory _$$JadeStatusSignTxImplCopyWith(_$JadeStatusSignTxImpl value,
-          $Res Function(_$JadeStatusSignTxImpl) then) =
-      __$$JadeStatusSignTxImplCopyWithImpl<$Res>;
+  factory _$$JadeStatusSignTxImplCopyWith(
+    _$JadeStatusSignTxImpl value,
+    $Res Function(_$JadeStatusSignTxImpl) then,
+  ) = __$$JadeStatusSignTxImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeStatusSignTxImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignTxImpl>
     implements _$$JadeStatusSignTxImplCopyWith<$Res> {
-  __$$JadeStatusSignTxImplCopyWithImpl(_$JadeStatusSignTxImpl _value,
-      $Res Function(_$JadeStatusSignTxImpl) _then)
-      : super(_value, _then);
+  __$$JadeStatusSignTxImplCopyWithImpl(
+    _$JadeStatusSignTxImpl _value,
+    $Res Function(_$JadeStatusSignTxImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1029,6 +1092,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return signTx();
   }
@@ -1045,6 +1109,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return signTx?.call();
   }
@@ -1061,6 +1126,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (signTx != null) {
@@ -1077,11 +1143,12 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return signTx(this);
   }
@@ -1098,6 +1165,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return signTx?.call(this);
   }
@@ -1114,6 +1182,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (signTx != null) {
@@ -1131,9 +1200,9 @@ abstract class JadeStatusSignTx extends JadeStatus {
 /// @nodoc
 abstract class _$$JadeStatusMasterBlindingKeyImplCopyWith<$Res> {
   factory _$$JadeStatusMasterBlindingKeyImplCopyWith(
-          _$JadeStatusMasterBlindingKeyImpl value,
-          $Res Function(_$JadeStatusMasterBlindingKeyImpl) then) =
-      __$$JadeStatusMasterBlindingKeyImplCopyWithImpl<$Res>;
+    _$JadeStatusMasterBlindingKeyImpl value,
+    $Res Function(_$JadeStatusMasterBlindingKeyImpl) then,
+  ) = __$$JadeStatusMasterBlindingKeyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1141,9 +1210,12 @@ class __$$JadeStatusMasterBlindingKeyImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusMasterBlindingKeyImpl>
     implements _$$JadeStatusMasterBlindingKeyImplCopyWith<$Res> {
   __$$JadeStatusMasterBlindingKeyImplCopyWithImpl(
-      _$JadeStatusMasterBlindingKeyImpl _value,
-      $Res Function(_$JadeStatusMasterBlindingKeyImpl) _then)
-      : super(_value, _then);
+    _$JadeStatusMasterBlindingKeyImpl _value,
+    $Res Function(_$JadeStatusMasterBlindingKeyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1178,6 +1250,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return masterBlindingKey();
   }
@@ -1194,6 +1267,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return masterBlindingKey?.call();
   }
@@ -1210,6 +1284,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (masterBlindingKey != null) {
@@ -1226,11 +1301,12 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return masterBlindingKey(this);
   }
@@ -1247,6 +1323,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return masterBlindingKey?.call(this);
   }
@@ -1263,6 +1340,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (masterBlindingKey != null) {
@@ -1281,9 +1359,9 @@ abstract class JadeStatusMasterBlindingKey extends JadeStatus {
 /// @nodoc
 abstract class _$$JadeStatusSignOfflineSwapImplCopyWith<$Res> {
   factory _$$JadeStatusSignOfflineSwapImplCopyWith(
-          _$JadeStatusSignOfflineSwapImpl value,
-          $Res Function(_$JadeStatusSignOfflineSwapImpl) then) =
-      __$$JadeStatusSignOfflineSwapImplCopyWithImpl<$Res>;
+    _$JadeStatusSignOfflineSwapImpl value,
+    $Res Function(_$JadeStatusSignOfflineSwapImpl) then,
+  ) = __$$JadeStatusSignOfflineSwapImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1291,9 +1369,12 @@ class __$$JadeStatusSignOfflineSwapImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignOfflineSwapImpl>
     implements _$$JadeStatusSignOfflineSwapImplCopyWith<$Res> {
   __$$JadeStatusSignOfflineSwapImplCopyWithImpl(
-      _$JadeStatusSignOfflineSwapImpl _value,
-      $Res Function(_$JadeStatusSignOfflineSwapImpl) _then)
-      : super(_value, _then);
+    _$JadeStatusSignOfflineSwapImpl _value,
+    $Res Function(_$JadeStatusSignOfflineSwapImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1328,6 +1409,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return signOfflineSwap();
   }
@@ -1344,6 +1426,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return signOfflineSwap?.call();
   }
@@ -1360,6 +1443,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (signOfflineSwap != null) {
@@ -1376,11 +1460,12 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return signOfflineSwap(this);
   }
@@ -1397,6 +1482,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return signOfflineSwap?.call(this);
   }
@@ -1413,6 +1499,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (signOfflineSwap != null) {
@@ -1429,18 +1516,23 @@ abstract class JadeStatusSignOfflineSwap extends JadeStatus {
 
 /// @nodoc
 abstract class _$$JadeStatusSignSwapImplCopyWith<$Res> {
-  factory _$$JadeStatusSignSwapImplCopyWith(_$JadeStatusSignSwapImpl value,
-          $Res Function(_$JadeStatusSignSwapImpl) then) =
-      __$$JadeStatusSignSwapImplCopyWithImpl<$Res>;
+  factory _$$JadeStatusSignSwapImplCopyWith(
+    _$JadeStatusSignSwapImpl value,
+    $Res Function(_$JadeStatusSignSwapImpl) then,
+  ) = __$$JadeStatusSignSwapImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeStatusSignSwapImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignSwapImpl>
     implements _$$JadeStatusSignSwapImplCopyWith<$Res> {
-  __$$JadeStatusSignSwapImplCopyWithImpl(_$JadeStatusSignSwapImpl _value,
-      $Res Function(_$JadeStatusSignSwapImpl) _then)
-      : super(_value, _then);
+  __$$JadeStatusSignSwapImplCopyWithImpl(
+    _$JadeStatusSignSwapImpl _value,
+    $Res Function(_$JadeStatusSignSwapImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1474,6 +1566,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return signSwap();
   }
@@ -1490,6 +1583,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return signSwap?.call();
   }
@@ -1506,6 +1600,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (signSwap != null) {
@@ -1522,11 +1617,12 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return signSwap(this);
   }
@@ -1543,6 +1639,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return signSwap?.call(this);
   }
@@ -1559,6 +1656,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (signSwap != null) {
@@ -1576,9 +1674,9 @@ abstract class JadeStatusSignSwap extends JadeStatus {
 /// @nodoc
 abstract class _$$JadeStatusSignSwapOutputImplCopyWith<$Res> {
   factory _$$JadeStatusSignSwapOutputImplCopyWith(
-          _$JadeStatusSignSwapOutputImpl value,
-          $Res Function(_$JadeStatusSignSwapOutputImpl) then) =
-      __$$JadeStatusSignSwapOutputImplCopyWithImpl<$Res>;
+    _$JadeStatusSignSwapOutputImpl value,
+    $Res Function(_$JadeStatusSignSwapOutputImpl) then,
+  ) = __$$JadeStatusSignSwapOutputImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1586,9 +1684,12 @@ class __$$JadeStatusSignSwapOutputImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignSwapOutputImpl>
     implements _$$JadeStatusSignSwapOutputImplCopyWith<$Res> {
   __$$JadeStatusSignSwapOutputImplCopyWithImpl(
-      _$JadeStatusSignSwapOutputImpl _value,
-      $Res Function(_$JadeStatusSignSwapOutputImpl) _then)
-      : super(_value, _then);
+    _$JadeStatusSignSwapOutputImpl _value,
+    $Res Function(_$JadeStatusSignSwapOutputImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1623,6 +1724,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return signSwapOutput();
   }
@@ -1639,6 +1741,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return signSwapOutput?.call();
   }
@@ -1655,6 +1758,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (signSwapOutput != null) {
@@ -1671,11 +1775,12 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return signSwapOutput(this);
   }
@@ -1692,6 +1797,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return signSwapOutput?.call(this);
   }
@@ -1708,6 +1814,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (signSwapOutput != null) {
@@ -1724,18 +1831,23 @@ abstract class JadeStatusSignSwapOutput extends JadeStatus {
 
 /// @nodoc
 abstract class _$$JadeStatusConnectingImplCopyWith<$Res> {
-  factory _$$JadeStatusConnectingImplCopyWith(_$JadeStatusConnectingImpl value,
-          $Res Function(_$JadeStatusConnectingImpl) then) =
-      __$$JadeStatusConnectingImplCopyWithImpl<$Res>;
+  factory _$$JadeStatusConnectingImplCopyWith(
+    _$JadeStatusConnectingImpl value,
+    $Res Function(_$JadeStatusConnectingImpl) then,
+  ) = __$$JadeStatusConnectingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeStatusConnectingImplCopyWithImpl<$Res>
     extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusConnectingImpl>
     implements _$$JadeStatusConnectingImplCopyWith<$Res> {
-  __$$JadeStatusConnectingImplCopyWithImpl(_$JadeStatusConnectingImpl _value,
-      $Res Function(_$JadeStatusConnectingImpl) _then)
-      : super(_value, _then);
+  __$$JadeStatusConnectingImplCopyWithImpl(
+    _$JadeStatusConnectingImpl _value,
+    $Res Function(_$JadeStatusConnectingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1770,6 +1882,7 @@ class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
     required TResult Function() connecting,
+    required TResult Function() signMessage,
   }) {
     return connecting();
   }
@@ -1786,6 +1899,7 @@ class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
     TResult? Function()? connecting,
+    TResult? Function()? signMessage,
   }) {
     return connecting?.call();
   }
@@ -1802,6 +1916,7 @@ class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
     TResult Function()? connecting,
+    TResult Function()? signMessage,
     required TResult orElse(),
   }) {
     if (connecting != null) {
@@ -1818,11 +1933,12 @@ class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
     required TResult Function(JadeStatusAuthUser value) authUser,
     required TResult Function(JadeStatusSignTx value) signTx,
     required TResult Function(JadeStatusMasterBlindingKey value)
-        masterBlindingKey,
+    masterBlindingKey,
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
     required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
   }) {
     return connecting(this);
   }
@@ -1839,6 +1955,7 @@ class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
   }) {
     return connecting?.call(this);
   }
@@ -1855,6 +1972,7 @@ class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
     TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
     required TResult orElse(),
   }) {
     if (connecting != null) {
@@ -1870,52 +1988,205 @@ abstract class JadeStatusConnecting extends JadeStatus {
 }
 
 /// @nodoc
+abstract class _$$JadeStatusSignMessageImplCopyWith<$Res> {
+  factory _$$JadeStatusSignMessageImplCopyWith(
+    _$JadeStatusSignMessageImpl value,
+    $Res Function(_$JadeStatusSignMessageImpl) then,
+  ) = __$$JadeStatusSignMessageImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$JadeStatusSignMessageImplCopyWithImpl<$Res>
+    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignMessageImpl>
+    implements _$$JadeStatusSignMessageImplCopyWith<$Res> {
+  __$$JadeStatusSignMessageImplCopyWithImpl(
+    _$JadeStatusSignMessageImpl _value,
+    $Res Function(_$JadeStatusSignMessageImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeStatus
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$JadeStatusSignMessageImpl extends JadeStatusSignMessage {
+  const _$JadeStatusSignMessageImpl() : super._();
+
+  @override
+  String toString() {
+    return 'JadeStatus.signMessage()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JadeStatusSignMessageImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() idle,
+    required TResult Function() readStatus,
+    required TResult Function() authUser,
+    required TResult Function() signTx,
+    required TResult Function() masterBlindingKey,
+    required TResult Function() signOfflineSwap,
+    required TResult Function() signSwap,
+    required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
+    required TResult Function() signMessage,
+  }) {
+    return signMessage();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? idle,
+    TResult? Function()? readStatus,
+    TResult? Function()? authUser,
+    TResult? Function()? signTx,
+    TResult? Function()? masterBlindingKey,
+    TResult? Function()? signOfflineSwap,
+    TResult? Function()? signSwap,
+    TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
+    TResult? Function()? signMessage,
+  }) {
+    return signMessage?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? idle,
+    TResult Function()? readStatus,
+    TResult Function()? authUser,
+    TResult Function()? signTx,
+    TResult Function()? masterBlindingKey,
+    TResult Function()? signOfflineSwap,
+    TResult Function()? signSwap,
+    TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
+    TResult Function()? signMessage,
+    required TResult orElse(),
+  }) {
+    if (signMessage != null) {
+      return signMessage();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(JadeStatusIdle value) idle,
+    required TResult Function(JadeStatusReadStatus value) readStatus,
+    required TResult Function(JadeStatusAuthUser value) authUser,
+    required TResult Function(JadeStatusSignTx value) signTx,
+    required TResult Function(JadeStatusMasterBlindingKey value)
+    masterBlindingKey,
+    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
+    required TResult Function(JadeStatusSignSwap value) signSwap,
+    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
+    required TResult Function(JadeStatusSignMessage value) signMessage,
+  }) {
+    return signMessage(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(JadeStatusIdle value)? idle,
+    TResult? Function(JadeStatusReadStatus value)? readStatus,
+    TResult? Function(JadeStatusAuthUser value)? authUser,
+    TResult? Function(JadeStatusSignTx value)? signTx,
+    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
+    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
+    TResult? Function(JadeStatusSignSwap value)? signSwap,
+    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
+    TResult? Function(JadeStatusSignMessage value)? signMessage,
+  }) {
+    return signMessage?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(JadeStatusIdle value)? idle,
+    TResult Function(JadeStatusReadStatus value)? readStatus,
+    TResult Function(JadeStatusAuthUser value)? authUser,
+    TResult Function(JadeStatusSignTx value)? signTx,
+    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
+    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
+    TResult Function(JadeStatusSignSwap value)? signSwap,
+    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
+    TResult Function(JadeStatusSignMessage value)? signMessage,
+    required TResult orElse(),
+  }) {
+    if (signMessage != null) {
+      return signMessage(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class JadeStatusSignMessage extends JadeStatus {
+  const factory JadeStatusSignMessage() = _$JadeStatusSignMessageImpl;
+  const JadeStatusSignMessage._() : super._();
+}
+
+/// @nodoc
 mixin _$JadeDevicesState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() unavailable,
     required TResult Function(List<From_JadePorts_Port> devices) available,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? unavailable,
     TResult? Function(List<From_JadePorts_Port> devices)? available,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? unavailable,
     TResult Function(List<From_JadePorts_Port> devices)? available,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(JadeDevicesStateUnavailable value) unavailable,
     required TResult Function(JadeDevicesStateAvailable value) available,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeDevicesStateUnavailable value)? unavailable,
     TResult? Function(JadeDevicesStateAvailable value)? available,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeDevicesStateUnavailable value)? unavailable,
     TResult Function(JadeDevicesStateAvailable value)? available,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $JadeDevicesStateCopyWith<$Res> {
   factory $JadeDevicesStateCopyWith(
-          JadeDevicesState value, $Res Function(JadeDevicesState) then) =
-      _$JadeDevicesStateCopyWithImpl<$Res, JadeDevicesState>;
+    JadeDevicesState value,
+    $Res Function(JadeDevicesState) then,
+  ) = _$JadeDevicesStateCopyWithImpl<$Res, JadeDevicesState>;
 }
 
 /// @nodoc
@@ -1927,25 +2198,31 @@ class _$JadeDevicesStateCopyWithImpl<$Res, $Val extends JadeDevicesState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of JadeDevicesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$JadeDevicesStateUnavailableImplCopyWith<$Res> {
   factory _$$JadeDevicesStateUnavailableImplCopyWith(
-          _$JadeDevicesStateUnavailableImpl value,
-          $Res Function(_$JadeDevicesStateUnavailableImpl) then) =
-      __$$JadeDevicesStateUnavailableImplCopyWithImpl<$Res>;
+    _$JadeDevicesStateUnavailableImpl value,
+    $Res Function(_$JadeDevicesStateUnavailableImpl) then,
+  ) = __$$JadeDevicesStateUnavailableImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeDevicesStateUnavailableImplCopyWithImpl<$Res>
-    extends _$JadeDevicesStateCopyWithImpl<$Res,
-        _$JadeDevicesStateUnavailableImpl>
+    extends
+        _$JadeDevicesStateCopyWithImpl<$Res, _$JadeDevicesStateUnavailableImpl>
     implements _$$JadeDevicesStateUnavailableImplCopyWith<$Res> {
   __$$JadeDevicesStateUnavailableImplCopyWithImpl(
-      _$JadeDevicesStateUnavailableImpl _value,
-      $Res Function(_$JadeDevicesStateUnavailableImpl) _then)
-      : super(_value, _then);
+    _$JadeDevicesStateUnavailableImpl _value,
+    $Res Function(_$JadeDevicesStateUnavailableImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeDevicesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2039,43 +2316,46 @@ abstract class JadeDevicesStateUnavailable implements JadeDevicesState {
 /// @nodoc
 abstract class _$$JadeDevicesStateAvailableImplCopyWith<$Res> {
   factory _$$JadeDevicesStateAvailableImplCopyWith(
-          _$JadeDevicesStateAvailableImpl value,
-          $Res Function(_$JadeDevicesStateAvailableImpl) then) =
-      __$$JadeDevicesStateAvailableImplCopyWithImpl<$Res>;
+    _$JadeDevicesStateAvailableImpl value,
+    $Res Function(_$JadeDevicesStateAvailableImpl) then,
+  ) = __$$JadeDevicesStateAvailableImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<From_JadePorts_Port> devices});
 }
 
 /// @nodoc
 class __$$JadeDevicesStateAvailableImplCopyWithImpl<$Res>
-    extends _$JadeDevicesStateCopyWithImpl<$Res,
-        _$JadeDevicesStateAvailableImpl>
+    extends
+        _$JadeDevicesStateCopyWithImpl<$Res, _$JadeDevicesStateAvailableImpl>
     implements _$$JadeDevicesStateAvailableImplCopyWith<$Res> {
   __$$JadeDevicesStateAvailableImplCopyWithImpl(
-      _$JadeDevicesStateAvailableImpl _value,
-      $Res Function(_$JadeDevicesStateAvailableImpl) _then)
-      : super(_value, _then);
+    _$JadeDevicesStateAvailableImpl _value,
+    $Res Function(_$JadeDevicesStateAvailableImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of JadeDevicesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? devices = null,
-  }) {
-    return _then(_$JadeDevicesStateAvailableImpl(
-      devices: null == devices
-          ? _value._devices
-          : devices // ignore: cast_nullable_to_non_nullable
-              as List<From_JadePorts_Port>,
-    ));
+  $Res call({Object? devices = null}) {
+    return _then(
+      _$JadeDevicesStateAvailableImpl(
+        devices:
+            null == devices
+                ? _value._devices
+                : devices // ignore: cast_nullable_to_non_nullable
+                    as List<From_JadePorts_Port>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$JadeDevicesStateAvailableImpl implements JadeDevicesStateAvailable {
-  const _$JadeDevicesStateAvailableImpl(
-      {required final List<From_JadePorts_Port> devices})
-      : _devices = devices;
+  const _$JadeDevicesStateAvailableImpl({
+    required final List<From_JadePorts_Port> devices,
+  }) : _devices = devices;
 
   final List<From_JadePorts_Port> _devices;
   @override
@@ -2102,12 +2382,15 @@ class _$JadeDevicesStateAvailableImpl implements JadeDevicesStateAvailable {
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(_devices));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of JadeDevicesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$JadeDevicesStateAvailableImplCopyWith<_$JadeDevicesStateAvailableImpl>
-      get copyWith => __$$JadeDevicesStateAvailableImplCopyWithImpl<
-          _$JadeDevicesStateAvailableImpl>(this, _$identity);
+  get copyWith => __$$JadeDevicesStateAvailableImplCopyWithImpl<
+    _$JadeDevicesStateAvailableImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2173,14 +2456,17 @@ class _$JadeDevicesStateAvailableImpl implements JadeDevicesStateAvailable {
 }
 
 abstract class JadeDevicesStateAvailable implements JadeDevicesState {
-  const factory JadeDevicesStateAvailable(
-          {required final List<From_JadePorts_Port> devices}) =
-      _$JadeDevicesStateAvailableImpl;
+  const factory JadeDevicesStateAvailable({
+    required final List<From_JadePorts_Port> devices,
+  }) = _$JadeDevicesStateAvailableImpl;
 
   List<From_JadePorts_Port> get devices;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of JadeDevicesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$JadeDevicesStateAvailableImplCopyWith<_$JadeDevicesStateAvailableImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -2188,7 +2474,9 @@ mixin _$JadePort {
   From_JadePorts_Port get fromJadePortsPort =>
       throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of JadePort
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $JadePortCopyWith<JadePort> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -2211,17 +2499,21 @@ class _$JadePortCopyWithImpl<$Res, $Val extends JadePort>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of JadePort
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? fromJadePortsPort = null,
-  }) {
-    return _then(_value.copyWith(
-      fromJadePortsPort: null == fromJadePortsPort
-          ? _value.fromJadePortsPort
-          : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
-              as From_JadePorts_Port,
-    ) as $Val);
+  $Res call({Object? fromJadePortsPort = null}) {
+    return _then(
+      _value.copyWith(
+            fromJadePortsPort:
+                null == fromJadePortsPort
+                    ? _value.fromJadePortsPort
+                    : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
+                        as From_JadePorts_Port,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -2229,8 +2521,9 @@ class _$JadePortCopyWithImpl<$Res, $Val extends JadePort>
 abstract class _$$JadePortImplCopyWith<$Res>
     implements $JadePortCopyWith<$Res> {
   factory _$$JadePortImplCopyWith(
-          _$JadePortImpl value, $Res Function(_$JadePortImpl) then) =
-      __$$JadePortImplCopyWithImpl<$Res>;
+    _$JadePortImpl value,
+    $Res Function(_$JadePortImpl) then,
+  ) = __$$JadePortImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({From_JadePorts_Port fromJadePortsPort});
@@ -2241,20 +2534,24 @@ class __$$JadePortImplCopyWithImpl<$Res>
     extends _$JadePortCopyWithImpl<$Res, _$JadePortImpl>
     implements _$$JadePortImplCopyWith<$Res> {
   __$$JadePortImplCopyWithImpl(
-      _$JadePortImpl _value, $Res Function(_$JadePortImpl) _then)
-      : super(_value, _then);
+    _$JadePortImpl _value,
+    $Res Function(_$JadePortImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of JadePort
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? fromJadePortsPort = null,
-  }) {
-    return _then(_$JadePortImpl(
-      fromJadePortsPort: null == fromJadePortsPort
-          ? _value.fromJadePortsPort
-          : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
-              as From_JadePorts_Port,
-    ));
+  $Res call({Object? fromJadePortsPort = null}) {
+    return _then(
+      _$JadePortImpl(
+        fromJadePortsPort:
+            null == fromJadePortsPort
+                ? _value.fromJadePortsPort
+                : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
+                    as From_JadePorts_Port,
+      ),
+    );
   }
 }
 
@@ -2283,7 +2580,9 @@ class _$JadePortImpl extends _JadePort {
   @override
   int get hashCode => Object.hash(runtimeType, fromJadePortsPort);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of JadePort
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$JadePortImplCopyWith<_$JadePortImpl> get copyWith =>
@@ -2297,8 +2596,11 @@ abstract class _JadePort extends JadePort {
 
   @override
   From_JadePorts_Port get fromJadePortsPort;
+
+  /// Create a copy of JadePort
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$JadePortImplCopyWith<_$JadePortImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

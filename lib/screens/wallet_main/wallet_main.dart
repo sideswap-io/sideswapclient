@@ -37,7 +37,7 @@ class WalletMain extends HookConsumerWidget {
 
         return SideSwapScaffold(
           canPop: false,
-          onPopInvoked: (bool didPop) async {
+          onPopInvokedWithResult: (didPop, result) async {
             if (didPop) {
               return;
             }
@@ -77,15 +77,14 @@ class WalletMain extends HookConsumerWidget {
               }
             }
           },
-          body: const SafeArea(
-            child: WalletMainChildPage(),
-          ),
+          body: const SafeArea(child: WalletMainChildPage()),
           bottomNavigationBar: MainBottomNavigationBar(
             onTap: (index) {
               ref.read(swapHelperProvider).swapReset();
 
-              final newWalletMainArguments =
-                  walletMainArguments.fromIndex(index);
+              final newWalletMainArguments = walletMainArguments.fromIndex(
+                index,
+              );
               ref
                   .read(uiStateArgsNotifierProvider.notifier)
                   .setWalletMainArguments(newWalletMainArguments);

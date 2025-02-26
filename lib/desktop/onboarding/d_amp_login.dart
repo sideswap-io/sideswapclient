@@ -12,17 +12,11 @@ import 'package:sideswap/providers/wallet.dart';
 
 import '../../providers/wallet_page_status_provider.dart';
 
-enum AmpLoginEnum {
-  stokr,
-  pegx,
-}
+enum AmpLoginEnum { stokr, pegx }
 
 class DAmpLogin extends HookConsumerWidget {
   final AmpLoginEnum ampLoginEnum;
-  const DAmpLogin({
-    super.key,
-    required this.ampLoginEnum,
-  });
+  const DAmpLogin({super.key, required this.ampLoginEnum});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,27 +51,29 @@ class DAmpLogin extends HookConsumerWidget {
       return;
     }, const []);
 
-    return DAmpBackgroundPage(content: [
-      if (ampLoginEnum == AmpLoginEnum.stokr) ...[
-        DStokrLoginDialog(
-          onClose: () {
-            ref.invalidate(stokrGaidNotifierProvider);
-            ref.invalidate(pegxGaidNotifierProvider);
-            ref.read(walletProvider).goBack();
-          },
-          content: const DStokrLoginDialogBody(),
-        ),
+    return DAmpBackgroundPage(
+      content: [
+        if (ampLoginEnum == AmpLoginEnum.stokr) ...[
+          DStokrLoginDialog(
+            onClose: () {
+              ref.invalidate(stokrGaidNotifierProvider);
+              ref.invalidate(pegxGaidNotifierProvider);
+              ref.read(walletProvider).goBack();
+            },
+            content: const DStokrLoginDialogBody(),
+          ),
+        ],
+        if (ampLoginEnum == AmpLoginEnum.pegx) ...[
+          DPegxLoginDialog(
+            onClose: () {
+              ref.invalidate(stokrGaidNotifierProvider);
+              ref.invalidate(pegxGaidNotifierProvider);
+              ref.read(walletProvider).goBack();
+            },
+            content: const DPegxLoginDialogBody(),
+          ),
+        ],
       ],
-      if (ampLoginEnum == AmpLoginEnum.pegx) ...[
-        DPegxLoginDialog(
-          onClose: () {
-            ref.invalidate(stokrGaidNotifierProvider);
-            ref.invalidate(pegxGaidNotifierProvider);
-            ref.read(walletProvider).goBack();
-          },
-          content: const DPegxLoginDialogBody(),
-        )
-      ],
-    ]);
+    );
   }
 }

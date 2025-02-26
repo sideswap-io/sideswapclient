@@ -3,11 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 class DErrorIcon extends StatelessWidget {
-  const DErrorIcon({
-    super.key,
-    this.width = 60,
-    this.height = 60,
-  });
+  const DErrorIcon({super.key, this.width = 60, this.height = 60});
 
   final double width;
   final double height;
@@ -32,7 +28,9 @@ class DErrorIcon extends StatelessWidget {
           width: 23,
           height: 23,
           colorFilter: const ColorFilter.mode(
-              SideSwapColors.bitterSweet, BlendMode.srcIn),
+            SideSwapColors.bitterSweet,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     );

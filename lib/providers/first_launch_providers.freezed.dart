@@ -12,7 +12,8 @@ part of 'first_launch_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$FirstLaunchState {
@@ -21,52 +22,47 @@ mixin _$FirstLaunchState {
     required TResult Function() empty,
     required TResult Function() createWallet,
     required TResult Function() importWallet,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? createWallet,
     TResult? Function()? importWallet,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? createWallet,
     TResult Function()? importWallet,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(FirstLaunchStateEmpty value) empty,
     required TResult Function(FirstLaunchStateCreateWallet value) createWallet,
     required TResult Function(FirstLaunchStateImportWallet value) importWallet,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(FirstLaunchStateEmpty value)? empty,
     TResult? Function(FirstLaunchStateCreateWallet value)? createWallet,
     TResult? Function(FirstLaunchStateImportWallet value)? importWallet,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(FirstLaunchStateEmpty value)? empty,
     TResult Function(FirstLaunchStateCreateWallet value)? createWallet,
     TResult Function(FirstLaunchStateImportWallet value)? importWallet,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $FirstLaunchStateCopyWith<$Res> {
   factory $FirstLaunchStateCopyWith(
-          FirstLaunchState value, $Res Function(FirstLaunchState) then) =
-      _$FirstLaunchStateCopyWithImpl<$Res, FirstLaunchState>;
+    FirstLaunchState value,
+    $Res Function(FirstLaunchState) then,
+  ) = _$FirstLaunchStateCopyWithImpl<$Res, FirstLaunchState>;
 }
 
 /// @nodoc
@@ -78,23 +74,30 @@ class _$FirstLaunchStateCopyWithImpl<$Res, $Val extends FirstLaunchState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of FirstLaunchState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$FirstLaunchStateEmptyImplCopyWith<$Res> {
   factory _$$FirstLaunchStateEmptyImplCopyWith(
-          _$FirstLaunchStateEmptyImpl value,
-          $Res Function(_$FirstLaunchStateEmptyImpl) then) =
-      __$$FirstLaunchStateEmptyImplCopyWithImpl<$Res>;
+    _$FirstLaunchStateEmptyImpl value,
+    $Res Function(_$FirstLaunchStateEmptyImpl) then,
+  ) = __$$FirstLaunchStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$FirstLaunchStateEmptyImplCopyWithImpl<$Res>
     extends _$FirstLaunchStateCopyWithImpl<$Res, _$FirstLaunchStateEmptyImpl>
     implements _$$FirstLaunchStateEmptyImplCopyWith<$Res> {
-  __$$FirstLaunchStateEmptyImplCopyWithImpl(_$FirstLaunchStateEmptyImpl _value,
-      $Res Function(_$FirstLaunchStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$FirstLaunchStateEmptyImplCopyWithImpl(
+    _$FirstLaunchStateEmptyImpl _value,
+    $Res Function(_$FirstLaunchStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FirstLaunchState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -193,20 +196,23 @@ abstract class FirstLaunchStateEmpty implements FirstLaunchState {
 /// @nodoc
 abstract class _$$FirstLaunchStateCreateWalletImplCopyWith<$Res> {
   factory _$$FirstLaunchStateCreateWalletImplCopyWith(
-          _$FirstLaunchStateCreateWalletImpl value,
-          $Res Function(_$FirstLaunchStateCreateWalletImpl) then) =
-      __$$FirstLaunchStateCreateWalletImplCopyWithImpl<$Res>;
+    _$FirstLaunchStateCreateWalletImpl value,
+    $Res Function(_$FirstLaunchStateCreateWalletImpl) then,
+  ) = __$$FirstLaunchStateCreateWalletImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$FirstLaunchStateCreateWalletImplCopyWithImpl<$Res>
-    extends _$FirstLaunchStateCopyWithImpl<$Res,
-        _$FirstLaunchStateCreateWalletImpl>
+    extends
+        _$FirstLaunchStateCopyWithImpl<$Res, _$FirstLaunchStateCreateWalletImpl>
     implements _$$FirstLaunchStateCreateWalletImplCopyWith<$Res> {
   __$$FirstLaunchStateCreateWalletImplCopyWithImpl(
-      _$FirstLaunchStateCreateWalletImpl _value,
-      $Res Function(_$FirstLaunchStateCreateWalletImpl) _then)
-      : super(_value, _then);
+    _$FirstLaunchStateCreateWalletImpl _value,
+    $Res Function(_$FirstLaunchStateCreateWalletImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FirstLaunchState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -307,20 +313,23 @@ abstract class FirstLaunchStateCreateWallet implements FirstLaunchState {
 /// @nodoc
 abstract class _$$FirstLaunchStateImportWalletImplCopyWith<$Res> {
   factory _$$FirstLaunchStateImportWalletImplCopyWith(
-          _$FirstLaunchStateImportWalletImpl value,
-          $Res Function(_$FirstLaunchStateImportWalletImpl) then) =
-      __$$FirstLaunchStateImportWalletImplCopyWithImpl<$Res>;
+    _$FirstLaunchStateImportWalletImpl value,
+    $Res Function(_$FirstLaunchStateImportWalletImpl) then,
+  ) = __$$FirstLaunchStateImportWalletImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$FirstLaunchStateImportWalletImplCopyWithImpl<$Res>
-    extends _$FirstLaunchStateCopyWithImpl<$Res,
-        _$FirstLaunchStateImportWalletImpl>
+    extends
+        _$FirstLaunchStateCopyWithImpl<$Res, _$FirstLaunchStateImportWalletImpl>
     implements _$$FirstLaunchStateImportWalletImplCopyWith<$Res> {
   __$$FirstLaunchStateImportWalletImplCopyWithImpl(
-      _$FirstLaunchStateImportWalletImpl _value,
-      $Res Function(_$FirstLaunchStateImportWalletImpl) _then)
-      : super(_value, _then);
+    _$FirstLaunchStateImportWalletImpl _value,
+    $Res Function(_$FirstLaunchStateImportWalletImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of FirstLaunchState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

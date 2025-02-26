@@ -20,21 +20,16 @@ class SideswapNotificationsWindowsPlugin
   }) async {}
 
   @override
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
+  InitializationSettings getLocalNotificationsInitializationSettings() {
     final iconPath =
         '${File(Platform.resolvedExecutable).parent.path}\\data\\flutter_assets\\assets\\icon\\icon.ico';
     final initializationSettingsWindows = WindowsInitializationSettings(
-      appName: 'SideSwap',
+      appName: 'Sideswap',
       appUserModelId: 'io.sideswap',
+      guid: '1bcb19c7-94f7-4b16-a81d-1e753135bc46', // random generated guid
       iconPath: iconPath,
-      guid: '1c2144ac-44b6-4f04-8f47-c08f1e2d6ecf',
     );
 
-    return InitializationSettings(
-      windows: initializationSettingsWindows,
-    );
+    return InitializationSettings(windows: initializationSettingsWindows);
   }
 }

@@ -24,10 +24,7 @@ class SettingsCheckbox extends StatelessWidget {
       frameUnchecked: const Color(0xFF046C93),
       backgroundChecked: SideSwapColors.brightTurquoise,
       backgroundUnchecked: Colors.transparent,
-      icon: const Icon(
-        Icons.check,
-        size: 16,
-      ),
+      icon: const Icon(Icons.check, size: 16),
       value: value,
       onChanged: onChanged,
       child: title,

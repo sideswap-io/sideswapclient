@@ -2,6 +2,7 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet},
+    sync::Arc,
     time::Duration,
 };
 
@@ -21,10 +22,9 @@ use sideswap_api::{
 use sideswap_common::{
     b64,
     channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
-    dealer_ticker::{dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker},
+    dealer_ticker::{DealerTicker, InvalidTickerError, TickerLoader},
     exchange_pair::ExchangePair,
     make_market_request, make_request,
-    network::Network,
     types::{asset_float_amount_, asset_int_amount_},
     verify,
     ws::{
@@ -53,7 +53,7 @@ mod ws_server;
 pub use web_server::Config as WebServerConfig;
 pub use ws_server::Config as WsServerConfig;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
     pub disable_new_swaps: bool,
@@ -61,6 +61,7 @@ pub struct Params {
     pub work_dir: String,
     pub web_server: Option<WebServerConfig>,
     pub ws_server: Option<WsServerConfig>,
+    pub ticker_loader: Arc<TickerLoader>,
 }
 
 // Public messages
@@ -213,6 +214,8 @@ enum Error {
     ServerDisconnected,
     #[error("Channel closed, please report bug")]
     ChannelClosed,
+    #[error("Invalid ticker: {0}")]
+    InvalidTicker(#[from] InvalidTickerError),
     #[error("Unknown ticker: {0}")]
     UnknownTicker(String),
     #[error("Invalid float: {0}")]
@@ -246,7 +249,8 @@ impl Error {
             | Error::InvalidFloat(_)
             | Error::UnknownOrderId
             | Error::UnknownAssetId(_)
-            | Error::InvalidAssetAmount(_, _) => api::ErrorCode::InvalidRequest,
+            | Error::InvalidAssetAmount(_, _)
+            | Error::InvalidTicker(_) => api::ErrorCode::InvalidRequest,
         }
     }
 
@@ -262,7 +266,8 @@ impl Error {
             | Error::InvalidFloat(_)
             | Error::UnknownOrderId
             | Error::UnknownAssetId(_)
-            | Error::InvalidAssetAmount(_, _) => None,
+            | Error::InvalidAssetAmount(_, _)
+            | Error::InvalidTicker(_) => None,
         }
     }
 }
@@ -464,10 +469,10 @@ struct AcceptingQuote {
 }
 
 struct Data {
-    network: Network,
     mode: Mode,
     work_dir: String,
     state: persistent_state::Data,
+    ticker_loader: Arc<TickerLoader>,
 
     ws: WsReqSender,
     async_requests: BTreeMap<RequestId, WsCallback>,
@@ -509,9 +514,9 @@ impl<T> From<tokio::sync::mpsc::error::SendError<T>> for Error {
     }
 }
 
-fn get_exchange_pair(asset_pair: &AssetPair, network: Network) -> Option<ExchangePair> {
-    let base = dealer_ticker_from_asset_id(network, &asset_pair.base)?;
-    let quote = dealer_ticker_from_asset_id(network, &asset_pair.quote)?;
+fn get_exchange_pair(asset_pair: &AssetPair, ticker_loader: &TickerLoader) -> Option<ExchangePair> {
+    let base = ticker_loader.ticker(&asset_pair.base)?;
+    let quote = ticker_loader.ticker(&asset_pair.quote)?;
     Some(ExchangePair { base, quote })
 }
 
@@ -525,9 +530,9 @@ fn convert_public_order(order: &mkt::PublicOrder, base_precision: AssetPrecision
     }
 }
 
-fn convert_own_order(order: &mkt::OwnOrder, network: Network) -> Option<OwnOrder> {
-    let exchange_pair = get_exchange_pair(&order.asset_pair, network)?;
-    let base_precision = exchange_pair.base.asset_precision();
+fn convert_own_order(order: &mkt::OwnOrder, ticker_loader: &TickerLoader) -> Option<OwnOrder> {
+    let exchange_pair = get_exchange_pair(&order.asset_pair, ticker_loader)?;
+    let base_precision = ticker_loader.precision(exchange_pair.base);
 
     Some(OwnOrder {
         exchange_pair,
@@ -540,10 +545,13 @@ fn convert_own_order(order: &mkt::OwnOrder, network: Network) -> Option<OwnOrder
     })
 }
 
-fn convert_history_order(order: &mkt::HistoryOrder, network: Network) -> Option<HistoryOrder> {
-    let exchange_pair = get_exchange_pair(&order.asset_pair, network)?;
-    let base_precision = exchange_pair.base.asset_precision();
-    let quote_precision = exchange_pair.quote.asset_precision();
+fn convert_history_order(
+    order: &mkt::HistoryOrder,
+    ticker_loader: &TickerLoader,
+) -> Option<HistoryOrder> {
+    let exchange_pair = get_exchange_pair(&order.asset_pair, ticker_loader)?;
+    let base_precision = ticker_loader.precision(exchange_pair.base);
+    let quote_precision = ticker_loader.precision(exchange_pair.quote);
 
     Some(HistoryOrder {
         id: order.id,
@@ -600,9 +608,9 @@ async fn try_login(data: &mut Data) -> Result<mkt::LoginResponse, anyhow::Error>
     )?;
 
     for asset in assets.assets.iter() {
-        let ticker = dealer_ticker_from_asset_id(data.network, &asset.asset_id);
+        let ticker = data.ticker_loader.ticker(&asset.asset_id);
         if let Some(ticker) = ticker {
-            let expected = ticker.asset_precision();
+            let expected = data.ticker_loader.precision(ticker);
             let actual = asset.precision;
             assert_eq!(
                 expected, actual,
@@ -764,6 +772,7 @@ fn get_quote_amounts(
         server_fee,
         fixed_fee,
     }: GetQuoteAmounts,
+    ticker_loader: &TickerLoader,
 ) -> QuoteAmounts {
     let total_fee = server_fee + fixed_fee;
 
@@ -782,14 +791,17 @@ fn get_quote_amounts(
     };
 
     QuoteAmounts {
-        base_amount: asset_float_amount_(base_amount, exchange_pair.base.asset_precision()),
-        quote_amount: asset_float_amount_(quote_amount, exchange_pair.quote.asset_precision()),
-        server_fee: asset_float_amount_(server_fee, fee_asset.asset_precision()),
-        fixed_fee: asset_float_amount_(fixed_fee, fee_asset.asset_precision()),
+        base_amount: asset_float_amount_(base_amount, ticker_loader.precision(exchange_pair.base)),
+        quote_amount: asset_float_amount_(
+            quote_amount,
+            ticker_loader.precision(exchange_pair.quote),
+        ),
+        server_fee: asset_float_amount_(server_fee, ticker_loader.precision(fee_asset)),
+        fixed_fee: asset_float_amount_(fixed_fee, ticker_loader.precision(fee_asset)),
         deliver_asset,
         receive_asset,
-        deliver_amount: asset_float_amount_(deliver_amount, deliver_asset.asset_precision()),
-        receive_amount: asset_float_amount_(receive_amount, receive_asset.asset_precision()),
+        deliver_amount: asset_float_amount_(deliver_amount, ticker_loader.precision(deliver_asset)),
+        receive_amount: asset_float_amount_(receive_amount, ticker_loader.precision(receive_asset)),
     }
 }
 
@@ -808,7 +820,8 @@ fn process_quote(data: &mut Data, notif: mkt::QuoteNotif) {
         .get(&started_quote.client_id)
         .expect("must exist");
 
-    let exchange_pair = get_exchange_pair(&notif.asset_pair, data.network).expect("must be known");
+    let exchange_pair =
+        get_exchange_pair(&notif.asset_pair, &data.ticker_loader).expect("must be known");
     let fee_asset = started_quote.fee_asset;
     let base_trade_dir = started_quote.base_trade_dir;
 
@@ -832,15 +845,18 @@ fn process_quote(data: &mut Data, notif: mkt::QuoteNotif) {
                     receive_asset,
                     deliver_amount,
                     receive_amount,
-                } = get_quote_amounts(GetQuoteAmounts {
-                    exchange_pair,
-                    base_trade_dir,
-                    fee_asset,
-                    base_amount,
-                    quote_amount,
-                    server_fee,
-                    fixed_fee,
-                });
+                } = get_quote_amounts(
+                    GetQuoteAmounts {
+                        exchange_pair,
+                        base_trade_dir,
+                        fee_asset,
+                        base_amount,
+                        quote_amount,
+                        server_fee,
+                        fixed_fee,
+                    },
+                    &data.ticker_loader,
+                );
                 api::QuoteStatus::Success {
                     quote_id,
                     base_amount,
@@ -870,17 +886,21 @@ fn process_quote(data: &mut Data, notif: mkt::QuoteNotif) {
                     receive_asset,
                     deliver_amount,
                     receive_amount,
-                } = get_quote_amounts(GetQuoteAmounts {
-                    exchange_pair,
-                    base_trade_dir,
-                    fee_asset,
-                    base_amount,
-                    quote_amount,
-                    server_fee,
-                    fixed_fee,
-                });
+                } = get_quote_amounts(
+                    GetQuoteAmounts {
+                        exchange_pair,
+                        base_trade_dir,
+                        fee_asset,
+                        base_amount,
+                        quote_amount,
+                        server_fee,
+                        fixed_fee,
+                    },
+                    &data.ticker_loader,
+                );
 
-                let available = asset_float_amount_(available, deliver_asset.asset_precision());
+                let available =
+                    asset_float_amount_(available, data.ticker_loader.precision(deliver_asset));
 
                 api::QuoteStatus::LowBalance {
                     base_amount,
@@ -911,7 +931,8 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
         }
 
         Notification::OwnOrderCreated(notif) => {
-            let order = convert_own_order(&notif.order, data.network).expect("must not fail");
+            let order =
+                convert_own_order(&notif.order, &data.ticker_loader).expect("must not fail");
 
             data.orders
                 .entry((notif.order.asset_pair, notif.order.trade_dir))
@@ -947,14 +968,14 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
         }
 
         Notification::PublicOrderCreated(notif) => {
-            let exchange_pair =
-                get_exchange_pair(&notif.order.asset_pair, data.network).expect("must be known");
+            let exchange_pair = get_exchange_pair(&notif.order.asset_pair, &data.ticker_loader)
+                .expect("must be known");
             let subscribed = data
                 .subscribed
                 .get_mut(&exchange_pair)
                 .expect("must be known");
 
-            let base_precision = exchange_pair.base.asset_precision();
+            let base_precision = data.ticker_loader.precision(exchange_pair.base);
             let order = convert_public_order(&notif.order, base_precision);
 
             for event_sender in subscribed.clients.values() {
@@ -969,7 +990,7 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
 
         Notification::PublicOrderRemoved(notif) => {
             let exchange_pair =
-                get_exchange_pair(&notif.asset_pair, data.network).expect("must be known");
+                get_exchange_pair(&notif.asset_pair, &data.ticker_loader).expect("must be known");
             let subscribed = data
                 .subscribed
                 .get_mut(&exchange_pair)
@@ -995,7 +1016,7 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
 
         Notification::MarketPrice(notif) => {
             let exchange_pair =
-                get_exchange_pair(&notif.asset_pair, data.network).expect("must be known");
+                get_exchange_pair(&notif.asset_pair, &data.ticker_loader).expect("must be known");
             let subscribed = data
                 .subscribed
                 .get_mut(&exchange_pair)
@@ -1028,8 +1049,8 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
                     });
                 }
 
-                let order =
-                    convert_history_order(&notif.order, data.network).expect("must not fail");
+                let order = convert_history_order(&notif.order, &data.ticker_loader)
+                    .expect("must not fail");
 
                 for event_sender in data.clients.values() {
                     event_sender.send(ClientEvent::HistoryUpdated {
@@ -1097,12 +1118,12 @@ async fn subscribe(
 
     if new_market {
         let asset_pair = AssetPair {
-            base: dealer_ticker_to_asset_id(data.network, exchange_pair.base),
-            quote: dealer_ticker_to_asset_id(data.network, exchange_pair.quote),
+            base: *data.ticker_loader.asset_id(exchange_pair.base),
+            quote: *data.ticker_loader.asset_id(exchange_pair.quote),
         };
 
         let resp = make_market_request!(data.ws, Subscribe, mkt::SubscribeRequest { asset_pair })?;
-        let base_precision = exchange_pair.base.asset_precision();
+        let base_precision = data.ticker_loader.precision(exchange_pair.base);
         let orders = resp
             .orders
             .into_iter()
@@ -1308,7 +1329,7 @@ fn get_own_order(data: &Data, order_id: OrdId) -> Result<OwnOrder, Error> {
         .values()
         .find_map(|orders| orders.server_orders.get(&order_id))
         .ok_or(Error::UnknownOrderId)?;
-    let order = convert_own_order(order, data.network).expect("must not fail");
+    let order = convert_own_order(order, &data.ticker_loader).expect("must not fail");
     Ok(order)
 }
 
@@ -1318,7 +1339,7 @@ fn get_own_orders(data: &Data) -> Result<OwnOrders, Error> {
         .orders
         .values()
         .flat_map(|orders| orders.server_orders.values())
-        .map(|order| convert_own_order(order, data.network).expect("must not fail"))
+        .map(|order| convert_own_order(order, &data.ticker_loader).expect("must not fail"))
         .collect::<Vec<_>>();
     Ok(OwnOrders { orders })
 }
@@ -1346,16 +1367,15 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
                 assets: data
                     .assets
                     .iter()
-                    .filter(|asset| {
-                        dealer_ticker_from_asset_id(data.network, &asset.asset_id).is_some()
-                    })
+                    .filter(|asset| data.ticker_loader.ticker(&asset.asset_id).is_some())
                     .cloned()
                     .collect(),
                 markets: data
                     .markets
                     .values()
                     .filter_map(|market| -> Option<Market> {
-                        let exchange_pair = get_exchange_pair(&market.asset_pair, data.network)?;
+                        let exchange_pair =
+                            get_exchange_pair(&market.asset_pair, &data.ticker_loader)?;
                         Some(Market {
                             base: exchange_pair.base,
                             quote: exchange_pair.quote,
@@ -1417,7 +1437,7 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             count,
             res_sender,
         } => {
-            let network = data.network;
+            let ticker_loader = Arc::clone(&data.ticker_loader);
             data.ws.callback_request(
                 sideswap_api::Request::Market(Request::LoadHistory(mkt::LoadHistoryRequest {
                     start_time,
@@ -1433,7 +1453,7 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
                                     .list
                                     .iter()
                                     .map(|order| {
-                                        convert_history_order(order, network)
+                                        convert_history_order(order, &ticker_loader)
                                             .expect("must not fail")
                                     })
                                     .collect(),
@@ -1483,20 +1503,23 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
         } => {
             data.mode.check_ws_edit_allowed();
 
-            let base_precision = exchange_pair.base.asset_precision();
+            let base_precision = data.ticker_loader.precision(exchange_pair.base);
             let base_amount = asset_int_amount_(base_amount, base_precision);
-            let network = data.network;
 
             let asset_pair = AssetPair {
-                base: dealer_ticker_to_asset_id(data.network, exchange_pair.base),
-                quote: dealer_ticker_to_asset_id(data.network, exchange_pair.quote),
+                base: *data.ticker_loader.asset_id(exchange_pair.base),
+                quote: *data.ticker_loader.asset_id(exchange_pair.quote),
             };
 
+            let ticker_loader = Arc::clone(&data.ticker_loader);
             data.ws.callback_request(
                 sideswap_api::Request::Market(Request::AddOrder(mkt::AddOrderRequest {
                     asset_pair,
                     base_amount,
-                    price,
+                    price: Some(price),
+                    price_tracking: None,
+                    min_price: None,
+                    max_price: None,
                     trade_dir,
                     ttl: None,
                     receive_address,
@@ -1508,8 +1531,8 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
                 Box::new(move |res| {
                     let res = match res {
                         Ok(sideswap_api::Response::Market(mkt::Response::AddOrder(resp))) => {
-                            let order =
-                                convert_own_order(&resp.order, network).expect("must not fail");
+                            let order = convert_own_order(&resp.order, &ticker_loader)
+                                .expect("must not fail");
                             Ok(order)
                         }
                         Ok(_) => Err(Error::UnexpectedResponse("AddOrder")),
@@ -1528,12 +1551,15 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
         } => {
             data.mode.check_ws_edit_allowed();
 
-            let network = data.network;
+            let ticker_loader = Arc::clone(&data.ticker_loader);
             data.ws.callback_request(
                 sideswap_api::Request::Market(Request::EditOrder(mkt::EditOrderRequest {
                     order_id,
                     base_amount,
                     price,
+                    price_tracking: None,
+                    min_price: None,
+                    max_price: None,
                     receive_address: None,
                     change_address: None,
                     signature: None,
@@ -1541,8 +1567,8 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
                 Box::new(move |res| {
                     let res = match res {
                         Ok(sideswap_api::Response::Market(mkt::Response::EditOrder(resp))) => {
-                            let order =
-                                convert_own_order(&resp.order, network).expect("must not fail");
+                            let order = convert_own_order(&resp.order, &ticker_loader)
+                                .expect("must not fail");
                             Ok(order)
                         }
                         Ok(_) => Err(Error::UnexpectedResponse("EditOrder")),
@@ -1674,8 +1700,8 @@ fn process_command(data: &mut Data, command: Command) {
             let balance = balance
                 .into_iter()
                 .filter_map(|(asset_id, balance)| -> Option<(DealerTicker, f64)> {
-                    let ticker = dealer_ticker_from_asset_id(data.network, &asset_id)?;
-                    let value = asset_float_amount_(balance, ticker.asset_precision());
+                    let ticker = data.ticker_loader.ticker(&asset_id)?;
+                    let value = asset_float_amount_(balance, data.ticker_loader.precision(ticker));
                     Some((ticker, value))
                 })
                 .collect::<BTreeMap<_, _>>();
@@ -1802,6 +1828,9 @@ async fn try_sync_market(data: &mut Data, key: &OrderGroupKey) -> Result<(), any
                     order_id: server_order.order_id,
                     base_amount: Some(dealer_order.base_amount),
                     price: Some(dealer_order.price),
+                    price_tracking: None,
+                    min_price: None,
+                    max_price: None,
                     receive_address: None,
                     change_address: None,
                     signature: None,
@@ -1851,8 +1880,11 @@ async fn try_sync_market(data: &mut Data, key: &OrderGroupKey) -> Result<(), any
             mkt::AddOrderRequest {
                 asset_pair: dealer_order.asset_pair,
                 base_amount: dealer_order.base_amount,
-                price: dealer_order.price,
+                price: Some(dealer_order.price),
                 trade_dir: dealer_order.trade_dir,
+                price_tracking: None,
+                min_price: None,
+                max_price: None,
                 ttl: None,
                 receive_address,
                 change_address,
@@ -1910,9 +1942,7 @@ async fn run(
 
     let (client_sender, mut client_receiver) = unbounded_channel::<ClientCommand>();
 
-    let network = params.env.d().network;
-
-    let controller = Controller::new(network, client_sender.clone());
+    let controller = Controller::new(Arc::clone(&params.ticker_loader), client_sender.clone());
 
     if let Some(config) = params.web_server.clone() {
         web_server::start(config, controller.clone());
@@ -1933,10 +1963,10 @@ async fn run(
     let state = persistent_state::load(&params.work_dir);
 
     let mut data = Data {
-        network,
         mode,
         work_dir: params.work_dir,
         state,
+        ticker_loader: Arc::clone(&params.ticker_loader),
         ws,
         async_requests: BTreeMap::new(),
         wallet_utxos: Vec::new(),

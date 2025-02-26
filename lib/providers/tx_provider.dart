@@ -41,14 +41,10 @@ class AllTxsNotifier extends _$AllTxsNotifier {
 
     state = allTxs;
   }
-
-  void clear() {
-    state = {};
-  }
 }
 
 @riverpod
-List<TransItem> allTxsSorted(AllTxsSortedRef ref) {
+List<TransItem> allTxsSorted(Ref ref) {
   final allTxs = ref.watch(allTxsNotifierProvider);
   final allPegsById = ref.watch(allPegsByIdProvider);
 
@@ -59,7 +55,7 @@ List<TransItem> allTxsSorted(AllTxsSortedRef ref) {
 }
 
 @riverpod
-List<TransItem> allNewTxsSorted(AllNewTxsSortedRef ref) {
+List<TransItem> allNewTxsSorted(Ref ref) {
   final allTxsSorted = ref.watch(allTxsSortedProvider);
 
   final allNewTxsSorted = <TransItem>[];
@@ -73,16 +69,18 @@ List<TransItem> allNewTxsSorted(AllNewTxsSortedRef ref) {
 /// AccountAsset hold AccountType and assetId information.
 /// Each pair of AccountAsset and list of TxItem can hold duplicates of TxItem.
 @riverpod
-Map<AccountAsset, List<TxItem>> accountAssetTransactions(
-    AccountAssetTransactionsRef ref) {
+Map<AccountAsset, List<TxItem>> accountAssetTransactions(Ref ref) {
   final allTxs = ref.watch(allTxsNotifierProvider);
   final allPegs = ref.watch(allPegsNotifierProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
   final allAssets = <AccountAsset, List<TxItem>>{};
 
-  void addTxItem(Map<AccountAsset, List<TxItem>> accountAssetsTransactions,
-      AccountAsset accountAsset, TransItem transaction) {
+  void addTxItem(
+    Map<AccountAsset, List<TxItem>> accountAssetsTransactions,
+    AccountAsset accountAsset,
+    TransItem transaction,
+  ) {
     if (accountAssetsTransactions[accountAsset] == null) {
       accountAssetsTransactions[accountAsset] = [];
     }
@@ -94,8 +92,10 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(
   for (final item in allTxs.values) {
     final tx = item.tx;
     for (final balance in tx.balances) {
-      final accountAsset =
-          AccountAsset(AccountType(item.account.id), balance.assetId);
+      final accountAsset = AccountAsset(
+        AccountType(item.account.id),
+        balance.assetId,
+      );
       addTxItem(accountAssetTransactions, accountAsset, item);
     }
   }
@@ -116,10 +116,16 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(
       if (tempAssets.isEmpty) {
         tempAssets.add(item.copyWith(showDate: true));
       } else {
-        final last = DateTime.parse(dateFormat.format(
-            DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt)));
-        final current = DateTime.parse(dateFormat
-            .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
+        final last = DateTime.parse(
+          dateFormat.format(
+            DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt),
+          ),
+        );
+        final current = DateTime.parse(
+          dateFormat.format(
+            DateTime.fromMillisecondsSinceEpoch(item.createdAt),
+          ),
+        );
         final diff = last.difference(current).inDays;
         tempAssets.add(item.copyWith(showDate: diff != 0));
       }
@@ -132,8 +138,7 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(
 }
 
 @riverpod
-List<TxItem> transactionsForAccount(
-    TransactionsForAccountRef ref, AccountType accountType) {
+List<TxItem> transactionsForAccount(Ref ref, AccountType accountType) {
   final allAssets = ref.watch(accountAssetTransactionsProvider);
 
   final transactions = <TxItem>[];
@@ -147,8 +152,7 @@ List<TxItem> transactionsForAccount(
 }
 
 @riverpod
-List<TxItem> distinctTransactionsForAccount(
-    DistinctTransactionsForAccountRef ref) {
+List<TxItem> distinctTransactionsForAccount(Ref ref) {
   final allTxSorted = ref.watch(allTxsSortedProvider);
 
   final transactions = <TxItem>[];
@@ -165,10 +169,14 @@ List<TxItem> distinctTransactionsForAccount(
     if (tempTx.isEmpty) {
       tempTx.add(item.copyWith(showDate: true));
     } else {
-      final last = DateTime.parse(dateFormat
-          .format(DateTime.fromMillisecondsSinceEpoch(tempTx.last.createdAt)));
-      final current = DateTime.parse(dateFormat
-          .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
+      final last = DateTime.parse(
+        dateFormat.format(
+          DateTime.fromMillisecondsSinceEpoch(tempTx.last.createdAt),
+        ),
+      );
+      final current = DateTime.parse(
+        dateFormat.format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)),
+      );
       final diff = last.difference(current).inDays;
       tempTx.add(item.copyWith(showDate: diff != 0));
     }
@@ -178,19 +186,11 @@ List<TxItem> distinctTransactionsForAccount(
 }
 
 @riverpod
-TransItemHelper transItemHelper(TransItemHelperRef ref, TransItem transItem) {
+TransItemHelper transItemHelper(Ref ref, TransItem transItem) {
   return TransItemHelper(ref, transItem);
 }
 
-enum TxType {
-  received,
-  sent,
-  swap,
-  internal,
-  unknown,
-  pegIn,
-  pegOut,
-}
+enum TxType { received, sent, swap, internal, unknown, pegIn, pegOut }
 
 enum TxCircleImageType {
   pegIn,
@@ -200,7 +200,7 @@ enum TxCircleImageType {
   received,
   sentAvatar,
   receivedAvatar,
-  unknown
+  unknown,
 }
 
 class TransItemHelper {
@@ -280,8 +280,7 @@ class TransItemHelper {
       TxType.swap ||
       TxType.sent ||
       TxType.internal ||
-      TxType.unknown =>
-        'Sent'.tr(),
+      TxType.unknown => 'Sent'.tr(),
       TxType.received => 'From'.tr(),
       TxType.pegIn => 'Received'.tr(),
       TxType.pegOut => 'To'.tr(),
@@ -293,8 +292,7 @@ class TransItemHelper {
       TxType.swap ||
       TxType.received ||
       TxType.internal ||
-      TxType.unknown =>
-        'Received'.tr(),
+      TxType.unknown => 'Received'.tr(),
       TxType.sent || TxType.pegOut => 'To'.tr(),
       TxType.pegIn => 'From'.tr(),
     };
@@ -320,11 +318,13 @@ class TransItemHelper {
         .getPrecisionForAssetId(assetId: asset?.assetId);
     final amountProvider = ref.read(amountToStringProvider);
     final amountStr = amountProvider.amountToStringNamed(
-        AmountToStringNamedParameters(
-            amount: amount.toInt(),
-            forceSign: true,
-            precision: precision,
-            ticker: ticker ?? ''));
+      AmountToStringNamedParameters(
+        amount: amount.toInt(),
+        forceSign: true,
+        precision: precision,
+        ticker: ticker ?? '',
+      ),
+    );
 
     return amountStr;
   }
@@ -335,14 +335,18 @@ class TransItemHelper {
     final delivered = getSentBalance(liquidAssetId, bitcoinAssetId);
     final received = getRecvBalance(liquidAssetId, bitcoinAssetId);
 
-    final balanceSendStr =
-        assetAmountToString(delivered.assetId, -delivered.amount);
-    final balanceRecvStr =
-        assetAmountToString(received.assetId, received.amount);
+    final balanceSendStr = assetAmountToString(
+      delivered.assetId,
+      -delivered.amount,
+    );
+    final balanceRecvStr = assetAmountToString(
+      received.assetId,
+      received.amount,
+    );
 
     return (
       sendBalance: balanceSendStr,
-      recvBalance: received.amount == 0 ? '' : balanceRecvStr
+      recvBalance: received.amount == 0 ? '' : balanceRecvStr,
     );
   }
 
@@ -368,7 +372,9 @@ class TransItemHelper {
       final firstSlice = assetOutputs.slices(3).first;
       return (
         recvBalance: firstSlice.fold<String>(
-            '', (p, e) => e == firstSlice.last ? '$p$e...' : '$p$e, '),
+          '',
+          (p, e) => e == firstSlice.last ? '$p$e...' : '$p$e, ',
+        ),
         multipleOutputs: true,
       );
     }
@@ -379,7 +385,7 @@ class TransItemHelper {
 
     return (
       recvBalance: assetAmountToString(recvBalance.assetId, recvBalance.amount),
-      multipleOutputs: false
+      multipleOutputs: false,
     );
   }
 
@@ -410,53 +416,56 @@ class TransItemHelper {
   Balance getSentBalance(String liquidAssetId, String bitcoinAssetId) {
     if (transItem.hasPeg()) {
       return Balance(
-          amount: transItem.peg.amountSend,
-          assetId: transItem.peg.isPegIn ? bitcoinAssetId : liquidAssetId);
+        amount: transItem.peg.amountSend,
+        assetId: transItem.peg.isPegIn ? bitcoinAssetId : liquidAssetId,
+      );
     }
 
     return switch (txType()) {
       TxType.sent => () {
-          final balance = transItem.tx.balances.length == 1
-              ? transItem.tx.balances.first
-              : transItem.tx.balances
-                  .firstWhere((e) => e.assetId != liquidAssetId);
-          final amount = balance.assetId == liquidAssetId
-              ? -balance.amount - transItem.tx.networkFee
-              : -balance.amount;
-          return Balance(amount: amount, assetId: balance.assetId);
-        }(),
+        final balance =
+            transItem.tx.balances.length == 1
+                ? transItem.tx.balances.first
+                : transItem.tx.balances.firstWhere(
+                  (e) => e.assetId != liquidAssetId,
+                );
+        final amount =
+            balance.assetId == liquidAssetId
+                ? -balance.amount - transItem.tx.networkFee
+                : -balance.amount;
+        return Balance(amount: amount, assetId: balance.assetId);
+      }(),
       TxType.swap || TxType.internal => () {
-          final balance = transItem.tx.balances.firstWhere((e) => e.amount < 0);
-          return Balance(amount: -balance.amount, assetId: balance.assetId);
-        }(),
+        final balance = transItem.tx.balances.firstWhere((e) => e.amount < 0);
+        return Balance(amount: -balance.amount, assetId: balance.assetId);
+      }(),
 
       // TxType.internal ||
       TxType.received ||
       TxType.unknown ||
       TxType.pegIn ||
-      TxType.pegOut =>
-        Balance(),
+      TxType.pegOut => Balance(),
     };
   }
 
   Balance getRecvBalance(String liquidBitcoin, String bitcoin) {
     if (transItem.hasPeg()) {
       return Balance(
-          amount: transItem.peg.amountRecv,
-          assetId: transItem.peg.isPegIn ? liquidBitcoin : bitcoin);
+        amount: transItem.peg.amountRecv,
+        assetId: transItem.peg.isPegIn ? liquidBitcoin : bitcoin,
+      );
     }
 
     return switch (txType()) {
       TxType.received || TxType.swap => () {
-          final balance = transItem.tx.balances.firstWhere((e) => e.amount > 0);
-          return Balance(amount: balance.amount, assetId: balance.assetId);
-        }(),
+        final balance = transItem.tx.balances.firstWhere((e) => e.amount > 0);
+        return Balance(amount: balance.amount, assetId: balance.assetId);
+      }(),
       TxType.internal ||
       TxType.sent ||
       TxType.unknown ||
       TxType.pegIn ||
-      TxType.pegOut =>
-        Balance(),
+      TxType.pegOut => Balance(),
     };
   }
 
@@ -472,8 +481,9 @@ class TransItemHelper {
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
     final txFee = transItem.tx.networkFee;
     final tempBalances = [...transItem.tx.balances];
-    tempBalances.removeWhere((element) =>
-        element.assetId == liquidAssetId && element.amount == -txFee);
+    tempBalances.removeWhere(
+      (element) => element.assetId == liquidAssetId && element.amount == -txFee,
+    );
     return tempBalances.length > 1;
   }
 
@@ -490,12 +500,18 @@ class TransItemHelper {
           .read(assetUtilsProvider)
           .getPrecisionForAssetId(assetId: asset?.assetId);
       final amountProvider = ref.read(amountToStringProvider);
-      final amountStr = amountProvider.amountToString(AmountToStringParameters(
+      final amountStr = amountProvider.amountToString(
+        AmountToStringParameters(
           amount: balance.amount.toInt(),
           forceSign: true,
-          precision: precision));
-      values.add(
-          (assetId: balance.assetId, ticker: ticker ?? '', amount: amountStr));
+          precision: precision,
+        ),
+      );
+      values.add((
+        assetId: balance.assetId,
+        ticker: ticker ?? '',
+        amount: amountStr,
+      ));
     }
 
     return values;
@@ -522,7 +538,7 @@ class TransItemHelper {
     return (
       assetId: liquidAssetId,
       ticker: liquidTicker ?? '',
-      networkFeeAmount: networkFeeAmount
+      networkFeeAmount: networkFeeAmount,
     );
   }
 
@@ -548,7 +564,7 @@ class TransItemHelper {
     return (
       assetId: deliveredBalance.assetId,
       ticker: deliveredTicker,
-      amount: deliveredAmount
+      amount: deliveredAmount,
     );
   }
 
@@ -574,12 +590,13 @@ class TransItemHelper {
     return (
       assetId: receivedBalance.assetId,
       ticker: receivedTicker,
-      amount: receivedAmount
+      amount: receivedAmount,
     );
   }
 
-  List<({String assetId, String ticker, String amount})> getBalances(
-      {bool removeFeeAsset = false}) {
+  List<({String assetId, String ticker, String amount})> getBalances({
+    bool removeFeeAsset = false,
+  }) {
     if (!transItem.hasTx()) {
       return [];
     }
@@ -593,25 +610,29 @@ class TransItemHelper {
       final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
       final feeAmount = transItem.tx.networkFee;
       balances.removeWhere(
-          (e) => e.amount.abs() == feeAmount && e.assetId == liquidAssetId);
+        (e) => e.amount.abs() == feeAmount && e.assetId == liquidAssetId,
+      );
     }
 
     return List<({String assetId, String ticker, String amount})>.generate(
-        balances.length, (index) {
-      final balance = balances[index];
-      final asset = ref
-          .watch(assetsStateProvider.select((value) => value[balance.assetId]));
-      final ticker = asset != null ? asset.ticker : '???';
-      final amount = amountProvider.amountToString(
-        AmountToStringParameters(
-          amount: balance.amount.toInt(),
-          forceSign: true,
-          precision: asset?.precision ?? 8,
-        ),
-      );
+      balances.length,
+      (index) {
+        final balance = balances[index];
+        final asset = ref.watch(
+          assetsStateProvider.select((value) => value[balance.assetId]),
+        );
+        final ticker = asset != null ? asset.ticker : '???';
+        final amount = amountProvider.amountToString(
+          AmountToStringParameters(
+            amount: balance.amount.toInt(),
+            forceSign: true,
+            precision: asset?.precision ?? 8,
+          ),
+        );
 
-      return (assetId: balance.assetId, ticker: ticker, amount: amount);
-    });
+        return (assetId: balance.assetId, ticker: ticker, amount: amount);
+      },
+    );
   }
 
   TxCircleImageType txTypeToImageType() {
@@ -641,50 +662,38 @@ class TransItemHelper {
   String txTargetPrice() {
     return switch (txType()) {
       TxType.swap => () {
-          final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-          final balanceDelivered =
-              transItem.tx.balances.firstWhere((e) => e.amount < 0);
-          final balanceReceived =
-              transItem.tx.balances.firstWhere((e) => e.amount >= 0);
-          final assetSent =
-              ref.read(assetsStateProvider)[balanceDelivered.assetId];
-          final assetRecv =
-              ref.read(assetsStateProvider)[balanceReceived.assetId];
-          final sentBitcoin = balanceDelivered.assetId == liquidAssetId;
-          final asset = sentBitcoin ? assetRecv : assetSent;
-
-          final assetSentTicker = assetSent?.ticker ?? kUnknownTicker;
-          final assetRecvTicker = assetRecv?.ticker ?? kUnknownTicker;
-          final pricedInLiquid = !(asset?.swapMarket ?? false);
-          final pricePrecision = pricedInLiquid ? 8 : 2;
-          final assetPrecision = asset?.precision ?? 8;
-          final bitcoinAmountFull =
-              (sentBitcoin ? balanceDelivered.amount : balanceReceived.amount)
-                  .toInt()
-                  .abs();
-          final assetAmount =
-              (sentBitcoin ? balanceReceived.amount : balanceDelivered.amount)
-                  .toInt()
-                  .abs();
-          final networkFee = transItem.tx.networkFee.toInt().abs();
-          final bitcoinAmountAjusted = sentBitcoin
-              ? bitcoinAmountFull - networkFee
-              : bitcoinAmountFull + networkFee;
-          final priceOrig = toFloat(assetAmount, precision: assetPrecision) /
-              toFloat(bitcoinAmountAjusted);
-          final price = pricedInLiquid ? (1 / priceOrig) : priceOrig;
-          final assetTicker = sentBitcoin ? assetRecvTicker : assetSentTicker;
-          var targetPrice = price.toStringAsFixed(pricePrecision);
-          targetPrice = replaceCharacterOnPosition(
-            input: targetPrice,
-            currencyChar: pricedInLiquid ? kLiquidBitcoinTicker : assetTicker,
-            currencyCharAlignment: CurrencyCharAlignment.end,
-          );
-          targetPrice = pricedInLiquid
-              ? '1 $assetTicker = $targetPrice'
-              : '1 $kLiquidBitcoinTicker = $targetPrice';
-          return targetPrice;
-        }(),
+        final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+        final balanceDelivered = transItem.tx.balances.firstWhere(
+          (e) => e.amount < 0,
+        );
+        final balanceReceived = transItem.tx.balances.firstWhere(
+          (e) => e.amount >= 0,
+        );
+        final assetSent =
+            ref.read(assetsStateProvider)[balanceDelivered.assetId];
+        final assetRecv =
+            ref.read(assetsStateProvider)[balanceReceived.assetId];
+        final satoshiDelivered = balanceDelivered.amount.toInt().abs();
+        final satoshiReceived = balanceReceived.amount.toInt().abs();
+        final sentBitcoin = balanceDelivered.assetId == liquidAssetId;
+        final networkFee = transItem.tx.networkFee.toInt().abs();
+        final satoshiDeliveredAdjusted =
+            sentBitcoin
+                ? satoshiDelivered - networkFee
+                : satoshiDelivered + networkFee;
+        final priceOrig =
+            toFloat(satoshiReceived, precision: assetRecv?.precision ?? 8) /
+            toFloat(satoshiDeliveredAdjusted);
+        final price = 1 / priceOrig;
+        var targetPrice = price.toStringAsFixed(assetSent?.precision ?? 8);
+        targetPrice = replaceCharacterOnPosition(
+          input: targetPrice,
+          currencyChar: assetSent?.ticker ?? '',
+          currencyCharAlignment: CurrencyCharAlignment.end,
+        );
+        targetPrice = '1 ${assetRecv?.ticker ?? ''} = $targetPrice';
+        return targetPrice;
+      }(),
       _ => '',
     };
   }
@@ -719,6 +728,7 @@ class TransItemHelper {
   String txDateTimeStr() {
     final longFormat = DateFormat('MMM d, yyyy \'at\' HH:mm');
     return longFormat.format(
-        DateTime.fromMillisecondsSinceEpoch(transItem.createdAt.toInt()));
+      DateTime.fromMillisecondsSinceEpoch(transItem.createdAt.toInt()),
+    );
   }
 }

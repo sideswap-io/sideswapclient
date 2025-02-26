@@ -18,16 +18,21 @@ class DRegularWalletAssetsPanel extends StatelessWidget {
         children: [
           Consumer(
             builder: (context, ref, _) {
-              final regularAccounts =
-                  ref.watch(regularVisibleAccountAssetsProvider);
+              final regularAccounts = ref.watch(
+                regularVisibleAccountAssetsProvider,
+              );
               final defaultCurrencyConversion = ref.watch(
-                  accountAssetsTotalDefaultCurrencyBalanceStringProvider(
-                      regularAccounts));
-              final defaultCurrencyTicker =
-                  ref.watch(defaultCurrencyTickerProvider);
+                accountAssetsTotalDefaultCurrencyBalanceStringProvider(
+                  regularAccounts,
+                ),
+              );
+              final defaultCurrencyTicker = ref.watch(
+                defaultCurrencyTickerProvider,
+              );
 
               final lbtcConversion = ref.watch(
-                  accountAssetsTotalLbtcBalanceProvider(regularAccounts));
+                accountAssetsTotalLbtcBalanceProvider(regularAccounts),
+              );
 
               return DAssetsPanelHeader(
                 title: 'Regular wallet'.tr(),
@@ -41,11 +46,10 @@ class DRegularWalletAssetsPanel extends StatelessWidget {
           Flexible(
             child: Consumer(
               builder: (context, ref, _) {
-                final regularAccounts =
-                    ref.watch(regularVisibleAccountAssetsProvider);
-                return DAssetsList(
-                  accountAssets: regularAccounts,
+                final regularAccounts = ref.watch(
+                  regularVisibleAccountAssetsProvider,
                 );
+                return DAssetsList(accountAssets: regularAccounts);
               },
             ),
           ),

@@ -5,11 +5,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 
 class DBackButton extends StatelessWidget {
-  const DBackButton({
-    super.key,
-    this.onBackPressed,
-    this.height,
-  });
+  const DBackButton({super.key, this.onBackPressed, this.height});
 
   final VoidCallback? onBackPressed;
   final double? height;
@@ -23,9 +19,7 @@ class DBackButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: Border.all(
-              color: SideSwapColors.brightTurquoise,
-            ),
+            border: Border.all(color: SideSwapColors.brightTurquoise),
           ),
           child: Row(
             children: [

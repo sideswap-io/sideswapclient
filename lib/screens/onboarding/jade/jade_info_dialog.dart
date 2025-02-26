@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/screens/onboarding/jade/widgets/jade_circular_progress_indicator.dart';
 
 class JadeInfoDialog extends HookConsumerWidget {
@@ -14,21 +15,25 @@ class JadeInfoDialog extends HookConsumerWidget {
     final jadeStatus = ref.watch(jadeStatusNotifierProvider);
 
     return switch (jadeStatus) {
-      JadeStatusConnecting() => const JadeInfoDialogConnecting(),
-      JadeStatusMasterBlindingKey() => const JadeInfoDialogMasterblinding(),
-      JadeStatusAuthUser() => const JadeInfoDialogEnterPin(),
+      JadeStatusConnecting() => JadeInfoDialogWaitingInteraction(),
+      JadeStatusMasterBlindingKey() => JadeInfoDialogMasterblinding(),
+      JadeStatusAuthUser() => JadeInfoDialogEnterPin(),
+      JadeStatusSignMessage() => JadeInfoDialogWaitingInteraction(
+        text: 'Please sign to continue'.tr(),
+      ),
       JadeStatusSignOfflineSwap() ||
       JadeStatusSignSwap() ||
       JadeStatusSignSwapOutput() ||
-      JadeStatusSignTx() =>
-        const JadeInfoDialogSign(),
+      JadeStatusSignTx() => JadeInfoDialogSign(),
       _ => const SizedBox(),
     };
   }
 }
 
-class JadeInfoDialogConnecting extends StatelessWidget {
-  const JadeInfoDialogConnecting({super.key});
+class JadeInfoDialogWaitingInteraction extends StatelessWidget {
+  const JadeInfoDialogWaitingInteraction({this.text, super.key});
+
+  final String? text;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +57,7 @@ class JadeInfoDialogConnecting extends StatelessWidget {
               const JadeCircularProgressIndicator(),
               const SizedBox(height: 24),
               Text(
-                'Connecting to JADE'.tr(),
+                text ?? 'Connecting to JADE'.tr(),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
@@ -135,20 +140,19 @@ class JadeInfoDialogMasterblinding extends StatelessWidget {
                 'To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.'
                     .tr(),
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontSize: 16),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 12),
               Text(
                 'Learn more'.tr(),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: SideSwapColors.brightTurquoise,
-                      decoration: TextDecoration.underline,
-                    ),
+                  fontWeight: FontWeight.w500,
+                  color: SideSwapColors.brightTurquoise,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ],
           ),
@@ -158,11 +162,16 @@ class JadeInfoDialogMasterblinding extends StatelessWidget {
   }
 }
 
-class JadeInfoDialogSign extends StatelessWidget {
+class JadeInfoDialogSign extends ConsumerWidget {
   const JadeInfoDialogSign({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final optionQuoteSuccess = ref.watch(
+      marketPreviewOrderQuoteNotifierProvider,
+    );
+    final previewOrderTtl = ref.watch(marketPreviewOrderTtlProvider);
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -186,6 +195,38 @@ class JadeInfoDialogSign extends StatelessWidget {
                 'Sign transaction on JADE'.tr(),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
+              ),
+              optionQuoteSuccess.match(
+                () {
+                  return SizedBox();
+                },
+                (quoteSuccess) {
+                  return Column(
+                    children: [
+                      SizedBox(height: 8),
+                      SizedBox(
+                        width: 150,
+                        child: Row(
+                          children: [
+                            Text(
+                              'Time-to-live'.tr(),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleMedium?.copyWith(
+                                color: SideSwapColors.brightTurquoise,
+                              ),
+                            ),
+                            Spacer(),
+                            Text(
+                              '$previewOrderTtl s.',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

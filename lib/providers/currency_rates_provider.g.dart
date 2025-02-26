@@ -7,21 +7,24 @@ part of 'currency_rates_provider.dart';
 // **************************************************************************
 
 String _$defaultConversionRateMultiplierHash() =>
-    r'9fcb667904199b3075d220783fcce65a3eefe9d5';
+    r'1dd0bcb252377233de4cc5af4efd0c90b52c9388';
 
 /// See also [defaultConversionRateMultiplier].
 @ProviderFor(defaultConversionRateMultiplier)
 final defaultConversionRateMultiplierProvider =
     AutoDisposeProvider<Decimal>.internal(
-  defaultConversionRateMultiplier,
-  name: r'defaultConversionRateMultiplierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$defaultConversionRateMultiplierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      defaultConversionRateMultiplier,
+      name: r'defaultConversionRateMultiplierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$defaultConversionRateMultiplierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef DefaultConversionRateMultiplierRef = AutoDisposeProviderRef<Decimal>;
 String _$requestConversionRatesHash() =>
     r'0fbf0c36dd2aabb24a681ff4da5ed63beb3bb799';
@@ -30,14 +33,15 @@ String _$requestConversionRatesHash() =>
 @ProviderFor(RequestConversionRates)
 final requestConversionRatesProvider =
     NotifierProvider<RequestConversionRates, void>.internal(
-  RequestConversionRates.new,
-  name: r'requestConversionRatesProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$requestConversionRatesHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      RequestConversionRates.new,
+      name: r'requestConversionRatesProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$requestConversionRatesHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$RequestConversionRates = Notifier<void>;
 String _$conversionRatesNotifierHash() =>
@@ -47,14 +51,15 @@ String _$conversionRatesNotifierHash() =>
 @ProviderFor(ConversionRatesNotifier)
 final conversionRatesNotifierProvider =
     NotifierProvider<ConversionRatesNotifier, ConversionRates>.internal(
-  ConversionRatesNotifier.new,
-  name: r'conversionRatesNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$conversionRatesNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      ConversionRatesNotifier.new,
+      name: r'conversionRatesNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$conversionRatesNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$ConversionRatesNotifier = Notifier<ConversionRates>;
 String _$defaultConversionRateNotifierHash() =>
@@ -65,16 +70,19 @@ String _$defaultConversionRateNotifierHash() =>
 /// Copied from [DefaultConversionRateNotifier].
 @ProviderFor(DefaultConversionRateNotifier)
 final defaultConversionRateNotifierProvider = AutoDisposeNotifierProvider<
-    DefaultConversionRateNotifier, ConversionRate?>.internal(
+  DefaultConversionRateNotifier,
+  ConversionRate?
+>.internal(
   DefaultConversionRateNotifier.new,
   name: r'defaultConversionRateNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$defaultConversionRateNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$defaultConversionRateNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$DefaultConversionRateNotifier = AutoDisposeNotifier<ConversionRate?>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

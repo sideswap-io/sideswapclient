@@ -43,11 +43,8 @@ class RoundedButtonWithLabel extends StatelessWidget {
         ),
         Padding(
           padding: labelPadding,
-          child: Text(
-            label ?? '',
-            style: labelTextStyle,
-          ),
-        )
+          child: Text(label ?? '', style: labelTextStyle),
+        ),
       ],
     );
   }

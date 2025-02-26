@@ -9,7 +9,7 @@ use std::{
 use crate::ffi::{self, proto, GIT_COMMIT_HASH};
 use crate::gdk_json::{self, AddressInfo};
 use crate::gdk_ses::{self, ElectrumServer, NotifCallback, WalletInfo};
-use crate::gdk_ses_impl::{self};
+use crate::gdk_ses_impl;
 use crate::settings;
 use crate::{gdk_ses_jade, models, swaps};
 
@@ -156,10 +156,12 @@ enum TimerEvent {
     AmpConnectionCheck,
     SyncUtxos,
     SendAck,
+    CleanQuotes,
 }
 
 pub struct Data {
     app_active: bool,
+    active_page: proto::ActivePage,
     amp_active: bool,
     amp_connected: bool,
     ws_connected: bool,
@@ -870,6 +872,8 @@ impl Data {
         info!("connected to server, version: {}", &self.params.version);
         // ws_connected must be set to true before any WS requests are sent
         self.ws_connected = true;
+
+        self.subscribe_active_page(true);
 
         let cookie = std::fs::read_to_string(self.cookie_path()).ok();
         self.make_async_request(
@@ -2126,6 +2130,70 @@ impl Data {
         self.update_amp_connection();
     }
 
+    fn subscribe_active_page(&mut self, subscribe: bool) {
+        if !self.ws_connected {
+            return;
+        }
+
+        let values = match self.active_page {
+            proto::ActivePage::Other => [].as_slice(),
+            proto::ActivePage::PegIn => [
+                api::SubscribedValueType::PegInMinAmount,
+                api::SubscribedValueType::PegInWalletBalance,
+            ]
+            .as_slice(),
+            proto::ActivePage::PegOut => [
+                api::SubscribedValueType::PegOutMinAmount,
+                api::SubscribedValueType::PegOutWalletBalance,
+            ]
+            .as_slice(),
+        };
+
+        if subscribe {
+            for &value in values {
+                self.send_request_msg(api::Request::SubscribeValue(api::SubscribeValueRequest {
+                    value,
+                }));
+            }
+        } else {
+            for &value in values {
+                self.send_request_msg(api::Request::UnsubscribeValue(
+                    api::UnsubscribeValueRequest { value },
+                ));
+            }
+        }
+    }
+
+    fn process_subscribed_value(&mut self, notif: api::SubscribedValueNotification) {
+        let msg = match notif.value {
+            api::SubscribedValue::PegInMinAmount { min_amount } => {
+                proto::from::subscribed_value::Result::PegInMinAmount(min_amount)
+            }
+            api::SubscribedValue::PegInWalletBalance { available } => {
+                proto::from::subscribed_value::Result::PegInWalletBalance(available)
+            }
+            api::SubscribedValue::PegOutMinAmount { min_amount } => {
+                proto::from::subscribed_value::Result::PegOutMinAmount(min_amount)
+            }
+            api::SubscribedValue::PegOutWalletBalance { available } => {
+                proto::from::subscribed_value::Result::PegOutWalletBalance(available)
+            }
+        };
+
+        self.ui.send(proto::from::Msg::SubscribedValue(
+            proto::from::SubscribedValue { result: Some(msg) },
+        ));
+    }
+
+    fn process_active_page(&mut self, active_page: i32) {
+        let active_page = proto::ActivePage::try_from(active_page).expect("must be valid");
+        if active_page != self.active_page {
+            self.subscribe_active_page(false);
+            self.active_page = active_page;
+            self.subscribe_active_page(true);
+        }
+    }
+
     fn process_peg_status(&mut self, status: api::PegStatus) {
         let pegs = status
             .list
@@ -2758,6 +2826,7 @@ impl Data {
             proto::to::Msg::EncryptPin(req) => self.process_encrypt_pin(req),
             proto::to::Msg::DecryptPin(req) => self.process_decrypt_pin(req),
             proto::to::Msg::AppState(req) => self.process_app_state(req),
+            proto::to::Msg::ActivePage(req) => self.process_active_page(req),
             proto::to::Msg::PushMessage(req) => self.process_push_message(req, None),
             proto::to::Msg::PegInRequest(_) => self.process_pegin_request(),
             proto::to::Msg::PegOutAmount(req) => self.process_pegout_amount(req),
@@ -2777,6 +2846,7 @@ impl Data {
             proto::to::Msg::PortfolioPrices(_) => self.process_portfolio_prices(),
             proto::to::Msg::ConversionRates(_) => self.process_conversion_rates(),
             proto::to::Msg::JadeRescan(_) => self.process_jade_rescan_request(),
+            proto::to::Msg::JadeUnlock(_) => self.process_jade_unlock(),
             proto::to::Msg::GaidStatus(msg) => self.process_gaid_status_req(msg),
             proto::to::Msg::MarketSubscribe(msg) => market_worker::market_subscribe(self, msg),
             proto::to::Msg::MarketUnsubscribe(msg) => market_worker::market_unsubscribe(self, msg),
@@ -2841,6 +2911,8 @@ impl Data {
             api::Response::MarketDataUnsubscribe(_) => {}
             api::Response::SwapPrices(_) => {}
             api::Response::Market(resp) => market_worker::process_resp(self, resp),
+            api::Response::SubscribeValue(_) => {}
+            api::Response::UnsubscribeValue(_) => {}
         }
     }
 
@@ -2895,6 +2967,7 @@ impl Data {
             api::Notification::StartSwapDealer(_) => {}
             api::Notification::BlindedSwapDealer(_) => {}
             api::Notification::NewSwapPrice(_) => {}
+            api::Notification::SubscribedValue(notif) => self.process_subscribed_value(notif),
         }
     }
 
@@ -3211,6 +3284,31 @@ impl Data {
         }
     }
 
+    fn try_jade_unlock(&mut self) -> Result<(), anyhow::Error> {
+        let wallet = self.wallets.get(&ACCOUNT_ID_REG).expect("must exist");
+
+        match &wallet.login_info.wallet_info {
+            WalletInfo::Mnemonic(_mnemonic) => Ok(()),
+
+            WalletInfo::HwData(hw_data) => {
+                gdk_ses_impl::unlock_hw(self.env, &hw_data.jade)?;
+
+                Ok(())
+            }
+
+            WalletInfo::WatchOnly(_) => unreachable!(),
+        }
+    }
+
+    fn process_jade_unlock(&mut self) {
+        let res = self.try_jade_unlock();
+        let result = proto::GenericResponse {
+            success: res.is_ok(),
+            error_msg: res.err().map(|err| err.to_string()),
+        };
+        self.ui.send(proto::from::Msg::JadeUnlock(result));
+    }
+
     fn process_gaid_status_req(&mut self, msg: proto::to::GaidStatus) {
         self.make_async_request(
             api::Request::GaidStatus(api::GaidStatusRequest {
@@ -3245,6 +3343,9 @@ fn process_timer_event(data: &mut Data, event: TimerEvent) {
         }
         TimerEvent::SendAck => {
             market_worker::send_ack(data);
+        }
+        TimerEvent::CleanQuotes => {
+            market_worker::clean_quotes(data);
         }
     }
 }
@@ -3373,6 +3474,7 @@ pub fn start_processing(
 
     let mut data = Data {
         app_active: true,
+        active_page: proto::ActivePage::Other,
         amp_active: true,
         amp_connected: false,
         ws_connected: false,

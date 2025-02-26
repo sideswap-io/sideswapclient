@@ -14,12 +14,9 @@ class DWaitPegin extends ConsumerWidget {
       height: 740,
       child: Column(
         children: [
-          const SizedBox(height: 32),
-          Text(
-            'Peg-In'.tr(),
-            style: Theme.of(context).textTheme.displaySmall,
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Text('Peg-In'.tr(), style: Theme.of(context).textTheme.displaySmall),
+          const SizedBox(height: 8),
           Text(
             'Please send BTC to the following address:'.tr(),
             style: const TextStyle(
@@ -28,11 +25,8 @@ class DWaitPegin extends ConsumerWidget {
               color: Color(0xFF00B4E9),
             ),
           ),
-          const Expanded(
-            child: AssetReceiveWidget(
-              isPegIn: true,
-              showShare: false,
-            ),
+          const Flexible(
+            child: AssetReceiveWidget(isPegIn: true, showShare: false),
           ),
         ],
       ),

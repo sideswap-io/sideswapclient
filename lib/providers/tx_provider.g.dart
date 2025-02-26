@@ -6,7 +6,7 @@ part of 'tx_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$allTxsSortedHash() => r'af028e95f0e8e8b32413880b9af6a9b510027812';
+String _$allTxsSortedHash() => r'5b86b4c5a01de97c59304ad83a0aaac222869731';
 
 /// See also [allTxsSorted].
 @ProviderFor(allTxsSorted)
@@ -19,24 +19,29 @@ final allTxsSortedProvider = AutoDisposeProvider<List<TransItem>>.internal(
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef AllTxsSortedRef = AutoDisposeProviderRef<List<TransItem>>;
-String _$allNewTxsSortedHash() => r'02ca6cf446fdd027627d1c33d2f5bd6efa4319fa';
+String _$allNewTxsSortedHash() => r'ef0553a60d0973cb7475a27d812df09433ba78d1';
 
 /// See also [allNewTxsSorted].
 @ProviderFor(allNewTxsSorted)
 final allNewTxsSortedProvider = AutoDisposeProvider<List<TransItem>>.internal(
   allNewTxsSorted,
   name: r'allNewTxsSortedProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$allNewTxsSortedHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$allNewTxsSortedHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef AllNewTxsSortedRef = AutoDisposeProviderRef<List<TransItem>>;
 String _$accountAssetTransactionsHash() =>
-    r'4fddee80ebc39599499d5077dfa1c113c606f50d';
+    r'5c2d4b7f4d77b162653b740e57a9275b9694cb2b';
 
 /// Returns map of AccountAsset and list of TxItem.
 /// List of TxItem is based on tx balances list. Balances list can include multiple different assets.
@@ -47,19 +52,22 @@ String _$accountAssetTransactionsHash() =>
 @ProviderFor(accountAssetTransactions)
 final accountAssetTransactionsProvider =
     AutoDisposeProvider<Map<AccountAsset, List<TxItem>>>.internal(
-  accountAssetTransactions,
-  name: r'accountAssetTransactionsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$accountAssetTransactionsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      accountAssetTransactions,
+      name: r'accountAssetTransactionsProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$accountAssetTransactionsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef AccountAssetTransactionsRef
-    = AutoDisposeProviderRef<Map<AccountAsset, List<TxItem>>>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AccountAssetTransactionsRef =
+    AutoDisposeProviderRef<Map<AccountAsset, List<TxItem>>>;
 String _$transactionsForAccountHash() =>
-    r'd17f5a008090f8bfeaf7fe05a56f8e78724be79e';
+    r'4e8fd6e93122dbe3c259ea219fdb7ef0d5a99227';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -92,21 +100,15 @@ class TransactionsForAccountFamily extends Family<List<TxItem>> {
   const TransactionsForAccountFamily();
 
   /// See also [transactionsForAccount].
-  TransactionsForAccountProvider call(
-    AccountType accountType,
-  ) {
-    return TransactionsForAccountProvider(
-      accountType,
-    );
+  TransactionsForAccountProvider call(AccountType accountType) {
+    return TransactionsForAccountProvider(accountType);
   }
 
   @override
   TransactionsForAccountProvider getProviderOverride(
     covariant TransactionsForAccountProvider provider,
   ) {
-    return call(
-      provider.accountType,
-    );
+    return call(provider.accountType);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -127,24 +129,23 @@ class TransactionsForAccountFamily extends Family<List<TxItem>> {
 /// See also [transactionsForAccount].
 class TransactionsForAccountProvider extends AutoDisposeProvider<List<TxItem>> {
   /// See also [transactionsForAccount].
-  TransactionsForAccountProvider(
-    AccountType accountType,
-  ) : this._internal(
-          (ref) => transactionsForAccount(
-            ref as TransactionsForAccountRef,
-            accountType,
-          ),
-          from: transactionsForAccountProvider,
-          name: r'transactionsForAccountProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$transactionsForAccountHash,
-          dependencies: TransactionsForAccountFamily._dependencies,
-          allTransitiveDependencies:
-              TransactionsForAccountFamily._allTransitiveDependencies,
-          accountType: accountType,
-        );
+  TransactionsForAccountProvider(AccountType accountType)
+    : this._internal(
+        (ref) => transactionsForAccount(
+          ref as TransactionsForAccountRef,
+          accountType,
+        ),
+        from: transactionsForAccountProvider,
+        name: r'transactionsForAccountProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$transactionsForAccountHash,
+        dependencies: TransactionsForAccountFamily._dependencies,
+        allTransitiveDependencies:
+            TransactionsForAccountFamily._allTransitiveDependencies,
+        accountType: accountType,
+      );
 
   TransactionsForAccountProvider._internal(
     super._createNotifier, {
@@ -196,6 +197,8 @@ class TransactionsForAccountProvider extends AutoDisposeProvider<List<TxItem>> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin TransactionsForAccountRef on AutoDisposeProviderRef<List<TxItem>> {
   /// The parameter `accountType` of this provider.
   AccountType get accountType;
@@ -212,24 +215,27 @@ class _TransactionsForAccountProviderElement
 }
 
 String _$distinctTransactionsForAccountHash() =>
-    r'85cb427eb2c703fcabd480590fffbe69dd9f7387';
+    r'c17e3303ea6b759884ab1136bcf41894290a775f';
 
 /// See also [distinctTransactionsForAccount].
 @ProviderFor(distinctTransactionsForAccount)
 final distinctTransactionsForAccountProvider =
     AutoDisposeProvider<List<TxItem>>.internal(
-  distinctTransactionsForAccount,
-  name: r'distinctTransactionsForAccountProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$distinctTransactionsForAccountHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      distinctTransactionsForAccount,
+      name: r'distinctTransactionsForAccountProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$distinctTransactionsForAccountHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef DistinctTransactionsForAccountRef
-    = AutoDisposeProviderRef<List<TxItem>>;
-String _$transItemHelperHash() => r'935ce5f96d70605f7323d975685e4916ec0d889f';
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DistinctTransactionsForAccountRef =
+    AutoDisposeProviderRef<List<TxItem>>;
+String _$transItemHelperHash() => r'23a8ee55cc9dbeb533496f3ec0d60ad53940e47a';
 
 /// See also [transItemHelper].
 @ProviderFor(transItemHelper)
@@ -241,21 +247,15 @@ class TransItemHelperFamily extends Family<TransItemHelper> {
   const TransItemHelperFamily();
 
   /// See also [transItemHelper].
-  TransItemHelperProvider call(
-    TransItem transItem,
-  ) {
-    return TransItemHelperProvider(
-      transItem,
-    );
+  TransItemHelperProvider call(TransItem transItem) {
+    return TransItemHelperProvider(transItem);
   }
 
   @override
   TransItemHelperProvider getProviderOverride(
     covariant TransItemHelperProvider provider,
   ) {
-    return call(
-      provider.transItem,
-    );
+    return call(provider.transItem);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -276,24 +276,20 @@ class TransItemHelperFamily extends Family<TransItemHelper> {
 /// See also [transItemHelper].
 class TransItemHelperProvider extends AutoDisposeProvider<TransItemHelper> {
   /// See also [transItemHelper].
-  TransItemHelperProvider(
-    TransItem transItem,
-  ) : this._internal(
-          (ref) => transItemHelper(
-            ref as TransItemHelperRef,
-            transItem,
-          ),
-          from: transItemHelperProvider,
-          name: r'transItemHelperProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$transItemHelperHash,
-          dependencies: TransItemHelperFamily._dependencies,
-          allTransitiveDependencies:
-              TransItemHelperFamily._allTransitiveDependencies,
-          transItem: transItem,
-        );
+  TransItemHelperProvider(TransItem transItem)
+    : this._internal(
+        (ref) => transItemHelper(ref as TransItemHelperRef, transItem),
+        from: transItemHelperProvider,
+        name: r'transItemHelperProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$transItemHelperHash,
+        dependencies: TransItemHelperFamily._dependencies,
+        allTransitiveDependencies:
+            TransItemHelperFamily._allTransitiveDependencies,
+        transItem: transItem,
+      );
 
   TransItemHelperProvider._internal(
     super._createNotifier, {
@@ -344,6 +340,8 @@ class TransItemHelperProvider extends AutoDisposeProvider<TransItemHelper> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin TransItemHelperRef on AutoDisposeProviderRef<TransItemHelper> {
   /// The parameter `transItem` of this provider.
   TransItem get transItem;
@@ -358,21 +356,22 @@ class _TransItemHelperProviderElement
   TransItem get transItem => (origin as TransItemHelperProvider).transItem;
 }
 
-String _$allTxsNotifierHash() => r'54b9c9d194f6be22f95afa841d5eadfdea863748';
+String _$allTxsNotifierHash() => r'5e1bf1ea3581a2784c2288509c21744908a6ec36';
 
 /// See also [AllTxsNotifier].
 @ProviderFor(AllTxsNotifier)
 final allTxsNotifierProvider =
     NotifierProvider<AllTxsNotifier, Map<String, TransItem>>.internal(
-  AllTxsNotifier.new,
-  name: r'allTxsNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$allTxsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      AllTxsNotifier.new,
+      name: r'allTxsNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$allTxsNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AllTxsNotifier = Notifier<Map<String, TransItem>>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

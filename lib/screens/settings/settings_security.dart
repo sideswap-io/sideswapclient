@@ -31,9 +31,7 @@ class SettingsSecurity extends StatelessWidget {
                 foregroundColor: Colors.white,
                 backgroundColor: SideSwapColors.chathamsBlue,
                 shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(8),
-                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
                 ),
                 side: const BorderSide(
                   color: SideSwapColors.chathamsBlue,

@@ -9,6 +9,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DJadeInfoDialog extends HookConsumerWidget {
@@ -17,10 +18,15 @@ class DJadeInfoDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final jadeStatus = ref.watch(jadeStatusNotifierProvider);
-    final jadeOnboardingRegistration =
-        ref.watch(jadeOnboardingRegistrationNotifierProvider);
+    final jadeOnboardingRegistration = ref.watch(
+      jadeOnboardingRegistrationNotifierProvider,
+    );
     final showAmpOnboarding =
         ref.watch(configurationProvider).showAmpOnboarding;
+    final optionQuoteSuccess = ref.watch(
+      marketPreviewOrderQuoteNotifierProvider,
+    );
+    final previewOrderTtl = ref.watch(marketPreviewOrderTtlProvider);
 
     useEffect(() {
       if (jadeStatus != const JadeStatusMasterBlindingKey()) {
@@ -33,9 +39,11 @@ class DJadeInfoDialog extends HookConsumerWidget {
       }
 
       if (!showAmpOnboarding) {
-        Future.microtask(() => ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.registered));
+        Future.microtask(
+          () => ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered),
+        );
         return;
       }
 
@@ -60,9 +68,7 @@ class DJadeInfoDialog extends HookConsumerWidget {
             Container(
               constraints: const BoxConstraints(minWidth: 200, minHeight: 100),
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(8),
-                ),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 color: SideSwapColors.ataneoBlue,
                 border: Border.all(
                   color: SideSwapColors.brightTurquoise,
@@ -73,19 +79,19 @@ class DJadeInfoDialog extends HookConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 40, horizontal: 20),
+                      vertical: 40,
+                      horizontal: 20,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SpinKitCircle(
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        const SizedBox(width: 8),
+                        const SpinKitCircle(color: Colors.white, size: 32),
+                        const SizedBox(width: 16),
                         Consumer(
                           builder: (context, ref, child) {
-                            final jadeStatus =
-                                ref.watch(jadeStatusNotifierProvider);
+                            final jadeStatus = ref.watch(
+                              jadeStatusNotifierProvider,
+                            );
 
                             final statusText = switch (jadeStatus) {
                               JadeStatusIdle() => 'Idle'.tr(),
@@ -100,10 +106,48 @@ class DJadeInfoDialog extends HookConsumerWidget {
                                 'Create swap output'.tr(),
                               JadeStatusSignOfflineSwap() =>
                                 'Sign offline swap transaction'.tr(),
+                              JadeStatusSignMessage() =>
+                                'Please sign to continue'.tr(),
                               _ => '',
                             };
 
-                            return Text(statusText);
+                            return Column(
+                              children: [
+                                Text(statusText),
+                                optionQuoteSuccess.match(
+                                  () {
+                                    return SizedBox();
+                                  },
+                                  (quoteSuccess) {
+                                    return Column(
+                                      children: [
+                                        SizedBox(height: 8),
+                                        SizedBox(
+                                          width: 120,
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Time-to-live'.tr(),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleSmall
+                                                    ?.copyWith(
+                                                      color:
+                                                          SideSwapColors
+                                                              .brightTurquoise,
+                                                    ),
+                                              ),
+                                              Spacer(),
+                                              Text('$previewOrderTtl s.'),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
                           },
                         ),
                       ],

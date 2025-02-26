@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/inputs_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -42,9 +43,8 @@ sealed class AddressesItem with _$AddressesItem {
 
 @freezed
 sealed class AddressesModel with _$AddressesModel {
-  const factory AddressesModel({
-    List<AddressesItem>? addresses,
-  }) = _AddressesModel;
+  const factory AddressesModel({List<AddressesItem>? addresses}) =
+      _AddressesModel;
 }
 
 @freezed
@@ -112,25 +112,29 @@ class AddressesAsyncNotifier extends _$AddressesAsyncNotifier {
         final found = utxos.where((element) => element.address == a.address);
         final utxosItemList = <UtxosItem>[];
         for (final f in found) {
-          utxosItemList.add(UtxosItem(
-            txid: f.txid,
-            vout: f.vout,
-            assetId: f.assetId,
-            amount: f.amount.toInt(),
-            isInternal: f.isInternal,
-            isConfidential: f.isConfidential,
-            account: account.id,
-          ));
+          utxosItemList.add(
+            UtxosItem(
+              txid: f.txid,
+              vout: f.vout,
+              assetId: f.assetId,
+              amount: f.amount.toInt(),
+              isInternal: f.isInternal,
+              isConfidential: f.isConfidential,
+              account: account.id,
+            ),
+          );
         }
 
-        addressesItemList.add(AddressesItem(
-          account: account.id,
-          address: a.address,
-          unconfidentialAddress: a.unconfidentialAddress,
-          index: a.index,
-          isInternal: a.isInternal,
-          utxos: utxosItemList,
-        ));
+        addressesItemList.add(
+          AddressesItem(
+            account: account.id,
+            address: a.address,
+            unconfidentialAddress: a.unconfidentialAddress,
+            index: a.index,
+            isInternal: a.isInternal,
+            utxos: utxosItemList,
+          ),
+        );
       }
 
       return AddressesModel(addresses: addressesItemList);
@@ -151,10 +155,10 @@ class AddressesAsyncNotifier extends _$AddressesAsyncNotifier {
 }
 
 @riverpod
-AsyncValue<AddressesModel> regularAddressesModelAsync(
-    RegularAddressesModelAsyncRef ref) {
-  final regularModel =
-      ref.watch(addressesAsyncNotifierProvider(Account(id: 0)));
+AsyncValue<AddressesModel> regularAddressesModelAsync(Ref ref) {
+  final regularModel = ref.watch(
+    addressesAsyncNotifierProvider(Account(id: 0)),
+  );
 
   return switch (regularModel) {
     AsyncValue(hasValue: true, value: AddressesModel addressesModel) =>
@@ -164,7 +168,7 @@ AsyncValue<AddressesModel> regularAddressesModelAsync(
 }
 
 @riverpod
-AsyncValue<AddressesModel> ampAdressesModelAsync(AmpAdressesModelAsyncRef ref) {
+AsyncValue<AddressesModel> ampAdressesModelAsync(Ref ref) {
   final ampModel = ref.watch(addressesAsyncNotifierProvider(Account(id: 1)));
 
   return switch (ampModel) {
@@ -175,15 +179,20 @@ AsyncValue<AddressesModel> ampAdressesModelAsync(AmpAdressesModelAsyncRef ref) {
 }
 
 @riverpod
-AsyncValue<AddressesModel> groupedAddressesAsync(GroupedAddressesAsyncRef ref) {
-  final regularAddressesModelAsync =
-      ref.watch(regularAddressesModelAsyncProvider);
+AsyncValue<AddressesModel> groupedAddressesAsync(Ref ref) {
+  final regularAddressesModelAsync = ref.watch(
+    regularAddressesModelAsyncProvider,
+  );
   final ampAddressesModelAsync = ref.watch(ampAdressesModelAsyncProvider);
 
   final regularAddressesModel = regularAddressesModelAsync.maybeWhen(
-      data: (data) => data, orElse: () => null);
+    data: (data) => data,
+    orElse: () => null,
+  );
   final ampAddressesModel = ampAddressesModelAsync.maybeWhen(
-      data: (data) => data, orElse: () => null);
+    data: (data) => data,
+    orElse: () => null,
+  );
 
   if (regularAddressesModel == null && ampAddressesModel == null) {
     return const AsyncValue.loading();
@@ -197,8 +206,7 @@ AsyncValue<AddressesModel> groupedAddressesAsync(GroupedAddressesAsyncRef ref) {
 }
 
 @riverpod
-AsyncValue<AddressesModel> filteredAddressesAsync(
-    FilteredAddressesAsyncRef ref) {
+AsyncValue<AddressesModel> filteredAddressesAsync(Ref ref) {
   final groupedAddresses = ref.watch(groupedAddressesAsyncProvider);
 
   final addressesModel = switch (groupedAddresses) {
@@ -214,34 +222,39 @@ AsyncValue<AddressesModel> filteredAddressesAsync(
   final walletTypeFlag = ref.watch(addressesWalletTypeFlagNotifierProvider);
 
   var addresses = addressesModel.addresses ?? [];
-  addresses = switch (walletTypeFlag) {
-    AddressesWalletTypeFlagRegular() =>
-      addresses.where((element) => element.account == 0),
-    AddressesWalletTypeFlagAmp() =>
-      addresses.where((element) => element.account == 1),
-    _ => addresses,
-  }
-      .toList();
+  addresses =
+      switch (walletTypeFlag) {
+        AddressesWalletTypeFlagRegular() => addresses.where(
+          (element) => element.account == 0,
+        ),
+        AddressesWalletTypeFlagAmp() => addresses.where(
+          (element) => element.account == 1,
+        ),
+        _ => addresses,
+      }.toList();
 
   final addressTypeFlag = ref.watch(addressesAddressTypeFlagNotifierProvider);
 
-  addresses = switch (addressTypeFlag) {
-    AddressesAddressTypeFlagInternal() =>
-      addresses.where((element) => element.isInternal == true),
-    AddressesAddressTypeFlagExternal() =>
-      addresses.where((element) => element.isInternal == false),
-    _ => addresses,
-  }
-      .toList();
+  addresses =
+      switch (addressTypeFlag) {
+        AddressesAddressTypeFlagInternal() => addresses.where(
+          (element) => element.isInternal == true,
+        ),
+        AddressesAddressTypeFlagExternal() => addresses.where(
+          (element) => element.isInternal == false,
+        ),
+        _ => addresses,
+      }.toList();
 
   final balanceTypeFlag = ref.watch(addressesBalanceTypeFlagNotifierProvider);
 
-  addresses = switch (balanceTypeFlag) {
-    AddressesBalanceFlagHideEmpty() =>
-      addresses.where((element) => element.utxos?.isNotEmpty == true),
-    _ => addresses,
-  }
-      .toList();
+  addresses =
+      switch (balanceTypeFlag) {
+        AddressesBalanceFlagHideEmpty() => addresses.where(
+          (element) => element.utxos?.isNotEmpty == true,
+        ),
+        _ => addresses,
+      }.toList();
 
   return AsyncValue.data(AddressesModel(addresses: addresses));
 }
@@ -266,8 +279,7 @@ class AddressDetailsDialogNotifier extends _$AddressDetailsDialogNotifier {
 }
 
 @riverpod
-AddressesItemHelper addressesItemHelper(
-    AddressesItemHelperRef ref, AddressesItem addressesItem) {
+AddressesItemHelper addressesItemHelper(Ref ref, AddressesItem addressesItem) {
   return AddressesItemHelper(ref: ref, addressesItem: addressesItem);
 }
 
@@ -299,28 +311,40 @@ class AddressesItemHelper {
 
   Widget asset() {
     return switch (utxoCount()) {
-      1 => ref.read(assetImageProvider).getCustomImage(
-          addressesItem.utxos!.first.assetId,
-          width: 24,
-          height: 24),
-      _ when utxoCount() > 1 =>
-        Text('Multiple'.tr(), textAlign: TextAlign.left),
+      1 => ref
+          .read(assetImageRepositoryProvider)
+          .getCustomImage(
+            addressesItem.utxos!.first.assetId,
+            width: 24,
+            height: 24,
+          ),
+      _ when utxoCount() > 1 => Text(
+        'Multiple'.tr(),
+        textAlign: TextAlign.left,
+      ),
       _ => const SizedBox(),
     };
   }
 
   Widget amount() {
     final precision = switch (utxoCount()) {
-      1 => ref.read(assetUtilsProvider).getPrecisionForAssetId(
-          assetId: addressesItem.utxos!.first.assetId ?? ''),
+      1 => ref
+          .read(assetUtilsProvider)
+          .getPrecisionForAssetId(
+            assetId: addressesItem.utxos!.first.assetId ?? '',
+          ),
       _ => 0,
     };
 
     final amountStr = switch (utxoCount()) {
-      1 => ref.read(amountToStringProvider).amountToString(
-          AmountToStringParameters(
+      1 => ref
+          .read(amountToStringProvider)
+          .amountToString(
+            AmountToStringParameters(
               amount: addressesItem.utxos?.first.amount ?? 0,
-              precision: precision)),
+              precision: precision,
+            ),
+          ),
       _ => '',
     };
 
@@ -394,8 +418,10 @@ class AddressesBalanceTypeFlagNotifier
       _ => null,
     };
     if (addressesModel != null) {
-      final foundTxs = addressesModel.addresses
-              ?.any((element) => element.utxos?.isNotEmpty == true) ??
+      final foundTxs =
+          addressesModel.addresses?.any(
+            (element) => element.utxos?.isNotEmpty == true,
+          ) ??
           false;
 
       if (foundTxs) {
@@ -411,7 +437,7 @@ class AddressesBalanceTypeFlagNotifier
 }
 
 @riverpod
-AsyncValue<AddressesModel> inputsAddressesAsync(InputsAddressesAsyncRef ref) {
+AsyncValue<AddressesModel> inputsAddressesAsync(Ref ref) {
   final groupedAddresses = ref.watch(groupedAddressesAsyncProvider);
 
   final addressesModel = switch (groupedAddresses) {
@@ -431,10 +457,14 @@ AsyncValue<AddressesModel> inputsAddressesAsync(InputsAddressesAsyncRef ref) {
     _ => 1,
   };
 
-  final newAddresses = addressesModel.addresses
-      ?.where((element) =>
-          element.utxos?.isNotEmpty == true && element.account == accountId)
-      .toList();
+  final newAddresses =
+      addressesModel.addresses
+          ?.where(
+            (element) =>
+                element.utxos?.isNotEmpty == true &&
+                element.account == accountId,
+          )
+          .toList();
 
   return AsyncValue.data(AddressesModel(addresses: newAddresses));
 }
@@ -520,7 +550,7 @@ class SelectedInputsNotifier extends _$SelectedInputsNotifier {
 }
 
 @riverpod
-SelectedInputsHelper selectedInputsHelper(SelectedInputsHelperRef ref) {
+SelectedInputsHelper selectedInputsHelper(Ref ref) {
   final selectedInputs = ref.watch(selectedInputsNotifierProvider);
   return SelectedInputsHelper(ref: ref, utxos: selectedInputs);
 }
@@ -529,10 +559,7 @@ class SelectedInputsHelper {
   final Ref ref;
   final List<UtxosItem> utxos;
 
-  SelectedInputsHelper({
-    required this.ref,
-    required this.utxos,
-  });
+  SelectedInputsHelper({required this.ref, required this.utxos});
 
   bool contains(UtxosItem? item) {
     if (item == null) {
@@ -587,8 +614,11 @@ class SelectedInputsHelper {
     final precision = ref
         .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: liquidAssetId);
-    final amountStr = ref.read(amountToStringProvider).amountToString(
-        AmountToStringParameters(amount: satoshiSum, precision: precision));
+    final amountStr = ref
+        .read(amountToStringProvider)
+        .amountToString(
+          AmountToStringParameters(amount: satoshiSum, precision: precision),
+        );
     0;
 
     return amountStr;
@@ -602,9 +632,14 @@ class SelectedInputsHelper {
     final precision = ref
         .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: utxo.assetId);
-    final amountStr = ref.read(amountToStringProvider).amountToString(
-        AmountToStringParameters(
-            amount: utxo.amount ?? 0, precision: precision));
+    final amountStr = ref
+        .read(amountToStringProvider)
+        .amountToString(
+          AmountToStringParameters(
+            amount: utxo.amount ?? 0,
+            precision: precision,
+          ),
+        );
     0;
 
     return amountStr;
@@ -613,7 +648,7 @@ class SelectedInputsHelper {
   Widget utxoAsset({required UtxosItem? utxo}) {
     return switch (utxo) {
       UtxosItem() => ref
-          .read(assetImageProvider)
+          .read(assetImageRepositoryProvider)
           .getCustomImage(utxo.assetId, width: 24, height: 24),
       _ => const SizedBox(),
     };
@@ -621,8 +656,9 @@ class SelectedInputsHelper {
 
   String utxoTicker({required UtxosItem? utxo}) {
     return switch (utxo) {
-      UtxosItem() =>
-        ref.read(assetUtilsProvider).tickerForAssetId(utxo.assetId),
+      UtxosItem() => ref
+          .read(assetUtilsProvider)
+          .tickerForAssetId(utxo.assetId),
       _ => '',
     };
   }
@@ -634,16 +670,22 @@ class SelectedInputsHelper {
     for (final assetId in assetIds) {
       final utxoList = utxos.where((element) => element.assetId == assetId);
       int amount = utxoList.fold(
-          0, (previousValue, element) => previousValue + (element.amount ?? 0));
+        0,
+        (previousValue, element) => previousValue + (element.amount ?? 0),
+      );
 
-      final precision =
-          ref.read(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
-      final amountStr = ref.read(amountToStringProvider).amountToString(
-          AmountToStringParameters(amount: amount, precision: precision));
+      final precision = ref
+          .read(assetUtilsProvider)
+          .getPrecisionForAssetId(assetId: assetId);
+      final amountStr = ref
+          .read(amountToStringProvider)
+          .amountToString(
+            AmountToStringParameters(amount: amount, precision: precision),
+          );
       0;
       final ticker = ref.read(assetUtilsProvider).tickerForAssetId(assetId);
       final asset = ref
-          .read(assetImageProvider)
+          .read(assetImageRepositoryProvider)
           .getCustomImage(assetId, width: 24, height: 24);
 
       totalAmounts.add((asset: asset, ticker: ticker, amount: amountStr));
@@ -710,9 +752,10 @@ class InputListItemExpandedStatesNotifier
 }
 
 @riverpod
-bool inputListItemExpandedState(InputListItemExpandedStateRef ref, int hash) {
-  final expandedStateList =
-      ref.watch(inputListItemExpandedStatesNotifierProvider);
+bool inputListItemExpandedState(Ref ref, int hash) {
+  final expandedStateList = ref.watch(
+    inputListItemExpandedStatesNotifierProvider,
+  );
   final index = expandedStateList.indexWhere((element) => element.hash == hash);
   if (index == -1) {
     return true; //default expanded state

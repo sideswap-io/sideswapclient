@@ -51,9 +51,11 @@ class DSettingsCustomHost extends HookConsumerWidget {
 
     final useTls = useState(false);
     final hostController = useTextEditingController(
-        text: ref.read(configurationProvider).networkHost);
+      text: ref.read(configurationProvider).networkHost,
+    );
     final portController = useTextEditingController(
-        text: ref.read(configurationProvider).networkPort.toString());
+      text: ref.read(configurationProvider).networkPort.toString(),
+    );
     final applyEnabled = useState(false);
     final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
 
@@ -99,10 +101,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Host'.tr(),
-                  style: textStyle,
-                ),
+                Text('Host'.tr(), style: textStyle),
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: SideSwapTextField(
@@ -112,10 +111,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 18),
-                  child: Text(
-                    'Port'.tr(),
-                    style: textStyle,
-                  ),
+                  child: Text('Port'.tr(), style: textStyle),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -139,10 +135,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8),
-                      child: Text(
-                        'Use TLS'.tr(),
-                        style: textStyle,
-                      ),
+                      child: Text('Use TLS'.tr(), style: textStyle),
                     ),
                   ),
                 ),
@@ -151,27 +144,30 @@ class DSettingsCustomHost extends HookConsumerWidget {
                   child: DCustomFilledBigButton(
                     width: 343,
                     height: 44,
-                    onPressed: applyEnabled.value
-                        ? () {
-                            ref
-                                .read(networkSettingsNotifierProvider.notifier)
-                                .setModel(NetworkSettingsModelApply(
-                                  settingsNetworkType:
-                                      SettingsNetworkType.personal,
-                                  env: SIDESWAP_ENV_PROD,
-                                  host: hostController.text,
-                                  port: int.parse(portController.text),
-                                  useTls: useTls.value,
-                                ));
-                            goBack(context, ref);
-                          }
-                        : null,
+                    onPressed:
+                        applyEnabled.value
+                            ? () {
+                              ref
+                                  .read(
+                                    networkSettingsNotifierProvider.notifier,
+                                  )
+                                  .setModel(
+                                    NetworkSettingsModelApply(
+                                      settingsNetworkType:
+                                          SettingsNetworkType.personal,
+                                      env: SIDESWAP_ENV_PROD,
+                                      host: hostController.text,
+                                      port: int.parse(portController.text),
+                                      useTls: useTls.value,
+                                    ),
+                                  );
+                              goBack(context, ref);
+                            }
+                            : null,
                     child: Text('APPLY'.tr()),
                   ),
                 ),
-                const SizedBox(
-                  height: 18,
-                ),
+                const SizedBox(height: 18),
               ],
             ),
           ),
@@ -183,9 +179,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
               onPressed: () {
                 goBack(context, ref);
               },
-              child: Text(
-                'BACK'.tr(),
-              ),
+              child: Text('BACK'.tr()),
             ),
           ),
         ],

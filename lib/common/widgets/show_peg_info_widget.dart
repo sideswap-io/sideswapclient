@@ -29,9 +29,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
       width: 343,
       height: 390,
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
         color: SideSwapColors.blumine,
       ),
       child: Padding(
@@ -42,11 +40,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
             CircleAvatar(
               backgroundColor: Colors.white,
               radius: 28,
-              child: SvgPicture.asset(
-                'assets/info.svg',
-                width: 13,
-                height: 32,
-              ),
+              child: SvgPicture.asset('assets/info.svg', width: 13, height: 32),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 24),
@@ -67,11 +61,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
             ),
             const Padding(
               padding: EdgeInsets.only(top: 22),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                color: Color(0xFF357CA4),
-              ),
+              child: Divider(height: 1, thickness: 1, color: Color(0xFF357CA4)),
             ),
             CustomCheckBoxRow(
               onChanged: (value) {
@@ -93,11 +83,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 ),
               ),
             ),
-            const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFF357CA4),
-            ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFF357CA4)),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.only(top: 32),

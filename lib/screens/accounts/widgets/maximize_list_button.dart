@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class MaximizeListButton extends StatefulWidget {
-  const MaximizeListButton({
-    super.key,
-    this.onPressed,
-    required this.position,
-  });
+  const MaximizeListButton({super.key, this.onPressed, required this.position});
 
   final VoidCallback? onPressed;
   final double position;
@@ -38,8 +34,10 @@ class MaximizeListButtonState extends State<MaximizeListButton> {
                   'assets/mini_button.svg',
                   width: 22,
                   height: 13,
-                  colorFilter:
-                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class DWorkingOrdersHeader extends StatelessWidget {
-  const DWorkingOrdersHeader({
-    super.key,
-    required this.text,
-  });
+  const DWorkingOrdersHeader({super.key, required this.text});
 
   final String text;
 
@@ -12,10 +10,7 @@ class DWorkingOrdersHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFF87C1E1),
-        fontSize: 12,
-      ),
+      style: const TextStyle(color: SideSwapColors.cornFlower, fontSize: 12),
     );
   }
 }

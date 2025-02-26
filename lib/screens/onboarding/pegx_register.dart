@@ -26,8 +26,10 @@ class PegxRegister extends HookConsumerWidget {
     ref.listen(pegxLoginStateNotifierProvider, (previous, next) async {
       next.maybeWhen(
         login: (requestId) async {
-          await openUrl('$pegxIntraAutheIdUrl$requestId',
-              mode: LaunchMode.externalNonBrowserApplication);
+          await openUrl(
+            '$pegxIntraAutheIdUrl$requestId',
+            mode: LaunchMode.externalNonBrowserApplication,
+          );
         },
         orElse: () {},
       );
@@ -76,11 +78,7 @@ class PegxRegister extends HookConsumerWidget {
       child: Center(
         child: Column(
           children: [
-            SvgPicture.asset(
-              'assets/pegx_logo.svg',
-              width: 104,
-              height: 24,
-            ),
+            SvgPicture.asset('assets/pegx_logo.svg', width: 104, height: 24),
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Text(
@@ -110,7 +108,7 @@ class PegxRegister extends HookConsumerWidget {
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

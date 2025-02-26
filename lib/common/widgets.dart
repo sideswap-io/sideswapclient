@@ -26,8 +26,9 @@ class ShareTxidButtons extends ConsumerWidget {
           child: SizedBox(
             height: 50,
             child: ElevatedButton(
-              onPressed: () =>
-                  ref.read(walletProvider).openTxUrl(txid, isLiquid, false),
+              onPressed:
+                  () =>
+                      ref.read(walletProvider).openTxUrl(txid, isLiquid, false),
               child: const Text('LINK TO EXTERNAL EXPLORER').tr(),
             ),
           ),
@@ -48,10 +49,7 @@ class ShareTxidButtons extends ConsumerWidget {
 }
 
 class ShareAddress extends StatelessWidget {
-  const ShareAddress({
-    super.key,
-    required this.addr,
-  });
+  const ShareAddress({super.key, required this.addr});
 
   final String addr;
 
@@ -64,10 +62,7 @@ class ShareAddress extends StatelessWidget {
           text: 'Copy'.tr(),
           onPressed: () => copyToClipboard(context, addr),
         ),
-        CustomButton(
-          text: 'Share'.tr(),
-          onPressed: () => shareAddress(addr),
-        ),
+        CustomButton(text: 'Share'.tr(), onPressed: () => shareAddress(addr)),
       ],
     );
   }
@@ -76,18 +71,12 @@ class ShareAddress extends StatelessWidget {
 class CopyButton extends StatelessWidget {
   final String value;
 
-  const CopyButton({
-    super.key,
-    required this.value,
-  });
+  const CopyButton({super.key, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: const Icon(
-        Icons.copy,
-        size: 32,
-      ),
+      icon: const Icon(Icons.copy, size: 32),
       onPressed: () => copyToClipboard(context, value),
     );
   }

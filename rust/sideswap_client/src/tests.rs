@@ -10,6 +10,14 @@ use crate::{
     worker::{self, AccountId, ACCOUNT_ID_AMP, ACCOUNT_ID_REG},
 };
 
+#[derive(Default)]
+struct SubscribedValues {
+    peg_in_min_amount: Option<u64>,
+    peg_in_wallet_balance: Option<u64>,
+    peg_out_min_amount: Option<u64>,
+    peg_out_wallet_balance: Option<u64>,
+}
+
 struct Data {
     msg_sender: mpsc::Sender<worker::Message>,
     from_receiver: mpsc::Receiver<proto::from::Msg>,
@@ -17,6 +25,7 @@ struct Data {
     balances: BTreeMap<AccountId, Vec<proto::Balance>>,
     own_orders: BTreeMap<u64, proto::OwnOrder>,
     own_orders_received: bool,
+    subscribed_values: SubscribedValues,
 }
 
 const LBTC: &str = "144c654344aa716d6f3abcc1ca90e5641e4e2a7f633bc09fe3baf64585819a49";
@@ -60,6 +69,21 @@ impl Data {
 
             proto::from::Msg::MinMarketAmounts(_msg) => {}
 
+            proto::from::Msg::SubscribedValue(msg) => match msg.result.as_ref().unwrap() {
+                proto::from::subscribed_value::Result::PegInMinAmount(value) => {
+                    self.subscribed_values.peg_in_min_amount = Some(*value);
+                }
+                proto::from::subscribed_value::Result::PegInWalletBalance(value) => {
+                    self.subscribed_values.peg_in_wallet_balance = Some(*value);
+                }
+                proto::from::subscribed_value::Result::PegOutMinAmount(value) => {
+                    self.subscribed_values.peg_out_min_amount = Some(*value);
+                }
+                proto::from::subscribed_value::Result::PegOutWalletBalance(value) => {
+                    self.subscribed_values.peg_out_wallet_balance = Some(*value);
+                }
+            },
+
             proto::from::Msg::Login(_)
             | proto::from::Msg::Logout(_)
             | proto::from::Msg::EnvSettings(_)
@@ -94,6 +118,7 @@ impl Data {
             | proto::from::Msg::ConversionRates(_)
             | proto::from::Msg::JadePorts(_)
             | proto::from::Msg::JadeStatus(_)
+            | proto::from::Msg::JadeUnlock(_)
             | proto::from::Msg::GaidStatus(_)
             | proto::from::Msg::MarketList(_)
             | proto::from::Msg::MarketAdded(_)
@@ -148,6 +173,7 @@ fn start_wallet(wallet: proto::to::login::Wallet, work_dir: &str) -> Data {
         balances: BTreeMap::new(),
         own_orders: BTreeMap::new(),
         own_orders_received: false,
+        subscribed_values: SubscribedValues::default(),
     };
 
     data.send(proto::to::Msg::Login(proto::to::Login {
@@ -231,7 +257,8 @@ fn submit_order(
             quote: quote.to_owned(),
         },
         base_amount,
-        price,
+        price: Some(price),
+        price_tracking: None,
         trade_dir: trade_dir.into(),
         ttl_seconds: Some(60),
         two_step,
@@ -331,7 +358,10 @@ fn make_order_swap(data: &mut Data, order_id: u64, private_id: Option<String>) {
         let msg = data.recv();
         if let proto::from::Msg::StartOrder(msg) = msg {
             assert!(
-                msg.success && msg.error_msg.is_none(),
+                matches!(
+                    msg.result.as_ref().unwrap(),
+                    proto::from::start_order::Result::Success(_)
+                ),
                 "starting private failed: {msg:?}"
             );
             break;
@@ -705,4 +735,27 @@ fn swap_sswp_for_usdt_wallet1_wallet2_private() {
     let mut data2 = start_wallet_2();
 
     make_order_swap(&mut data2, order.order_id.id, order.private_id.clone());
+}
+
+#[ignore]
+#[test]
+fn send_pegin_wallet_balance() {
+    let mut data1 = start_wallet_1();
+
+    data1.send(proto::to::Msg::ActivePage(proto::ActivePage::PegIn.into()));
+    while data1.subscribed_values.peg_in_min_amount.is_none()
+        || data1.subscribed_values.peg_in_wallet_balance.is_none()
+    {
+        data1.recv();
+    }
+
+    data1.send(proto::to::Msg::ActivePage(proto::ActivePage::Other.into()));
+    data1.subscribed_values = SubscribedValues::default();
+
+    data1.send(proto::to::Msg::ActivePage(proto::ActivePage::PegIn.into()));
+    while data1.subscribed_values.peg_in_min_amount.is_none()
+        || data1.subscribed_values.peg_in_wallet_balance.is_none()
+    {
+        data1.recv();
+    }
 }

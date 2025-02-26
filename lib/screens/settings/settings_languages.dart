@@ -10,9 +10,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
 class Languages extends ConsumerWidget {
-  const Languages({
-    super.key,
-  });
+  const Languages({super.key});
 
   VoidCallback close(BuildContext context) {
     return () {
@@ -27,10 +25,7 @@ class Languages extends ConsumerWidget {
 
     return SideSwapScaffold(
       canPop: true,
-      appBar: CustomAppBar(
-        title: 'Language'.tr(),
-        onPressed: close(context),
-      ),
+      appBar: CustomAppBar(title: 'Language'.tr(), onPressed: close(context)),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -54,10 +49,13 @@ class Languages extends ConsumerWidget {
                           ),
                           color:
                               isSelected ? SideSwapColors.chathamsBlue : null,
-                          border: isSelected
-                              ? null
-                              : Border.all(
-                                  color: const Color(0xFF327FA9), width: 1),
+                          border:
+                              isSelected
+                                  ? null
+                                  : Border.all(
+                                    color: const Color(0xFF327FA9),
+                                    width: 1,
+                                  ),
                         ),
                         child: Material(
                           color: Colors.transparent,
@@ -103,14 +101,14 @@ class Languages extends ConsumerWidget {
             ),
             Container(
               decoration: DContentDialogThemeData.standard().actionsDecoration,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 118),
+              padding: const EdgeInsets.symmetric(
+                vertical: 20,
+                horizontal: 118,
+              ),
               child: DCustomTextBigButton(
                 width: 266,
                 onPressed: close(context),
-                child: Text(
-                  'BACK'.tr(),
-                ),
+                child: Text('BACK'.tr()),
               ),
             ),
           ],

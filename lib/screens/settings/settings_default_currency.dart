@@ -13,15 +13,14 @@ class SettingsDefaultCurrency extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final conversionRates = ref.watch(conversionRatesNotifierProvider);
-    final defaultConverstionRate =
-        ref.watch(defaultConversionRateNotifierProvider);
+    final defaultConverstionRate = ref.watch(
+      defaultConversionRateNotifierProvider,
+    );
 
     return SideSwapScaffold(
-      appBar: CustomAppBar(
-        title: 'Currency'.tr(),
-      ),
+      appBar: CustomAppBar(title: 'Currency'.tr()),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -30,32 +29,41 @@ class SettingsDefaultCurrency extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             SliverList.builder(
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.only(bottom: 10, left: 16, right: 16),
-                child: SettingsCheckboxButton(
-                  checked: defaultConverstionRate ==
-                      conversionRates.usdConversionRates[index],
-                  onChanged: (value) {
-                    ref
-                        .read(defaultConversionRateNotifierProvider.notifier)
-                        .setDefaultConversionRate(
-                            conversionRates.usdConversionRates[index]);
-                  },
-                  content: Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                      conversionRates.usdConversionRates[index].name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.white,
+              itemBuilder:
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 10,
+                      left: 16,
+                      right: 16,
+                    ),
+                    child: SettingsCheckboxButton(
+                      checked:
+                          defaultConverstionRate ==
+                          conversionRates.usdConversionRates[index],
+                      onChanged: (value) {
+                        ref
+                            .read(
+                              defaultConversionRateNotifierProvider.notifier,
+                            )
+                            .setDefaultConversionRate(
+                              conversionRates.usdConversionRates[index],
+                            );
+                      },
+                      content: Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text(
+                          conversionRates.usdConversionRates[index].name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
               itemCount: conversionRates.usdConversionRates.length,
-            )
+            ),
           ],
         ),
       ),

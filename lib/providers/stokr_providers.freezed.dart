@@ -12,7 +12,8 @@ part of 'stokr_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 StokrSettingsModel _$StokrSettingsModelFromJson(Map<String, dynamic> json) {
   return _StokrSettingsModel.fromJson(json);
@@ -22,8 +23,12 @@ StokrSettingsModel _$StokrSettingsModelFromJson(Map<String, dynamic> json) {
 mixin _$StokrSettingsModel {
   bool? get firstRun => throw _privateConstructorUsedError;
 
+  /// Serializes this StokrSettingsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of StokrSettingsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $StokrSettingsModelCopyWith<StokrSettingsModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -31,8 +36,9 @@ mixin _$StokrSettingsModel {
 /// @nodoc
 abstract class $StokrSettingsModelCopyWith<$Res> {
   factory $StokrSettingsModelCopyWith(
-          StokrSettingsModel value, $Res Function(StokrSettingsModel) then) =
-      _$StokrSettingsModelCopyWithImpl<$Res, StokrSettingsModel>;
+    StokrSettingsModel value,
+    $Res Function(StokrSettingsModel) then,
+  ) = _$StokrSettingsModelCopyWithImpl<$Res, StokrSettingsModel>;
   @useResult
   $Res call({bool? firstRun});
 }
@@ -47,26 +53,31 @@ class _$StokrSettingsModelCopyWithImpl<$Res, $Val extends StokrSettingsModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of StokrSettingsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? firstRun = freezed,
-  }) {
-    return _then(_value.copyWith(
-      firstRun: freezed == firstRun
-          ? _value.firstRun
-          : firstRun // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ) as $Val);
+  $Res call({Object? firstRun = freezed}) {
+    return _then(
+      _value.copyWith(
+            firstRun:
+                freezed == firstRun
+                    ? _value.firstRun
+                    : firstRun // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$StokrSettingsModelImplCopyWith<$Res>
     implements $StokrSettingsModelCopyWith<$Res> {
-  factory _$$StokrSettingsModelImplCopyWith(_$StokrSettingsModelImpl value,
-          $Res Function(_$StokrSettingsModelImpl) then) =
-      __$$StokrSettingsModelImplCopyWithImpl<$Res>;
+  factory _$$StokrSettingsModelImplCopyWith(
+    _$StokrSettingsModelImpl value,
+    $Res Function(_$StokrSettingsModelImpl) then,
+  ) = __$$StokrSettingsModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({bool? firstRun});
@@ -76,21 +87,25 @@ abstract class _$$StokrSettingsModelImplCopyWith<$Res>
 class __$$StokrSettingsModelImplCopyWithImpl<$Res>
     extends _$StokrSettingsModelCopyWithImpl<$Res, _$StokrSettingsModelImpl>
     implements _$$StokrSettingsModelImplCopyWith<$Res> {
-  __$$StokrSettingsModelImplCopyWithImpl(_$StokrSettingsModelImpl _value,
-      $Res Function(_$StokrSettingsModelImpl) _then)
-      : super(_value, _then);
+  __$$StokrSettingsModelImplCopyWithImpl(
+    _$StokrSettingsModelImpl _value,
+    $Res Function(_$StokrSettingsModelImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of StokrSettingsModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? firstRun = freezed,
-  }) {
-    return _then(_$StokrSettingsModelImpl(
-      firstRun: freezed == firstRun
-          ? _value.firstRun
-          : firstRun // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ));
+  $Res call({Object? firstRun = freezed}) {
+    return _then(
+      _$StokrSettingsModelImpl(
+        firstRun:
+            freezed == firstRun
+                ? _value.firstRun
+                : firstRun // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+      ),
+    );
   }
 }
 
@@ -121,22 +136,24 @@ class _$StokrSettingsModelImpl implements _StokrSettingsModel {
                 other.firstRun == firstRun));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, firstRun);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of StokrSettingsModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$StokrSettingsModelImplCopyWith<_$StokrSettingsModelImpl> get copyWith =>
       __$$StokrSettingsModelImplCopyWithImpl<_$StokrSettingsModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$StokrSettingsModelImplToJson(
-      this,
-    );
+    return _$$StokrSettingsModelImplToJson(this);
   }
 }
 
@@ -149,8 +166,11 @@ abstract class _StokrSettingsModel implements StokrSettingsModel {
 
   @override
   bool? get firstRun;
+
+  /// Create a copy of StokrSettingsModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$StokrSettingsModelImplCopyWith<_$StokrSettingsModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

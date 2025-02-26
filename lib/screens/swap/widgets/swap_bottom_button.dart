@@ -47,10 +47,7 @@ class SwapBottomButton extends HookConsumerWidget {
                     child: SizedBox(
                       width: 32,
                       height: 32,
-                      child: SpinKitCircle(
-                        color: Colors.white,
-                        size: 32,
-                      ),
+                      child: SpinKitCircle(color: Colors.white, size: 32),
                     ),
                   );
                 }

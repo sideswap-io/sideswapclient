@@ -43,7 +43,7 @@ class AssetReceiveScreen extends HookConsumerWidget {
         },
       ),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -71,9 +71,7 @@ class AssetReceiveScreen extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                AssetReceiveWidget(
-                  key: Key(isAmp.toString()),
-                ),
+                AssetReceiveWidget(key: Key(isAmp.toString())),
               ],
             );
           },

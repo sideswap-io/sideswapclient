@@ -9,10 +9,11 @@ class _CustomHintBorderContainerPainter extends CustomPainter {
     this.radius = 0,
     this.left = 0,
     this.strokeWidth = 2,
-  }) : painter = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth
-          ..color = color;
+  }) : painter =
+           Paint()
+             ..style = PaintingStyle.stroke
+             ..strokeWidth = strokeWidth
+             ..color = color;
 
   final Paint painter;
   final double radius;
@@ -31,8 +32,14 @@ class _CustomHintBorderContainerPainter extends CustomPainter {
     path.lineTo(size.width - radius, 0);
     path.cubicTo(size.width - radius, 0, size.width, 0, size.width, radius);
     path.lineTo(size.width, size.height - radius);
-    path.cubicTo(size.width, size.height - radius, size.width, size.height,
-        size.width - radius, size.height);
+    path.cubicTo(
+      size.width,
+      size.height - radius,
+      size.width,
+      size.height,
+      size.width - radius,
+      size.height,
+    );
 
     path.lineTo(radius, size.height);
     path.cubicTo(radius, size.height, 0, size.height, 0, size.height - radius);
@@ -100,11 +107,7 @@ class CustomHintBorderContainer extends HookConsumerWidget {
             left: left,
             strokeWidth: strokeWidth,
           ),
-          child: SizedBox(
-            height: height,
-            width: width,
-            child: child,
-          ),
+          child: SizedBox(height: height, width: width, child: child),
         ),
         Positioned(
           top: -textHeight.value / 2,
@@ -112,12 +115,9 @@ class CustomHintBorderContainer extends HookConsumerWidget {
           child: Padding(
             key: textKey,
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              title,
-              style: textStyle,
-            ),
+            child: Text(title, style: textStyle),
           ),
-        )
+        ),
       ],
     );
   }

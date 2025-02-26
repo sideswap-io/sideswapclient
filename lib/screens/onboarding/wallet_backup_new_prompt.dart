@@ -8,7 +8,6 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/new_wallet_backup_skip_prompt_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 import 'package:sideswap/screens/onboarding/widgets/wallet_backup_new_prompt_dialog.dart';
 
@@ -66,8 +65,11 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.only(top: 12, left: 16, right: 16),
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      left: 16,
+                      right: 16,
+                    ),
                     child: Text(
                       'Protect your assets by ensuring you save the 12 word recovery phrase which can restore your wallet'
                           .tr(),
@@ -83,10 +85,7 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
                   const SizedBox(height: 32),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 32),
-                    child: PageDots(
-                      maxSelectedDots:
-                          FlavorConfig.enableOnboardingUserFeatures ? 1 : 4,
-                    ),
+                    child: PageDots(maxSelectedDots: 4),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -95,11 +94,14 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
                       height: 54,
                       text: 'YES'.tr(),
                       backgroundColor: SideSwapColors.brightTurquoise,
-                      onPressed: skipForNow == const SkipForNowStateEmpty()
-                          ? () {
-                              ref.read(walletProvider).backupNewWalletEnable();
-                            }
-                          : null,
+                      onPressed:
+                          skipForNow == const SkipForNowStateEmpty()
+                              ? () {
+                                ref
+                                    .read(walletProvider)
+                                    .backupNewWalletEnable();
+                              }
+                              : null,
                     ),
                   ),
                   Padding(
@@ -112,11 +114,12 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
                         text: 'NOT NOW'.tr(),
                         textColor: SideSwapColors.brightTurquoise,
                         backgroundColor: Colors.transparent,
-                        onPressed: skipForNow == const SkipForNowStateEmpty()
-                            ? () async {
-                                showWalletBackupDialog(context);
-                              }
-                            : null,
+                        onPressed:
+                            skipForNow == const SkipForNowStateEmpty()
+                                ? () async {
+                                  showWalletBackupDialog(context);
+                                }
+                                : null,
                       ),
                     ),
                   ),
@@ -127,14 +130,12 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
               Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 child: const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
+                  child: CircularProgressIndicator(color: Colors.white),
                 ),
               ),
-            ]
+            ],
           ],
         ),
       ),

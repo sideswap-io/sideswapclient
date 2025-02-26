@@ -21,9 +21,7 @@ class DIconButton extends DBaseButton {
     super.style,
     this.iconButtonMode,
     super.cursor,
-  }) : super(
-          child: icon,
-        );
+  }) : super(child: icon);
 
   final IconButtonMode? iconButtonMode;
 
@@ -35,29 +33,36 @@ class DIconButton extends DBaseButton {
     final disabledColor =
         container.read(desktopAppThemeNotifierProvider).disabledColor;
 
-    final isIconSmall = SmallIconButton.of(context) != null ||
+    final isIconSmall =
+        SmallIconButton.of(context) != null ||
         iconButtonMode == IconButtonMode.tiny;
-    final isSmall = iconButtonMode != null
-        ? iconButtonMode != IconButtonMode.large
-        : SmallIconButton.of(context) != null;
+    final isSmall =
+        iconButtonMode != null
+            ? iconButtonMode != IconButtonMode.large
+            : SmallIconButton.of(context) != null;
     return DButtonStyle(
       iconSize: ButtonState.all(isIconSmall ? 11.0 : null),
-      padding: ButtonState.all(isSmall
-          ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0)
-          : const EdgeInsets.all(8.0)),
+      padding: ButtonState.all(
+        isSmall
+            ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0)
+            : const EdgeInsets.all(8.0),
+      ),
       backgroundColor: ButtonState.resolveWith((states) {
         return states.isDisabled
             ? DButtonThemeData.buttonColor(brightness, states)
             : DButtonThemeData.uncheckedInputColor(
-                brightness, disabledColor, states);
+              brightness,
+              disabledColor,
+              states,
+            );
       }),
       foregroundColor: ButtonState.resolveWith((states) {
         if (states.isDisabled) return disabledColor;
         return null;
       }),
-      shape: ButtonState.all(RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4.0),
-      )),
+      shape: ButtonState.all(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
+      ),
     );
   }
 
@@ -68,10 +73,7 @@ class DIconButton extends DBaseButton {
 }
 
 class SmallIconButton extends InheritedWidget {
-  const SmallIconButton({
-    super.key,
-    required super.child,
-  });
+  const SmallIconButton({super.key, required super.child});
 
   static SmallIconButton? of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<SmallIconButton>();

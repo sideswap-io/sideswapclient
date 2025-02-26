@@ -45,11 +45,12 @@ class SignType extends StatelessWidget {
               activeText: 'Online'.tr(),
               inactiveText: 'Offline'.tr(),
               value: !twoStep,
-              onToggle: onToggle != null
-                  ? (value) {
-                      onToggle!(!value);
-                    }
-                  : null,
+              onToggle:
+                  onToggle != null
+                      ? (value) {
+                        onToggle!(!value);
+                      }
+                      : null,
             ),
           ],
         ),

@@ -1,6 +1,6 @@
 pub const MIN_FEE_RATE: f64 = 0.1;
 
-pub const WEIGHT_FIXED: usize = 220;
+pub const WEIGHT_FIXED: usize = 222;
 
 pub const WEIGHT_VIN_SINGLE_SIG_NATIVE: usize = 275;
 pub const WEIGHT_VIN_SINGLE_SIG_NESTED: usize = 367;

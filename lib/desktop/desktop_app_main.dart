@@ -10,15 +10,13 @@ class DSideSwapScrollBehavior extends MaterialScrollBehavior {
   // Override behavior methods and getters like dragDevices
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
 }
 
 class DesktopAppMain extends StatelessWidget {
-  const DesktopAppMain({
-    super.key,
-  });
+  const DesktopAppMain({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,12 +56,14 @@ class DesktopApp extends StatelessWidget {
             fontFamily: desktopAppTheme.fontFamily,
             scrollbarTheme: desktopAppTheme.scrollbarTheme,
             textSelectionTheme: desktopAppTheme.textSelectionTheme,
+            extensions: desktopAppTheme.themeExtensions,
           ),
           scrollBehavior: DSideSwapScrollBehavior(),
           builder: (context, widget) {
             return MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: const TextScaler.linear(1.0)),
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(1.0)),
               child: widget!,
             );
           },

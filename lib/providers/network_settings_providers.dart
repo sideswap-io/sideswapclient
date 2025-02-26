@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
@@ -6,12 +7,7 @@ import 'package:sideswap/providers/env_provider.dart';
 part 'network_settings_providers.freezed.dart';
 part 'network_settings_providers.g.dart';
 
-enum SettingsNetworkType {
-  blockstream,
-  sideswap,
-  personal,
-  sideswapChina,
-}
+enum SettingsNetworkType { blockstream, sideswap, personal, sideswapChina }
 
 @Freezed(equal: false)
 class NetworkSettingsModel with _$NetworkSettingsModel {
@@ -39,26 +35,32 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
   @override
   NetworkSettingsModel build() {
     final networkSettingsModel = ref.watch(
-        configurationProvider.select((value) => value.networkSettingsModel));
+      configurationProvider.select((value) => value.networkSettingsModel),
+    );
 
     if (networkSettingsModel is NetworkSettingsModelEmpty ||
         networkSettingsModel == null) {
       final env = ref.watch(configurationProvider.select((value) => value.env));
       final settingsNetworkType = ref.watch(
-          configurationProvider.select((value) => value.settingsNetworkType));
-      final host =
-          ref.watch(configurationProvider.select((value) => value.networkHost));
-      final port =
-          ref.watch(configurationProvider.select((value) => value.networkPort));
-      final useTls = ref
-          .watch(configurationProvider.select((value) => value.networkUseTLS));
+        configurationProvider.select((value) => value.settingsNetworkType),
+      );
+      final host = ref.watch(
+        configurationProvider.select((value) => value.networkHost),
+      );
+      final port = ref.watch(
+        configurationProvider.select((value) => value.networkPort),
+      );
+      final useTls = ref.watch(
+        configurationProvider.select((value) => value.networkUseTLS),
+      );
 
       return NetworkSettingsModelEmpty(
-          settingsNetworkType: settingsNetworkType,
-          env: env,
-          host: host,
-          port: port,
-          useTls: useTls);
+        settingsNetworkType: settingsNetworkType,
+        env: env,
+        host: host,
+        port: port,
+        useTls: useTls,
+      );
     }
 
     return networkSettingsModel;
@@ -75,29 +77,32 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
     // make sure that empty model have current base settings
     if (networkSettingsModel is NetworkSettingsModelEmpty) {
       state = NetworkSettingsModel.empty(
-          settingsNetworkType: settingsNetworkType,
-          env: env,
-          host: host,
-          port: port,
-          useTls: useTls);
-      return;
-    }
-
-    final oldNetworkSettingsModel = NetworkSettingsModel.apply(
         settingsNetworkType: settingsNetworkType,
         env: env,
         host: host,
         port: port,
-        useTls: useTls);
+        useTls: useTls,
+      );
+      return;
+    }
+
+    final oldNetworkSettingsModel = NetworkSettingsModel.apply(
+      settingsNetworkType: settingsNetworkType,
+      env: env,
+      host: host,
+      port: port,
+      useTls: useTls,
+    );
 
     // if it's the same values like current, set model as empty
     if (networkSettingsModel == oldNetworkSettingsModel) {
       state = NetworkSettingsModel.empty(
-          settingsNetworkType: networkSettingsModel.settingsNetworkType,
-          env: networkSettingsModel.env,
-          host: networkSettingsModel.host,
-          port: networkSettingsModel.port,
-          useTls: networkSettingsModel.useTls);
+        settingsNetworkType: networkSettingsModel.settingsNetworkType,
+        env: networkSettingsModel.env,
+        host: networkSettingsModel.host,
+        port: networkSettingsModel.port,
+        useTls: networkSettingsModel.useTls,
+      );
       save();
       return;
     }
@@ -119,7 +124,8 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
             when newSettingsNetworkType !=
                 sideswapSettings.settingsNetworkType =>
           sideswapSettings = sideswapSettings.copyWith(
-              settingsNetworkType: newSettingsNetworkType),
+            settingsNetworkType: newSettingsNetworkType,
+          ),
         _ => () {}(),
       });
 
@@ -137,20 +143,22 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
 
       (switch (state.useTls) {
         final newUseTls? when newUseTls != sideswapSettings.networkUseTLS =>
-          sideswapSettings =
-              sideswapSettings.copyWith(networkUseTLS: newUseTls),
+          sideswapSettings = sideswapSettings.copyWith(
+            networkUseTLS: newUseTls,
+          ),
         _ => () {}(),
       });
 
       (switch (state.env) {
-        final newEnv? when newEnv != sideswapSettings.env => sideswapSettings =
-            sideswapSettings.copyWith(env: newEnv),
+        final newEnv? when newEnv != sideswapSettings.env =>
+          sideswapSettings = sideswapSettings.copyWith(env: newEnv),
         _ => () {}(),
       });
 
       // cleanup apply state
       sideswapSettings = sideswapSettings.copyWith(
-          networkSettingsModel: const NetworkSettingsModelEmpty());
+        networkSettingsModel: const NetworkSettingsModelEmpty(),
+      );
 
       // save
       ref.read(configurationProvider.notifier).setSettings(sideswapSettings);
@@ -159,9 +167,10 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
 }
 
 @riverpod
-bool networkSettingsNeedSave(NetworkSettingsNeedSaveRef ref) {
+bool networkSettingsNeedSave(Ref ref) {
   final settingsNetworkType = ref.watch(
-      configurationProvider.select((value) => value.settingsNetworkType));
+    configurationProvider.select((value) => value.settingsNetworkType),
+  );
   final env = ref.watch(envProvider);
 
   final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);

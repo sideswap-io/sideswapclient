@@ -32,10 +32,12 @@ class DSettingsRadioButton extends HookConsumerWidget {
     super.debugFillProperties(properties);
     properties
       ..add(FlagProperty('checked', value: checked, ifFalse: 'unchecked'))
-      ..add(FlagProperty('disabled',
-          value: onChanged == null, ifFalse: 'enabled'))
       ..add(
-          FlagProperty('autofocus', value: autofocus, ifFalse: 'manual focus'))
+        FlagProperty('disabled', value: onChanged == null, ifFalse: 'enabled'),
+      )
+      ..add(
+        FlagProperty('autofocus', value: autofocus, ifFalse: 'manual focus'),
+      )
       ..add(StringProperty('semanticLabel', semanticLabel));
   }
 
@@ -54,43 +56,48 @@ class DSettingsRadioButton extends HookConsumerWidget {
         final settingsRadioButtonStyle =
             DSettingsRadioButtonThemeData.standard();
 
-        final BoxDecoration decoration = (checked
+        final BoxDecoration decoration =
+            (checked
                 ? settingsRadioButtonStyle.checkedDecoration?.resolve(state)
-                : settingsRadioButtonStyle.uncheckedDecoration
-                    ?.resolve(state)) ??
+                : settingsRadioButtonStyle.uncheckedDecoration?.resolve(
+                  state,
+                )) ??
             const BoxDecoration(shape: BoxShape.circle);
 
         Widget child = AnimatedContainer(
+          duration: fastAnimationDuration,
+          curve: animationCurve,
+          height: 20,
+          width: 20,
+          decoration: decoration.copyWith(color: Colors.transparent),
+          child: AnimatedContainer(
             duration: fastAnimationDuration,
             curve: animationCurve,
-            height: 20,
-            width: 20,
-            decoration: decoration.copyWith(color: Colors.transparent),
-            child: AnimatedContainer(
-              duration: fastAnimationDuration,
-              curve: animationCurve,
-              decoration: BoxDecoration(
-                color: decoration.color ?? Colors.transparent,
-                shape: decoration.shape,
-              ),
-              child: checked
-                  ? Icon(
-                      Icons.done,
-                      size: state.isHovering ? 14 : 12,
-                    )
-                  : null,
-            ));
+            decoration: BoxDecoration(
+              color: decoration.color ?? Colors.transparent,
+              shape: decoration.shape,
+            ),
+            child:
+                checked
+                    ? Icon(Icons.done, size: state.isHovering ? 14 : 12)
+                    : null,
+          ),
+        );
         if (content != null) {
           child = Container(
             decoration: BoxDecoration(
-              border: checked
-                  ? Border.all(color: Colors.transparent)
-                  : Border.all(color: const Color(0xFF327FA9)),
-              color: (checked
-                      ? settingsRadioButtonStyle.checkedBackground
-                          ?.resolve(state)
-                      : settingsRadioButtonStyle.uncheckedBackground
-                          ?.resolve(state)) ??
+              border:
+                  checked
+                      ? Border.all(color: Colors.transparent)
+                      : Border.all(color: const Color(0xFF327FA9)),
+              color:
+                  (checked
+                      ? settingsRadioButtonStyle.checkedBackground?.resolve(
+                        state,
+                      )
+                      : settingsRadioButtonStyle.uncheckedBackground?.resolve(
+                        state,
+                      )) ??
                   Colors.transparent,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
@@ -107,10 +114,7 @@ class DSettingsRadioButton extends HookConsumerWidget {
                   const Spacer(),
                   const Padding(
                     padding: EdgeInsets.only(right: 8),
-                    child: Icon(
-                      Icons.chevron_right,
-                      size: 20,
-                    ),
+                    child: Icon(Icons.chevron_right, size: 20),
                   ),
                 ],
               ],
@@ -142,42 +146,48 @@ class DSettingsRadioButtonThemeData with Diagnosticable {
 
   factory DSettingsRadioButtonThemeData.standard() {
     return DSettingsRadioButtonThemeData(
-        checkedDecoration: ButtonState.resolveWith((states) {
-      return const BoxDecoration(
-        shape: BoxShape.circle,
-        color: SideSwapColors.brightTurquoise,
-      );
-    }), uncheckedDecoration: ButtonState.resolveWith((states) {
-      return BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
+      checkedDecoration: ButtonState.resolveWith((states) {
+        return const BoxDecoration(
+          shape: BoxShape.circle,
+          color: SideSwapColors.brightTurquoise,
+        );
+      }),
+      uncheckedDecoration: ButtonState.resolveWith((states) {
+        return BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
             color: const Color(0xFF327FA9),
-            width: states.isPressing
-                ? 4
-                : states.isHovering
+            width:
+                states.isPressing
+                    ? 4
+                    : states.isHovering
                     ? 2
-                    : 1),
-      );
-    }), checkedBackground: ButtonState.resolveWith((states) {
-      if (states.isPressing) {
-        return SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.2);
-      }
+                    : 1,
+          ),
+        );
+      }),
+      checkedBackground: ButtonState.resolveWith((states) {
+        if (states.isPressing) {
+          return SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.2);
+        }
 
-      if (states.isHovering) {
-        return SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.1);
-      }
+        if (states.isHovering) {
+          return SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.1);
+        }
 
-      return SideSwapColors.chathamsBlue;
-    }), uncheckedBackground: ButtonState.resolveWith((states) {
-      if (states.isPressing) {
-        return Colors.transparent.lerpWith(Colors.black, 0.2);
-      }
+        return SideSwapColors.chathamsBlue;
+      }),
+      uncheckedBackground: ButtonState.resolveWith((states) {
+        if (states.isPressing) {
+          return Colors.transparent.lerpWith(Colors.black, 0.2);
+        }
 
-      if (states.isHovering) {
-        return Colors.transparent.lerpWith(Colors.black, 0.1);
-      }
+        if (states.isHovering) {
+          return Colors.transparent.lerpWith(Colors.black, 0.1);
+        }
 
-      return Colors.transparent;
-    }));
+        return Colors.transparent;
+      }),
+    );
   }
 }

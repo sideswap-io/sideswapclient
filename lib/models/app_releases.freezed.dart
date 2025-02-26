@@ -12,7 +12,8 @@ part of 'app_releases.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 AppReleasesDesktop _$AppReleasesDesktopFromJson(Map<String, dynamic> json) {
   return _AppReleasesDesktop.fromJson(json);
@@ -24,8 +25,12 @@ mixin _$AppReleasesDesktop {
   int? get build => throw _privateConstructorUsedError;
   String? get changes => throw _privateConstructorUsedError;
 
+  /// Serializes this AppReleasesDesktop to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AppReleasesDesktop
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $AppReleasesDesktopCopyWith<AppReleasesDesktop> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -33,8 +38,9 @@ mixin _$AppReleasesDesktop {
 /// @nodoc
 abstract class $AppReleasesDesktopCopyWith<$Res> {
   factory $AppReleasesDesktopCopyWith(
-          AppReleasesDesktop value, $Res Function(AppReleasesDesktop) then) =
-      _$AppReleasesDesktopCopyWithImpl<$Res, AppReleasesDesktop>;
+    AppReleasesDesktop value,
+    $Res Function(AppReleasesDesktop) then,
+  ) = _$AppReleasesDesktopCopyWithImpl<$Res, AppReleasesDesktop>;
   @useResult
   $Res call({String? version, int? build, String? changes});
 }
@@ -49,6 +55,8 @@ class _$AppReleasesDesktopCopyWithImpl<$Res, $Val extends AppReleasesDesktop>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of AppReleasesDesktop
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -56,29 +64,36 @@ class _$AppReleasesDesktopCopyWithImpl<$Res, $Val extends AppReleasesDesktop>
     Object? build = freezed,
     Object? changes = freezed,
   }) {
-    return _then(_value.copyWith(
-      version: freezed == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as String?,
-      build: freezed == build
-          ? _value.build
-          : build // ignore: cast_nullable_to_non_nullable
-              as int?,
-      changes: freezed == changes
-          ? _value.changes
-          : changes // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            version:
+                freezed == version
+                    ? _value.version
+                    : version // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            build:
+                freezed == build
+                    ? _value.build
+                    : build // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            changes:
+                freezed == changes
+                    ? _value.changes
+                    : changes // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$AppReleasesDesktopImplCopyWith<$Res>
     implements $AppReleasesDesktopCopyWith<$Res> {
-  factory _$$AppReleasesDesktopImplCopyWith(_$AppReleasesDesktopImpl value,
-          $Res Function(_$AppReleasesDesktopImpl) then) =
-      __$$AppReleasesDesktopImplCopyWithImpl<$Res>;
+  factory _$$AppReleasesDesktopImplCopyWith(
+    _$AppReleasesDesktopImpl value,
+    $Res Function(_$AppReleasesDesktopImpl) then,
+  ) = __$$AppReleasesDesktopImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? version, int? build, String? changes});
@@ -88,10 +103,13 @@ abstract class _$$AppReleasesDesktopImplCopyWith<$Res>
 class __$$AppReleasesDesktopImplCopyWithImpl<$Res>
     extends _$AppReleasesDesktopCopyWithImpl<$Res, _$AppReleasesDesktopImpl>
     implements _$$AppReleasesDesktopImplCopyWith<$Res> {
-  __$$AppReleasesDesktopImplCopyWithImpl(_$AppReleasesDesktopImpl _value,
-      $Res Function(_$AppReleasesDesktopImpl) _then)
-      : super(_value, _then);
+  __$$AppReleasesDesktopImplCopyWithImpl(
+    _$AppReleasesDesktopImpl _value,
+    $Res Function(_$AppReleasesDesktopImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of AppReleasesDesktop
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -99,20 +117,25 @@ class __$$AppReleasesDesktopImplCopyWithImpl<$Res>
     Object? build = freezed,
     Object? changes = freezed,
   }) {
-    return _then(_$AppReleasesDesktopImpl(
-      version: freezed == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as String?,
-      build: freezed == build
-          ? _value.build
-          : build // ignore: cast_nullable_to_non_nullable
-              as int?,
-      changes: freezed == changes
-          ? _value.changes
-          : changes // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$AppReleasesDesktopImpl(
+        version:
+            freezed == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        build:
+            freezed == build
+                ? _value.build
+                : build // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        changes:
+            freezed == changes
+                ? _value.changes
+                : changes // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -146,30 +169,33 @@ class _$AppReleasesDesktopImpl implements _AppReleasesDesktop {
             (identical(other.changes, changes) || other.changes == changes));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, version, build, changes);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AppReleasesDesktop
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AppReleasesDesktopImplCopyWith<_$AppReleasesDesktopImpl> get copyWith =>
       __$$AppReleasesDesktopImplCopyWithImpl<_$AppReleasesDesktopImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AppReleasesDesktopImplToJson(
-      this,
-    );
+    return _$$AppReleasesDesktopImplToJson(this);
   }
 }
 
 abstract class _AppReleasesDesktop implements AppReleasesDesktop {
-  const factory _AppReleasesDesktop(
-      {final String? version,
-      final int? build,
-      final String? changes}) = _$AppReleasesDesktopImpl;
+  const factory _AppReleasesDesktop({
+    final String? version,
+    final int? build,
+    final String? changes,
+  }) = _$AppReleasesDesktopImpl;
 
   factory _AppReleasesDesktop.fromJson(Map<String, dynamic> json) =
       _$AppReleasesDesktopImpl.fromJson;
@@ -180,8 +206,11 @@ abstract class _AppReleasesDesktop implements AppReleasesDesktop {
   int? get build;
   @override
   String? get changes;
+
+  /// Create a copy of AppReleasesDesktop
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AppReleasesDesktopImplCopyWith<_$AppReleasesDesktopImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -194,8 +223,12 @@ AppReleasesModel _$AppReleasesModelFromJson(Map<String, dynamic> json) {
 mixin _$AppReleasesModel {
   AppReleasesDesktop? get desktop => throw _privateConstructorUsedError;
 
+  /// Serializes this AppReleasesModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AppReleasesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $AppReleasesModelCopyWith<AppReleasesModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -203,8 +236,9 @@ mixin _$AppReleasesModel {
 /// @nodoc
 abstract class $AppReleasesModelCopyWith<$Res> {
   factory $AppReleasesModelCopyWith(
-          AppReleasesModel value, $Res Function(AppReleasesModel) then) =
-      _$AppReleasesModelCopyWithImpl<$Res, AppReleasesModel>;
+    AppReleasesModel value,
+    $Res Function(AppReleasesModel) then,
+  ) = _$AppReleasesModelCopyWithImpl<$Res, AppReleasesModel>;
   @useResult
   $Res call({AppReleasesDesktop? desktop});
 
@@ -221,19 +255,25 @@ class _$AppReleasesModelCopyWithImpl<$Res, $Val extends AppReleasesModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of AppReleasesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? desktop = freezed,
-  }) {
-    return _then(_value.copyWith(
-      desktop: freezed == desktop
-          ? _value.desktop
-          : desktop // ignore: cast_nullable_to_non_nullable
-              as AppReleasesDesktop?,
-    ) as $Val);
+  $Res call({Object? desktop = freezed}) {
+    return _then(
+      _value.copyWith(
+            desktop:
+                freezed == desktop
+                    ? _value.desktop
+                    : desktop // ignore: cast_nullable_to_non_nullable
+                        as AppReleasesDesktop?,
+          )
+          as $Val,
+    );
   }
 
+  /// Create a copy of AppReleasesModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AppReleasesDesktopCopyWith<$Res>? get desktop {
@@ -250,9 +290,10 @@ class _$AppReleasesModelCopyWithImpl<$Res, $Val extends AppReleasesModel>
 /// @nodoc
 abstract class _$$AppReleasesModelImplCopyWith<$Res>
     implements $AppReleasesModelCopyWith<$Res> {
-  factory _$$AppReleasesModelImplCopyWith(_$AppReleasesModelImpl value,
-          $Res Function(_$AppReleasesModelImpl) then) =
-      __$$AppReleasesModelImplCopyWithImpl<$Res>;
+  factory _$$AppReleasesModelImplCopyWith(
+    _$AppReleasesModelImpl value,
+    $Res Function(_$AppReleasesModelImpl) then,
+  ) = __$$AppReleasesModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({AppReleasesDesktop? desktop});
@@ -265,21 +306,25 @@ abstract class _$$AppReleasesModelImplCopyWith<$Res>
 class __$$AppReleasesModelImplCopyWithImpl<$Res>
     extends _$AppReleasesModelCopyWithImpl<$Res, _$AppReleasesModelImpl>
     implements _$$AppReleasesModelImplCopyWith<$Res> {
-  __$$AppReleasesModelImplCopyWithImpl(_$AppReleasesModelImpl _value,
-      $Res Function(_$AppReleasesModelImpl) _then)
-      : super(_value, _then);
+  __$$AppReleasesModelImplCopyWithImpl(
+    _$AppReleasesModelImpl _value,
+    $Res Function(_$AppReleasesModelImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of AppReleasesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? desktop = freezed,
-  }) {
-    return _then(_$AppReleasesModelImpl(
-      desktop: freezed == desktop
-          ? _value.desktop
-          : desktop // ignore: cast_nullable_to_non_nullable
-              as AppReleasesDesktop?,
-    ));
+  $Res call({Object? desktop = freezed}) {
+    return _then(
+      _$AppReleasesModelImpl(
+        desktop:
+            freezed == desktop
+                ? _value.desktop
+                : desktop // ignore: cast_nullable_to_non_nullable
+                    as AppReleasesDesktop?,
+      ),
+    );
   }
 }
 
@@ -307,22 +352,24 @@ class _$AppReleasesModelImpl implements _AppReleasesModel {
             (identical(other.desktop, desktop) || other.desktop == desktop));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, desktop);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AppReleasesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AppReleasesModelImplCopyWith<_$AppReleasesModelImpl> get copyWith =>
       __$$AppReleasesModelImplCopyWithImpl<_$AppReleasesModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AppReleasesModelImplToJson(
-      this,
-    );
+    return _$$AppReleasesModelImplToJson(this);
   }
 }
 
@@ -335,8 +382,11 @@ abstract class _AppReleasesModel implements AppReleasesModel {
 
   @override
   AppReleasesDesktop? get desktop;
+
+  /// Create a copy of AppReleasesModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AppReleasesModelImplCopyWith<_$AppReleasesModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -347,52 +397,49 @@ mixin _$AppReleasesModelState {
   TResult when<TResult extends Object?>({
     required TResult Function(AppReleasesModel model) data,
     required TResult Function() empty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(AppReleasesModel model)? data,
     TResult? Function()? empty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(AppReleasesModel model)? data,
     TResult Function()? empty,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(AppReleasesModelStateData value) data,
     required TResult Function(AppReleasesModelStateEmpty value) empty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AppReleasesModelStateData value)? data,
     TResult? Function(AppReleasesModelStateEmpty value)? empty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AppReleasesModelStateData value)? data,
     TResult Function(AppReleasesModelStateEmpty value)? empty,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AppReleasesModelStateCopyWith<$Res> {
-  factory $AppReleasesModelStateCopyWith(AppReleasesModelState value,
-          $Res Function(AppReleasesModelState) then) =
-      _$AppReleasesModelStateCopyWithImpl<$Res, AppReleasesModelState>;
+  factory $AppReleasesModelStateCopyWith(
+    AppReleasesModelState value,
+    $Res Function(AppReleasesModelState) then,
+  ) = _$AppReleasesModelStateCopyWithImpl<$Res, AppReleasesModelState>;
 }
 
 /// @nodoc
-class _$AppReleasesModelStateCopyWithImpl<$Res,
-        $Val extends AppReleasesModelState>
+class _$AppReleasesModelStateCopyWithImpl<
+  $Res,
+  $Val extends AppReleasesModelState
+>
     implements $AppReleasesModelStateCopyWith<$Res> {
   _$AppReleasesModelStateCopyWithImpl(this._value, this._then);
 
@@ -400,14 +447,17 @@ class _$AppReleasesModelStateCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AppReleasesModelState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$AppReleasesModelStateDataImplCopyWith<$Res> {
   factory _$$AppReleasesModelStateDataImplCopyWith(
-          _$AppReleasesModelStateDataImpl value,
-          $Res Function(_$AppReleasesModelStateDataImpl) then) =
-      __$$AppReleasesModelStateDataImplCopyWithImpl<$Res>;
+    _$AppReleasesModelStateDataImpl value,
+    $Res Function(_$AppReleasesModelStateDataImpl) then,
+  ) = __$$AppReleasesModelStateDataImplCopyWithImpl<$Res>;
   @useResult
   $Res call({AppReleasesModel model});
 
@@ -416,27 +466,34 @@ abstract class _$$AppReleasesModelStateDataImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$AppReleasesModelStateDataImplCopyWithImpl<$Res>
-    extends _$AppReleasesModelStateCopyWithImpl<$Res,
-        _$AppReleasesModelStateDataImpl>
+    extends
+        _$AppReleasesModelStateCopyWithImpl<
+          $Res,
+          _$AppReleasesModelStateDataImpl
+        >
     implements _$$AppReleasesModelStateDataImplCopyWith<$Res> {
   __$$AppReleasesModelStateDataImplCopyWithImpl(
-      _$AppReleasesModelStateDataImpl _value,
-      $Res Function(_$AppReleasesModelStateDataImpl) _then)
-      : super(_value, _then);
+    _$AppReleasesModelStateDataImpl _value,
+    $Res Function(_$AppReleasesModelStateDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of AppReleasesModelState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? model = null,
-  }) {
-    return _then(_$AppReleasesModelStateDataImpl(
-      null == model
-          ? _value.model
-          : model // ignore: cast_nullable_to_non_nullable
-              as AppReleasesModel,
-    ));
+  $Res call({Object? model = null}) {
+    return _then(
+      _$AppReleasesModelStateDataImpl(
+        null == model
+            ? _value.model
+            : model // ignore: cast_nullable_to_non_nullable
+                as AppReleasesModel,
+      ),
+    );
   }
 
+  /// Create a copy of AppReleasesModelState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AppReleasesModelCopyWith<$Res> get model {
@@ -470,12 +527,15 @@ class _$AppReleasesModelStateDataImpl implements AppReleasesModelStateData {
   @override
   int get hashCode => Object.hash(runtimeType, model);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AppReleasesModelState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AppReleasesModelStateDataImplCopyWith<_$AppReleasesModelStateDataImpl>
-      get copyWith => __$$AppReleasesModelStateDataImplCopyWithImpl<
-          _$AppReleasesModelStateDataImpl>(this, _$identity);
+  get copyWith => __$$AppReleasesModelStateDataImplCopyWithImpl<
+    _$AppReleasesModelStateDataImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -545,28 +605,37 @@ abstract class AppReleasesModelStateData implements AppReleasesModelState {
       _$AppReleasesModelStateDataImpl;
 
   AppReleasesModel get model;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AppReleasesModelState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AppReleasesModelStateDataImplCopyWith<_$AppReleasesModelStateDataImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$AppReleasesModelStateEmptyImplCopyWith<$Res> {
   factory _$$AppReleasesModelStateEmptyImplCopyWith(
-          _$AppReleasesModelStateEmptyImpl value,
-          $Res Function(_$AppReleasesModelStateEmptyImpl) then) =
-      __$$AppReleasesModelStateEmptyImplCopyWithImpl<$Res>;
+    _$AppReleasesModelStateEmptyImpl value,
+    $Res Function(_$AppReleasesModelStateEmptyImpl) then,
+  ) = __$$AppReleasesModelStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AppReleasesModelStateEmptyImplCopyWithImpl<$Res>
-    extends _$AppReleasesModelStateCopyWithImpl<$Res,
-        _$AppReleasesModelStateEmptyImpl>
+    extends
+        _$AppReleasesModelStateCopyWithImpl<
+          $Res,
+          _$AppReleasesModelStateEmptyImpl
+        >
     implements _$$AppReleasesModelStateEmptyImplCopyWith<$Res> {
   __$$AppReleasesModelStateEmptyImplCopyWithImpl(
-      _$AppReleasesModelStateEmptyImpl _value,
-      $Res Function(_$AppReleasesModelStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$AppReleasesModelStateEmptyImpl _value,
+    $Res Function(_$AppReleasesModelStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AppReleasesModelState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

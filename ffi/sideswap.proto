@@ -1,6 +1,12 @@
 syntax = "proto2";
 package sideswap.proto;
 
+enum ActivePage {
+  OTHER = 0;
+  PEG_IN = 1;
+  PEG_OUT = 2;
+}
+
 enum AssetType {
   BASE = 1;
   QUOTE = 2;
@@ -139,6 +145,7 @@ message CreatedTx {
   required int32 output_count = 3;
   required int64 size = 4;
   required int64 vsize = 7;
+  required int64 discount_vsize = 11;
   required int64 network_fee = 5;
   optional int64 server_fee = 10;
   required double fee_per_byte = 6;
@@ -187,6 +194,7 @@ message OwnOrder {
   required uint64 orig_amount = 4;
   required uint64 active_amount = 5;
   required double price = 6;
+  optional double price_tracking = 10;
   optional string private_id = 7;
   optional uint64 ttl_seconds = 8;
   required bool two_step = 9;
@@ -327,7 +335,8 @@ message To {
   message OrderSubmit {
     required AssetPair asset_pair = 1;
     required uint64 base_amount = 2;
-    required double price = 3;
+    optional double price = 3;
+    optional double price_tracking = 9;
     required TradeDir trade_dir = 4;
     optional uint64 ttl_seconds = 5;
     required bool two_step = 6;
@@ -339,6 +348,7 @@ message To {
     required OrderId order_id = 1;
     optional uint64 base_amount = 2;
     optional double price = 3;
+    optional double price_tracking = 4;
   }
 
   message OrderCancel {
@@ -378,6 +388,7 @@ message To {
     DecryptPin decrypt_pin = 5;
     string push_message = 6;
     AppState app_state = 8;
+    ActivePage active_page = 19;
 
     SetMemo set_memo = 10;
     Account get_recv_address = 11;
@@ -400,6 +411,7 @@ message To {
     Empty conversion_rates = 63;
 
     Empty jade_rescan = 71;
+    Empty jade_unlock = 72;
 
     GaidStatus gaid_status = 81;
 
@@ -578,17 +590,12 @@ message From {
     required double ask = 3;
   }
 
-  message RegisterPhone {
+  message SubscribedValue {
     oneof result {
-      string phone_key = 1;
-      string error_msg = 2;
-    }
-  }
-
-  message VerifyPhone {
-    oneof result {
-      Empty success = 1;
-      string error_msg = 2;
+      uint64 peg_in_min_amount = 1;
+      uint64 peg_in_wallet_balance = 2;
+      uint64 peg_out_min_amount = 3;
+      uint64 peg_out_wallet_balance = 4;
     }
   }
 
@@ -705,6 +712,22 @@ message From {
     }
   }
 
+  message StartOrder {
+    message Success {
+      required AssetPair asset_pair = 1;
+      required TradeDir trade_dir = 2;
+      required uint64 amount = 3;
+      required double price = 4;
+    }
+
+    required uint64 order_id = 5;
+
+    oneof result {
+      Success success = 1;
+      string error = 2;
+    }
+  }
+
   message Quote {
     message Success {
       required uint64 quote_id = 1;
@@ -787,6 +810,7 @@ message From {
     PriceUpdate price_update = 6;
     Empty wallet_loaded = 7;
     Empty sync_complete = 14;
+    SubscribedValue subscribed_value = 15;
 
     EncryptPin encrypt_pin = 10;
     DecryptPin decrypt_pin = 11;
@@ -818,6 +842,7 @@ message From {
 
     JadePorts jade_ports = 80;
     JadeStatus jade_status = 83;
+    GenericResponse jade_unlock = 81;
 
     GaidStatus gaid_status = 91;
 
@@ -840,7 +865,7 @@ message From {
     GenericResponse order_edit = 131;
     GenericResponse order_cancel = 132;
 
-    GenericResponse start_order = 142;
+    StartOrder start_order = 142;
     Quote quote = 140;
     AcceptQuote accept_quote = 141;
 

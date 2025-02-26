@@ -10,6 +10,7 @@ import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
@@ -18,65 +19,67 @@ import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 
-class DAssetInfo extends ConsumerStatefulWidget {
-  const DAssetInfo({
-    super.key,
-    required this.account,
-  });
+class DAssetInfo extends HookConsumerWidget {
+  const DAssetInfo({required this.accountAsset, super.key});
 
-  final AccountAsset account;
+  final AccountAsset accountAsset;
 
   @override
-  ConsumerState<DAssetInfo> createState() => DAssetInfoState();
-}
-
-class DAssetInfoState extends ConsumerState<DAssetInfo> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    useEffect(() {
       ref
-          .read(tokenMarketProvider)
-          .requestAssetDetails(assetId: widget.account.assetId);
-    });
-  }
+          .read(tokenMarketNotifierProvider.notifier)
+          .requestAssetDetails(assetId: accountAsset.assetId);
 
-  @override
-  Widget build(BuildContext context) {
+      return;
+    }, const []);
+
     final asset = ref.watch(
-        assetsStateProvider.select((value) => value[widget.account.assetId]));
+      assetsStateProvider.select((value) => value[accountAsset.assetId]),
+    );
     final assetPrecision = ref
         .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: asset?.assetId);
     final details =
-        ref.watch(tokenMarketAssetDetailsProvider)[widget.account.assetId];
+        ref.watch(tokenMarketNotifierProvider)[accountAsset.assetId];
     final issuedAmount = details?.stats?.issuedAmount ?? 0;
     final burnedAmount = details?.stats?.burnedAmount ?? 0;
     final circulatingAmount = issuedAmount - burnedAmount;
     final amountProvider = ref.watch(amountToStringProvider);
     final circulatingAmountStr = amountProvider.amountToString(
-        AmountToStringParameters(
-            amount: circulatingAmount, precision: assetPrecision));
-    final assetImagesBig =
-        ref.watch(assetImageProvider).getBigImage(asset?.assetId);
+      AmountToStringParameters(
+        amount: circulatingAmount,
+        precision: assetPrecision,
+      ),
+    );
+    final assetImagesBig = ref
+        .watch(assetImageRepositoryProvider)
+        .getBigImage(asset?.assetId);
     final accountBalance =
-        ref.watch(balancesNotifierProvider)[widget.account] ?? 0;
-    final balanceStr = amountProvider.amountToString(AmountToStringParameters(
-        amount: accountBalance, precision: assetPrecision));
+        ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
+    final balanceStr = amountProvider.amountToString(
+      AmountToStringParameters(
+        amount: accountBalance,
+        precision: assetPrecision,
+      ),
+    );
     final balance = double.tryParse(balanceStr) ?? .0;
-    final defaultCurrencyAmount =
-        ref.watch(amountUsdInDefaultCurrencyProvider(asset?.assetId, balance));
+    final defaultCurrencyAmount = ref.watch(
+      amountUsdInDefaultCurrencyProvider(asset?.assetId, balance),
+    );
     final defaultCurrencyTicker = ref.read(defaultCurrencyTickerProvider);
     var defaultCurrencyConversion = '0.0';
     defaultCurrencyConversion = defaultCurrencyAmount.toStringAsFixed(2);
     defaultCurrencyConversion = replaceCharacterOnPosition(
-        input: defaultCurrencyConversion, currencyChar: defaultCurrencyTicker);
-    final visibleConversion =
-        ref.read(walletProvider).isAmountUsdAvailable(asset?.assetId);
+      input: defaultCurrencyConversion,
+      currencyChar: defaultCurrencyTicker,
+    );
+    final visibleConversion = ref.watch(
+      isAmountUsdAvailableProvider(asset?.assetId),
+    );
 
     return DPopupWithClose(
       width: 580,
@@ -95,11 +98,7 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
               child: Row(
                 children: [
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: assetImagesBig,
-                  ),
+                  SizedBox(width: 48, height: 48, child: assetImagesBig),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,21 +113,14 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       const SizedBox(height: 4),
                       Text(
                         asset?.name ?? '',
-                        style: const TextStyle(
-                          color: SideSwapColors.halfBaked,
-                        ),
+                        style: const TextStyle(color: SideSwapColors.halfBaked),
                       ),
                     ],
                   ),
                   const Spacer(),
                   Column(
                     children: [
-                      Text(
-                        balanceStr,
-                        style: const TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
+                      Text(balanceStr, style: const TextStyle(fontSize: 16)),
                       Text(
                         visibleConversion ? '≈ $defaultCurrencyConversion' : '',
                         style: const TextStyle(
@@ -148,59 +140,64 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
               children: [
                 const SizedBox(height: 32),
                 DAssetInfoField(
-                    name: 'Precision'.tr(), value: assetPrecision.toString()),
+                  name: 'Precision'.tr(),
+                  value: assetPrecision.toString(),
+                ),
                 const DAssetInfoSeparator(),
                 ...asset?.hasDomain() == true
                     ? [
-                        DAssetInfoField(
-                          name: 'Issuer Domain'.tr(),
-                          valueWidget: DHoverButton(
-                            cursor: SystemMouseCursors.click,
-                            builder: (context, states) {
-                              return Text(
-                                asset?.domain ?? '',
-                                style: const TextStyle(
-                                    color: SideSwapColors.brightTurquoise,
-                                    decoration: TextDecoration.underline),
-                              );
-                            },
-                            onPressed: () {
-                              openUrl('https://${asset?.domain ?? ''}');
-                            },
-                          ),
+                      DAssetInfoField(
+                        name: 'Issuer Domain'.tr(),
+                        valueWidget: DHoverButton(
+                          cursor: SystemMouseCursors.click,
+                          builder: (context, states) {
+                            return Text(
+                              asset?.domain ?? '',
+                              style: const TextStyle(
+                                color: SideSwapColors.brightTurquoise,
+                                decoration: TextDecoration.underline,
+                              ),
+                            );
+                          },
+                          onPressed: () {
+                            openUrl('https://${asset?.domain ?? ''}');
+                          },
                         ),
-                        const DAssetInfoSeparator(),
-                      ]
+                      ),
+                      const DAssetInfoSeparator(),
+                    ]
                     : [],
                 ...asset?.hasDomainAgentLink() == true
                     ? [
-                        DAssetInfoField(
-                          name: 'Registration Agent'.tr(),
-                          valueWidget: DHoverButton(
-                            cursor: SystemMouseCursors.click,
-                            builder: (context, states) {
-                              return Text(
-                                asset?.domainAgentLink ?? '',
-                                style: const TextStyle(
-                                    color: SideSwapColors.brightTurquoise,
-                                    decoration: TextDecoration.underline),
-                              );
-                            },
-                            onPressed: () {
-                              openUrl(asset?.domainAgentLink ?? '');
-                            },
-                          ),
+                      DAssetInfoField(
+                        name: 'Registration Agent'.tr(),
+                        valueWidget: DHoverButton(
+                          cursor: SystemMouseCursors.click,
+                          builder: (context, states) {
+                            return Text(
+                              asset?.domainAgentLink ?? '',
+                              style: const TextStyle(
+                                color: SideSwapColors.brightTurquoise,
+                                decoration: TextDecoration.underline,
+                              ),
+                            );
+                          },
+                          onPressed: () {
+                            openUrl(asset?.domainAgentLink ?? '');
+                          },
                         ),
-                        const DAssetInfoSeparator(),
-                      ]
+                      ),
+                      const DAssetInfoSeparator(),
+                    ]
                     : [],
                 ...circulatingAmount != 0
                     ? [
-                        DAssetInfoField(
-                            name: 'Circulating amount'.tr(),
-                            value: circulatingAmountStr),
-                        const DAssetInfoSeparator(),
-                      ]
+                      DAssetInfoField(
+                        name: 'Circulating amount'.tr(),
+                        value: circulatingAmountStr,
+                      ),
+                      const DAssetInfoSeparator(),
+                    ]
                     : [],
                 DAssetInfoField(
                   name: 'View in Explorer'.tr(),
@@ -212,12 +209,11 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                           Text(
                             'open in explorer'.tr(),
                             style: const TextStyle(
-                                color: SideSwapColors.brightTurquoise,
-                                decoration: TextDecoration.underline),
+                              color: SideSwapColors.brightTurquoise,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
-                          const SizedBox(
-                            width: 7,
-                          ),
+                          const SizedBox(width: 7),
                           SvgPicture.asset(
                             'assets/link2.svg',
                             width: 20,
@@ -230,7 +226,9 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       final isTestnet =
                           ref.read(envProvider.notifier).isTestnet();
                       final assetUrl = generateAssetUrl(
-                          assetId: widget.account.assetId, testnet: isTestnet);
+                        assetId: accountAsset.assetId,
+                        testnet: isTestnet,
+                      );
                       openUrl(assetUrl);
                     },
                   ),
@@ -238,18 +236,20 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                 DAssetInfoField(name: 'Asset ID'.tr(), value: ''),
                 Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        widget.account.assetId ?? '',
-                      ),
-                    ),
+                    Expanded(child: Text(accountAsset.assetId ?? '')),
                     const SizedBox(width: 40),
                     IconButton(
-                      onPressed: () => copyToClipboard(
-                          context, widget.account.assetId ?? ''),
-                      icon: SvgPicture.asset('assets/copy2.svg',
-                          width: 22, height: 22),
-                    )
+                      onPressed:
+                          () => copyToClipboard(
+                            context,
+                            accountAsset.assetId ?? '',
+                          ),
+                      icon: SvgPicture.asset(
+                        'assets/copy2.svg',
+                        width: 22,
+                        height: 22,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -270,12 +270,14 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       onTap: () {
                         Navigator.pop(context);
                         ref.read(swapHelperProvider).swapReset();
-                        final walletMainArguments =
-                            ref.watch(uiStateArgsNotifierProvider);
+                        final walletMainArguments = ref.watch(
+                          uiStateArgsNotifierProvider,
+                        );
                         ref
                             .read(uiStateArgsNotifierProvider.notifier)
                             .setWalletMainArguments(
-                                walletMainArguments.fromIndexDesktop(1));
+                              walletMainArguments.fromIndexDesktop(1),
+                            );
                         ref.read(swapHelperProvider).switchToSwaps();
                       },
                       icon: 'assets/asset_swap_arrows.svg',
@@ -288,7 +290,7 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                         Navigator.pop(context);
                         ref
                             .read(sendAssetNotifierProvider.notifier)
-                            .setSendAsset(widget.account);
+                            .setSendAsset(accountAsset);
 
                         ref.read(desktopDialogProvider).showSendTx();
                       },
@@ -392,7 +394,7 @@ class DAssetInfoField extends StatelessWidget {
                 fontWeight: FontWeight.normal,
               ),
             ),
-          if (valueWidget != null) valueWidget!
+          if (valueWidget != null) valueWidget!,
         ],
       ),
     );
@@ -404,9 +406,6 @@ class DAssetInfoSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 1,
-      color: const Color(0x805294B9),
-    );
+    return Container(height: 1, color: const Color(0x805294B9));
   }
 }

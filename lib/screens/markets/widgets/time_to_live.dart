@@ -103,7 +103,9 @@ class TimeToLiveState extends State<TimeToLive> {
                       child: SvgPicture.asset(
                         'assets/lock.svg',
                         colorFilter: const ColorFilter.mode(
-                            SideSwapColors.ceruleanFrost, BlendMode.srcIn),
+                          SideSwapColors.ceruleanFrost,
+                          BlendMode.srcIn,
+                        ),
                         width: 10,
                         height: 13,
                       ),
@@ -120,14 +122,15 @@ class TimeToLiveState extends State<TimeToLive> {
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
-                    items: widget.dropdownItems
-                        .map(
-                          (e) => DropdownMenuItem<int>(
-                            value: e,
-                            child: Text(getTtlDescription(e)),
-                          ),
-                        )
-                        .toList(),
+                    items:
+                        widget.dropdownItems
+                            .map(
+                              (e) => DropdownMenuItem<int>(
+                                value: e,
+                                child: Text(getTtlDescription(e)),
+                              ),
+                            )
+                            .toList(),
                     dropdownColor: SideSwapColors.jellyBean,
                     onChanged: widget.onChanged,
                   ),

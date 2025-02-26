@@ -46,11 +46,7 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
                         shape: BoxShape.circle,
                         color: SideSwapColors.turquoise,
                       ),
-                      icon: Icon(
-                        Icons.done,
-                        color: Colors.white,
-                        size: 14,
-                      ),
+                      icon: Icon(Icons.done, color: Colors.white, size: 14),
                     ),
                   ),
                 ),
@@ -66,9 +62,7 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
                         .read(pageStatusNotifierProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
-                  child: Text(
-                    'FINISH'.tr(),
-                  ),
+                  child: Text('FINISH'.tr()),
                 ),
               ),
             ],
@@ -79,7 +73,7 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
               url: 'https://pegx.io',
               urlText: 'pegx.io',
             ),
-          )
+          ),
         ],
       ),
     );

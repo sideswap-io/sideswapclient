@@ -48,9 +48,10 @@ class PaymentDisabledAssets extends _$PaymentDisabledAssets {
 }
 
 @riverpod
-List<PaymentAccountType> paymentAssetTypes(PaymentAssetTypesRef ref) {
-  final filteredAccountAssets =
-      ref.watch(paymentAvailableAssetsWithInputsFilteredProvider);
+List<PaymentAccountType> paymentAssetTypes(Ref ref) {
+  final filteredAccountAssets = ref.watch(
+    paymentAvailableAssetsWithInputsFilteredProvider,
+  );
   final paymentAccountTypes = <PaymentAccountType>[];
   if (filteredAccountAssets.isNotEmpty) {
     paymentAccountTypes.add(const PaymentAccountType.all());
@@ -73,15 +74,13 @@ List<PaymentAccountType> paymentAssetTypes(PaymentAssetTypesRef ref) {
 }
 
 @riverpod
-bool paymentIsAssetDisabled(
-    PaymentIsAssetDisabledRef ref, AccountAsset accountAsset) {
+bool paymentIsAssetDisabled(Ref ref, AccountAsset accountAsset) {
   final disabledAssets = ref.watch(paymentDisabledAssetsProvider);
   return disabledAssets.any((element) => element == accountAsset);
 }
 
 @riverpod
-List<AccountAsset> paymentAvailableAssetsWithInputsFiltered(
-    PaymentAvailableAssetsWithInputsFilteredRef ref) {
+List<AccountAsset> paymentAvailableAssetsWithInputsFiltered(Ref ref) {
   final allAssets = ref.watch(paymentAvailableAssetsProvider);
   final selectedInputs = ref.watch(selectedInputsNotifierProvider);
   if (selectedInputs.isEmpty) {
@@ -89,24 +88,30 @@ List<AccountAsset> paymentAvailableAssetsWithInputsFiltered(
   }
 
   return allAssets
-      .where((element) => selectedInputs.any((si) =>
-          si.assetId == element.assetId && si.account == element.account.id))
+      .where(
+        (element) => selectedInputs.any(
+          (si) =>
+              si.assetId == element.assetId && si.account == element.account.id,
+        ),
+      )
       .toList();
 }
 
 @riverpod
 List<AccountAsset> paymentAccountAssetsByType(
-  PaymentAccountAssetsByTypeRef ref,
+  Ref ref,
   PaymentAccountType paymentAccountType,
 ) {
-  final filteredAccountAssets =
-      ref.watch(paymentAvailableAssetsWithInputsFilteredProvider);
+  final filteredAccountAssets = ref.watch(
+    paymentAvailableAssetsWithInputsFilteredProvider,
+  );
 
   return switch (paymentAccountType) {
     PaymentAccountTypeAll() => filteredAccountAssets,
-    PaymentAccountTypeRegular() => filteredAccountAssets
-        .where((element) => element.account.isRegular)
-        .toList(),
+    PaymentAccountTypeRegular() =>
+      filteredAccountAssets
+          .where((element) => element.account.isRegular)
+          .toList(),
     PaymentAccountTypeAmp() =>
       filteredAccountAssets.where((element) => element.account.isAmp).toList(),
     PaymentAccountTypeBtc() => [],
@@ -144,7 +149,7 @@ class PaymentSelectAsset extends HookConsumerWidget {
 
     return SideSwapScaffold(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           popup(context);
         }
@@ -159,11 +164,7 @@ class PaymentSelectAsset extends HookConsumerWidget {
         child: Column(
           children: [
             const SizedBox(height: 24),
-            Flexible(
-              child: PaymentSelectAssetTabBar(
-                onSelected: onSelected,
-              ),
-            ),
+            Flexible(child: PaymentSelectAssetTabBar(onSelected: onSelected)),
           ],
         ),
       ),
@@ -172,85 +173,85 @@ class PaymentSelectAsset extends HookConsumerWidget {
 }
 
 class PaymentSelectAssetTabBar extends HookConsumerWidget {
-  const PaymentSelectAssetTabBar({
-    this.onSelected,
-    super.key,
-  });
+  const PaymentSelectAssetTabBar({this.onSelected, super.key});
 
   final ValueChanged<AccountAsset>? onSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filteredAccountAssets =
-        ref.watch(paymentAvailableAssetsWithInputsFilteredProvider);
+    final filteredAccountAssets = ref.watch(
+      paymentAvailableAssetsWithInputsFilteredProvider,
+    );
     final assetTypes = ref.watch(paymentAssetTypesProvider);
 
     return switch (filteredAccountAssets.isEmpty) {
       true => const SizedBox(),
       _ => DefaultTabController(
-          length: assetTypes.length,
-          initialIndex: 0,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: TabBar(
-                  tabAlignment: TabAlignment.start,
-                  isScrollable: true,
-                  indicatorColor: SideSwapColors.brightTurquoise,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelPadding: const EdgeInsets.only(right: 20, bottom: 9),
-                  unselectedLabelColor: SideSwapColors.cornFlower,
-                  labelColor: Colors.white,
-                  labelStyle: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontSize: 18, fontWeight: FontWeight.w500),
-                  unselectedLabelStyle: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontSize: 18, fontWeight: FontWeight.w500),
-                  tabs: [
-                    ...assetTypes.map(
-                      (e) => switch (e) {
-                        PaymentAccountTypeAll() => const Text('All'),
-                        PaymentAccountTypeRegular() => const Text('Regular'),
-                        PaymentAccountTypeAmp() => const Text('AMP'),
-                        PaymentAccountTypeBtc() => const Text('BTC'),
-                      },
-                    ),
-                  ],
+        length: assetTypes.length,
+        initialIndex: 0,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: TabBar(
+                tabAlignment: TabAlignment.start,
+                isScrollable: true,
+                indicatorColor: SideSwapColors.brightTurquoise,
+                indicatorSize: TabBarIndicatorSize.label,
+                labelPadding: const EdgeInsets.only(right: 20, bottom: 9),
+                unselectedLabelColor: SideSwapColors.cornFlower,
+                labelColor: Colors.white,
+                labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
+                unselectedLabelStyle: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontSize: 18, fontWeight: FontWeight.w500),
+                tabs: [
+                  ...assetTypes.map(
+                    (e) => switch (e) {
+                      PaymentAccountTypeAll() => const Text('All'),
+                      PaymentAccountTypeRegular() => const Text('Regular'),
+                      PaymentAccountTypeAmp() => const Text('AMP'),
+                      PaymentAccountTypeBtc() => const Text('BTC'),
+                    },
+                  ),
+                ],
               ),
-              const Divider(
-                color: SideSwapColors.jellyBean,
-                height: 1,
-                thickness: 0,
-              ),
-              Flexible(
-                child: Container(
-                  color: SideSwapColors.chathamsBlue,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 6, right: 6, top: 24, bottom: 8),
-                    child: TabBarView(
-                      children: [
-                        ...assetTypes.map(
-                          (e) => switch (e) {
-                            _ => PaymentAssetList(
-                                dPaymentAccountType: e,
-                                onSelected: onSelected,
-                              ),
-                          },
-                        ),
-                      ],
-                    ),
+            ),
+            const Divider(
+              color: SideSwapColors.jellyBean,
+              height: 1,
+              thickness: 0,
+            ),
+            Flexible(
+              child: Container(
+                color: SideSwapColors.chathamsBlue,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 6,
+                    right: 6,
+                    top: 24,
+                    bottom: 8,
+                  ),
+                  child: TabBarView(
+                    children: [
+                      ...assetTypes.map(
+                        (e) => switch (e) {
+                          _ => PaymentAssetList(
+                            dPaymentAccountType: e,
+                            onSelected: onSelected,
+                          ),
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     };
   }
 }
@@ -267,8 +268,9 @@ class PaymentAssetList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final accountAssets =
-        ref.watch(paymentAccountAssetsByTypeProvider(dPaymentAccountType));
+    final accountAssets = ref.watch(
+      paymentAccountAssetsByTypeProvider(dPaymentAccountType),
+    );
 
     return CustomScrollView(
       slivers: [
@@ -277,8 +279,9 @@ class PaymentAssetList extends ConsumerWidget {
             return Consumer(
               builder: (context, ref, child) {
                 final accountAsset = accountAssets[index];
-                final disabled =
-                    ref.watch(paymentIsAssetDisabledProvider(accountAsset));
+                final disabled = ref.watch(
+                  paymentIsAssetDisabledProvider(accountAsset),
+                );
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: AccountItem(

@@ -24,19 +24,13 @@ class ToolBar extends StatelessWidget {
           children: [
             ToolBarAction(
               onPressed: onZoomOutPressed,
-              child: Icon(
-                Icons.remove,
-                color: Theme.of(context).grayColor,
-              ),
+              child: Icon(Icons.remove, color: Theme.of(context).grayColor),
             ),
             ToolBarAction(
               onPressed: onZoomInPressed,
-              child: Icon(
-                Icons.add,
-                color: Theme.of(context).grayColor,
-              ),
+              child: Icon(Icons.add, color: Theme.of(context).grayColor),
             ),
-            ...children
+            ...children,
           ],
         ),
       ),

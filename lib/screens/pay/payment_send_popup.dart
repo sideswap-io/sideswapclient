@@ -35,8 +35,11 @@ class PaymentSendPopup extends ConsumerWidget {
         '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
     final amountProvider = ref.watch(amountToStringProvider);
     final feeStr = amountProvider.amountToStringNamed(
-        AmountToStringNamedParameters(
-            amount: createdTx?.networkFee.toInt() ?? 0, ticker: 'L-BTC'));
+      AmountToStringNamedParameters(
+        amount: createdTx?.networkFee.toInt() ?? 0,
+        ticker: 'L-BTC',
+      ),
+    );
 
     return SideSwapPopup(
       onClose: () {
@@ -63,41 +66,40 @@ class PaymentSendPopup extends ConsumerWidget {
         children: [
           Text(
             'Confirm transaction'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 16),
           switch (createdTx) {
             CreatedTx(addressees: final addresses) => () {
-                final listHeight = (addresses.length * 79.0);
-                final containerHeight = listHeight > 180 ? 180.0 : listHeight;
-                return Container(
-                  height: containerHeight,
-                  constraints:
-                      const BoxConstraints(minHeight: 44, maxHeight: 180),
-                  decoration: const BoxDecoration(
-                    color: SideSwapColors.prussianBlue,
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverList.builder(
-                        itemBuilder: (context, index) {
-                          return RowTxReceiver(
-                            address: addresses[index].address,
-                            assetId: addresses[index].assetId,
-                            amount: addresses[index].amount.toInt(),
-                            index: index,
-                          );
-                        },
-                        itemCount: addresses.length,
-                      )
-                    ],
-                  ),
-                );
-              }(),
+              final listHeight = (addresses.length * 79.0);
+              final containerHeight = listHeight > 180 ? 180.0 : listHeight;
+              return Container(
+                height: containerHeight,
+                constraints: const BoxConstraints(
+                  minHeight: 44,
+                  maxHeight: 180,
+                ),
+                decoration: const BoxDecoration(
+                  color: SideSwapColors.prussianBlue,
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverList.builder(
+                      itemBuilder: (context, index) {
+                        return RowTxReceiver(
+                          address: addresses[index].address,
+                          assetId: addresses[index].assetId,
+                          amount: addresses[index].amount.toInt(),
+                          index: index,
+                        );
+                      },
+                      itemCount: addresses.length,
+                    ),
+                  ],
+                ),
+              );
+            }(),
             _ => const SizedBox(),
           },
           const Padding(
@@ -116,50 +118,60 @@ class PaymentSendPopup extends ConsumerWidget {
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
             child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 8, right: 8, bottom: 10, top: 10),
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                bottom: 10,
+                top: 10,
+              ),
               child: Column(
                 children: [
                   RowTxDetail(name: 'Fee per byte'.tr(), value: feePerByteStr),
                   RowTxDetail(name: 'Transaction size'.tr(), value: txSizeStr),
                   RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
                   RowTxDetail(
-                      name: 'Number of inputs'.tr(),
-                      value: createdTx?.inputCount.toString() ?? ''),
+                    name: 'Number of inputs'.tr(),
+                    value: createdTx?.inputCount.toString() ?? '',
+                  ),
                   RowTxDetail(
-                      name: 'Number of outputs'.tr(),
-                      value: createdTx?.outputCount.toString() ?? ''),
+                    name: 'Number of outputs'.tr(),
+                    value: createdTx?.outputCount.toString() ?? '',
+                  ),
                 ],
               ),
             ),
           ),
-          Expanded(
-            child: Container(),
-          ),
+          Expanded(child: Container()),
           Padding(
             padding: const EdgeInsets.only(top: 40, bottom: 40),
-            child: Consumer(builder: (context, ref, _) {
-              final sendTxState = ref.watch(sendTxStateNotifierProvider);
-              final buttonEnabled = (sendTxState == const SendTxStateEmpty() &&
-                  createdTx != null);
+            child: Consumer(
+              builder: (context, ref, _) {
+                final sendTxState = ref.watch(sendTxStateNotifierProvider);
+                final buttonEnabled =
+                    (sendTxState == const SendTxStateEmpty() &&
+                        createdTx != null);
 
-              return CustomBigButton(
-                width: MediaQuery.of(context).size.width,
-                height: 54,
-                backgroundColor: SideSwapColors.brightTurquoise,
-                text: 'SEND'.tr(),
-                enabled: buttonEnabled,
-                onPressed: buttonEnabled
-                    ? () async {
-                        if (await ref.read(walletProvider).isAuthenticated()) {
-                          ref
-                              .read(walletProvider)
-                              .assetSendConfirmCommon(createdTx);
-                        }
-                      }
-                    : null,
-              );
-            }),
+                return CustomBigButton(
+                  width: MediaQuery.of(context).size.width,
+                  height: 54,
+                  backgroundColor: SideSwapColors.brightTurquoise,
+                  text: 'SEND'.tr(),
+                  enabled: buttonEnabled,
+                  onPressed:
+                      buttonEnabled
+                          ? () async {
+                            if (await ref
+                                .read(walletProvider)
+                                .isAuthenticated()) {
+                              ref
+                                  .read(walletProvider)
+                                  .assetSendConfirmCommon(createdTx);
+                            }
+                          }
+                          : null,
+                );
+              },
+            ),
           ),
         ],
       ),

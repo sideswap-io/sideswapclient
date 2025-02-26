@@ -82,9 +82,11 @@ class _DesktopChartState extends State<DesktopChart> {
     minTiles = max(2, minTiles);
     double sizeRange = high - low;
     double minStepSize = sizeRange / minTiles;
-    double base = pow(10,
-            HelperFunctions.log10(max(minStepSize, double.minPositive)).floor())
-        .toDouble();
+    double base =
+        pow(
+          10,
+          HelperFunctions.log10(max(minStepSize, double.minPositive)).floor(),
+        ).toDouble();
 
     if (2 * base > minStepSize) return 2 * base;
     if (5 * base > minStepSize) return 5 * base;
@@ -102,8 +104,9 @@ class _DesktopChartState extends State<DesktopChart> {
         // visible candles start and end indexes
         final int candlesStartIndex = max(widget.index, 0);
         final int candlesEndIndex = min(
-            maxWidth ~/ widget.candleWidth + widget.index,
-            widget.candles.length - 1);
+          maxWidth ~/ widget.candleWidth + widget.index,
+          widget.candles.length - 1,
+        );
 
         if (candlesEndIndex == widget.candles.length - 1) {
           Future(() {
@@ -111,9 +114,10 @@ class _DesktopChartState extends State<DesktopChart> {
           });
         }
 
-        List<Candle> inRangeCandles = widget.candles
-            .getRange(candlesStartIndex, candlesEndIndex + 1)
-            .toList();
+        List<Candle> inRangeCandles =
+            widget.candles
+                .getRange(candlesStartIndex, candlesEndIndex + 1)
+                .toList();
 
         // visible candles highest and lowest price
         double candlesHighPrice = inRangeCandles.map((e) => e.high).reduce(max);
@@ -123,10 +127,14 @@ class _DesktopChartState extends State<DesktopChart> {
         double pricesHeightScale = pricesFlex / (1.0 + pricesFlex);
 
         // calcute priceScale
-        double chartHeight = maxHeight * pricesHeightScale -
+        double chartHeight =
+            maxHeight * pricesHeightScale -
             2 * (mainChartVerticalPadding + additionalVerticalPadding);
-        double priceScale =
-            calcutePriceScale(chartHeight, candlesHighPrice, candlesLowPrice);
+        double priceScale = calcutePriceScale(
+          chartHeight,
+          candlesHighPrice,
+          candlesLowPrice,
+        );
 
         // high and low calibrations revision
         candlesHighPrice = (candlesHighPrice ~/ priceScale + 1) * priceScale;
@@ -146,14 +154,17 @@ class _DesktopChartState extends State<DesktopChart> {
               tween: Tween(begin: candlesLowPrice, end: candlesLowPrice),
               duration: const Duration(milliseconds: 300),
               builder: (context, double low, _) {
-                final currentCandle = mouseHoverX == null
-                    ? null
-                    : widget.candles[min(
-                        max(
+                final currentCandle =
+                    mouseHoverX == null
+                        ? null
+                        : widget.candles[min(
+                          max(
                             (maxWidth - mouseHoverX!) ~/ widget.candleWidth +
                                 widget.index,
-                            0),
-                        widget.candles.length - 1)];
+                            0,
+                          ),
+                          widget.candles.length - 1,
+                        )];
                 return Container(
                   color: Theme.of(context).background,
                   child: Stack(
@@ -177,16 +188,21 @@ class _DesktopChartState extends State<DesktopChart> {
                                   priceScale: priceScale,
                                   width: constraints.maxWidth,
                                   chartHeight: chartHeight,
-                                  lastCandle: widget.candles[
-                                      widget.index < 0 ? 0 : widget.index],
+                                  lastCandle:
+                                      widget.candles[widget.index < 0
+                                          ? 0
+                                          : widget.index],
                                   onScale: (delta) {
                                     setState(() {
                                       additionalVerticalPadding += delta;
                                       additionalVerticalPadding = min(
-                                          maxHeight / 4,
-                                          additionalVerticalPadding);
-                                      additionalVerticalPadding =
-                                          max(0, additionalVerticalPadding);
+                                        maxHeight / 4,
+                                        additionalVerticalPadding,
+                                      );
+                                      additionalVerticalPadding = max(
+                                        0,
+                                        additionalVerticalPadding,
+                                      );
                                     });
                                   },
                                   additionalVerticalPadding:
@@ -206,12 +222,14 @@ class _DesktopChartState extends State<DesktopChart> {
                                           ),
                                         ),
                                         child: AnimatedPadding(
-                                          duration:
-                                              const Duration(milliseconds: 300),
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
                                           padding: EdgeInsets.symmetric(
-                                              vertical:
-                                                  mainChartVerticalPadding +
-                                                      additionalVerticalPadding),
+                                            vertical:
+                                                mainChartVerticalPadding +
+                                                additionalVerticalPadding,
+                                          ),
                                           child: RepaintBoundary(
                                             child: CandleStickWidget(
                                               candles: widget.candles,
@@ -221,23 +239,25 @@ class _DesktopChartState extends State<DesktopChart> {
                                               low: low,
                                               bearColor:
                                                   Theme.of(context).primaryRed,
-                                              bullColor: Theme.of(context)
-                                                  .primaryGreen,
+                                              bullColor:
+                                                  Theme.of(
+                                                    context,
+                                                  ).primaryGreen,
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(
-                                      width: priceBarWidth,
-                                    ),
+                                    const SizedBox(width: priceBarWidth),
                                   ],
                                 ),
                               ],
                             ),
                           ),
                           Container(
-                              height: 1, color: Theme.of(context).linesColor),
+                            height: 1,
+                            color: Theme.of(context).linesColor,
+                          ),
                           Expanded(
                             flex: 1,
                             child: Row(
@@ -258,8 +278,9 @@ class _DesktopChartState extends State<DesktopChart> {
                                         candles: widget.candles,
                                         barWidth: widget.candleWidth,
                                         index: widget.index,
-                                        high:
-                                            HelperFunctions.getRoof(volumeHigh),
+                                        high: HelperFunctions.getRoof(
+                                          volumeHigh,
+                                        ),
                                         bearColor:
                                             Theme.of(context).secondaryRed,
                                         bullColor:
@@ -282,8 +303,10 @@ class _DesktopChartState extends State<DesktopChart> {
                                               Text(
                                                 " ${HelperFunctions.addMetricPrefix(HelperFunctions.getRoof(volumeHigh))}",
                                                 style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .volumeColor,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).volumeColor,
                                                   fontSize: 12,
                                                 ),
                                               ),
@@ -297,78 +320,87 @@ class _DesktopChartState extends State<DesktopChart> {
                               ],
                             ),
                           ),
-                          const SizedBox(
-                            height: dateBarHeight,
-                          ),
+                          const SizedBox(height: dateBarHeight),
                         ],
                       ),
                       mouseHoverY != null && !isDragging
                           ? Positioned(
-                              top: mouseHoverY! - 10,
-                              child: Row(
-                                children: [
-                                  DashLine(
-                                    length: maxWidth,
-                                    color: Theme.of(context).grayColor,
-                                    direction: Axis.horizontal,
-                                    thickness: 0.5,
-                                  ),
-                                  Container(
-                                    color: Theme.of(context)
-                                        .hoverIndicatorBackgroundColor,
-                                    width: priceBarWidth,
-                                    height: 20,
-                                    child: Center(
-                                      child: Text(
-                                        mouseHoverY! <
-                                                maxHeight * pricesHeightScale
-                                            ? HelperFunctions.priceToString(high -
+                            top: mouseHoverY! - 10,
+                            child: Row(
+                              children: [
+                                DashLine(
+                                  length: maxWidth,
+                                  color: Theme.of(context).grayColor,
+                                  direction: Axis.horizontal,
+                                  thickness: 0.5,
+                                ),
+                                Container(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).hoverIndicatorBackgroundColor,
+                                  width: priceBarWidth,
+                                  height: 20,
+                                  child: Center(
+                                    child: Text(
+                                      mouseHoverY! <
+                                              maxHeight * pricesHeightScale
+                                          ? HelperFunctions.priceToString(
+                                            high -
                                                 (mouseHoverY! - 20) /
                                                     (maxHeight *
                                                             pricesHeightScale -
                                                         40) *
-                                                    (high - low))
-                                            : HelperFunctions.addMetricPrefix(
-                                                HelperFunctions.getRoof(
-                                                        volumeHigh) *
-                                                    (1 -
-                                                        (mouseHoverY! -
-                                                                maxHeight *
-                                                                    pricesHeightScale -
-                                                                10) /
-                                                            (maxHeight *
-                                                                    (1 -
-                                                                        pricesHeightScale) -
-                                                                10))),
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .hoverIndicatorTextColor,
-                                          fontSize: 12,
-                                        ),
+                                                    (high - low),
+                                          )
+                                          : HelperFunctions.addMetricPrefix(
+                                            HelperFunctions.getRoof(
+                                                  volumeHigh,
+                                                ) *
+                                                (1 -
+                                                    (mouseHoverY! -
+                                                            maxHeight *
+                                                                pricesHeightScale -
+                                                            10) /
+                                                        (maxHeight *
+                                                                (1 -
+                                                                    pricesHeightScale) -
+                                                            10)),
+                                          ),
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).hoverIndicatorTextColor,
+                                        fontSize: 12,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            )
+                                ),
+                              ],
+                            ),
+                          )
                           : Container(),
                       mouseHoverX != null && !isDragging
                           ? Positioned(
-                              left: mouseHoverX,
-                              child: DashLine(
-                                length: constraints.maxHeight - 20,
-                                color: Theme.of(context).grayColor,
-                                direction: Axis.vertical,
-                                thickness: 0.5,
-                              ),
-                            )
+                            left: mouseHoverX,
+                            child: DashLine(
+                              length: constraints.maxHeight - 20,
+                              color: Theme.of(context).grayColor,
+                              direction: Axis.vertical,
+                              thickness: 0.5,
+                            ),
+                          )
                           : Container(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 12),
-                        child: currentCandle != null
-                            ? CandleInfoText(candle: currentCandle)
-                            : null,
+                          vertical: 4,
+                          horizontal: 12,
+                        ),
+                        child:
+                            currentCandle != null
+                                ? CandleInfoText(candle: currentCandle)
+                                : null,
                       ),
                       Padding(
                         padding: const EdgeInsets.only(right: 50, bottom: 20),
@@ -376,13 +408,15 @@ class _DesktopChartState extends State<DesktopChart> {
                           onPointerSignal: (pointerSignal) {
                             if (pointerSignal is PointerScrollEvent) {
                               widget.onScaleUpdate(
-                                  -pointerSignal.scrollDelta.direction);
+                                -pointerSignal.scrollDelta.direction,
+                              );
                             }
                           },
                           child: MouseRegion(
-                            cursor: isDragging
-                                ? SystemMouseCursors.grabbing
-                                : SystemMouseCursors.precise,
+                            cursor:
+                                isDragging
+                                    ? SystemMouseCursors.grabbing
+                                    : SystemMouseCursors.precise,
                             onHover: _onMouseHover,
                             onExit: _onMouseExit,
                             child: GestureDetector(
@@ -391,7 +425,8 @@ class _DesktopChartState extends State<DesktopChart> {
                                 mouseHoverX = update.localPosition.dx;
                                 mouseHoverY = update.localPosition.dy;
                                 widget.onHorizontalDragUpdate(
-                                    update.localPosition.dx);
+                                  update.localPosition.dx,
+                                );
                               },
                               onPanEnd: (update) {
                                 widget.onPanEnd();
@@ -408,7 +443,7 @@ class _DesktopChartState extends State<DesktopChart> {
                             ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 );

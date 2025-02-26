@@ -37,8 +37,11 @@ class DContentDialogThemeData {
     this.bodyStyle,
   });
 
-  factory DContentDialogThemeData.standard(
-      {Color? menuColor, Color? micaBackgroundColor, DTypography? typography}) {
+  factory DContentDialogThemeData.standard({
+    Color? menuColor,
+    Color? micaBackgroundColor,
+    DTypography? typography,
+  }) {
     final container = ProviderContainer();
     final themeMenuColor =
         container.read(desktopAppThemeNotifierProvider).menuColor;
@@ -62,7 +65,7 @@ class DContentDialogThemeData {
         boxShadow: kElevationToShadow[1],
       ),
       actionsPadding: const EdgeInsets.all(20),
-      barrierColor: Colors.grey[200]?.withOpacity(0.8),
+      barrierColor: Colors.grey[200]?.withValues(alpha: 0.8),
       titleStyle: typography?.title ?? themeTypography.title,
       bodyStyle: typography?.body ?? themeTypography.body,
     );
@@ -78,15 +81,27 @@ class DContentDialogThemeData {
       barrierColor: Color.lerp(a?.barrierColor, b?.barrierColor, t),
       padding: EdgeInsetsGeometry.lerp(a?.padding, b?.padding, t),
       bodyPadding: EdgeInsetsGeometry.lerp(a?.bodyPadding, b?.bodyPadding, t),
-      titlePadding:
-          EdgeInsetsGeometry.lerp(a?.titlePadding, b?.titlePadding, t),
+      titlePadding: EdgeInsetsGeometry.lerp(
+        a?.titlePadding,
+        b?.titlePadding,
+        t,
+      ),
       actionsSpacing: lerpDouble(a?.actionsSpacing, b?.actionsSpacing, t),
-      actionThemeData:
-          DButtonThemeData.lerp(a?.actionThemeData, b?.actionThemeData, t),
-      actionsDecoration:
-          Decoration.lerp(a?.actionsDecoration, b?.actionsDecoration, t),
-      actionsPadding:
-          EdgeInsetsGeometry.lerp(a?.actionsPadding, b?.actionsPadding, t),
+      actionThemeData: DButtonThemeData.lerp(
+        a?.actionThemeData,
+        b?.actionThemeData,
+        t,
+      ),
+      actionsDecoration: Decoration.lerp(
+        a?.actionsDecoration,
+        b?.actionsDecoration,
+        t,
+      ),
+      actionsPadding: EdgeInsetsGeometry.lerp(
+        a?.actionsPadding,
+        b?.actionsPadding,
+        t,
+      ),
       titleStyle: TextStyle.lerp(a?.titleStyle, b?.titleStyle, t),
       bodyStyle: TextStyle.lerp(a?.bodyStyle, b?.bodyStyle, t),
     );

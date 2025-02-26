@@ -68,18 +68,18 @@ class DNetworkAccessOnboarding extends ConsumerWidget {
                 onToggle: (value) {
                   ref
                       .read(networkAccessTabNotifierProvider.notifier)
-                      .setNetworkAccessTab(value
-                          ? const NetworkAccessTabStateProxy()
-                          : const NetworkAccessTabStateServer());
+                      .setNetworkAccessTab(
+                        value
+                            ? const NetworkAccessTabStateProxy()
+                            : const NetworkAccessTabStateServer(),
+                      );
                 },
-                activeTextStyle: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(color: Colors.white),
-                inactiveTextStyle: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(color: Colors.white),
+                activeTextStyle: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: Colors.white),
+                inactiveTextStyle: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 24),
               switch (networkAccessTab) {
@@ -106,92 +106,98 @@ class DNetworkAccessOnboardingServer extends HookConsumerWidget {
       child: Column(
         children: [
           DSettingsRadioButton(
-            checked: networkSettingsModel.settingsNetworkType ==
+            checked:
+                networkSettingsModel.settingsNetworkType ==
                     SettingsNetworkType.blockstream &&
                 networkSettingsModel.env == SIDESWAP_ENV_PROD,
             onChanged: (value) {
-              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+              ref
+                  .read(networkSettingsNotifierProvider.notifier)
+                  .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.blockstream,
                       env: SIDESWAP_ENV_PROD,
                     ),
                   );
             },
-            content: const Text(
-              'Blockstream (Mainnet)',
-            ),
+            content: const Text('Blockstream (Mainnet)'),
           ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
-            checked: networkSettingsModel.settingsNetworkType ==
+            checked:
+                networkSettingsModel.settingsNetworkType ==
                     SettingsNetworkType.blockstream &&
                 networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
             onChanged: (value) {
-              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+              ref
+                  .read(networkSettingsNotifierProvider.notifier)
+                  .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.blockstream,
                       env: SIDESWAP_ENV_TESTNET,
                     ),
                   );
             },
-            content: const Text(
-              'Blockstream (Testnet)',
-            ),
+            content: const Text('Blockstream (Testnet)'),
           ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
-            checked: networkSettingsModel.settingsNetworkType ==
+            checked:
+                networkSettingsModel.settingsNetworkType ==
                     SettingsNetworkType.sideswap &&
                 networkSettingsModel.env == SIDESWAP_ENV_PROD,
             onChanged: (value) {
-              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+              ref
+                  .read(networkSettingsNotifierProvider.notifier)
+                  .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.sideswap,
                       env: SIDESWAP_ENV_PROD,
                     ),
                   );
             },
-            content: const Text(
-              'SideSwap (Mainnet)',
-            ),
+            content: const Text('SideSwap (Mainnet)'),
           ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
-            checked: networkSettingsModel.settingsNetworkType ==
+            checked:
+                networkSettingsModel.settingsNetworkType ==
                     SettingsNetworkType.sideswap &&
                 networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
             onChanged: (value) {
-              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+              ref
+                  .read(networkSettingsNotifierProvider.notifier)
+                  .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.sideswap,
                       env: SIDESWAP_ENV_TESTNET,
                     ),
                   );
             },
-            content: const Text(
-              'SideSwap (Testnet)',
-            ),
+            content: const Text('SideSwap (Testnet)'),
           ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
-            checked: networkSettingsModel.settingsNetworkType ==
+            checked:
+                networkSettingsModel.settingsNetworkType ==
                 SettingsNetworkType.sideswapChina,
             onChanged: (value) {
-              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+              ref
+                  .read(networkSettingsNotifierProvider.notifier)
+                  .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.sideswapChina,
                       env: SIDESWAP_ENV_PROD,
                     ),
                   );
             },
-            content: const Text(
-              'SideSwap China (Mainnet)',
-            ),
+            content: const Text('SideSwap China (Mainnet)'),
           ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
             trailingIcon: true,
-            checked: networkSettingsModel.settingsNetworkType ==
+            checked:
+                networkSettingsModel.settingsNetworkType ==
                 SettingsNetworkType.personal,
             onChanged: (value) async {
               await Navigator.of(context).push(
@@ -200,16 +206,16 @@ class DNetworkAccessOnboardingServer extends HookConsumerWidget {
                 ),
               );
             },
-            content: Text(
-              'Personal Electrum Server'.tr(),
-            ),
+            content: Text('Personal Electrum Server'.tr()),
           ),
           const Spacer(),
           DCustomFilledBigButton(
             width: double.infinity,
             onPressed: () async {
               final navigator = Navigator.of(context);
-              await ref.read(utilsProvider).settingsErrorDialog(
+              await ref
+                  .read(utilsProvider)
+                  .settingsErrorDialog(
                     title: 'Network changes will take effect on restart'.tr(),
                     icon: SettingsDialogIcon.restart,
                     buttonText: 'OK'.tr(),
@@ -221,9 +227,7 @@ class DNetworkAccessOnboardingServer extends HookConsumerWidget {
                   );
               navigator.pop();
             },
-            child: Text(
-              'SAVE'.tr(),
-            ),
+            child: Text('SAVE'.tr()),
           ),
           const SizedBox(height: 40),
         ],
@@ -249,8 +253,14 @@ class DNetworkAccessOnboardingProxy extends HookConsumerWidget {
       if (host.isEmpty && port.isEmpty) {
         ref.read(configurationProvider.notifier).setProxySettings(null);
       } else {
-        ref.read(configurationProvider.notifier).setProxySettings(ProxySettings(
-            host: host.isEmpty ? null : host, port: int.tryParse(port)));
+        ref
+            .read(configurationProvider.notifier)
+            .setProxySettings(
+              ProxySettings(
+                host: host.isEmpty ? null : host,
+                port: int.tryParse(port),
+              ),
+            );
       }
     }, const []);
 
@@ -279,9 +289,10 @@ class DNetworkAccessOnboardingProxy extends HookConsumerWidget {
             Text(
               'Use proxy'.tr(),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: SideSwapColors.brightTurquoise),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: SideSwapColors.brightTurquoise,
+              ),
             ),
             FlutterSwitch(
               value: useProxy,
@@ -304,22 +315,21 @@ class DNetworkAccessOnboardingProxy extends HookConsumerWidget {
         Text(
           'Host',
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: SideSwapColors.brightTurquoise),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: SideSwapColors.brightTurquoise,
+          ),
         ),
         const SizedBox(height: 10),
-        SideSwapTextField(
-          controller: hostController,
-          hintText: '127.0.0.1',
-        ),
+        SideSwapTextField(controller: hostController, hintText: '127.0.0.1'),
         const SizedBox(height: 16),
         Text(
           'Port',
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: SideSwapColors.brightTurquoise),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: SideSwapColors.brightTurquoise,
+          ),
         ),
         const SizedBox(height: 10),
         SideSwapTextField(

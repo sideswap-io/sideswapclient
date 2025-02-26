@@ -7,22 +7,25 @@ part of 'market_type_buttons.dart';
 // **************************************************************************
 
 String _$selectedMarketTypeButtonNotifierHash() =>
-    r'c8427179e68be7e9783dff386ad7c9a6ac1b5130';
+    r'5c352d34f0d7c1186060215e3bcd969e8e606f74';
 
 /// See also [SelectedMarketTypeButtonNotifier].
 @ProviderFor(SelectedMarketTypeButtonNotifier)
-final selectedMarketTypeButtonNotifierProvider = AutoDisposeNotifierProvider<
-    SelectedMarketTypeButtonNotifier, SelectedMarketTypeButtonEnum>.internal(
+final selectedMarketTypeButtonNotifierProvider = NotifierProvider<
+  SelectedMarketTypeButtonNotifier,
+  SelectedMarketTypeButtonEnum
+>.internal(
   SelectedMarketTypeButtonNotifier.new,
   name: r'selectedMarketTypeButtonNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$selectedMarketTypeButtonNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$selectedMarketTypeButtonNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$SelectedMarketTypeButtonNotifier
-    = AutoDisposeNotifier<SelectedMarketTypeButtonEnum>;
+typedef _$SelectedMarketTypeButtonNotifier =
+    Notifier<SelectedMarketTypeButtonEnum>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -12,7 +12,8 @@ part of 'inputs_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$InputsWalletTypeFlag {
@@ -20,52 +21,49 @@ mixin _$InputsWalletTypeFlag {
   TResult when<TResult extends Object?>({
     required TResult Function() regular,
     required TResult Function() amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? regular,
     TResult? Function()? amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? regular,
     TResult Function()? amp,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(InputsWalletTypeFlagRegular value) regular,
     required TResult Function(InputsWalletTypeFlagAmp value) amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(InputsWalletTypeFlagRegular value)? regular,
     TResult? Function(InputsWalletTypeFlagAmp value)? amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(InputsWalletTypeFlagRegular value)? regular,
     TResult Function(InputsWalletTypeFlagAmp value)? amp,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $InputsWalletTypeFlagCopyWith<$Res> {
-  factory $InputsWalletTypeFlagCopyWith(InputsWalletTypeFlag value,
-          $Res Function(InputsWalletTypeFlag) then) =
-      _$InputsWalletTypeFlagCopyWithImpl<$Res, InputsWalletTypeFlag>;
+  factory $InputsWalletTypeFlagCopyWith(
+    InputsWalletTypeFlag value,
+    $Res Function(InputsWalletTypeFlag) then,
+  ) = _$InputsWalletTypeFlagCopyWithImpl<$Res, InputsWalletTypeFlag>;
 }
 
 /// @nodoc
-class _$InputsWalletTypeFlagCopyWithImpl<$Res,
-        $Val extends InputsWalletTypeFlag>
+class _$InputsWalletTypeFlagCopyWithImpl<
+  $Res,
+  $Val extends InputsWalletTypeFlag
+>
     implements $InputsWalletTypeFlagCopyWith<$Res> {
   _$InputsWalletTypeFlagCopyWithImpl(this._value, this._then);
 
@@ -73,25 +71,34 @@ class _$InputsWalletTypeFlagCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of InputsWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$InputsWalletTypeFlagRegularImplCopyWith<$Res> {
   factory _$$InputsWalletTypeFlagRegularImplCopyWith(
-          _$InputsWalletTypeFlagRegularImpl value,
-          $Res Function(_$InputsWalletTypeFlagRegularImpl) then) =
-      __$$InputsWalletTypeFlagRegularImplCopyWithImpl<$Res>;
+    _$InputsWalletTypeFlagRegularImpl value,
+    $Res Function(_$InputsWalletTypeFlagRegularImpl) then,
+  ) = __$$InputsWalletTypeFlagRegularImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$InputsWalletTypeFlagRegularImplCopyWithImpl<$Res>
-    extends _$InputsWalletTypeFlagCopyWithImpl<$Res,
-        _$InputsWalletTypeFlagRegularImpl>
+    extends
+        _$InputsWalletTypeFlagCopyWithImpl<
+          $Res,
+          _$InputsWalletTypeFlagRegularImpl
+        >
     implements _$$InputsWalletTypeFlagRegularImplCopyWith<$Res> {
   __$$InputsWalletTypeFlagRegularImplCopyWithImpl(
-      _$InputsWalletTypeFlagRegularImpl _value,
-      $Res Function(_$InputsWalletTypeFlagRegularImpl) _then)
-      : super(_value, _then);
+    _$InputsWalletTypeFlagRegularImpl _value,
+    $Res Function(_$InputsWalletTypeFlagRegularImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of InputsWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -185,20 +192,23 @@ abstract class InputsWalletTypeFlagRegular implements InputsWalletTypeFlag {
 /// @nodoc
 abstract class _$$InputsWalletTypeFlagAmpImplCopyWith<$Res> {
   factory _$$InputsWalletTypeFlagAmpImplCopyWith(
-          _$InputsWalletTypeFlagAmpImpl value,
-          $Res Function(_$InputsWalletTypeFlagAmpImpl) then) =
-      __$$InputsWalletTypeFlagAmpImplCopyWithImpl<$Res>;
+    _$InputsWalletTypeFlagAmpImpl value,
+    $Res Function(_$InputsWalletTypeFlagAmpImpl) then,
+  ) = __$$InputsWalletTypeFlagAmpImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$InputsWalletTypeFlagAmpImplCopyWithImpl<$Res>
-    extends _$InputsWalletTypeFlagCopyWithImpl<$Res,
-        _$InputsWalletTypeFlagAmpImpl>
+    extends
+        _$InputsWalletTypeFlagCopyWithImpl<$Res, _$InputsWalletTypeFlagAmpImpl>
     implements _$$InputsWalletTypeFlagAmpImplCopyWith<$Res> {
   __$$InputsWalletTypeFlagAmpImplCopyWithImpl(
-      _$InputsWalletTypeFlagAmpImpl _value,
-      $Res Function(_$InputsWalletTypeFlagAmpImpl) _then)
-      : super(_value, _then);
+    _$InputsWalletTypeFlagAmpImpl _value,
+    $Res Function(_$InputsWalletTypeFlagAmpImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of InputsWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -293,7 +303,9 @@ mixin _$InputsTxItem {
   String? get tx => throw _privateConstructorUsedError;
   int? get satoshi => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputsTxItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InputsTxItemCopyWith<InputsTxItem> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -301,8 +313,9 @@ mixin _$InputsTxItem {
 /// @nodoc
 abstract class $InputsTxItemCopyWith<$Res> {
   factory $InputsTxItemCopyWith(
-          InputsTxItem value, $Res Function(InputsTxItem) then) =
-      _$InputsTxItemCopyWithImpl<$Res, InputsTxItem>;
+    InputsTxItem value,
+    $Res Function(InputsTxItem) then,
+  ) = _$InputsTxItemCopyWithImpl<$Res, InputsTxItem>;
   @useResult
   $Res call({String? tx, int? satoshi});
 }
@@ -317,22 +330,26 @@ class _$InputsTxItemCopyWithImpl<$Res, $Val extends InputsTxItem>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of InputsTxItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? tx = freezed,
-    Object? satoshi = freezed,
-  }) {
-    return _then(_value.copyWith(
-      tx: freezed == tx
-          ? _value.tx
-          : tx // ignore: cast_nullable_to_non_nullable
-              as String?,
-      satoshi: freezed == satoshi
-          ? _value.satoshi
-          : satoshi // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+  $Res call({Object? tx = freezed, Object? satoshi = freezed}) {
+    return _then(
+      _value.copyWith(
+            tx:
+                freezed == tx
+                    ? _value.tx
+                    : tx // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            satoshi:
+                freezed == satoshi
+                    ? _value.satoshi
+                    : satoshi // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -340,8 +357,9 @@ class _$InputsTxItemCopyWithImpl<$Res, $Val extends InputsTxItem>
 abstract class _$$InputsTxItemImplCopyWith<$Res>
     implements $InputsTxItemCopyWith<$Res> {
   factory _$$InputsTxItemImplCopyWith(
-          _$InputsTxItemImpl value, $Res Function(_$InputsTxItemImpl) then) =
-      __$$InputsTxItemImplCopyWithImpl<$Res>;
+    _$InputsTxItemImpl value,
+    $Res Function(_$InputsTxItemImpl) then,
+  ) = __$$InputsTxItemImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? tx, int? satoshi});
@@ -352,25 +370,29 @@ class __$$InputsTxItemImplCopyWithImpl<$Res>
     extends _$InputsTxItemCopyWithImpl<$Res, _$InputsTxItemImpl>
     implements _$$InputsTxItemImplCopyWith<$Res> {
   __$$InputsTxItemImplCopyWithImpl(
-      _$InputsTxItemImpl _value, $Res Function(_$InputsTxItemImpl) _then)
-      : super(_value, _then);
+    _$InputsTxItemImpl _value,
+    $Res Function(_$InputsTxItemImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of InputsTxItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? tx = freezed,
-    Object? satoshi = freezed,
-  }) {
-    return _then(_$InputsTxItemImpl(
-      tx: freezed == tx
-          ? _value.tx
-          : tx // ignore: cast_nullable_to_non_nullable
-              as String?,
-      satoshi: freezed == satoshi
-          ? _value.satoshi
-          : satoshi // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+  $Res call({Object? tx = freezed, Object? satoshi = freezed}) {
+    return _then(
+      _$InputsTxItemImpl(
+        tx:
+            freezed == tx
+                ? _value.tx
+                : tx // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        satoshi:
+            freezed == satoshi
+                ? _value.satoshi
+                : satoshi // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
   }
 }
 
@@ -401,7 +423,9 @@ class _$InputsTxItemImpl implements _InputsTxItem {
   @override
   int get hashCode => Object.hash(runtimeType, tx, satoshi);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputsTxItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InputsTxItemImplCopyWith<_$InputsTxItemImpl> get copyWith =>
@@ -416,8 +440,11 @@ abstract class _InputsTxItem implements InputsTxItem {
   String? get tx;
   @override
   int? get satoshi;
+
+  /// Create a copy of InputsTxItem
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InputsTxItemImplCopyWith<_$InputsTxItemImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -430,7 +457,9 @@ mixin _$InputsAddressItem {
   int? get satoshi => throw _privateConstructorUsedError;
   List<InputsTxItem>? get inputsTx => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputsAddressItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InputsAddressItemCopyWith<InputsAddressItem> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -438,15 +467,17 @@ mixin _$InputsAddressItem {
 /// @nodoc
 abstract class $InputsAddressItemCopyWith<$Res> {
   factory $InputsAddressItemCopyWith(
-          InputsAddressItem value, $Res Function(InputsAddressItem) then) =
-      _$InputsAddressItemCopyWithImpl<$Res, InputsAddressItem>;
+    InputsAddressItem value,
+    $Res Function(InputsAddressItem) then,
+  ) = _$InputsAddressItemCopyWithImpl<$Res, InputsAddressItem>;
   @useResult
-  $Res call(
-      {String? address,
-      int? txAmount,
-      String? comment,
-      int? satoshi,
-      List<InputsTxItem>? inputsTx});
+  $Res call({
+    String? address,
+    int? txAmount,
+    String? comment,
+    int? satoshi,
+    List<InputsTxItem>? inputsTx,
+  });
 }
 
 /// @nodoc
@@ -459,6 +490,8 @@ class _$InputsAddressItemCopyWithImpl<$Res, $Val extends InputsAddressItem>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of InputsAddressItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -468,55 +501,68 @@ class _$InputsAddressItemCopyWithImpl<$Res, $Val extends InputsAddressItem>
     Object? satoshi = freezed,
     Object? inputsTx = freezed,
   }) {
-    return _then(_value.copyWith(
-      address: freezed == address
-          ? _value.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String?,
-      txAmount: freezed == txAmount
-          ? _value.txAmount
-          : txAmount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      comment: freezed == comment
-          ? _value.comment
-          : comment // ignore: cast_nullable_to_non_nullable
-              as String?,
-      satoshi: freezed == satoshi
-          ? _value.satoshi
-          : satoshi // ignore: cast_nullable_to_non_nullable
-              as int?,
-      inputsTx: freezed == inputsTx
-          ? _value.inputsTx
-          : inputsTx // ignore: cast_nullable_to_non_nullable
-              as List<InputsTxItem>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            address:
+                freezed == address
+                    ? _value.address
+                    : address // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            txAmount:
+                freezed == txAmount
+                    ? _value.txAmount
+                    : txAmount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            comment:
+                freezed == comment
+                    ? _value.comment
+                    : comment // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            satoshi:
+                freezed == satoshi
+                    ? _value.satoshi
+                    : satoshi // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            inputsTx:
+                freezed == inputsTx
+                    ? _value.inputsTx
+                    : inputsTx // ignore: cast_nullable_to_non_nullable
+                        as List<InputsTxItem>?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$InputsAddressItemImplCopyWith<$Res>
     implements $InputsAddressItemCopyWith<$Res> {
-  factory _$$InputsAddressItemImplCopyWith(_$InputsAddressItemImpl value,
-          $Res Function(_$InputsAddressItemImpl) then) =
-      __$$InputsAddressItemImplCopyWithImpl<$Res>;
+  factory _$$InputsAddressItemImplCopyWith(
+    _$InputsAddressItemImpl value,
+    $Res Function(_$InputsAddressItemImpl) then,
+  ) = __$$InputsAddressItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String? address,
-      int? txAmount,
-      String? comment,
-      int? satoshi,
-      List<InputsTxItem>? inputsTx});
+  $Res call({
+    String? address,
+    int? txAmount,
+    String? comment,
+    int? satoshi,
+    List<InputsTxItem>? inputsTx,
+  });
 }
 
 /// @nodoc
 class __$$InputsAddressItemImplCopyWithImpl<$Res>
     extends _$InputsAddressItemCopyWithImpl<$Res, _$InputsAddressItemImpl>
     implements _$$InputsAddressItemImplCopyWith<$Res> {
-  __$$InputsAddressItemImplCopyWithImpl(_$InputsAddressItemImpl _value,
-      $Res Function(_$InputsAddressItemImpl) _then)
-      : super(_value, _then);
+  __$$InputsAddressItemImplCopyWithImpl(
+    _$InputsAddressItemImpl _value,
+    $Res Function(_$InputsAddressItemImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of InputsAddressItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -526,41 +572,48 @@ class __$$InputsAddressItemImplCopyWithImpl<$Res>
     Object? satoshi = freezed,
     Object? inputsTx = freezed,
   }) {
-    return _then(_$InputsAddressItemImpl(
-      address: freezed == address
-          ? _value.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String?,
-      txAmount: freezed == txAmount
-          ? _value.txAmount
-          : txAmount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      comment: freezed == comment
-          ? _value.comment
-          : comment // ignore: cast_nullable_to_non_nullable
-              as String?,
-      satoshi: freezed == satoshi
-          ? _value.satoshi
-          : satoshi // ignore: cast_nullable_to_non_nullable
-              as int?,
-      inputsTx: freezed == inputsTx
-          ? _value._inputsTx
-          : inputsTx // ignore: cast_nullable_to_non_nullable
-              as List<InputsTxItem>?,
-    ));
+    return _then(
+      _$InputsAddressItemImpl(
+        address:
+            freezed == address
+                ? _value.address
+                : address // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        txAmount:
+            freezed == txAmount
+                ? _value.txAmount
+                : txAmount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        comment:
+            freezed == comment
+                ? _value.comment
+                : comment // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        satoshi:
+            freezed == satoshi
+                ? _value.satoshi
+                : satoshi // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        inputsTx:
+            freezed == inputsTx
+                ? _value._inputsTx
+                : inputsTx // ignore: cast_nullable_to_non_nullable
+                    as List<InputsTxItem>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$InputsAddressItemImpl implements _InputsAddressItem {
-  const _$InputsAddressItemImpl(
-      {this.address,
-      this.txAmount,
-      this.comment,
-      this.satoshi,
-      final List<InputsTxItem>? inputsTx})
-      : _inputsTx = inputsTx;
+  const _$InputsAddressItemImpl({
+    this.address,
+    this.txAmount,
+    this.comment,
+    this.satoshi,
+    final List<InputsTxItem>? inputsTx,
+  }) : _inputsTx = inputsTx;
 
   @override
   final String? address;
@@ -599,24 +652,35 @@ class _$InputsAddressItemImpl implements _InputsAddressItem {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, address, txAmount, comment,
-      satoshi, const DeepCollectionEquality().hash(_inputsTx));
+  int get hashCode => Object.hash(
+    runtimeType,
+    address,
+    txAmount,
+    comment,
+    satoshi,
+    const DeepCollectionEquality().hash(_inputsTx),
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputsAddressItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InputsAddressItemImplCopyWith<_$InputsAddressItemImpl> get copyWith =>
       __$$InputsAddressItemImplCopyWithImpl<_$InputsAddressItemImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _InputsAddressItem implements InputsAddressItem {
-  const factory _InputsAddressItem(
-      {final String? address,
-      final int? txAmount,
-      final String? comment,
-      final int? satoshi,
-      final List<InputsTxItem>? inputsTx}) = _$InputsAddressItemImpl;
+  const factory _InputsAddressItem({
+    final String? address,
+    final int? txAmount,
+    final String? comment,
+    final int? satoshi,
+    final List<InputsTxItem>? inputsTx,
+  }) = _$InputsAddressItemImpl;
 
   @override
   String? get address;
@@ -628,8 +692,11 @@ abstract class _InputsAddressItem implements InputsAddressItem {
   int? get satoshi;
   @override
   List<InputsTxItem>? get inputsTx;
+
+  /// Create a copy of InputsAddressItem
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InputsAddressItemImplCopyWith<_$InputsAddressItemImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -638,7 +705,9 @@ abstract class _InputsAddressItem implements InputsAddressItem {
 mixin _$InputsItem {
   List<InputsAddressItem>? get inputs => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputsItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InputsItemCopyWith<InputsItem> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -646,8 +715,9 @@ mixin _$InputsItem {
 /// @nodoc
 abstract class $InputsItemCopyWith<$Res> {
   factory $InputsItemCopyWith(
-          InputsItem value, $Res Function(InputsItem) then) =
-      _$InputsItemCopyWithImpl<$Res, InputsItem>;
+    InputsItem value,
+    $Res Function(InputsItem) then,
+  ) = _$InputsItemCopyWithImpl<$Res, InputsItem>;
   @useResult
   $Res call({List<InputsAddressItem>? inputs});
 }
@@ -662,17 +732,21 @@ class _$InputsItemCopyWithImpl<$Res, $Val extends InputsItem>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of InputsItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? inputs = freezed,
-  }) {
-    return _then(_value.copyWith(
-      inputs: freezed == inputs
-          ? _value.inputs
-          : inputs // ignore: cast_nullable_to_non_nullable
-              as List<InputsAddressItem>?,
-    ) as $Val);
+  $Res call({Object? inputs = freezed}) {
+    return _then(
+      _value.copyWith(
+            inputs:
+                freezed == inputs
+                    ? _value.inputs
+                    : inputs // ignore: cast_nullable_to_non_nullable
+                        as List<InputsAddressItem>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -680,8 +754,9 @@ class _$InputsItemCopyWithImpl<$Res, $Val extends InputsItem>
 abstract class _$$InputsItemImplCopyWith<$Res>
     implements $InputsItemCopyWith<$Res> {
   factory _$$InputsItemImplCopyWith(
-          _$InputsItemImpl value, $Res Function(_$InputsItemImpl) then) =
-      __$$InputsItemImplCopyWithImpl<$Res>;
+    _$InputsItemImpl value,
+    $Res Function(_$InputsItemImpl) then,
+  ) = __$$InputsItemImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({List<InputsAddressItem>? inputs});
@@ -692,20 +767,24 @@ class __$$InputsItemImplCopyWithImpl<$Res>
     extends _$InputsItemCopyWithImpl<$Res, _$InputsItemImpl>
     implements _$$InputsItemImplCopyWith<$Res> {
   __$$InputsItemImplCopyWithImpl(
-      _$InputsItemImpl _value, $Res Function(_$InputsItemImpl) _then)
-      : super(_value, _then);
+    _$InputsItemImpl _value,
+    $Res Function(_$InputsItemImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of InputsItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? inputs = freezed,
-  }) {
-    return _then(_$InputsItemImpl(
-      inputs: freezed == inputs
-          ? _value._inputs
-          : inputs // ignore: cast_nullable_to_non_nullable
-              as List<InputsAddressItem>?,
-    ));
+  $Res call({Object? inputs = freezed}) {
+    return _then(
+      _$InputsItemImpl(
+        inputs:
+            freezed == inputs
+                ? _value._inputs
+                : inputs // ignore: cast_nullable_to_non_nullable
+                    as List<InputsAddressItem>?,
+      ),
+    );
   }
 }
 
@@ -713,7 +792,7 @@ class __$$InputsItemImplCopyWithImpl<$Res>
 
 class _$InputsItemImpl implements _InputsItem {
   const _$InputsItemImpl({final List<InputsAddressItem>? inputs})
-      : _inputs = inputs;
+    : _inputs = inputs;
 
   final List<InputsAddressItem>? _inputs;
   @override
@@ -742,7 +821,9 @@ class _$InputsItemImpl implements _InputsItem {
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(_inputs));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputsItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InputsItemImplCopyWith<_$InputsItemImpl> get copyWith =>
@@ -755,8 +836,11 @@ abstract class _InputsItem implements InputsItem {
 
   @override
   List<InputsAddressItem>? get inputs;
+
+  /// Create a copy of InputsItem
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InputsItemImplCopyWith<_$InputsItemImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

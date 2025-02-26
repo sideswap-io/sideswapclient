@@ -20,13 +20,12 @@ class SideswapNotificationsFdroidPlugin
   @override
   InitializationSettings getLocalNotificationsInitializationSettings({
     Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
+    onDidReceiveLocalNotification,
   }) {
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/notification_icon');
-
-    return const InitializationSettings(
-      android: initializationSettingsAndroid,
+    const initializationSettingsAndroid = AndroidInitializationSettings(
+      '@mipmap/notification_icon',
     );
+
+    return const InitializationSettings(android: initializationSettingsAndroid);
   }
 }

@@ -1,9 +1,6 @@
 import 'package:sideswap/side_swap_client_ffi.dart';
 
-enum AddrType {
-  bitcoin,
-  elements,
-}
+enum AddrType { bitcoin, elements }
 
 int convertAddrType(AddrType type) {
   return switch (type) {
@@ -12,9 +9,4 @@ int convertAddrType(AddrType type) {
   };
 }
 
-enum BIP21AddressTypeEnum {
-  elements,
-  bitcoin,
-  liquidnetwork,
-  other,
-}
+enum BIP21AddressTypeEnum { elements, bitcoin, liquidnetwork, other }

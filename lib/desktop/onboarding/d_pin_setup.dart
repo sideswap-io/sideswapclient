@@ -35,7 +35,8 @@ class DPinSetup extends ConsumerWidget {
 
     if (firstLaunchState != const FirstLaunchStateEmpty()) {
       return SideSwapScaffoldPage(
-        onEscapeKey: onEscapeKey ??
+        onEscapeKey:
+            onEscapeKey ??
             () {
               Future.microtask(() {
                 ref.read(walletProvider).setNewWalletPinWelcome();
@@ -47,7 +48,7 @@ class DPinSetup extends ConsumerWidget {
     } else {
       return PopScope(
         canPop: true,
-        onPopInvoked: (didPop) {
+        onPopInvokedWithResult: (didPop, result) {
           if (!didPop) {
             ref.read(walletProvider).settingsViewPage();
           }
@@ -66,9 +67,7 @@ class DPinSetup extends ConsumerWidget {
                 onPressed: () {
                   ref.read(walletProvider).settingsViewPage();
                 },
-                child: Text(
-                  'BACK'.tr(),
-                ),
+                child: Text('BACK'.tr()),
               ),
             ),
           ],
@@ -82,9 +81,7 @@ class DPinSetup extends ConsumerWidget {
 }
 
 class DPinSetupContent extends HookConsumerWidget {
-  const DPinSetupContent({
-    super.key,
-  });
+  const DPinSetupContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -217,11 +214,13 @@ class DPinSetupContent extends HookConsumerWidget {
                     secondPinFocusNode.requestFocus();
                   }
                   final secondPinEnabled = ref.watch(secondPinEnabledProvider);
-                  final pinSetupState =
-                      ref.watch(pinSetupStateNotifierProvider);
-                  final errorMessage = (pinSetupState is PinSetupStateError)
-                      ? pinSetupState.message
-                      : '';
+                  final pinSetupState = ref.watch(
+                    pinSetupStateNotifierProvider,
+                  );
+                  final errorMessage =
+                      (pinSetupState is PinSetupStateError)
+                          ? pinSetupState.message
+                          : '';
 
                   return DPinTextField(
                     focusNode: secondPinFocusNode,
@@ -250,8 +249,9 @@ class DPinSetupContent extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 12),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final firstLaunchState =
-                      ref.watch(firstLaunchStateNotifierProvider);
+                  final firstLaunchState = ref.watch(
+                    firstLaunchStateNotifierProvider,
+                  );
 
                   return DPinKeyboard(
                     acceptType:
@@ -260,8 +260,8 @@ class DPinSetupContent extends HookConsumerWidget {
                                 ? PinKeyboardAcceptType.save
                                 : PinKeyboardAcceptType.icon
                             : isPinEnabled
-                                ? PinKeyboardAcceptType.disable
-                                : PinKeyboardAcceptType.enable,
+                            ? PinKeyboardAcceptType.disable
+                            : PinKeyboardAcceptType.enable,
                   );
                 },
               ),

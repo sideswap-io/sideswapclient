@@ -16,10 +16,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
       onClose: () {
         ref.read(walletProvider).loginAndLoadMainPage();
       },
-      constraints: const BoxConstraints(
-        maxWidth: 628,
-        maxHeight: 446,
-      ),
+      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 446),
       backgroundContent: const DNewWalletBackupLogoBackground(),
       content: Center(
         child: Column(
@@ -49,9 +46,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(
-              height: 95,
-            ),
+            const SizedBox(height: 95),
           ],
         ),
       ),
@@ -61,9 +56,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
             onPressed: () {
               ref.read(walletProvider).loginAndLoadMainPage();
             },
-            child: Text(
-              'CONTINUE'.tr(),
-            ),
+            child: Text('CONTINUE'.tr()),
           ),
         ),
       ],

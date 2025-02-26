@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
@@ -22,7 +23,7 @@ class PegInAddress extends HookConsumerWidget {
         },
       ),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -30,15 +31,16 @@ class PegInAddress extends HookConsumerWidget {
       body: Stack(
         children: [
           Padding(
-            padding:
-                EdgeInsets.only(top: 8 + MediaQuery.of(context).padding.top),
-            child: const Align(
+            padding: EdgeInsets.only(
+              top: 8 + MediaQuery.of(context).padding.top,
+            ),
+            child: Align(
               alignment: Alignment.topCenter,
               child: SizedBox(
                 width: 215,
                 height: 40,
                 child: Text(
-                  'Please send BTC to the following address:',
+                  'Please send BTC to the following address:'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
@@ -49,11 +51,7 @@ class PegInAddress extends HookConsumerWidget {
               ),
             ),
           ),
-          const SafeArea(
-            child: AssetReceiveWidget(
-              isPegIn: true,
-            ),
-          ),
+          const SafeArea(child: AssetReceiveWidget(isPegIn: true)),
         ],
       ),
     );

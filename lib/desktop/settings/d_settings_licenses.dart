@@ -20,10 +20,7 @@ class DLicenses {
   LicenseEntry licenseEntry;
   List<LicenseParagraph> paragraphs;
 
-  DLicenses({
-    required this.licenseEntry,
-    required this.paragraphs,
-  });
+  DLicenses({required this.licenseEntry, required this.paragraphs});
 }
 
 class DSettingsLicenses extends HookConsumerWidget {
@@ -52,20 +49,20 @@ class DSettingsLicenses extends HookConsumerWidget {
         for (var license in value) {
           var tempSubWidget = <Widget>[];
 
-          if (newLicenseContent
-              .containsKey(license.licenseEntry.packages.join(', '))) {
+          if (newLicenseContent.containsKey(
+            license.licenseEntry.packages.join(', '),
+          )) {
             tempSubWidget =
                 newLicenseContent[license.licenseEntry.packages.join(', ')] ??
-                    [];
+                [];
           }
 
-          tempSubWidget.add(const Padding(
-            padding: EdgeInsets.symmetric(vertical: 18.0),
-            child: Text(
-              '\u2618',
-              textAlign: TextAlign.center,
+          tempSubWidget.add(
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18.0),
+              child: Text('\u2618', textAlign: TextAlign.center),
             ),
-          ));
+          );
 
           for (var paragraph in license.paragraphs) {
             if (paragraph.indent == LicenseParagraph.centeredIndent) {
@@ -86,10 +83,10 @@ class DSettingsLicenses extends HookConsumerWidget {
               tempSubWidget.add(
                 Padding(
                   padding: EdgeInsetsDirectional.only(
-                      top: 8.0, start: 16.0 * paragraph.indent),
-                  child: Text(
-                    paragraph.text,
+                    top: 8.0,
+                    start: 16.0 * paragraph.indent,
                   ),
+                  child: Text(paragraph.text),
                 ),
               );
             }
@@ -113,28 +110,18 @@ class DSettingsLicenses extends HookConsumerWidget {
           }
 
           final widget = Theme(
-            data: ThemeData().copyWith(
-              dividerColor: Colors.transparent,
-            ),
+            data: ThemeData().copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               collapsedIconColor: Colors.white,
               title: Text(
                 packageName,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
                 'licenses'.plural(count),
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
-              children: value != null
-                  ? <Widget>[
-                      ...value,
-                    ]
-                  : [],
+              children: value != null ? <Widget>[...value] : [],
             ),
           );
 
@@ -154,7 +141,7 @@ class DSettingsLicenses extends HookConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           goBack(ref);
         }
@@ -164,7 +151,7 @@ class DSettingsLicenses extends HookConsumerWidget {
           onClose: () {
             goBack(ref);
           },
-          content: Text('SideSwap'.tr()),
+          content: Text('SideSwap'),
         ),
         content: Center(
           child: Padding(
@@ -186,7 +173,7 @@ class DSettingsLicenses extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.normal,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -218,9 +205,10 @@ class DSettingsLicenses extends HookConsumerWidget {
                           child: ListView.separated(
                             controller: controller,
                             itemCount: licenses.length,
-                            separatorBuilder: (context, index) => const Divider(
-                              color: SideSwapColors.chathamsBlue,
-                            ),
+                            separatorBuilder:
+                                (context, index) => const Divider(
+                                  color: SideSwapColors.chathamsBlue,
+                                ),
                             itemBuilder: (context, index) {
                               return licenses.elementAt(index);
                             },
@@ -241,9 +229,7 @@ class DSettingsLicenses extends HookConsumerWidget {
               onPressed: () {
                 goBack(ref);
               },
-              child: Text(
-                'BACK'.tr(),
-              ),
+              child: Text('BACK'.tr()),
             ),
           ),
         ],

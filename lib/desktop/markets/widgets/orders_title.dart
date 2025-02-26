@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 class OrdersTitle extends StatelessWidget {
-  const OrdersTitle({
-    super.key,
-    required this.isLeft,
-  });
+  const OrdersTitle({super.key, required this.isLeft});
 
   final bool isLeft;
 

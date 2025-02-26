@@ -44,9 +44,7 @@ class DPaymentSelectAsset extends HookConsumerWidget {
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 32),
-            Flexible(
-              child: PaymentSelectAssetTabBar(onSelected: onSelected),
-            ),
+            Flexible(child: PaymentSelectAssetTabBar(onSelected: onSelected)),
           ],
         ),
       ),

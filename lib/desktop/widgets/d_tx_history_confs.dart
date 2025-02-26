@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DTxHistoryConfs extends StatelessWidget {
-  const DTxHistoryConfs({
-    super.key,
-    required this.tx,
-    this.textStyle,
-  });
+  const DTxHistoryConfs({super.key, required this.tx, this.textStyle});
 
   final TransItem tx;
   final TextStyle? textStyle;

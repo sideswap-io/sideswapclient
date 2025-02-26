@@ -1,53 +1,34 @@
 name: sideswap_notifications
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.10
+version: 0.1.17
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
-  flutter: ">=3.22.0"
+  sdk: ^3.7.0
+  flutter: ^3.29.0
 
 dependencies:
   flutter:
     sdk: flutter
-  freezed_annotation: ^2.4.2
+  freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
   sideswap_notifications_platform_interface:
     path: ../sideswap_notifications_platform_interface
-  firebase_core: ^3.2.0
-  firebase_messaging: ^15.0.3
+  firebase_core: ^3.12.0
+  firebase_messaging: ^15.2.3
   sideswap_logger:
     git:
       url: https://github.com/sideswap-io/sideswap_logger.git
       ref: master
   sideswap_protobuf:
     path: ../../sideswap_protobuf
-  flutter_local_notifications: # update me
-    git:
-      url: https://github.com/lightrabbit/flutter_local_notifications.git
-      path: flutter_local_notifications
-      ref: aa90cdc172ac9751b200c050e497298143dbaa11
-
-dependency_overrides:
-  # temporary, because of https://github.com/firebase/flutterfire/issues/10931
-  # firebase_core:
-  #   git:
-  #     url: https://github.com/firebase/flutterfire.git
-  #     ref: 4897fa02e2963961f24f1ff3a5b8d5e890e919ce
-  #     path: packages/firebase_core/firebase_core
-  # freezed
-  meta: ^1.14.0
-  flutter_local_notifications_platform_interface:
-    git:
-      url: https://github.com/lightrabbit/flutter_local_notifications.git
-      path: flutter_local_notifications_platform_interface
-      ref: aa90cdc172ac9751b200c050e497298143dbaa11
+  flutter_local_notifications: ^19.0.0-dev.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   plugin_platform_interface: ^2.1.8
-  freezed: ^2.5.4
-  json_serializable: ^6.8.0
-  build_runner: ^2.4.11
+  freezed: ^2.5.8
+  json_serializable: ^6.9.4
+  build_runner: ^2.4.15

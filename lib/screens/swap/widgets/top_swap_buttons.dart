@@ -25,9 +25,10 @@ class TopSwapButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorToggleBackground = FlavorConfig.isDesktop
-        ? _colorToggleBackgroundDesktop
-        : _colorToggleBackgroundMobile;
+    final colorToggleBackground =
+        FlavorConfig.isDesktop
+            ? _colorToggleBackgroundDesktop
+            : _colorToggleBackgroundMobile;
     return Container(
       height: 40,
       decoration: BoxDecoration(

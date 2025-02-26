@@ -8,16 +8,16 @@ use elements::OutPoint;
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use sideswap_api::{Asset, *};
-use sideswap_common::dealer_ticker::{
-    dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker,
+use sideswap_common::{
+    b64,
+    dealer_ticker::{DealerTicker, TickerLoader},
+    make_request,
+    rpc::{self, ListUnspent},
+    types::{self, Amount},
+    ws::{self, auto::WrappedResponse, ws_req_sender::WsReqSender},
 };
-use sideswap_common::network::Network;
-use sideswap_common::rpc::ListUnspent;
-use sideswap_common::types::Amount;
-use sideswap_common::ws::auto::WrappedResponse;
-use sideswap_common::ws::ws_req_sender::WsReqSender;
-use sideswap_common::{b64, make_request, rpc, types, ws};
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
@@ -33,7 +33,7 @@ const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs
 
 const PRICE_EDIT_MIN_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
 
@@ -48,6 +48,8 @@ pub struct Params {
     pub bitcoin_amount_max: Amount,
 
     pub api_key: Option<String>,
+
+    pub ticker_loader: Arc<TickerLoader>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
@@ -149,12 +151,12 @@ pub fn pick_price(price: &PricePair, send_bitcoins: bool) -> f64 {
 }
 
 fn take_order(
-    network: Network,
     params: &Params,
     assets: &Assets,
     details: &Details,
     wallet_balances: &WalletBalances,
     dealer_prices: &DealerPrices,
+    ticker_loader: &TickerLoader,
 ) -> Result<(), anyhow::Error> {
     ensure!(details.bitcoin_amount >= params.bitcoin_amount_min.to_sat());
     ensure!(details.bitcoin_amount <= params.bitcoin_amount_max.to_sat());
@@ -162,7 +164,8 @@ fn take_order(
         .iter()
         .find(|asset| asset.asset_id == details.asset)
         .unwrap();
-    let ticker = dealer_ticker_from_asset_id(network, &details.asset)
+    let ticker = ticker_loader
+        .ticker(&details.asset)
         .ok_or_else(|| anyhow!("unknown asset {}", asset.name))?;
     let dealer_price = dealer_prices
         .get(&ticker)
@@ -478,8 +481,8 @@ struct InstantSwap {
 }
 
 struct Data {
-    network: Network,
     policy_asset: AssetId,
+    ticker_loader: Arc<TickerLoader>,
     params: Params,
     ws: WsReqSender,
     assets: Vec<Asset>,
@@ -525,12 +528,12 @@ async fn process_timer(data: &mut Data) {
         }
 
         let result = take_order(
-            data.network,
             &data.params,
             &data.assets,
             &order.details,
             &data.wallet_balances,
             &data.dealer_prices,
+            &data.ticker_loader,
         );
         if result.is_ok() {
             info!("take order: {:?}", order);
@@ -608,9 +611,9 @@ async fn process_timer(data: &mut Data) {
         }
 
         if data.server_connected && data.params.api_key.is_some() {
-            let asset_id = dealer_ticker_to_asset_id(data.network, *ticker);
+            let asset_id = data.ticker_loader.asset_id(*ticker);
             let price_stream = BroadcastPriceStreamRequest {
-                asset: asset_id,
+                asset: *asset_id,
                 list,
                 balancing: dealer_price.dealer.balancing,
             };
@@ -678,7 +681,7 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
                 Some(txid) => {
                     info!("order {} complete succesfully", msg.order_id);
                     let details = details.expect("details must exists");
-                    let ticker = dealer_ticker_from_asset_id(data.network, &details.asset).unwrap();
+                    let ticker = data.ticker_loader.ticker(&details.asset).unwrap();
                     let send_bitcoins = details.send_bitcoins;
                     let bitcoin_amount = Amount::from_sat(if send_bitcoins {
                         details.bitcoin_amount + details.server_fee
@@ -809,7 +812,7 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
                     (swap.recv_asset, swap.send_amount)
                 };
                 let bitcoin_amount = Amount::from_sat(bitcoin_amount);
-                let ticker = dealer_ticker_from_asset_id(data.network, &asset_id).unwrap();
+                let ticker = data.ticker_loader.ticker(&asset_id).unwrap();
                 let instant_swap_succeed = SwapSucceed {
                     txid,
                     dealer_send_bitcoins,
@@ -849,7 +852,8 @@ async fn process_ws_msg(data: &mut Data, msg: WrappedResponse) {
                 .expect("subscribing to order list failed");
             assert!(login_resp.orders.is_empty());
             for asset in data.assets.iter().filter(|asset| {
-                dealer_ticker_from_asset_id(data.network, &asset.asset_id)
+                data.ticker_loader
+                    .ticker(&asset.asset_id)
                     .map(|ticker| data.params.tickers.contains(&ticker))
                     .unwrap_or(false)
             }) {
@@ -987,7 +991,8 @@ async fn process_internal_msg(data: &mut Data, internal: Internal) {
                         .map(|balance| (asset, *balance))
                 })
                 .flat_map(|(asset, balance)| {
-                    dealer_ticker_from_asset_id(data.network, &asset.asset_id)
+                    data.ticker_loader
+                        .ticker(&asset.asset_id)
                         .map(|ticker| (ticker, balance))
                 })
                 .collect::<BTreeMap<_, _>>();
@@ -1048,8 +1053,8 @@ async fn worker(
     let (internal_sender, mut internal_receiver) = unbounded_channel::<Internal>();
 
     let mut data = Data {
-        network: params.env.d().network,
         policy_asset,
+        ticker_loader: Arc::clone(&params.ticker_loader),
         params,
         ws,
         assets: Vec::new(),

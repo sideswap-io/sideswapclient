@@ -14,13 +14,11 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
 import 'package:sideswap_notifications_platform_interface/sideswap_notifications_platform_interface.dart';
 
-enum NotificationChannelType {
-  main,
-  sign,
-}
+enum NotificationChannelType { main, sign }
 
-final localNotificationsProvider =
-    Provider<LocalNotificationService>((ref) => LocalNotificationService(ref));
+final localNotificationsProvider = Provider<LocalNotificationService>(
+  (ref) => LocalNotificationService(ref),
+);
 
 const String _groupKey = 'com.android.sideswap.GENERAL_NOTIFICATION';
 
@@ -111,57 +109,48 @@ class LocalNotificationService {
     if (Platform.isIOS) {
       await _flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            sound: true,
-            alert: true,
-            badge: true,
-          );
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(sound: true, alert: true, badge: true);
     }
 
     // remove old notification channel
     // TODO: This could be removed later
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.deleteNotificationChannel(_notificationChannelId);
 
     // create new notification channel
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(mainChannel);
 
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(signChannel);
 
     final plugin = SideswapNotificationsPlugin(
-        androidPlatform: FlavorConfig.isFdroid
-            ? AndroidPlatformEnum.fdroid
-            : AndroidPlatformEnum.android);
-    final initializationSettings =
-        plugin.getLocalNotificationsInitializationSettings(
-      onDidReceiveLocalNotification:
-          (int id, String? title, String? body, String? payload) async {
-        didReceiveLocalNotificationSubject.add(
-          ReceivedNotification(
-            id: id,
-            title: title,
-            body: body,
-            payload: payload,
-          ),
-        );
-      },
+      androidPlatform:
+          FlavorConfig.isFdroid
+              ? AndroidPlatformEnum.fdroid
+              : AndroidPlatformEnum.android,
     );
+    final initializationSettings =
+        plugin.getLocalNotificationsInitializationSettings();
 
     // initialise the plugin.
     try {
       await _flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
-        onDidReceiveNotificationResponse:
-            (NotificationResponse response) async {
+        onDidReceiveNotificationResponse: (
+          NotificationResponse response,
+        ) async {
           if (FlavorConfig.isDesktop) {
             logger.d('Desktop notification received');
             WindowManager.instance.show();
@@ -184,7 +173,8 @@ class LocalNotificationService {
         },
       );
     } catch (e) {
-      logger.w('Flutter local notification plugin isn\'t initialized: $e');
+      logger.e('Flutter local notification plugin isn\'t initialized: $e');
+      rethrow;
     }
   }
 

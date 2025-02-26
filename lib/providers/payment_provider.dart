@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:decimal/decimal.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -13,10 +10,10 @@ import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
-import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payjoin_providers.dart';
+import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
@@ -62,41 +59,6 @@ class SendTxStateNotifier extends _$SendTxStateNotifier {
   void setSendTxState(SendTxState sendTxState) {
     state = sendTxState;
   }
-}
-
-@riverpod
-int? parseAssetAmount(ParseAssetAmountRef ref,
-    {required String amount, required int precision}) {
-  if (precision < 0 || precision > 8) {
-    return null;
-  }
-
-  final newValue = amount.replaceAll(' ', '');
-  final newAmount = Decimal.tryParse(newValue);
-
-  if (newAmount == null) {
-    return null;
-  }
-
-  final amountDec = newAmount * Decimal.fromInt(pow(10, precision).toInt());
-
-  final amountInt = amountDec.toBigInt().toInt();
-
-  if (Decimal.fromInt(amountInt) != amountDec) {
-    return null;
-  }
-
-  return amountInt;
-}
-
-@riverpod
-int satoshiForAmount(SatoshiForAmountRef ref,
-    {required String assetId, required String amount}) {
-  final precision =
-      ref.watch(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
-  return ref.watch(
-          parseAssetAmountProvider(amount: amount, precision: precision)) ??
-      0;
 }
 
 @Riverpod(keepAlive: true)
@@ -152,14 +114,16 @@ class PaymentAmountPageArgumentsNotifier
 }
 
 @riverpod
-PaymentHelper paymentHelper(PaymentHelperRef ref) {
+PaymentHelper paymentHelper(Ref ref) {
   final outputsData = ref.watch(outputsCreatorProvider);
-  final selectedAccountAsset =
-      ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
+  final selectedAccountAsset = ref.watch(
+    sendPopupSelectedAccountAssetNotifierProvider,
+  );
   final deductFeeFromOutput = ref.watch(deductFeeFromOutputNotifierProvider);
   final deductIndex = ref.watch(payjoinRadioButtonIndexNotifierProvider);
   final feeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return PaymentHelper(
     ref,
@@ -169,6 +133,7 @@ PaymentHelper paymentHelper(PaymentHelperRef ref) {
     deductIndex: deductIndex,
     feeAsset: feeAsset,
     liquidAssetId: liquidAssetId,
+    satoshiRepository: satoshiRepository,
   );
 }
 
@@ -180,6 +145,7 @@ class PaymentHelper {
   final int deductIndex;
   final Asset? feeAsset;
   final String liquidAssetId;
+  final AbstractSatoshiRepository satoshiRepository;
 
   PaymentHelper(
     this.ref, {
@@ -187,63 +153,71 @@ class PaymentHelper {
     required this.accountAsset,
     required this.deductFeeFromOutput,
     required this.deductIndex,
+    required this.satoshiRepository,
     this.feeAsset,
     required this.liquidAssetId,
   });
 
-  String? outputsPaymentSend({
-    List<UtxosItem>? selectedInputs,
-  }) {
+  String? outputsPaymentSend({List<UtxosItem>? selectedInputs}) {
     return switch (outputsData) {
       Left(value: final l) => l.message,
       Right(value: final r) => () {
-          if (r.receivers == null) {
-            return;
-          }
+        if (r.receivers == null) {
+          return;
+        }
 
-          final addressAmounts = r.receivers!.map((e) {
-            return AddressAmount(
-              address: e.address,
-              amount: Int64(e.satoshi ?? 0),
-              assetId: e.assetId,
-            );
-          }).toList();
+        final addressAmounts =
+            r.receivers!.map((e) {
+              return AddressAmount(
+                address: e.address,
+                amount: Int64(e.satoshi ?? 0),
+                assetId: e.assetId,
+              );
+            }).toList();
 
-          final utxos = selectedInputs?.map((selectedInput) =>
-              OutPoint(txid: selectedInput.txid, vout: selectedInput.vout));
+        final utxos = selectedInputs?.map(
+          (selectedInput) =>
+              OutPoint(txid: selectedInput.txid, vout: selectedInput.vout),
+        );
 
-          final account = Account();
-          account.id = ((selectedInputs?.length ?? 0) > 0
-                  ? selectedInputs?.first.account
-                  : accountAsset.account.id) ??
-              0;
+        final account = Account();
+        account.id =
+            ((selectedInputs?.length ?? 0) > 0
+                ? selectedInputs?.first.account
+                : accountAsset.account.id) ??
+            0;
 
-          final createTx = CreateTx(
-            addressees: addressAmounts,
-            account: account,
-            utxos: utxos,
-            deductFeeOutput: deductFeeFromOutput ? deductIndex : null,
-            feeAssetId:
-                feeAsset?.assetId != liquidAssetId ? feeAsset?.assetId : null,
-          );
+        final createTx = CreateTx(
+          addressees: addressAmounts,
+          account: account,
+          utxos: utxos,
+          deductFeeOutput: deductFeeFromOutput ? deductIndex : null,
+          feeAssetId:
+              feeAsset?.assetId != liquidAssetId ? feeAsset?.assetId : null,
+        );
 
-          ref.read(walletProvider).createTx(createTx);
-        }(),
+        ref.read(walletProvider).createTx(createTx);
+      }(),
     };
   }
 
-  void selectPaymentSend(String amount, AccountAsset accountAsset,
-      {Friend? friend, String? address, bool isGreedy = false}) {
-    // TODO: handle friend payment send
+  void selectPaymentSend(
+    String amount,
+    AccountAsset accountAsset, {
+    String? address,
+    bool isGreedy = false,
+  }) {
     if (address == null) {
       logger.e('Address is null');
       return;
     }
 
     /// Used only in mobile - it should be removed if outputs are added to mobile?
-    Future.microtask(() => ref
-        .read(selectedWalletAccountAssetNotifierProvider.notifier)
-        .setAccountAsset(accountAsset));
+    Future.microtask(
+      () => ref
+          .read(selectedWalletAccountAssetNotifierProvider.notifier)
+          .setAccountAsset(accountAsset),
+    );
 
     if (!ref.read(isAddrTypeValidProvider(address, AddrType.elements))) {
       logger.e('Invalid address $address');
@@ -253,8 +227,10 @@ class PaymentHelper {
     final precision = ref
         .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: accountAsset.assetId);
-    final internalAmount = ref
-        .read(parseAssetAmountProvider(amount: amount, precision: precision));
+    final internalAmount = satoshiRepository.parseAssetAmount(
+      amount: amount,
+      precision: precision,
+    );
     final balance = ref.read(balancesNotifierProvider)[accountAsset];
     if (balance == null) {
       logger.e('Wrong balance for selected wallet asset');
@@ -282,7 +258,8 @@ class PaymentHelper {
     addressAmount.address = address;
     addressAmount.amount = Int64(internalAmount);
     addressAmount.assetId = accountAsset.assetId ?? '';
-    final shouldDeductFeeOutput = isGreedy &&
+    final shouldDeductFeeOutput =
+        isGreedy &&
         internalAmount == balance &&
         liquidAssetId == accountAsset.assetId;
 

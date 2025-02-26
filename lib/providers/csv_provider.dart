@@ -22,7 +22,7 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 part 'csv_provider.g.dart';
 
 @riverpod
-CsvRepository csvRepository(CsvRepositoryRef ref) {
+CsvRepository csvRepository(Ref ref) {
   final allTxs = ref.watch(allTxsNotifierProvider);
   final assets = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
@@ -80,14 +80,17 @@ class CsvRepository {
     for (var transItem in txsSorted) {
       final transItemHelper = ref.read(transItemHelperProvider(transItem));
       final txAmountStr = amountToString.amountToString(
-          AmountToStringParameters(amount: transItem.tx.networkFee.toInt()));
+        AmountToStringParameters(amount: transItem.tx.networkFee.toInt()),
+      );
 
       final line = <String>[];
-      line.add(AccountType.fromPb(transItem.account).isAmp
-          ? 'Amp'
-          : AccountType.fromPb(transItem.account).isRegular
-              ? 'Regular'
-              : 'Unknown');
+      line.add(
+        AccountType.fromPb(transItem.account).isAmp
+            ? 'Amp'
+            : AccountType.fromPb(transItem.account).isRegular
+            ? 'Regular'
+            : 'Unknown',
+      );
       line.add(transItem.tx.txid);
       line.add(transItemHelper.txTypeName());
       line.add(txDateCsvExport(transItem.createdAt.toInt()));
@@ -101,8 +104,8 @@ class CsvRepository {
             .forEach((item) => balance += item.amount.toInt());
 
         final assetAmountStr = amountToString.amountToString(
-            AmountToStringParameters(
-                amount: balance, precision: asset.precision));
+          AmountToStringParameters(amount: balance, precision: asset.precision),
+        );
 
         line.add(assetAmountStr);
       }
@@ -156,23 +159,30 @@ class CsvNotifier extends _$CsvNotifier {
       return path;
     });
 
-    csvPath.when(loading: () {
-      state = const AsyncValue.loading();
-    }, data: (value) async {
-      const defaultName = 'transactions.csv';
-      final csv = await _csvRepository.fetchStringData();
-      final data = Uint8List.fromList(csv.codeUnits);
-      final file =
-          XFile.fromData(data, name: defaultName, mimeType: 'text/plain');
-      await file.saveTo(value);
+    csvPath.when(
+      loading: () {
+        state = const AsyncValue.loading();
+      },
+      data: (value) async {
+        const defaultName = 'transactions.csv';
+        final csv = await _csvRepository.fetchStringData();
+        final data = Uint8List.fromList(csv.codeUnits);
+        final file = XFile.fromData(
+          data,
+          name: defaultName,
+          mimeType: 'text/plain',
+        );
+        await file.saveTo(value);
 
-      state = const AsyncValue.data(true);
-    }, error: (error, stackTrace) {
-      logger.e(error);
-      logger.e(stackTrace);
+        state = const AsyncValue.data(true);
+      },
+      error: (error, stackTrace) {
+        logger.e(error);
+        logger.e(stackTrace);
 
-      state = AsyncValue.error(error, stackTrace);
-    });
+        state = AsyncValue.error(error, stackTrace);
+      },
+    );
   }
 
   Future<void> share(RenderBox? box) async {
@@ -181,25 +191,27 @@ class CsvNotifier extends _$CsvNotifier {
       return path;
     });
 
-    csvPath.when(loading: () {
-      state = const AsyncValue.loading();
-    }, data: (value) async {
-      if (box == null) {
-        return;
-      }
+    csvPath.when(
+      loading: () {
+        state = const AsyncValue.loading();
+      },
+      data: (value) async {
+        if (box == null) {
+          return;
+        }
 
-      final csv = await _csvRepository.fetchStringData();
-      await File(value).writeAsString(csv);
-      await Share.shareXFiles(
-        [XFile(value, mimeType: 'text/csv')],
-      );
+        final csv = await _csvRepository.fetchStringData();
+        await File(value).writeAsString(csv);
+        await Share.shareXFiles([XFile(value, mimeType: 'text/csv')]);
 
-      state = const AsyncValue.data(true);
-    }, error: (error, stackTrace) {
-      logger.e(error);
-      logger.e(stackTrace);
+        state = const AsyncValue.data(true);
+      },
+      error: (error, stackTrace) {
+        logger.e(error);
+        logger.e(stackTrace);
 
-      state = AsyncValue.error(error, stackTrace);
-    });
+        state = AsyncValue.error(error, stackTrace);
+      },
+    );
   }
 }

@@ -19,11 +19,13 @@ class SettingsCustomHost extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultTextStyle = useMemoized(() => const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: SideSwapColors.brightTurquoise,
-        ));
+    final defaultTextStyle = useMemoized(
+      () => const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: SideSwapColors.brightTurquoise,
+      ),
+    );
 
     final hostController = useTextEditingController();
     final portController = useTextEditingController();
@@ -60,7 +62,7 @@ class SettingsCustomHost extends HookConsumerWidget {
 
     return SideSwapScaffold(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           Navigator.of(context).pop();
         }
@@ -73,108 +75,107 @@ class SettingsCustomHost extends HookConsumerWidget {
       ),
       body: SafeArea(
         child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: constraints.maxWidth,
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 40),
-                        child: Text(
-                          'Host'.tr(),
-                          style: defaultTextStyle,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: SideSwapTextField(
-                          controller: hostController,
-                          hintText: 'Hostname'.tr(),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 18),
-                        child: Text(
-                          'Port'.tr(),
-                          style: defaultTextStyle,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: SideSwapTextField(
-                          controller: portController,
-                          hintText: 'Range 1-65535'.tr(),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(5),
-                            NumericalRangeFormatter(min: 1, max: 65535),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Consumer(
-                          builder: (context, watch, child) {
-                            return CustomCheckBoxRow(
-                              value: useTls.value,
-                              onChanged: (value) {
-                                useTls.value = value;
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 10),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'Use TLS'.tr(),
-                                      style: defaultTextStyle,
+          builder:
+              (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: constraints.maxWidth,
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Text('Host'.tr(), style: defaultTextStyle),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: SideSwapTextField(
+                              controller: hostController,
+                              hintText: 'Hostname'.tr(),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 18),
+                            child: Text('Port'.tr(), style: defaultTextStyle),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: SideSwapTextField(
+                              controller: portController,
+                              hintText: 'Range 1-65535'.tr(),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(5),
+                                NumericalRangeFormatter(min: 1, max: 65535),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Consumer(
+                              builder: (context, watch, child) {
+                                return CustomCheckBoxRow(
+                                  value: useTls.value,
+                                  onChanged: (value) {
+                                    useTls.value = value;
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Use TLS'.tr(),
+                                          style: defaultTextStyle,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 40),
-                        child: CustomBigButton(
-                          enabled: applyEnabled.value,
-                          width: double.maxFinite,
-                          height: 54,
-                          text: 'APPLY'.tr(),
-                          onPressed: () {
-                            ref
-                                .read(networkSettingsNotifierProvider.notifier)
-                                .setModel(NetworkSettingsModelApply(
-                                  settingsNetworkType:
-                                      SettingsNetworkType.personal,
-                                  env: SIDESWAP_ENV_PROD,
-                                  host: hostController.text,
-                                  port: int.parse(portController.text),
-                                  useTls: useTls.value,
-                                ));
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const Spacer(),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 40),
+                            child: CustomBigButton(
+                              enabled: applyEnabled.value,
+                              width: double.maxFinite,
+                              height: 54,
+                              text: 'APPLY'.tr(),
+                              onPressed: () {
+                                ref
+                                    .read(
+                                      networkSettingsNotifierProvider.notifier,
+                                    )
+                                    .setModel(
+                                      NetworkSettingsModelApply(
+                                        settingsNetworkType:
+                                            SettingsNetworkType.personal,
+                                        env: SIDESWAP_ENV_PROD,
+                                        host: hostController.text,
+                                        port: int.parse(portController.text),
+                                        useTls: useTls.value,
+                                      ),
+                                    );
 
-                            Navigator.of(context).pop();
-                          },
-                          backgroundColor: SideSwapColors.brightTurquoise,
-                          textColor: Colors.white,
-                        ),
+                                Navigator.of(context).pop();
+                              },
+                              backgroundColor: SideSwapColors.brightTurquoise,
+                              textColor: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
         ),
       ),
     );

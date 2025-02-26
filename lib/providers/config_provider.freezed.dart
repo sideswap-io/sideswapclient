@@ -12,7 +12,8 @@ part of 'config_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$SideswapSettings {
@@ -46,124 +47,7 @@ mixin _$SideswapSettings {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-            Uint8List mnemonicEncrypted,
-            String jadeId,
-            bool licenseAccepted,
-            bool enableEndpoint,
-            bool useBiometricProtection,
-            int env,
-            String phoneKey,
-            String phoneNumber,
-            bool usePinProtection,
-            PinDataState? pinDataState,
-            SettingsNetworkType settingsNetworkType,
-            String networkHost,
-            int networkPort,
-            bool networkUseTLS,
-            int knownNewReleaseBuild,
-            bool showAmpOnboarding,
-            NetworkSettingsModel? networkSettingsModel,
-            bool hideTxChainingPromptValue,
-            bool hidePegInInfo,
-            bool hidePegOutInfo,
-            ProxySettings? proxySettings,
-            bool useProxy,
-            String? defaultCurrency,
-            StokrSettingsModel? stokrSettingsModel)
-        empty,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(
-            Uint8List mnemonicEncrypted,
-            String jadeId,
-            bool licenseAccepted,
-            bool enableEndpoint,
-            bool useBiometricProtection,
-            int env,
-            String phoneKey,
-            String phoneNumber,
-            bool usePinProtection,
-            PinDataState? pinDataState,
-            SettingsNetworkType settingsNetworkType,
-            String networkHost,
-            int networkPort,
-            bool networkUseTLS,
-            int knownNewReleaseBuild,
-            bool showAmpOnboarding,
-            NetworkSettingsModel? networkSettingsModel,
-            bool hideTxChainingPromptValue,
-            bool hidePegInInfo,
-            bool hidePegOutInfo,
-            ProxySettings? proxySettings,
-            bool useProxy,
-            String? defaultCurrency,
-            StokrSettingsModel? stokrSettingsModel)?
-        empty,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-            Uint8List mnemonicEncrypted,
-            String jadeId,
-            bool licenseAccepted,
-            bool enableEndpoint,
-            bool useBiometricProtection,
-            int env,
-            String phoneKey,
-            String phoneNumber,
-            bool usePinProtection,
-            PinDataState? pinDataState,
-            SettingsNetworkType settingsNetworkType,
-            String networkHost,
-            int networkPort,
-            bool networkUseTLS,
-            int knownNewReleaseBuild,
-            bool showAmpOnboarding,
-            NetworkSettingsModel? networkSettingsModel,
-            bool hideTxChainingPromptValue,
-            bool hidePegInInfo,
-            bool hidePegOutInfo,
-            ProxySettings? proxySettings,
-            bool useProxy,
-            String? defaultCurrency,
-            StokrSettingsModel? stokrSettingsModel)?
-        empty,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_SideswapSettings value) empty,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_SideswapSettings value)? empty,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_SideswapSettings value)? empty,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-
-  @JsonKey(ignore: true)
-  $SideswapSettingsCopyWith<SideswapSettings> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $SideswapSettingsCopyWith<$Res> {
-  factory $SideswapSettingsCopyWith(
-          SideswapSettings value, $Res Function(SideswapSettings) then) =
-      _$SideswapSettingsCopyWithImpl<$Res, SideswapSettings>;
-  @useResult
-  $Res call(
-      {Uint8List mnemonicEncrypted,
+      Uint8List mnemonicEncrypted,
       String jadeId,
       bool licenseAccepted,
       bool enableEndpoint,
@@ -186,7 +70,125 @@ abstract class $SideswapSettingsCopyWith<$Res> {
       ProxySettings? proxySettings,
       bool useProxy,
       String? defaultCurrency,
-      StokrSettingsModel? stokrSettingsModel});
+      StokrSettingsModel? stokrSettingsModel,
+    )
+    empty,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+      Uint8List mnemonicEncrypted,
+      String jadeId,
+      bool licenseAccepted,
+      bool enableEndpoint,
+      bool useBiometricProtection,
+      int env,
+      String phoneKey,
+      String phoneNumber,
+      bool usePinProtection,
+      PinDataState? pinDataState,
+      SettingsNetworkType settingsNetworkType,
+      String networkHost,
+      int networkPort,
+      bool networkUseTLS,
+      int knownNewReleaseBuild,
+      bool showAmpOnboarding,
+      NetworkSettingsModel? networkSettingsModel,
+      bool hideTxChainingPromptValue,
+      bool hidePegInInfo,
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel,
+    )?
+    empty,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+      Uint8List mnemonicEncrypted,
+      String jadeId,
+      bool licenseAccepted,
+      bool enableEndpoint,
+      bool useBiometricProtection,
+      int env,
+      String phoneKey,
+      String phoneNumber,
+      bool usePinProtection,
+      PinDataState? pinDataState,
+      SettingsNetworkType settingsNetworkType,
+      String networkHost,
+      int networkPort,
+      bool networkUseTLS,
+      int knownNewReleaseBuild,
+      bool showAmpOnboarding,
+      NetworkSettingsModel? networkSettingsModel,
+      bool hideTxChainingPromptValue,
+      bool hidePegInInfo,
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel,
+    )?
+    empty,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SideswapSettings value) empty,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SideswapSettings value)? empty,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SideswapSettings value)? empty,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SideswapSettingsCopyWith<SideswapSettings> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SideswapSettingsCopyWith<$Res> {
+  factory $SideswapSettingsCopyWith(
+    SideswapSettings value,
+    $Res Function(SideswapSettings) then,
+  ) = _$SideswapSettingsCopyWithImpl<$Res, SideswapSettings>;
+  @useResult
+  $Res call({
+    Uint8List mnemonicEncrypted,
+    String jadeId,
+    bool licenseAccepted,
+    bool enableEndpoint,
+    bool useBiometricProtection,
+    int env,
+    String phoneKey,
+    String phoneNumber,
+    bool usePinProtection,
+    PinDataState? pinDataState,
+    SettingsNetworkType settingsNetworkType,
+    String networkHost,
+    int networkPort,
+    bool networkUseTLS,
+    int knownNewReleaseBuild,
+    bool showAmpOnboarding,
+    NetworkSettingsModel? networkSettingsModel,
+    bool hideTxChainingPromptValue,
+    bool hidePegInInfo,
+    bool hidePegOutInfo,
+    ProxySettings? proxySettings,
+    bool useProxy,
+    String? defaultCurrency,
+    StokrSettingsModel? stokrSettingsModel,
+  });
 
   $PinDataStateCopyWith<$Res>? get pinDataState;
   $NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;
@@ -204,6 +206,8 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -232,106 +236,135 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
     Object? defaultCurrency = freezed,
     Object? stokrSettingsModel = freezed,
   }) {
-    return _then(_value.copyWith(
-      mnemonicEncrypted: null == mnemonicEncrypted
-          ? _value.mnemonicEncrypted
-          : mnemonicEncrypted // ignore: cast_nullable_to_non_nullable
-              as Uint8List,
-      jadeId: null == jadeId
-          ? _value.jadeId
-          : jadeId // ignore: cast_nullable_to_non_nullable
-              as String,
-      licenseAccepted: null == licenseAccepted
-          ? _value.licenseAccepted
-          : licenseAccepted // ignore: cast_nullable_to_non_nullable
-              as bool,
-      enableEndpoint: null == enableEndpoint
-          ? _value.enableEndpoint
-          : enableEndpoint // ignore: cast_nullable_to_non_nullable
-              as bool,
-      useBiometricProtection: null == useBiometricProtection
-          ? _value.useBiometricProtection
-          : useBiometricProtection // ignore: cast_nullable_to_non_nullable
-              as bool,
-      env: null == env
-          ? _value.env
-          : env // ignore: cast_nullable_to_non_nullable
-              as int,
-      phoneKey: null == phoneKey
-          ? _value.phoneKey
-          : phoneKey // ignore: cast_nullable_to_non_nullable
-              as String,
-      phoneNumber: null == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String,
-      usePinProtection: null == usePinProtection
-          ? _value.usePinProtection
-          : usePinProtection // ignore: cast_nullable_to_non_nullable
-              as bool,
-      pinDataState: freezed == pinDataState
-          ? _value.pinDataState
-          : pinDataState // ignore: cast_nullable_to_non_nullable
-              as PinDataState?,
-      settingsNetworkType: null == settingsNetworkType
-          ? _value.settingsNetworkType
-          : settingsNetworkType // ignore: cast_nullable_to_non_nullable
-              as SettingsNetworkType,
-      networkHost: null == networkHost
-          ? _value.networkHost
-          : networkHost // ignore: cast_nullable_to_non_nullable
-              as String,
-      networkPort: null == networkPort
-          ? _value.networkPort
-          : networkPort // ignore: cast_nullable_to_non_nullable
-              as int,
-      networkUseTLS: null == networkUseTLS
-          ? _value.networkUseTLS
-          : networkUseTLS // ignore: cast_nullable_to_non_nullable
-              as bool,
-      knownNewReleaseBuild: null == knownNewReleaseBuild
-          ? _value.knownNewReleaseBuild
-          : knownNewReleaseBuild // ignore: cast_nullable_to_non_nullable
-              as int,
-      showAmpOnboarding: null == showAmpOnboarding
-          ? _value.showAmpOnboarding
-          : showAmpOnboarding // ignore: cast_nullable_to_non_nullable
-              as bool,
-      networkSettingsModel: freezed == networkSettingsModel
-          ? _value.networkSettingsModel
-          : networkSettingsModel // ignore: cast_nullable_to_non_nullable
-              as NetworkSettingsModel?,
-      hideTxChainingPromptValue: null == hideTxChainingPromptValue
-          ? _value.hideTxChainingPromptValue
-          : hideTxChainingPromptValue // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hidePegInInfo: null == hidePegInInfo
-          ? _value.hidePegInInfo
-          : hidePegInInfo // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hidePegOutInfo: null == hidePegOutInfo
-          ? _value.hidePegOutInfo
-          : hidePegOutInfo // ignore: cast_nullable_to_non_nullable
-              as bool,
-      proxySettings: freezed == proxySettings
-          ? _value.proxySettings
-          : proxySettings // ignore: cast_nullable_to_non_nullable
-              as ProxySettings?,
-      useProxy: null == useProxy
-          ? _value.useProxy
-          : useProxy // ignore: cast_nullable_to_non_nullable
-              as bool,
-      defaultCurrency: freezed == defaultCurrency
-          ? _value.defaultCurrency
-          : defaultCurrency // ignore: cast_nullable_to_non_nullable
-              as String?,
-      stokrSettingsModel: freezed == stokrSettingsModel
-          ? _value.stokrSettingsModel
-          : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
-              as StokrSettingsModel?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            mnemonicEncrypted:
+                null == mnemonicEncrypted
+                    ? _value.mnemonicEncrypted
+                    : mnemonicEncrypted // ignore: cast_nullable_to_non_nullable
+                        as Uint8List,
+            jadeId:
+                null == jadeId
+                    ? _value.jadeId
+                    : jadeId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            licenseAccepted:
+                null == licenseAccepted
+                    ? _value.licenseAccepted
+                    : licenseAccepted // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            enableEndpoint:
+                null == enableEndpoint
+                    ? _value.enableEndpoint
+                    : enableEndpoint // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            useBiometricProtection:
+                null == useBiometricProtection
+                    ? _value.useBiometricProtection
+                    : useBiometricProtection // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            env:
+                null == env
+                    ? _value.env
+                    : env // ignore: cast_nullable_to_non_nullable
+                        as int,
+            phoneKey:
+                null == phoneKey
+                    ? _value.phoneKey
+                    : phoneKey // ignore: cast_nullable_to_non_nullable
+                        as String,
+            phoneNumber:
+                null == phoneNumber
+                    ? _value.phoneNumber
+                    : phoneNumber // ignore: cast_nullable_to_non_nullable
+                        as String,
+            usePinProtection:
+                null == usePinProtection
+                    ? _value.usePinProtection
+                    : usePinProtection // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            pinDataState:
+                freezed == pinDataState
+                    ? _value.pinDataState
+                    : pinDataState // ignore: cast_nullable_to_non_nullable
+                        as PinDataState?,
+            settingsNetworkType:
+                null == settingsNetworkType
+                    ? _value.settingsNetworkType
+                    : settingsNetworkType // ignore: cast_nullable_to_non_nullable
+                        as SettingsNetworkType,
+            networkHost:
+                null == networkHost
+                    ? _value.networkHost
+                    : networkHost // ignore: cast_nullable_to_non_nullable
+                        as String,
+            networkPort:
+                null == networkPort
+                    ? _value.networkPort
+                    : networkPort // ignore: cast_nullable_to_non_nullable
+                        as int,
+            networkUseTLS:
+                null == networkUseTLS
+                    ? _value.networkUseTLS
+                    : networkUseTLS // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            knownNewReleaseBuild:
+                null == knownNewReleaseBuild
+                    ? _value.knownNewReleaseBuild
+                    : knownNewReleaseBuild // ignore: cast_nullable_to_non_nullable
+                        as int,
+            showAmpOnboarding:
+                null == showAmpOnboarding
+                    ? _value.showAmpOnboarding
+                    : showAmpOnboarding // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            networkSettingsModel:
+                freezed == networkSettingsModel
+                    ? _value.networkSettingsModel
+                    : networkSettingsModel // ignore: cast_nullable_to_non_nullable
+                        as NetworkSettingsModel?,
+            hideTxChainingPromptValue:
+                null == hideTxChainingPromptValue
+                    ? _value.hideTxChainingPromptValue
+                    : hideTxChainingPromptValue // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            hidePegInInfo:
+                null == hidePegInInfo
+                    ? _value.hidePegInInfo
+                    : hidePegInInfo // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            hidePegOutInfo:
+                null == hidePegOutInfo
+                    ? _value.hidePegOutInfo
+                    : hidePegOutInfo // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            proxySettings:
+                freezed == proxySettings
+                    ? _value.proxySettings
+                    : proxySettings // ignore: cast_nullable_to_non_nullable
+                        as ProxySettings?,
+            useProxy:
+                null == useProxy
+                    ? _value.useProxy
+                    : useProxy // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            defaultCurrency:
+                freezed == defaultCurrency
+                    ? _value.defaultCurrency
+                    : defaultCurrency // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            stokrSettingsModel:
+                freezed == stokrSettingsModel
+                    ? _value.stokrSettingsModel
+                    : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
+                        as StokrSettingsModel?,
+          )
+          as $Val,
+    );
   }
 
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $PinDataStateCopyWith<$Res>? get pinDataState {
@@ -344,6 +377,8 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
     });
   }
 
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel {
@@ -351,12 +386,15 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
       return null;
     }
 
-    return $NetworkSettingsModelCopyWith<$Res>(_value.networkSettingsModel!,
-        (value) {
+    return $NetworkSettingsModelCopyWith<$Res>(_value.networkSettingsModel!, (
+      value,
+    ) {
       return _then(_value.copyWith(networkSettingsModel: value) as $Val);
     });
   }
 
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ProxySettingsCopyWith<$Res>? get proxySettings {
@@ -369,6 +407,8 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
     });
   }
 
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel {
@@ -376,8 +416,9 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
       return null;
     }
 
-    return $StokrSettingsModelCopyWith<$Res>(_value.stokrSettingsModel!,
-        (value) {
+    return $StokrSettingsModelCopyWith<$Res>(_value.stokrSettingsModel!, (
+      value,
+    ) {
       return _then(_value.copyWith(stokrSettingsModel: value) as $Val);
     });
   }
@@ -386,36 +427,38 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
 /// @nodoc
 abstract class _$$SideswapSettingsImplCopyWith<$Res>
     implements $SideswapSettingsCopyWith<$Res> {
-  factory _$$SideswapSettingsImplCopyWith(_$SideswapSettingsImpl value,
-          $Res Function(_$SideswapSettingsImpl) then) =
-      __$$SideswapSettingsImplCopyWithImpl<$Res>;
+  factory _$$SideswapSettingsImplCopyWith(
+    _$SideswapSettingsImpl value,
+    $Res Function(_$SideswapSettingsImpl) then,
+  ) = __$$SideswapSettingsImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {Uint8List mnemonicEncrypted,
-      String jadeId,
-      bool licenseAccepted,
-      bool enableEndpoint,
-      bool useBiometricProtection,
-      int env,
-      String phoneKey,
-      String phoneNumber,
-      bool usePinProtection,
-      PinDataState? pinDataState,
-      SettingsNetworkType settingsNetworkType,
-      String networkHost,
-      int networkPort,
-      bool networkUseTLS,
-      int knownNewReleaseBuild,
-      bool showAmpOnboarding,
-      NetworkSettingsModel? networkSettingsModel,
-      bool hideTxChainingPromptValue,
-      bool hidePegInInfo,
-      bool hidePegOutInfo,
-      ProxySettings? proxySettings,
-      bool useProxy,
-      String? defaultCurrency,
-      StokrSettingsModel? stokrSettingsModel});
+  $Res call({
+    Uint8List mnemonicEncrypted,
+    String jadeId,
+    bool licenseAccepted,
+    bool enableEndpoint,
+    bool useBiometricProtection,
+    int env,
+    String phoneKey,
+    String phoneNumber,
+    bool usePinProtection,
+    PinDataState? pinDataState,
+    SettingsNetworkType settingsNetworkType,
+    String networkHost,
+    int networkPort,
+    bool networkUseTLS,
+    int knownNewReleaseBuild,
+    bool showAmpOnboarding,
+    NetworkSettingsModel? networkSettingsModel,
+    bool hideTxChainingPromptValue,
+    bool hidePegInInfo,
+    bool hidePegOutInfo,
+    ProxySettings? proxySettings,
+    bool useProxy,
+    String? defaultCurrency,
+    StokrSettingsModel? stokrSettingsModel,
+  });
 
   @override
   $PinDataStateCopyWith<$Res>? get pinDataState;
@@ -431,10 +474,13 @@ abstract class _$$SideswapSettingsImplCopyWith<$Res>
 class __$$SideswapSettingsImplCopyWithImpl<$Res>
     extends _$SideswapSettingsCopyWithImpl<$Res, _$SideswapSettingsImpl>
     implements _$$SideswapSettingsImplCopyWith<$Res> {
-  __$$SideswapSettingsImplCopyWithImpl(_$SideswapSettingsImpl _value,
-      $Res Function(_$SideswapSettingsImpl) _then)
-      : super(_value, _then);
+  __$$SideswapSettingsImplCopyWithImpl(
+    _$SideswapSettingsImpl _value,
+    $Res Function(_$SideswapSettingsImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -463,135 +509,162 @@ class __$$SideswapSettingsImplCopyWithImpl<$Res>
     Object? defaultCurrency = freezed,
     Object? stokrSettingsModel = freezed,
   }) {
-    return _then(_$SideswapSettingsImpl(
-      mnemonicEncrypted: null == mnemonicEncrypted
-          ? _value.mnemonicEncrypted
-          : mnemonicEncrypted // ignore: cast_nullable_to_non_nullable
-              as Uint8List,
-      jadeId: null == jadeId
-          ? _value.jadeId
-          : jadeId // ignore: cast_nullable_to_non_nullable
-              as String,
-      licenseAccepted: null == licenseAccepted
-          ? _value.licenseAccepted
-          : licenseAccepted // ignore: cast_nullable_to_non_nullable
-              as bool,
-      enableEndpoint: null == enableEndpoint
-          ? _value.enableEndpoint
-          : enableEndpoint // ignore: cast_nullable_to_non_nullable
-              as bool,
-      useBiometricProtection: null == useBiometricProtection
-          ? _value.useBiometricProtection
-          : useBiometricProtection // ignore: cast_nullable_to_non_nullable
-              as bool,
-      env: null == env
-          ? _value.env
-          : env // ignore: cast_nullable_to_non_nullable
-              as int,
-      phoneKey: null == phoneKey
-          ? _value.phoneKey
-          : phoneKey // ignore: cast_nullable_to_non_nullable
-              as String,
-      phoneNumber: null == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String,
-      usePinProtection: null == usePinProtection
-          ? _value.usePinProtection
-          : usePinProtection // ignore: cast_nullable_to_non_nullable
-              as bool,
-      pinDataState: freezed == pinDataState
-          ? _value.pinDataState
-          : pinDataState // ignore: cast_nullable_to_non_nullable
-              as PinDataState?,
-      settingsNetworkType: null == settingsNetworkType
-          ? _value.settingsNetworkType
-          : settingsNetworkType // ignore: cast_nullable_to_non_nullable
-              as SettingsNetworkType,
-      networkHost: null == networkHost
-          ? _value.networkHost
-          : networkHost // ignore: cast_nullable_to_non_nullable
-              as String,
-      networkPort: null == networkPort
-          ? _value.networkPort
-          : networkPort // ignore: cast_nullable_to_non_nullable
-              as int,
-      networkUseTLS: null == networkUseTLS
-          ? _value.networkUseTLS
-          : networkUseTLS // ignore: cast_nullable_to_non_nullable
-              as bool,
-      knownNewReleaseBuild: null == knownNewReleaseBuild
-          ? _value.knownNewReleaseBuild
-          : knownNewReleaseBuild // ignore: cast_nullable_to_non_nullable
-              as int,
-      showAmpOnboarding: null == showAmpOnboarding
-          ? _value.showAmpOnboarding
-          : showAmpOnboarding // ignore: cast_nullable_to_non_nullable
-              as bool,
-      networkSettingsModel: freezed == networkSettingsModel
-          ? _value.networkSettingsModel
-          : networkSettingsModel // ignore: cast_nullable_to_non_nullable
-              as NetworkSettingsModel?,
-      hideTxChainingPromptValue: null == hideTxChainingPromptValue
-          ? _value.hideTxChainingPromptValue
-          : hideTxChainingPromptValue // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hidePegInInfo: null == hidePegInInfo
-          ? _value.hidePegInInfo
-          : hidePegInInfo // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hidePegOutInfo: null == hidePegOutInfo
-          ? _value.hidePegOutInfo
-          : hidePegOutInfo // ignore: cast_nullable_to_non_nullable
-              as bool,
-      proxySettings: freezed == proxySettings
-          ? _value.proxySettings
-          : proxySettings // ignore: cast_nullable_to_non_nullable
-              as ProxySettings?,
-      useProxy: null == useProxy
-          ? _value.useProxy
-          : useProxy // ignore: cast_nullable_to_non_nullable
-              as bool,
-      defaultCurrency: freezed == defaultCurrency
-          ? _value.defaultCurrency
-          : defaultCurrency // ignore: cast_nullable_to_non_nullable
-              as String?,
-      stokrSettingsModel: freezed == stokrSettingsModel
-          ? _value.stokrSettingsModel
-          : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
-              as StokrSettingsModel?,
-    ));
+    return _then(
+      _$SideswapSettingsImpl(
+        mnemonicEncrypted:
+            null == mnemonicEncrypted
+                ? _value.mnemonicEncrypted
+                : mnemonicEncrypted // ignore: cast_nullable_to_non_nullable
+                    as Uint8List,
+        jadeId:
+            null == jadeId
+                ? _value.jadeId
+                : jadeId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        licenseAccepted:
+            null == licenseAccepted
+                ? _value.licenseAccepted
+                : licenseAccepted // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        enableEndpoint:
+            null == enableEndpoint
+                ? _value.enableEndpoint
+                : enableEndpoint // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        useBiometricProtection:
+            null == useBiometricProtection
+                ? _value.useBiometricProtection
+                : useBiometricProtection // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        env:
+            null == env
+                ? _value.env
+                : env // ignore: cast_nullable_to_non_nullable
+                    as int,
+        phoneKey:
+            null == phoneKey
+                ? _value.phoneKey
+                : phoneKey // ignore: cast_nullable_to_non_nullable
+                    as String,
+        phoneNumber:
+            null == phoneNumber
+                ? _value.phoneNumber
+                : phoneNumber // ignore: cast_nullable_to_non_nullable
+                    as String,
+        usePinProtection:
+            null == usePinProtection
+                ? _value.usePinProtection
+                : usePinProtection // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        pinDataState:
+            freezed == pinDataState
+                ? _value.pinDataState
+                : pinDataState // ignore: cast_nullable_to_non_nullable
+                    as PinDataState?,
+        settingsNetworkType:
+            null == settingsNetworkType
+                ? _value.settingsNetworkType
+                : settingsNetworkType // ignore: cast_nullable_to_non_nullable
+                    as SettingsNetworkType,
+        networkHost:
+            null == networkHost
+                ? _value.networkHost
+                : networkHost // ignore: cast_nullable_to_non_nullable
+                    as String,
+        networkPort:
+            null == networkPort
+                ? _value.networkPort
+                : networkPort // ignore: cast_nullable_to_non_nullable
+                    as int,
+        networkUseTLS:
+            null == networkUseTLS
+                ? _value.networkUseTLS
+                : networkUseTLS // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        knownNewReleaseBuild:
+            null == knownNewReleaseBuild
+                ? _value.knownNewReleaseBuild
+                : knownNewReleaseBuild // ignore: cast_nullable_to_non_nullable
+                    as int,
+        showAmpOnboarding:
+            null == showAmpOnboarding
+                ? _value.showAmpOnboarding
+                : showAmpOnboarding // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        networkSettingsModel:
+            freezed == networkSettingsModel
+                ? _value.networkSettingsModel
+                : networkSettingsModel // ignore: cast_nullable_to_non_nullable
+                    as NetworkSettingsModel?,
+        hideTxChainingPromptValue:
+            null == hideTxChainingPromptValue
+                ? _value.hideTxChainingPromptValue
+                : hideTxChainingPromptValue // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        hidePegInInfo:
+            null == hidePegInInfo
+                ? _value.hidePegInInfo
+                : hidePegInInfo // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        hidePegOutInfo:
+            null == hidePegOutInfo
+                ? _value.hidePegOutInfo
+                : hidePegOutInfo // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        proxySettings:
+            freezed == proxySettings
+                ? _value.proxySettings
+                : proxySettings // ignore: cast_nullable_to_non_nullable
+                    as ProxySettings?,
+        useProxy:
+            null == useProxy
+                ? _value.useProxy
+                : useProxy // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        defaultCurrency:
+            freezed == defaultCurrency
+                ? _value.defaultCurrency
+                : defaultCurrency // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        stokrSettingsModel:
+            freezed == stokrSettingsModel
+                ? _value.stokrSettingsModel
+                : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
+                    as StokrSettingsModel?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$SideswapSettingsImpl implements _SideswapSettings {
-  _$SideswapSettingsImpl(
-      {required this.mnemonicEncrypted,
-      this.jadeId = '',
-      this.licenseAccepted = false,
-      this.enableEndpoint = true,
-      this.useBiometricProtection = false,
-      this.env = 0,
-      this.phoneKey = '',
-      this.phoneNumber = '',
-      this.usePinProtection = false,
-      this.pinDataState,
-      this.settingsNetworkType = SettingsNetworkType.sideswap,
-      this.networkHost = '',
-      this.networkPort = 0,
-      this.networkUseTLS = false,
-      this.knownNewReleaseBuild = 0,
-      this.showAmpOnboarding = true,
-      this.networkSettingsModel,
-      this.hideTxChainingPromptValue = false,
-      this.hidePegInInfo = false,
-      this.hidePegOutInfo = false,
-      this.proxySettings,
-      this.useProxy = false,
-      this.defaultCurrency,
-      this.stokrSettingsModel});
+  _$SideswapSettingsImpl({
+    required this.mnemonicEncrypted,
+    this.jadeId = '',
+    this.licenseAccepted = false,
+    this.enableEndpoint = true,
+    this.useBiometricProtection = false,
+    this.env = 0,
+    this.phoneKey = '',
+    this.phoneNumber = '',
+    this.usePinProtection = false,
+    this.pinDataState,
+    this.settingsNetworkType = SettingsNetworkType.sideswap,
+    this.networkHost = '',
+    this.networkPort = 0,
+    this.networkUseTLS = false,
+    this.knownNewReleaseBuild = 0,
+    this.showAmpOnboarding = true,
+    this.networkSettingsModel,
+    this.hideTxChainingPromptValue = false,
+    this.hidePegInInfo = false,
+    this.hidePegOutInfo = false,
+    this.proxySettings,
+    this.useProxy = false,
+    this.defaultCurrency,
+    this.stokrSettingsModel,
+  });
 
   @override
   final Uint8List mnemonicEncrypted;
@@ -670,8 +743,10 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SideswapSettingsImpl &&
-            const DeepCollectionEquality()
-                .equals(other.mnemonicEncrypted, mnemonicEncrypted) &&
+            const DeepCollectionEquality().equals(
+              other.mnemonicEncrypted,
+              mnemonicEncrypted,
+            ) &&
             (identical(other.jadeId, jadeId) || other.jadeId == jadeId) &&
             (identical(other.licenseAccepted, licenseAccepted) ||
                 other.licenseAccepted == licenseAccepted) &&
@@ -702,8 +777,10 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
                 other.showAmpOnboarding == showAmpOnboarding) &&
             (identical(other.networkSettingsModel, networkSettingsModel) ||
                 other.networkSettingsModel == networkSettingsModel) &&
-            (identical(other.hideTxChainingPromptValue,
-                    hideTxChainingPromptValue) ||
+            (identical(
+                  other.hideTxChainingPromptValue,
+                  hideTxChainingPromptValue,
+                ) ||
                 other.hideTxChainingPromptValue == hideTxChainingPromptValue) &&
             (identical(other.hidePegInInfo, hidePegInInfo) ||
                 other.hidePegInInfo == hidePegInInfo) &&
@@ -721,128 +798,196 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
 
   @override
   int get hashCode => Object.hashAll([
-        runtimeType,
-        const DeepCollectionEquality().hash(mnemonicEncrypted),
-        jadeId,
-        licenseAccepted,
-        enableEndpoint,
-        useBiometricProtection,
-        env,
-        phoneKey,
-        phoneNumber,
-        usePinProtection,
-        pinDataState,
-        settingsNetworkType,
-        networkHost,
-        networkPort,
-        networkUseTLS,
-        knownNewReleaseBuild,
-        showAmpOnboarding,
-        networkSettingsModel,
-        hideTxChainingPromptValue,
-        hidePegInInfo,
-        hidePegOutInfo,
-        proxySettings,
-        useProxy,
-        defaultCurrency,
-        stokrSettingsModel
-      ]);
+    runtimeType,
+    const DeepCollectionEquality().hash(mnemonicEncrypted),
+    jadeId,
+    licenseAccepted,
+    enableEndpoint,
+    useBiometricProtection,
+    env,
+    phoneKey,
+    phoneNumber,
+    usePinProtection,
+    pinDataState,
+    settingsNetworkType,
+    networkHost,
+    networkPort,
+    networkUseTLS,
+    knownNewReleaseBuild,
+    showAmpOnboarding,
+    networkSettingsModel,
+    hideTxChainingPromptValue,
+    hidePegInInfo,
+    hidePegOutInfo,
+    proxySettings,
+    useProxy,
+    defaultCurrency,
+    stokrSettingsModel,
+  ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SideswapSettingsImplCopyWith<_$SideswapSettingsImpl> get copyWith =>
       __$$SideswapSettingsImplCopyWithImpl<_$SideswapSettingsImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
-            Uint8List mnemonicEncrypted,
-            String jadeId,
-            bool licenseAccepted,
-            bool enableEndpoint,
-            bool useBiometricProtection,
-            int env,
-            String phoneKey,
-            String phoneNumber,
-            bool usePinProtection,
-            PinDataState? pinDataState,
-            SettingsNetworkType settingsNetworkType,
-            String networkHost,
-            int networkPort,
-            bool networkUseTLS,
-            int knownNewReleaseBuild,
-            bool showAmpOnboarding,
-            NetworkSettingsModel? networkSettingsModel,
-            bool hideTxChainingPromptValue,
-            bool hidePegInInfo,
-            bool hidePegOutInfo,
-            ProxySettings? proxySettings,
-            bool useProxy,
-            String? defaultCurrency,
-            StokrSettingsModel? stokrSettingsModel)
-        empty,
+      Uint8List mnemonicEncrypted,
+      String jadeId,
+      bool licenseAccepted,
+      bool enableEndpoint,
+      bool useBiometricProtection,
+      int env,
+      String phoneKey,
+      String phoneNumber,
+      bool usePinProtection,
+      PinDataState? pinDataState,
+      SettingsNetworkType settingsNetworkType,
+      String networkHost,
+      int networkPort,
+      bool networkUseTLS,
+      int knownNewReleaseBuild,
+      bool showAmpOnboarding,
+      NetworkSettingsModel? networkSettingsModel,
+      bool hideTxChainingPromptValue,
+      bool hidePegInInfo,
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel,
+    )
+    empty,
   }) {
     return empty(
-        mnemonicEncrypted,
-        jadeId,
-        licenseAccepted,
-        enableEndpoint,
-        useBiometricProtection,
-        env,
-        phoneKey,
-        phoneNumber,
-        usePinProtection,
-        pinDataState,
-        settingsNetworkType,
-        networkHost,
-        networkPort,
-        networkUseTLS,
-        knownNewReleaseBuild,
-        showAmpOnboarding,
-        networkSettingsModel,
-        hideTxChainingPromptValue,
-        hidePegInInfo,
-        hidePegOutInfo,
-        proxySettings,
-        useProxy,
-        defaultCurrency,
-        stokrSettingsModel);
+      mnemonicEncrypted,
+      jadeId,
+      licenseAccepted,
+      enableEndpoint,
+      useBiometricProtection,
+      env,
+      phoneKey,
+      phoneNumber,
+      usePinProtection,
+      pinDataState,
+      settingsNetworkType,
+      networkHost,
+      networkPort,
+      networkUseTLS,
+      knownNewReleaseBuild,
+      showAmpOnboarding,
+      networkSettingsModel,
+      hideTxChainingPromptValue,
+      hidePegInInfo,
+      hidePegOutInfo,
+      proxySettings,
+      useProxy,
+      defaultCurrency,
+      stokrSettingsModel,
+    );
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(
-            Uint8List mnemonicEncrypted,
-            String jadeId,
-            bool licenseAccepted,
-            bool enableEndpoint,
-            bool useBiometricProtection,
-            int env,
-            String phoneKey,
-            String phoneNumber,
-            bool usePinProtection,
-            PinDataState? pinDataState,
-            SettingsNetworkType settingsNetworkType,
-            String networkHost,
-            int networkPort,
-            bool networkUseTLS,
-            int knownNewReleaseBuild,
-            bool showAmpOnboarding,
-            NetworkSettingsModel? networkSettingsModel,
-            bool hideTxChainingPromptValue,
-            bool hidePegInInfo,
-            bool hidePegOutInfo,
-            ProxySettings? proxySettings,
-            bool useProxy,
-            String? defaultCurrency,
-            StokrSettingsModel? stokrSettingsModel)?
-        empty,
+      Uint8List mnemonicEncrypted,
+      String jadeId,
+      bool licenseAccepted,
+      bool enableEndpoint,
+      bool useBiometricProtection,
+      int env,
+      String phoneKey,
+      String phoneNumber,
+      bool usePinProtection,
+      PinDataState? pinDataState,
+      SettingsNetworkType settingsNetworkType,
+      String networkHost,
+      int networkPort,
+      bool networkUseTLS,
+      int knownNewReleaseBuild,
+      bool showAmpOnboarding,
+      NetworkSettingsModel? networkSettingsModel,
+      bool hideTxChainingPromptValue,
+      bool hidePegInInfo,
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel,
+    )?
+    empty,
   }) {
     return empty?.call(
+      mnemonicEncrypted,
+      jadeId,
+      licenseAccepted,
+      enableEndpoint,
+      useBiometricProtection,
+      env,
+      phoneKey,
+      phoneNumber,
+      usePinProtection,
+      pinDataState,
+      settingsNetworkType,
+      networkHost,
+      networkPort,
+      networkUseTLS,
+      knownNewReleaseBuild,
+      showAmpOnboarding,
+      networkSettingsModel,
+      hideTxChainingPromptValue,
+      hidePegInInfo,
+      hidePegOutInfo,
+      proxySettings,
+      useProxy,
+      defaultCurrency,
+      stokrSettingsModel,
+    );
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+      Uint8List mnemonicEncrypted,
+      String jadeId,
+      bool licenseAccepted,
+      bool enableEndpoint,
+      bool useBiometricProtection,
+      int env,
+      String phoneKey,
+      String phoneNumber,
+      bool usePinProtection,
+      PinDataState? pinDataState,
+      SettingsNetworkType settingsNetworkType,
+      String networkHost,
+      int networkPort,
+      bool networkUseTLS,
+      int knownNewReleaseBuild,
+      bool showAmpOnboarding,
+      NetworkSettingsModel? networkSettingsModel,
+      bool hideTxChainingPromptValue,
+      bool hidePegInInfo,
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel,
+    )?
+    empty,
+    required TResult orElse(),
+  }) {
+    if (empty != null) {
+      return empty(
         mnemonicEncrypted,
         jadeId,
         licenseAccepted,
@@ -866,66 +1011,8 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
         proxySettings,
         useProxy,
         defaultCurrency,
-        stokrSettingsModel);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-            Uint8List mnemonicEncrypted,
-            String jadeId,
-            bool licenseAccepted,
-            bool enableEndpoint,
-            bool useBiometricProtection,
-            int env,
-            String phoneKey,
-            String phoneNumber,
-            bool usePinProtection,
-            PinDataState? pinDataState,
-            SettingsNetworkType settingsNetworkType,
-            String networkHost,
-            int networkPort,
-            bool networkUseTLS,
-            int knownNewReleaseBuild,
-            bool showAmpOnboarding,
-            NetworkSettingsModel? networkSettingsModel,
-            bool hideTxChainingPromptValue,
-            bool hidePegInInfo,
-            bool hidePegOutInfo,
-            ProxySettings? proxySettings,
-            bool useProxy,
-            String? defaultCurrency,
-            StokrSettingsModel? stokrSettingsModel)?
-        empty,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty(
-          mnemonicEncrypted,
-          jadeId,
-          licenseAccepted,
-          enableEndpoint,
-          useBiometricProtection,
-          env,
-          phoneKey,
-          phoneNumber,
-          usePinProtection,
-          pinDataState,
-          settingsNetworkType,
-          networkHost,
-          networkPort,
-          networkUseTLS,
-          knownNewReleaseBuild,
-          showAmpOnboarding,
-          networkSettingsModel,
-          hideTxChainingPromptValue,
-          hidePegInInfo,
-          hidePegOutInfo,
-          proxySettings,
-          useProxy,
-          defaultCurrency,
-          stokrSettingsModel);
+        stokrSettingsModel,
+      );
     }
     return orElse();
   }
@@ -960,31 +1047,32 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
 }
 
 abstract class _SideswapSettings implements SideswapSettings {
-  factory _SideswapSettings(
-      {required final Uint8List mnemonicEncrypted,
-      final String jadeId,
-      final bool licenseAccepted,
-      final bool enableEndpoint,
-      final bool useBiometricProtection,
-      final int env,
-      final String phoneKey,
-      final String phoneNumber,
-      final bool usePinProtection,
-      final PinDataState? pinDataState,
-      final SettingsNetworkType settingsNetworkType,
-      final String networkHost,
-      final int networkPort,
-      final bool networkUseTLS,
-      final int knownNewReleaseBuild,
-      final bool showAmpOnboarding,
-      final NetworkSettingsModel? networkSettingsModel,
-      final bool hideTxChainingPromptValue,
-      final bool hidePegInInfo,
-      final bool hidePegOutInfo,
-      final ProxySettings? proxySettings,
-      final bool useProxy,
-      final String? defaultCurrency,
-      final StokrSettingsModel? stokrSettingsModel}) = _$SideswapSettingsImpl;
+  factory _SideswapSettings({
+    required final Uint8List mnemonicEncrypted,
+    final String jadeId,
+    final bool licenseAccepted,
+    final bool enableEndpoint,
+    final bool useBiometricProtection,
+    final int env,
+    final String phoneKey,
+    final String phoneNumber,
+    final bool usePinProtection,
+    final PinDataState? pinDataState,
+    final SettingsNetworkType settingsNetworkType,
+    final String networkHost,
+    final int networkPort,
+    final bool networkUseTLS,
+    final int knownNewReleaseBuild,
+    final bool showAmpOnboarding,
+    final NetworkSettingsModel? networkSettingsModel,
+    final bool hideTxChainingPromptValue,
+    final bool hidePegInInfo,
+    final bool hidePegOutInfo,
+    final ProxySettings? proxySettings,
+    final bool useProxy,
+    final String? defaultCurrency,
+    final StokrSettingsModel? stokrSettingsModel,
+  }) = _$SideswapSettingsImpl;
 
   @override
   Uint8List get mnemonicEncrypted;
@@ -1034,8 +1122,11 @@ abstract class _SideswapSettings implements SideswapSettings {
   String? get defaultCurrency;
   @override
   StokrSettingsModel? get stokrSettingsModel;
+
+  /// Create a copy of SideswapSettings
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SideswapSettingsImplCopyWith<_$SideswapSettingsImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

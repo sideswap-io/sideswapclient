@@ -148,7 +148,7 @@ class SecondPinEnabled extends _$SecondPinEnabled {
 }
 
 @riverpod
-PinHelper pinHelper(PinHelperRef ref) {
+PinHelper pinHelper(Ref ref) {
   return PinHelper(ref: ref);
 }
 
@@ -190,8 +190,11 @@ class PinHelper {
     ref
         .read(pinSetupExitNotifierProvider.notifier)
         .setPinSetupExitState(const PinSetupExitState.empty());
-    ref.read(pinSetupCallerNotifierProvider.notifier).setPinSetupCallerState(
-        const PinSetupCallerState.newWalletPinWelcome());
+    ref
+        .read(pinSetupCallerNotifierProvider.notifier)
+        .setPinSetupCallerState(
+          const PinSetupCallerState.newWalletPinWelcome(),
+        );
     _clearStates();
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
   }
@@ -330,8 +333,11 @@ class PinHelper {
     final secondPin = ref.read(secondPinNotifierProvider);
     if (pinFieldState == const PinFieldState.second() && secondPinEnabled) {
       if (firstPin != secondPin) {
-        ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
-            PinSetupState.error(message: "PIN code doesn't match".tr()));
+        ref
+            .read(pinSetupStateNotifierProvider.notifier)
+            .setPinSetupState(
+              PinSetupState.error(message: "PIN code doesn't match".tr()),
+            );
         return;
       } else {
         _prepareToSendPin(firstPin);
@@ -371,17 +377,24 @@ class PinHelper {
     }
 
     logger.e('Biometric authentication failed on sending pin');
-    ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
-        PinSetupState.error(message: 'Biometric authentication failed'.tr()));
+    ref
+        .read(pinSetupStateNotifierProvider.notifier)
+        .setPinSetupState(
+          PinSetupState.error(message: 'Biometric authentication failed'.tr()),
+        );
   }
 
   void _sendPin(String pin) {
     final result = ref.read(walletProvider).sendEncryptPin(pin);
 
     if (!result) {
-      ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
-          PinSetupState.error(
-              message: 'Error setup new PIN code - mnemonic error'.tr()));
+      ref
+          .read(pinSetupStateNotifierProvider.notifier)
+          .setPinSetupState(
+            PinSetupState.error(
+              message: 'Error setup new PIN code - mnemonic error'.tr(),
+            ),
+          );
       return;
     }
 
@@ -394,8 +407,11 @@ class PinHelper {
     logger.d(pinDataState);
 
     if (pinDataState is PinDataStateError) {
-      ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
-          PinSetupState.error(message: 'Error setup new PIN code'.tr()));
+      ref
+          .read(pinSetupStateNotifierProvider.notifier)
+          .setPinSetupState(
+            PinSetupState.error(message: 'Error setup new PIN code'.tr()),
+          );
       return;
     }
 

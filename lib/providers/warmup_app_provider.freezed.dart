@@ -12,7 +12,8 @@ part of 'warmup_app_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$WarmupAppState {
@@ -20,47 +21,42 @@ mixin _$WarmupAppState {
   TResult when<TResult extends Object?>({
     required TResult Function() uninitialized,
     required TResult Function() initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? uninitialized,
     TResult? Function()? initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? uninitialized,
     TResult Function()? initialized,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(WarmupAppStateUninitialized value) uninitialized,
     required TResult Function(WarmupAppStateInitialized value) initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(WarmupAppStateUninitialized value)? uninitialized,
     TResult? Function(WarmupAppStateInitialized value)? initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(WarmupAppStateUninitialized value)? uninitialized,
     TResult Function(WarmupAppStateInitialized value)? initialized,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $WarmupAppStateCopyWith<$Res> {
   factory $WarmupAppStateCopyWith(
-          WarmupAppState value, $Res Function(WarmupAppState) then) =
-      _$WarmupAppStateCopyWithImpl<$Res, WarmupAppState>;
+    WarmupAppState value,
+    $Res Function(WarmupAppState) then,
+  ) = _$WarmupAppStateCopyWithImpl<$Res, WarmupAppState>;
 }
 
 /// @nodoc
@@ -72,25 +68,31 @@ class _$WarmupAppStateCopyWithImpl<$Res, $Val extends WarmupAppState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of WarmupAppState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$WarmupAppStateUninitializedImplCopyWith<$Res> {
   factory _$$WarmupAppStateUninitializedImplCopyWith(
-          _$WarmupAppStateUninitializedImpl value,
-          $Res Function(_$WarmupAppStateUninitializedImpl) then) =
-      __$$WarmupAppStateUninitializedImplCopyWithImpl<$Res>;
+    _$WarmupAppStateUninitializedImpl value,
+    $Res Function(_$WarmupAppStateUninitializedImpl) then,
+  ) = __$$WarmupAppStateUninitializedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$WarmupAppStateUninitializedImplCopyWithImpl<$Res>
-    extends _$WarmupAppStateCopyWithImpl<$Res,
-        _$WarmupAppStateUninitializedImpl>
+    extends
+        _$WarmupAppStateCopyWithImpl<$Res, _$WarmupAppStateUninitializedImpl>
     implements _$$WarmupAppStateUninitializedImplCopyWith<$Res> {
   __$$WarmupAppStateUninitializedImplCopyWithImpl(
-      _$WarmupAppStateUninitializedImpl _value,
-      $Res Function(_$WarmupAppStateUninitializedImpl) _then)
-      : super(_value, _then);
+    _$WarmupAppStateUninitializedImpl _value,
+    $Res Function(_$WarmupAppStateUninitializedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of WarmupAppState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -184,9 +186,9 @@ abstract class WarmupAppStateUninitialized implements WarmupAppState {
 /// @nodoc
 abstract class _$$WarmupAppStateInitializedImplCopyWith<$Res> {
   factory _$$WarmupAppStateInitializedImplCopyWith(
-          _$WarmupAppStateInitializedImpl value,
-          $Res Function(_$WarmupAppStateInitializedImpl) then) =
-      __$$WarmupAppStateInitializedImplCopyWithImpl<$Res>;
+    _$WarmupAppStateInitializedImpl value,
+    $Res Function(_$WarmupAppStateInitializedImpl) then,
+  ) = __$$WarmupAppStateInitializedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -194,9 +196,12 @@ class __$$WarmupAppStateInitializedImplCopyWithImpl<$Res>
     extends _$WarmupAppStateCopyWithImpl<$Res, _$WarmupAppStateInitializedImpl>
     implements _$$WarmupAppStateInitializedImplCopyWith<$Res> {
   __$$WarmupAppStateInitializedImplCopyWithImpl(
-      _$WarmupAppStateInitializedImpl _value,
-      $Res Function(_$WarmupAppStateInitializedImpl) _then)
-      : super(_value, _then);
+    _$WarmupAppStateInitializedImpl _value,
+    $Res Function(_$WarmupAppStateInitializedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of WarmupAppState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

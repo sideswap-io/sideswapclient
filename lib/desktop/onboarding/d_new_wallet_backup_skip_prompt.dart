@@ -24,23 +24,17 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
       backgroundContent: Stack(
         alignment: Alignment.center,
         children: [
-          const SizedBox(
-            height: 640,
-            child: DNewWalletBackupLogo(),
-          ),
-          Container(
-            color: Colors.black.withOpacity(0.5),
-          ),
+          const SizedBox(height: 640, child: DNewWalletBackupLogo()),
+          Container(color: Colors.black.withValues(alpha: 0.5)),
         ],
       ),
-      foregroundContent: skipForNow == const SkipForNowStateSkipped()
-          ? Container(
-              color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
-          : null,
+      foregroundContent:
+          skipForNow == const SkipForNowStateSkipped()
+              ? Container(
+                color: Colors.black.withValues(alpha: 0.3),
+                child: const Center(child: CircularProgressIndicator()),
+              )
+              : null,
       constraints: const BoxConstraints(maxWidth: 628, maxHeight: 401),
       content: Center(
         child: SizedBox(
@@ -67,7 +61,9 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
                         width: 24,
                         height: 24,
                         colorFilter: const ColorFilter.mode(
-                            SideSwapColors.bitterSweet, BlendMode.srcIn),
+                          SideSwapColors.bitterSweet,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                   ),
@@ -118,24 +114,26 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
         DCustomTextBigButton(
           width: 266,
           height: 49,
-          onPressed: skipForNow == const SkipForNowStateEmpty()
-              ? () {
-                  ref
-                      .read(skipForNowNotifierProvider.notifier)
-                      .setSkipState(const SkipForNowStateSkipped());
-                  ref.read(walletProvider).loginAndLoadMainPage();
-                }
-              : null,
+          onPressed:
+              skipForNow == const SkipForNowStateEmpty()
+                  ? () {
+                    ref
+                        .read(skipForNowNotifierProvider.notifier)
+                        .setSkipState(const SkipForNowStateSkipped());
+                    ref.read(walletProvider).loginAndLoadMainPage();
+                  }
+                  : null,
           child: const Text('SKIP FOR NOW').tr(),
         ),
         DCustomFilledBigButton(
           width: 266,
           height: 49,
-          onPressed: skipForNow == const SkipForNowStateEmpty()
-              ? () {
-                  ref.read(walletProvider).backupNewWalletEnable();
-                }
-              : null,
+          onPressed:
+              skipForNow == const SkipForNowStateEmpty()
+                  ? () {
+                    ref.read(walletProvider).backupNewWalletEnable();
+                  }
+                  : null,
           child: const Text('BACKUP MY WALLET').tr(),
         ),
       ],

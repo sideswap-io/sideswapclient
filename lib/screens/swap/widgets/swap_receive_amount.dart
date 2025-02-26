@@ -23,20 +23,24 @@ class SwapReceiveAmount extends HookConsumerWidget {
     final precision = ref
         .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: swapRecvAsset.asset.assetId);
-    final swapRecvAccount =
-        AccountAsset(AccountType.reg, swapRecvAsset.asset.assetId);
+    final swapRecvAccount = AccountAsset(
+      AccountType.reg,
+      swapRecvAsset.asset.assetId,
+    );
     final balance = ref.watch(balancesNotifierProvider)[swapRecvAccount];
     final amountProvider = ref.watch(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
-        AmountToStringParameters(amount: balance ?? 0, precision: precision));
+      AmountToStringParameters(amount: balance ?? 0, precision: precision),
+    );
     final swapType = ref.watch(swapTypeProvider);
     final swapState = ref.watch(swapStateNotifierProvider);
 
     // Show error in one place only
     final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
-    final serverError = subscribe != const SwapPriceSubscribeStateRecv()
-        ? ''
-        : ref.watch(swapNetworkErrorNotifierProvider);
+    final serverError =
+        subscribe != const SwapPriceSubscribeStateRecv()
+            ? ''
+            : ref.watch(swapNetworkErrorNotifierProvider);
     final feeRates = ref.watch(bitcoinFeeRatesProvider);
     final addressErrorText = ref.watch(swapAddressErrorProvider);
     final showAddressLabel = ref.watch(showAddressLabelProvider);
@@ -46,13 +50,24 @@ class SwapReceiveAmount extends HookConsumerWidget {
     final receiveFocusNode = useFocusNode();
 
     ref.listen(swapRecvTextAmountNotifierProvider, (previous, next) {
-      swapRecvAmountController.text = next;
+      final oldSelection = swapRecvAmountController.selection;
+      swapRecvAmountController.value = TextEditingValue(
+        text: next,
+        selection: oldSelection,
+      );
     });
 
     ref.listen(swapRecvAddressExternalNotifierProvider, (_, next) {
+      if (swapType == SwapType.pegIn()) {
+        return;
+      }
       final externalAddress = swapAddressRecvController.text;
       if (externalAddress != next) {
-        swapAddressRecvController.text = next;
+        final oldSelection = swapRecvAmountController.selection;
+        swapRecvAmountController.value = TextEditingValue(
+          text: next,
+          selection: oldSelection,
+        );
       }
     });
 
@@ -62,14 +77,16 @@ class SwapReceiveAmount extends HookConsumerWidget {
       controller: swapRecvAmountController,
       addressController: swapAddressRecvController,
       isMaxVisible: false,
-      readOnly: swapType == const SwapType.pegIn() ||
+      readOnly:
+          swapType == const SwapType.pegIn() ||
           swapState != const SwapState.idle(),
       hintText: '0.0',
       showHintText: swapType == const SwapType.atomic(),
-      dropdownReadOnly: swapType == const SwapType.atomic() &&
-              swapRecvAsset.assetList.length > 1
-          ? false
-          : true,
+      dropdownReadOnly:
+          swapType == const SwapType.atomic() &&
+                  swapRecvAsset.assetList.length > 1
+              ? false
+              : true,
       onEditingCompleted: () {
         if (ref.read(swapEnabledStateProvider)) {
           ref.read(swapHelperProvider).swapAccept();

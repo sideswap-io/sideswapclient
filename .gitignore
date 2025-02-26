@@ -56,3 +56,5 @@ app.*.map.json
 /distr
 
 libgreenaddress.so
+
+.codegpt

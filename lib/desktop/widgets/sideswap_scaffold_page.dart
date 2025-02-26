@@ -33,17 +33,19 @@ class SideSwapScaffoldPage extends StatefulWidget {
     required List<Widget> children,
     this.onEscapeKey,
     this.onEnterKey,
-  }) : content = Builder(builder: (context) {
-          return ListView(
-            controller: scrollController,
-            padding: EdgeInsets.only(
-              bottom: kPageDefaultVerticalPadding,
-              left: SideSwapPageHeader.horizontalPadding(context),
-              right: SideSwapPageHeader.horizontalPadding(context),
-            ),
-            children: children,
-          );
-        });
+  }) : content = Builder(
+         builder: (context) {
+           return ListView(
+             controller: scrollController,
+             padding: EdgeInsets.only(
+               bottom: kPageDefaultVerticalPadding,
+               left: SideSwapPageHeader.horizontalPadding(context),
+               right: SideSwapPageHeader.horizontalPadding(context),
+             ),
+             children: children,
+           );
+         },
+       );
 
   SideSwapScaffoldPage.withPadding({
     super.key,
@@ -53,16 +55,18 @@ class SideSwapScaffoldPage extends StatefulWidget {
     required Widget content,
     this.onEscapeKey,
     this.onEnterKey,
-  }) : content = Builder(builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: kPageDefaultVerticalPadding,
-              left: SideSwapPageHeader.horizontalPadding(context),
-              right: SideSwapPageHeader.horizontalPadding(context),
-            ),
-            child: content,
-          );
-        });
+  }) : content = Builder(
+         builder: (context) {
+           return Padding(
+             padding: EdgeInsets.only(
+               bottom: kPageDefaultVerticalPadding,
+               left: SideSwapPageHeader.horizontalPadding(context),
+               right: SideSwapPageHeader.horizontalPadding(context),
+             ),
+             child: content,
+           );
+         },
+       );
 
   @override
   State<SideSwapScaffoldPage> createState() => SideSwapScaffoldPageState();
@@ -117,9 +121,7 @@ class SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
               ),
             ),
           ),
-          if (widget.bottomBar != null) ...[
-            widget.bottomBar!,
-          ],
+          if (widget.bottomBar != null) ...[widget.bottomBar!],
         ],
       ),
     );
@@ -159,16 +161,18 @@ class SideSwapPageHeader extends ConsumerWidget {
         left: leading != null ? 0 : horizontalPadding,
         right: horizontalPadding,
       ),
-      child: Row(children: [
-        if (leading != null) leading,
-        Expanded(
-          child: DefaultTextStyle(
-            style: titleStyle!,
-            child: title ?? const SizedBox(),
+      child: Row(
+        children: [
+          if (leading != null) leading,
+          Expanded(
+            child: DefaultTextStyle(
+              style: titleStyle!,
+              child: title ?? const SizedBox(),
+            ),
           ),
-        ),
-        if (commandBar != null) commandBar!,
-      ]),
+          if (commandBar != null) commandBar!,
+        ],
+      ),
     );
   }
 }

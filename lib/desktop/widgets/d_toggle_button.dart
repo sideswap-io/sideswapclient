@@ -55,10 +55,9 @@ class DToggleButton extends StatelessWidget {
                   text: offText,
                   textColor: textColor(!value),
                   onPressed: handleClick,
-                  textStyle: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(fontSize: 13),
+                  textStyle: Theme.of(
+                    context,
+                  ).textTheme.labelMedium?.copyWith(fontSize: 13),
                 ),
               ),
               Expanded(
@@ -67,10 +66,9 @@ class DToggleButton extends StatelessWidget {
                   text: onText,
                   textColor: textColor(value),
                   onPressed: handleClick,
-                  textStyle: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(fontSize: 13),
+                  textStyle: Theme.of(
+                    context,
+                  ).textTheme.labelMedium?.copyWith(fontSize: 13),
                 ),
               ),
             ],

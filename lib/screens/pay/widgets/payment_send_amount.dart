@@ -45,8 +45,6 @@ class PaymentSendAmount extends ConsumerWidget {
           onChanged: (value) {
             validate(value);
 
-            controller?.text = value;
-
             onChanged?.call(value);
           },
         );

@@ -66,13 +66,10 @@ class DUrlLinkButton extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Center(
-                child: icon == null
-                    ? const Icon(Icons.copyright, size: 24)
-                    : SvgPicture.asset(
-                        icon!,
-                        width: 24,
-                        height: 24,
-                      ),
+                child:
+                    icon == null
+                        ? const Icon(Icons.copyright, size: 24)
+                        : SvgPicture.asset(icon!, width: 24, height: 24),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -82,9 +79,10 @@ class DUrlLinkButton extends ConsumerWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
                     color: SideSwapColors.brightTurquoise,
-                    decoration: url.isNotEmpty
-                        ? TextDecoration.underline
-                        : TextDecoration.none,
+                    decoration:
+                        url.isNotEmpty
+                            ? TextDecoration.underline
+                            : TextDecoration.none,
                   ),
                 ),
               ),

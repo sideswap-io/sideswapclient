@@ -16,7 +16,6 @@ import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
   const DStokrCountryRestrictionsInfoPopup({super.key});
@@ -25,10 +24,7 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme =
         ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
-
-    final selectedAccountAsset =
-        ref.watch(marketSelectedAccountAssetStateProvider);
-    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    final baseAsset = ref.watch(marketSubscribedBaseAssetProvider).toNullable();
 
     return DContentDialog(
       title: DContentDialogTitle(
@@ -40,8 +36,12 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
       style: const DContentDialogThemeData().merge(
         defaultDialogTheme.merge(
           const DContentDialogThemeData(
-            titlePadding:
-                EdgeInsets.only(top: 24, bottom: 0, left: 24, right: 24),
+            titlePadding: EdgeInsets.only(
+              top: 24,
+              bottom: 0,
+              left: 24,
+              right: 24,
+            ),
           ),
         ),
       ),
@@ -55,9 +55,9 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
               const SizedBox(height: 31),
               Text(
                 'This asset has country restrictions'.tr(),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontSize: 20,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontSize: 20),
               ),
               const SizedBox(height: 25),
               Align(
@@ -65,9 +65,10 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
                 child: Text(
                   'Blocked countries'.tr(),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: SideSwapColors.brightTurquoise),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: SideSwapColors.brightTurquoise,
+                  ),
                 ),
               ),
               const DStokrCountryBlacklistDropdown(),
@@ -81,7 +82,8 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
                       ref
                           .read(configurationProvider.notifier)
                           .setStokrSettingsModel(
-                              const StokrSettingsModel(firstRun: false));
+                            const StokrSettingsModel(firstRun: false),
+                          );
                       ref.read(walletProvider).goBack();
                     },
                     child: Text('DON\'T SHOW AGAIN'.tr()),
@@ -89,8 +91,8 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
                   DCustomFilledBigButton(
                     width: 245,
                     onPressed: () {
-                      if (asset != null) {
-                        openUrl(asset.domainAgentLink);
+                      if (baseAsset != null) {
+                        openUrl(baseAsset.domainAgentLink);
                       }
                     },
                     child: Text('REGISTER ON STOKR'.tr()),
@@ -108,14 +110,10 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
 }
 
 class DStokrCountryBlacklistDropdown extends HookConsumerWidget {
-  const DStokrCountryBlacklistDropdown({
-    super.key,
-  });
+  const DStokrCountryBlacklistDropdown({super.key});
 
   // unfocus textfield
-  void onTapDownSuffix({
-    required FocusNode focusNode,
-  }) {
+  void onTapDownSuffix({required FocusNode focusNode}) {
     focusNode.unfocus();
     focusNode.canRequestFocus = false;
 
@@ -162,7 +160,8 @@ class DStokrCountryBlacklistDropdown extends HookConsumerWidget {
       controller.addListener(() async {
         if (controller.text.isNotEmpty) {
           final found = await ref.read(
-              stokrCountryBlacklistSearchProvider(controller.text).future);
+            stokrCountryBlacklistSearchProvider(controller.text).future,
+          );
           blacklistedCountries.value = found;
           expanded.value = true;
           return;
@@ -198,12 +197,11 @@ class DStokrCountryBlacklistDropdown extends HookConsumerWidget {
               ),
             ),
             hintText: 'Open the list'.tr(),
-            hintStyle:
-                Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 18),
+            hintStyle: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 18),
             border: const UnderlineInputBorder(
-              borderSide: BorderSide(
-                color: SideSwapColors.airSuperiorityBlue,
-              ),
+              borderSide: BorderSide(color: SideSwapColors.airSuperiorityBlue),
             ),
             enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: SideSwapColors.airSuperiorityBlue),
@@ -216,34 +214,38 @@ class DStokrCountryBlacklistDropdown extends HookConsumerWidget {
         const SizedBox(height: 8),
         ...switch (expanded.value) {
           true => [
-              Container(
-                height: 196,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: SideSwapColors.chathamsBlue,
+            Container(
+              height: 196,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: SideSwapColors.chathamsBlue,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  bottom: 16,
+                  left: 16,
+                  right: 4,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      top: 16, bottom: 16, left: 16, right: 4),
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverList.builder(
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 2, bottom: 2),
-                            child: Text(
-                              '${blacklistedCountries.value[index].english ?? ''} (${blacklistedCountries.value[index].name ?? ''})',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          );
-                        },
-                        itemCount: blacklistedCountries.value.length,
-                      ),
-                    ],
-                  ),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverList.builder(
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 2, bottom: 2),
+                          child: Text(
+                            '${blacklistedCountries.value[index].english ?? ''} (${blacklistedCountries.value[index].name ?? ''})',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        );
+                      },
+                      itemCount: blacklistedCountries.value.length,
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
+          ],
           _ => [const SizedBox()],
         },
       ],
@@ -261,10 +263,7 @@ class DStokrExclamationIcon extends StatelessWidget {
       height: 104,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: SideSwapColors.yellowOrange,
-          width: 8,
-        ),
+        border: Border.all(color: SideSwapColors.yellowOrange, width: 8),
       ),
       child: Center(
         child: SvgPicture.asset(

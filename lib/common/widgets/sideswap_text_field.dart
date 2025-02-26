@@ -36,7 +36,8 @@ class SideSwapTextFieldState extends State<SideSwapTextField> {
   @override
   void initState() {
     super.initState();
-    hintStyle = widget.hintStyle ??
+    hintStyle =
+        widget.hintStyle ??
         const TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.normal,

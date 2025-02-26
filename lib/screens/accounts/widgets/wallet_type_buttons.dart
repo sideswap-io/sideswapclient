@@ -25,9 +25,10 @@ class WalletTypeButtons extends ConsumerWidget {
         children: [
           Flexible(
             child: SwapButton(
-              color: selectedAccountType == AccountType.reg
-                  ? SideSwapColors.cyanCornflowerBlue
-                  : SideSwapColors.prussianBlue,
+              color:
+                  selectedAccountType == AccountType.reg
+                      ? SideSwapColors.cyanCornflowerBlue
+                      : SideSwapColors.prussianBlue,
               onPressed: () {
                 ref
                     .read(selectedAccountTypeNotifierProvider.notifier)
@@ -42,10 +43,12 @@ class WalletTypeButtons extends ConsumerWidget {
                     Text(
                       'Regular wallet'.tr(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: selectedAccountType == AccountType.reg
-                              ? Colors.white
-                              : SideSwapColors.ceruleanFrost),
+                        fontWeight: FontWeight.w500,
+                        color:
+                            selectedAccountType == AccountType.reg
+                                ? Colors.white
+                                : SideSwapColors.ceruleanFrost,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     WalletTypeIcon(
@@ -59,36 +62,40 @@ class WalletTypeButtons extends ConsumerWidget {
           ),
           Flexible(
             child: SwapButton(
-                color: selectedAccountType == AccountType.amp
-                    ? SideSwapColors.cyanCornflowerBlue
-                    : SideSwapColors.prussianBlue,
-                onPressed: () {
-                  ref
-                      .read(selectedAccountTypeNotifierProvider.notifier)
-                      .setAccountType(AccountType.amp);
-                },
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'AMP wallet'.tr(),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: selectedAccountType == AccountType.amp
+              color:
+                  selectedAccountType == AccountType.amp
+                      ? SideSwapColors.cyanCornflowerBlue
+                      : SideSwapColors.prussianBlue,
+              onPressed: () {
+                ref
+                    .read(selectedAccountTypeNotifierProvider.notifier)
+                    .setAccountType(AccountType.amp);
+              },
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AMP wallet'.tr(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color:
+                            selectedAccountType == AccountType.amp
                                 ? Colors.white
-                                : SideSwapColors.ceruleanFrost),
+                                : SideSwapColors.ceruleanFrost,
                       ),
-                      const SizedBox(width: 8),
-                      WalletTypeIcon(
-                        text: 'Multisig',
-                        enabled: selectedAccountType == AccountType.amp,
-                      ),
-                    ],
-                  ),
-                )),
+                    ),
+                    const SizedBox(width: 8),
+                    WalletTypeIcon(
+                      text: 'Multisig',
+                      enabled: selectedAccountType == AccountType.amp,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -113,25 +120,29 @@ class WalletTypeIcon extends StatelessWidget {
     return Container(
       height: 20,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: enabled
-          ? ShapeDecoration(
-              color: SideSwapColors.brightTurquoise,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(56),
+      decoration:
+          enabled
+              ? ShapeDecoration(
+                color: SideSwapColors.brightTurquoise,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(56),
+                ),
+              )
+              : ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    color: SideSwapColors.ceruleanFrost,
+                  ),
+                  borderRadius: BorderRadius.circular(56),
+                ),
               ),
-            )
-          : ShapeDecoration(
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(
-                    width: 1, color: SideSwapColors.ceruleanFrost),
-                borderRadius: BorderRadius.circular(56),
-              ),
-            ),
       child: Center(
         child: Text(
           text ?? '',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: enabled ? Colors.white : SideSwapColors.ceruleanFrost),
+            color: enabled ? Colors.white : SideSwapColors.ceruleanFrost,
+          ),
         ),
       ),
     );

@@ -11,9 +11,7 @@ class NumberSpacedFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    final changedValue = replaceCharacterOnPosition(
-      input: newValue.text,
-    );
+    final changedValue = replaceCharacterOnPosition(input: newValue.text);
 
     if (newValue.text.compareTo(oldValue.text) != 0) {
       final selectionIndexFromTheRight =
@@ -24,7 +22,8 @@ class NumberSpacedFormatter extends TextInputFormatter {
       return TextEditingValue(
         text: changedValue,
         selection: TextSelection.collapsed(
-            offset: (newSelection >= 0) ? newSelection : 0),
+          offset: (newSelection >= 0) ? newSelection : 0,
+        ),
       );
     }
 

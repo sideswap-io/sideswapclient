@@ -6,7 +6,7 @@ part of 'bip32_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$parseBIP21Hash() => r'b278db3cb8807e8f2a1c0cf7e105cb9067086857';
+String _$parseBIP21Hash() => r'8eb5447fe2b232d31e6a8f846a0c03a755d3c764';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -39,24 +39,15 @@ class ParseBIP21Family extends Family<Either<Exception, BIP21Result>> {
   const ParseBIP21Family();
 
   /// See also [parseBIP21].
-  ParseBIP21Provider call(
-    String address,
-    BIP21AddressTypeEnum addressType,
-  ) {
-    return ParseBIP21Provider(
-      address,
-      addressType,
-    );
+  ParseBIP21Provider call(String address, BIP21AddressTypeEnum addressType) {
+    return ParseBIP21Provider(address, addressType);
   }
 
   @override
   ParseBIP21Provider getProviderOverride(
     covariant ParseBIP21Provider provider,
   ) {
-    return call(
-      provider.address,
-      provider.addressType,
-    );
+    return call(provider.address, provider.addressType);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -78,27 +69,20 @@ class ParseBIP21Family extends Family<Either<Exception, BIP21Result>> {
 class ParseBIP21Provider
     extends AutoDisposeProvider<Either<Exception, BIP21Result>> {
   /// See also [parseBIP21].
-  ParseBIP21Provider(
-    String address,
-    BIP21AddressTypeEnum addressType,
-  ) : this._internal(
-          (ref) => parseBIP21(
-            ref as ParseBIP21Ref,
-            address,
-            addressType,
-          ),
-          from: parseBIP21Provider,
-          name: r'parseBIP21Provider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$parseBIP21Hash,
-          dependencies: ParseBIP21Family._dependencies,
-          allTransitiveDependencies:
-              ParseBIP21Family._allTransitiveDependencies,
-          address: address,
-          addressType: addressType,
-        );
+  ParseBIP21Provider(String address, BIP21AddressTypeEnum addressType)
+    : this._internal(
+        (ref) => parseBIP21(ref as ParseBIP21Ref, address, addressType),
+        from: parseBIP21Provider,
+        name: r'parseBIP21Provider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$parseBIP21Hash,
+        dependencies: ParseBIP21Family._dependencies,
+        allTransitiveDependencies: ParseBIP21Family._allTransitiveDependencies,
+        address: address,
+        addressType: addressType,
+      );
 
   ParseBIP21Provider._internal(
     super._createNotifier, {
@@ -155,6 +139,8 @@ class ParseBIP21Provider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin ParseBIP21Ref on AutoDisposeProviderRef<Either<Exception, BIP21Result>> {
   /// The parameter `address` of this provider.
   String get address;
@@ -174,5 +160,6 @@ class _ParseBIP21ProviderElement
   BIP21AddressTypeEnum get addressType =>
       (origin as ParseBIP21Provider).addressType;
 }
+
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

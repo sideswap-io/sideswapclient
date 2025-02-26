@@ -10,15 +10,17 @@ class DPegxSubmitAmp extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DAmpBackgroundPage(content: [
-      DPegxLoginDialog(
-        onClose: () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.ampRegister);
-        },
-        content: const DPegxSubmitAmpDialogBody(),
-      )
-    ]);
+    return DAmpBackgroundPage(
+      content: [
+        DPegxLoginDialog(
+          onClose: () {
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.ampRegister);
+          },
+          content: const DPegxSubmitAmpDialogBody(),
+        ),
+      ],
+    );
   }
 }

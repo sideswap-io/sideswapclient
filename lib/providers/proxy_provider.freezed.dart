@@ -12,14 +12,17 @@ part of 'proxy_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$ProxySettings {
   String? get host => throw _privateConstructorUsedError;
   int? get port => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ProxySettings
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ProxySettingsCopyWith<ProxySettings> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -27,8 +30,9 @@ mixin _$ProxySettings {
 /// @nodoc
 abstract class $ProxySettingsCopyWith<$Res> {
   factory $ProxySettingsCopyWith(
-          ProxySettings value, $Res Function(ProxySettings) then) =
-      _$ProxySettingsCopyWithImpl<$Res, ProxySettings>;
+    ProxySettings value,
+    $Res Function(ProxySettings) then,
+  ) = _$ProxySettingsCopyWithImpl<$Res, ProxySettings>;
   @useResult
   $Res call({String? host, int? port});
 }
@@ -43,22 +47,26 @@ class _$ProxySettingsCopyWithImpl<$Res, $Val extends ProxySettings>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ProxySettings
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? host = freezed,
-    Object? port = freezed,
-  }) {
-    return _then(_value.copyWith(
-      host: freezed == host
-          ? _value.host
-          : host // ignore: cast_nullable_to_non_nullable
-              as String?,
-      port: freezed == port
-          ? _value.port
-          : port // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+  $Res call({Object? host = freezed, Object? port = freezed}) {
+    return _then(
+      _value.copyWith(
+            host:
+                freezed == host
+                    ? _value.host
+                    : host // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            port:
+                freezed == port
+                    ? _value.port
+                    : port // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -66,8 +74,9 @@ class _$ProxySettingsCopyWithImpl<$Res, $Val extends ProxySettings>
 abstract class _$$ProxySettingsImplCopyWith<$Res>
     implements $ProxySettingsCopyWith<$Res> {
   factory _$$ProxySettingsImplCopyWith(
-          _$ProxySettingsImpl value, $Res Function(_$ProxySettingsImpl) then) =
-      __$$ProxySettingsImplCopyWithImpl<$Res>;
+    _$ProxySettingsImpl value,
+    $Res Function(_$ProxySettingsImpl) then,
+  ) = __$$ProxySettingsImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? host, int? port});
@@ -78,25 +87,29 @@ class __$$ProxySettingsImplCopyWithImpl<$Res>
     extends _$ProxySettingsCopyWithImpl<$Res, _$ProxySettingsImpl>
     implements _$$ProxySettingsImplCopyWith<$Res> {
   __$$ProxySettingsImplCopyWithImpl(
-      _$ProxySettingsImpl _value, $Res Function(_$ProxySettingsImpl) _then)
-      : super(_value, _then);
+    _$ProxySettingsImpl _value,
+    $Res Function(_$ProxySettingsImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of ProxySettings
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? host = freezed,
-    Object? port = freezed,
-  }) {
-    return _then(_$ProxySettingsImpl(
-      host: freezed == host
-          ? _value.host
-          : host // ignore: cast_nullable_to_non_nullable
-              as String?,
-      port: freezed == port
-          ? _value.port
-          : port // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+  $Res call({Object? host = freezed, Object? port = freezed}) {
+    return _then(
+      _$ProxySettingsImpl(
+        host:
+            freezed == host
+                ? _value.host
+                : host // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        port:
+            freezed == port
+                ? _value.port
+                : port // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
   }
 }
 
@@ -127,7 +140,9 @@ class _$ProxySettingsImpl implements _ProxySettings {
   @override
   int get hashCode => Object.hash(runtimeType, host, port);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ProxySettings
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ProxySettingsImplCopyWith<_$ProxySettingsImpl> get copyWith =>
@@ -142,8 +157,11 @@ abstract class _ProxySettings implements ProxySettings {
   String? get host;
   @override
   int? get port;
+
+  /// Create a copy of ProxySettings
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ProxySettingsImplCopyWith<_$ProxySettingsImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

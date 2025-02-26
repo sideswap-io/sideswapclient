@@ -3,10 +3,7 @@ import 'package:sideswap/desktop/home/widgets/d_asset_list_tile.dart';
 import 'package:sideswap/models/account_asset.dart';
 
 class DAssetsList extends StatelessWidget {
-  const DAssetsList({
-    super.key,
-    required this.accountAssets,
-  });
+  const DAssetsList({super.key, required this.accountAssets});
 
   final List<AccountAsset> accountAssets;
 
@@ -17,12 +14,9 @@ class DAssetsList extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return DAssetListTile(accountAsset: accountAssets[index]);
-              },
-              childCount: accountAssets.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              return DAssetListTile(accountAsset: accountAssets[index]);
+            }, childCount: accountAssets.length),
           ),
         ],
       ),

@@ -18,10 +18,7 @@ class SideswapNotificationsFdroidPlugin
   }) async {}
 
   @override
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
+  InitializationSettings getLocalNotificationsInitializationSettings() {
     return const InitializationSettings();
   }
 }

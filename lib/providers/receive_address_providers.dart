@@ -7,15 +7,9 @@ part 'receive_address_providers.g.dart';
 class ReceiveAddress {
   final AccountType accountType;
   final String recvAddress;
-  ReceiveAddress({
-    required this.accountType,
-    required this.recvAddress,
-  });
+  ReceiveAddress({required this.accountType, required this.recvAddress});
 
-  ReceiveAddress copyWith({
-    AccountType? accountType,
-    String? recvAddress,
-  }) {
+  ReceiveAddress copyWith({AccountType? accountType, String? recvAddress}) {
     return ReceiveAddress(
       accountType: accountType ?? this.accountType,
       recvAddress: recvAddress ?? this.recvAddress,

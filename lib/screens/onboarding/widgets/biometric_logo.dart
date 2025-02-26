@@ -4,9 +4,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/onboarding/widgets/biometric_shape_border.dart';
 
 class BiometricLogo extends StatelessWidget {
-  const BiometricLogo({
-    super.key,
-  });
+  const BiometricLogo({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +37,7 @@ class BiometricLogo extends StatelessWidget {
             child: Container(
               width: 169,
               height: 28,
-              color: SideSwapColors.chathamsBlue.withOpacity(0.79),
+              color: SideSwapColors.chathamsBlue.withValues(alpha: 0.79),
             ),
           ),
         ),
@@ -72,8 +70,8 @@ class BiometricLogo extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      const Color(0xFF418AA6).withOpacity(0.6),
-                      Colors.white.withOpacity(0),
+                      const Color(0xFF418AA6).withValues(alpha: 0.6),
+                      Colors.white.withValues(alpha: 0),
                     ],
                     stops: const [-0.5, 1.0],
                   ),

@@ -47,9 +47,7 @@ class RoundedButtonState extends State<RoundedButton> {
         child: SizedBox(
           width: _width,
           height: _height,
-          child: Center(
-            child: widget.child,
-          ),
+          child: Center(child: widget.child),
         ),
       ),
     );

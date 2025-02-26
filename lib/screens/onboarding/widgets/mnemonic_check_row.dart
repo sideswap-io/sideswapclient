@@ -35,49 +35,48 @@ class MnemonicCheckRow extends ConsumerWidget {
             height: 39,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List<Widget>.generate(
-                words.length,
-                (int index) {
-                  final selectionIndex = ref
-                          .read(walletProvider)
-                          .backupCheckSelectedWords[wordIndex] ??
-                      -1;
-                  final isSelected = selectionIndex == index;
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () {
-                        onTap(index);
-                      },
-                      child: Container(
-                        width: 90,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF23729D),
-                            width: 1,
-                            style: BorderStyle.solid,
-                          ),
-                          color: isSelected ? Colors.white : Colors.transparent,
+              children: List<Widget>.generate(words.length, (int index) {
+                final selectionIndex =
+                    ref
+                        .read(walletProvider)
+                        .backupCheckSelectedWords[wordIndex] ??
+                    -1;
+                final isSelected = selectionIndex == index;
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      onTap(index);
+                    },
+                    child: Container(
+                      width: 90,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF23729D),
+                          width: 1,
+                          style: BorderStyle.solid,
                         ),
-                        child: Center(
-                          child: Text(
-                            words[index],
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              color: isSelected ? Colors.black : Colors.white,
-                            ),
+                        color: isSelected ? Colors.white : Colors.transparent,
+                      ),
+                      child: Center(
+                        child: Text(
+                          words[index],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                            color: isSelected ? Colors.black : Colors.white,
                           ),
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              }),
             ),
           ),
         ),

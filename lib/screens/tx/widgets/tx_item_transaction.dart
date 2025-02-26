@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
@@ -29,9 +29,10 @@ class TxItemTransaction extends ConsumerWidget {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final txImageAssetName = transItemHelper.getTxImageAssetName();
     final status = transItemHelper.txStatus();
-    final confsColor = transItem.hasConfs()
-        ? SideSwapColors.cornFlower
-        : SideSwapColors.brightTurquoise;
+    final confsColor =
+        transItem.hasConfs()
+            ? SideSwapColors.cornFlower
+            : SideSwapColors.brightTurquoise;
 
     return SizedBox(
       height: 108,
@@ -44,10 +45,7 @@ class TxItemTransaction extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    SvgPicture.asset(
-                      txImageAssetName,
-                      width: 24,
-                    ),
+                    SvgPicture.asset(txImageAssetName, width: 24),
                     const SizedBox(width: 8),
                     Text(
                       transItemHelper.txTypeName(),
@@ -88,9 +86,9 @@ class TxItemTransaction extends ConsumerWidget {
                 Text(
                   status,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        color: confsColor,
-                      ),
+                    fontSize: 14,
+                    color: confsColor,
+                  ),
                 ),
                 SizedBox(
                   width: 16,
@@ -106,13 +104,14 @@ class TxItemTransaction extends ConsumerWidget {
               builder: (context, ref, child) {
                 return switch (transItemHelper.txType()) {
                   TxType.swap ||
-                  TxType.unknown =>
-                    TxItemSwapBalance(transItem: transItem),
-                  TxType.internal =>
-                    TxItemInternalSwapBalance(transItem: transItem),
+                  TxType.unknown => TxItemSwapBalance(transItem: transItem),
+                  TxType.internal => TxItemInternalSwapBalance(
+                    transItem: transItem,
+                  ),
                   TxType.sent => TxItemSendBalance(transItem: transItem),
-                  TxType.received =>
-                    TxItemReceivedBalance(transItem: transItem),
+                  TxType.received => TxItemReceivedBalance(
+                    transItem: transItem,
+                  ),
                   TxType.pegOut => TxItemPegOutBalance(transItem: transItem),
                   TxType.pegIn => TxItemPegInBalance(transItem: transItem),
                 };
@@ -127,10 +126,7 @@ class TxItemTransaction extends ConsumerWidget {
 
 // On mobile, we could show the sent and received amounts, which should be the same with an internal label
 class TxItemInternalSwapBalance extends ConsumerWidget {
-  const TxItemInternalSwapBalance({
-    required this.transItem,
-    super.key,
-  });
+  const TxItemInternalSwapBalance({required this.transItem, super.key});
 
   final TransItem transItem;
 
@@ -184,10 +180,7 @@ class TxItemInternalSwapBalance extends ConsumerWidget {
 }
 
 class TxItemOutputsChip extends StatelessWidget {
-  const TxItemOutputsChip({
-    super.key,
-    required this.amount,
-  });
+  const TxItemOutputsChip({super.key, required this.amount});
 
   final int amount;
 
@@ -196,9 +189,7 @@ class TxItemOutputsChip extends StatelessWidget {
     return SideSwapChip(
       decoration: ShapeDecoration(
         color: SideSwapColors.bitterSweet,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       text: '$amount outputs',
       padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -214,10 +205,7 @@ class TxItemOutputsChip extends StatelessWidget {
 }
 
 class TxItemSwapBalance extends ConsumerWidget {
-  const TxItemSwapBalance({
-    required this.transItem,
-    super.key,
-  });
+  const TxItemSwapBalance({required this.transItem, super.key});
 
   final TransItem transItem;
 
@@ -225,9 +213,10 @@ class TxItemSwapBalance extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final balances = transItemHelper.txSwapBalancesString();
-    final balanceColor = balances.recvBalance.contains('+')
-        ? SideSwapColors.menthol
-        : Colors.white;
+    final balanceColor =
+        balances.recvBalance.contains('+')
+            ? SideSwapColors.menthol
+            : Colors.white;
 
     return Column(
       children: [
@@ -236,18 +225,20 @@ class TxItemSwapBalance extends ConsumerWidget {
           children: [
             Text(
               transItemHelper.txFromAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
             switch (balances.recvBalance.isEmpty) {
               true => const SizedBox(),
               _ => Text(
-                  transItemHelper.txToAction(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 14, color: SideSwapColors.cornFlower),
+                transItemHelper.txToAction(),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  color: SideSwapColors.cornFlower,
                 ),
+              ),
             },
           ],
         ),
@@ -260,10 +251,9 @@ class TxItemSwapBalance extends ConsumerWidget {
             const Spacer(),
             Text(
               balances.recvBalance,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: balanceColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: balanceColor),
             ),
           ],
         ),
@@ -273,10 +263,7 @@ class TxItemSwapBalance extends ConsumerWidget {
 }
 
 class TxItemSendBalance extends ConsumerWidget {
-  const TxItemSendBalance({
-    required this.transItem,
-    super.key,
-  });
+  const TxItemSendBalance({required this.transItem, super.key});
 
   final TransItem transItem;
 
@@ -295,10 +282,10 @@ class TxItemSendBalance extends ConsumerWidget {
           children: [
             Text(
               transItemHelper.txFromAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
           ],
         ),
@@ -311,16 +298,15 @@ class TxItemSendBalance extends ConsumerWidget {
             const SizedBox(width: 6),
             isMultipleOutput
                 ? Text(
-                    'Multiple outputs'.tr(),
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  )
+                  'Multiple outputs'.tr(),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                )
                 : Text(
-                    balanceStr,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: balanceColor),
-                  ),
+                  balanceStr,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: balanceColor),
+                ),
           ],
         ),
       ],
@@ -349,10 +335,10 @@ class TxItemReceivedBalance extends ConsumerWidget {
           children: [
             Text(
               transItemHelper.txToAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
           ],
         ),
@@ -361,15 +347,14 @@ class TxItemReceivedBalance extends ConsumerWidget {
           children: [
             Text(
               balance.recvBalance,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: balanceColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: balanceColor),
             ),
             ...switch (balance.multipleOutputs) {
               true => [const SizedBox(width: 9), const MultipleOutputsIcon()],
               _ => [const SizedBox()],
-            }
+            },
           ],
         ),
       ],
@@ -378,10 +363,7 @@ class TxItemReceivedBalance extends ConsumerWidget {
 }
 
 class TxItemPegOutBalance extends ConsumerWidget {
-  const TxItemPegOutBalance({
-    required this.transItem,
-    super.key,
-  });
+  const TxItemPegOutBalance({required this.transItem, super.key});
 
   final TransItem transItem;
 
@@ -399,17 +381,17 @@ class TxItemPegOutBalance extends ConsumerWidget {
           children: [
             Text(
               transItemHelper.txFromAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
             Text(
               transItemHelper.txToAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
           ],
         ),
@@ -418,29 +400,18 @@ class TxItemPegOutBalance extends ConsumerWidget {
           children: [
             Text(
               balanceStr,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: balanceColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: balanceColor),
             ),
             SizedBox(
               width: 100,
-              child: ExtendedText(
-                transItemHelper.txPegOutAddress(),
-                maxLines: 1,
+              child: MiddleEllipsisText(
+                text: transItemHelper.txPegOutAddress(),
                 textAlign: TextAlign.end,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
-                overflowWidget: TextOverflowWidget(
-                  position: TextOverflowPosition.middle,
-                  align: TextOverflowAlign.center,
-                  child: Text(
-                    '...',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14, color: SideSwapColors.cornFlower),
-                  ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  color: SideSwapColors.cornFlower,
                 ),
               ),
             ),
@@ -452,10 +423,7 @@ class TxItemPegOutBalance extends ConsumerWidget {
 }
 
 class TxItemPegInBalance extends ConsumerWidget {
-  const TxItemPegInBalance({
-    required this.transItem,
-    super.key,
-  });
+  const TxItemPegInBalance({required this.transItem, super.key});
 
   final TransItem transItem;
 
@@ -473,17 +441,17 @@ class TxItemPegInBalance extends ConsumerWidget {
           children: [
             Text(
               transItemHelper.txFromAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
             Text(
               transItemHelper.txToAction(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: SideSwapColors.cornFlower,
+              ),
             ),
           ],
         ),
@@ -492,29 +460,18 @@ class TxItemPegInBalance extends ConsumerWidget {
           children: [
             Text(
               balanceStr,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: balanceColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: balanceColor),
             ),
             SizedBox(
               width: 100,
-              child: ExtendedText(
-                transItemHelper.txPegInAddress(),
+              child: MiddleEllipsisText(
+                text: transItemHelper.txPegInAddress(),
                 textAlign: TextAlign.end,
-                maxLines: 1,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(fontSize: 14, color: SideSwapColors.cornFlower),
-                overflowWidget: TextOverflowWidget(
-                  position: TextOverflowPosition.middle,
-                  align: TextOverflowAlign.center,
-                  child: Text(
-                    '...',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14, color: SideSwapColors.cornFlower),
-                  ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  color: SideSwapColors.cornFlower,
                 ),
               ),
             ),

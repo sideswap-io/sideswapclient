@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 class CommaTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var truncated = newValue.text;
     var newSelection = newValue.selection;
 
@@ -20,20 +22,20 @@ class CommaTextInputFormatter extends TextInputFormatter {
     if (newValue.text.startsWith(RegExp('0([0-9])'))) {
       truncated = newValue.text.replaceRange(0, 1, '0.');
       // set selection to the end
-      newSelection =
-          TextSelection.fromPosition(TextPosition(offset: truncated.length));
+      newSelection = TextSelection.fromPosition(
+        TextPosition(offset: truncated.length),
+      );
     }
 
-    return TextEditingValue(
-      text: truncated,
-      selection: newSelection,
-    );
+    return TextEditingValue(text: truncated, selection: newSelection);
   }
 }
 
 class DecimalTextInputFormatter extends TextInputFormatter {
-  DecimalTextInputFormatter(
-      {required this.decimalRange, this.integerRange = 10});
+  DecimalTextInputFormatter({
+    required this.decimalRange,
+    this.integerRange = 20,
+  });
 
   final int decimalRange;
   final int integerRange;
@@ -64,10 +66,7 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     if (newValue.text.startsWith('.')) {
       return newValue.copyWith(
         text: newValue.text.replaceFirst('.', '0.'),
-        selection: newValue.selection.copyWith(
-          baseOffset: 2,
-          extentOffset: 2,
-        ),
+        selection: newValue.selection.copyWith(baseOffset: 2, extentOffset: 2),
       );
     }
 
@@ -77,7 +76,8 @@ class DecimalTextInputFormatter extends TextInputFormatter {
         text: newValue.text.replaceFirst('0', ''),
         // set selection to the end
         selection: TextSelection.fromPosition(
-            TextPosition(offset: newValue.text.length - 1)),
+          TextPosition(offset: newValue.text.length - 1),
+        ),
       );
     }
 
@@ -91,6 +91,7 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     var truncated = newValue.text;
 
     var value = newValue.text;
+    final valueIntegerRange = newValue.text.replaceAll(' ', '').length;
 
     if (value.contains('.') &&
         value.substring(value.indexOf('.') + 1).length > decimalRange) {
@@ -111,7 +112,7 @@ class DecimalTextInputFormatter extends TextInputFormatter {
           truncated = oldValue.text;
           newSelection = oldValue.selection;
         }
-      } else if (value.length > integerRange) {
+      } else if (valueIntegerRange > integerRange) {
         truncated = oldValue.text;
         newSelection = oldValue.selection;
       }
@@ -126,10 +127,11 @@ class DecimalTextInputFormatter extends TextInputFormatter {
 }
 
 class DecimalCutterTextInputFormatter extends TextInputFormatter {
-  DecimalCutterTextInputFormatter(
-      {this.decimalRange = 8,
-      int range = 8,
-      bool activatedNegativeValues = false}) {
+  DecimalCutterTextInputFormatter({
+    this.decimalRange = 8,
+    int range = 8,
+    bool activatedNegativeValues = false,
+  }) {
     final dp = decimalRange > 0 ? '([.][0-9]{0,$decimalRange}){0,1}' : '';
     var number = '[0-9]*$dp';
     if (range > 0) {
@@ -165,9 +167,11 @@ class DecimalCutterTextInputFormatter extends TextInputFormatter {
       final changedText =
           decimalRange == 0 ? splitted[0] : '${splitted[0]}.${splitted[1]}';
       return TextEditingValue(
-          text: changedText,
-          selection: TextSelection.fromPosition(
-              TextPosition(offset: changedText.length)));
+        text: changedText,
+        selection: TextSelection.fromPosition(
+          TextPosition(offset: changedText.length),
+        ),
+      );
     }
     return oldValue;
   }

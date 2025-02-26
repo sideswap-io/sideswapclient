@@ -22,14 +22,14 @@ void showDeleteWalletDialog(BuildContext context) {
               width: 343,
               height: 437,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.all(Radius.circular(8)),
                 color: SideSwapColors.blumine,
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -50,7 +50,9 @@ void showDeleteWalletDialog(BuildContext context) {
                           width: 20,
                           height: 22,
                           colorFilter: const ColorFilter.mode(
-                              SideSwapColors.bitterSweet, BlendMode.srcIn),
+                            SideSwapColors.bitterSweet,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
@@ -93,8 +95,10 @@ void showDeleteWalletDialog(BuildContext context) {
                           text: 'YES'.tr(),
                           backgroundColor: SideSwapColors.brightTurquoise,
                           onPressed: () async {
-                            final navigator =
-                                Navigator.of(context, rootNavigator: true);
+                            final navigator = Navigator.of(
+                              context,
+                              rootNavigator: true,
+                            );
                             if (await ref
                                 .read(walletProvider)
                                 .isAuthenticated()) {

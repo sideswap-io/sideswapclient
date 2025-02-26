@@ -4,9 +4,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
 class LangSelector extends ConsumerWidget {
-  const LangSelector({
-    super.key,
-  });
+  const LangSelector({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,10 +30,7 @@ class LangSelector extends ConsumerWidget {
             isExpanded: true,
             icon: const Padding(
               padding: EdgeInsets.only(right: 10),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                color: Color(0xFF00B4E9),
-              ),
+              child: Icon(Icons.keyboard_arrow_down, color: Color(0xFF00B4E9)),
             ),
             dropdownColor: const Color(0xFF2B6F95),
             onChanged: (value) {
@@ -44,24 +39,27 @@ class LangSelector extends ConsumerWidget {
                   .setSelectedLang(value!);
             },
             value: locale,
-            items: supportedLanguages()
-                .map((e) => DropdownMenuItem<String>(
-                      value: e,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                        ),
-                        child: Row(
-                          children: [
-                            localeIconFile(e),
-                            const SizedBox(width: 8),
-                            Text(localeName(e),
-                                style: const TextStyle(fontSize: 16)),
-                          ],
+            items:
+                supportedLanguages()
+                    .map(
+                      (e) => DropdownMenuItem<String>(
+                        value: e,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Row(
+                            children: [
+                              localeIconFile(e),
+                              const SizedBox(width: 8),
+                              Text(
+                                localeName(e),
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ))
-                .toList(),
+                    )
+                    .toList(),
           ),
         ),
       ),

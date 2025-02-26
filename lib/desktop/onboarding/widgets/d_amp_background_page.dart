@@ -21,9 +21,7 @@ class DAmpBackgroundPage extends StatelessWidget {
                 child: SvgPicture.asset('assets/amp_image.svg'),
               ),
             ),
-            Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
+            Container(color: Colors.black.withValues(alpha: 0.5)),
             ...content,
           ],
         ),

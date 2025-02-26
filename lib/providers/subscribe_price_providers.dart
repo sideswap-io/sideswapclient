@@ -30,13 +30,16 @@ class SubscribePriceStreamNotifier extends _$SubscribePriceStreamNotifier {
     }
 
     // Ignore old updates
-    final expectedPriceMsg = _subscribedSendAmount == null &&
+    final expectedPriceMsg =
+        _subscribedSendAmount == null &&
         _subscribedRecvAmount == null &&
         !msg.hasSendAmount() &&
         !msg.hasRecvAmount();
-    final expectedSendAmountMsg = subscribedSendAmountCopy != null &&
+    final expectedSendAmountMsg =
+        subscribedSendAmountCopy != null &&
         subscribedSendAmountCopy.toInt() == msg.sendAmount.toInt();
-    final expectedRecvAmountMsg = subscribedRecvAmountCopy != null &&
+    final expectedRecvAmountMsg =
+        subscribedRecvAmountCopy != null &&
         subscribedRecvAmountCopy.toInt() == msg.recvAmount.toInt();
 
     if (expectedPriceMsg || expectedSendAmountMsg || expectedRecvAmountMsg) {
@@ -111,13 +114,16 @@ class SubscribePriceStreamNotifier extends _$SubscribePriceStreamNotifier {
       final swapDeliverAsset = ref.read(swapDeliverAssetProvider);
       final swapReceiveAsset = ref.read(swapReceiveAssetProvider);
       final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
-      final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
-          ? ref.read(swapSendSatoshiAmountProvider)
-          : null;
-      final recvAmount = (subscribe == const SwapPriceSubscribeState.recv())
-          ? ref.read(swapRecvSatoshiAmountProvider)
-          : null;
-      final sendBitcoins = swapDeliverAsset.asset.assetId ==
+      final sendAmount =
+          (subscribe == const SwapPriceSubscribeState.send())
+              ? ref.read(swapSendSatoshiAmountProvider)
+              : null;
+      final recvAmount =
+          (subscribe == const SwapPriceSubscribeState.recv())
+              ? ref.read(swapRecvSatoshiAmountProvider)
+              : null;
+      final sendBitcoins =
+          swapDeliverAsset.asset.assetId ==
           ref.read(liquidAssetIdStateProvider);
       final asset = sendBitcoins ? swapReceiveAsset : swapDeliverAsset;
       _subscribeToPriceStream(
@@ -129,17 +135,25 @@ class SubscribePriceStreamNotifier extends _$SubscribePriceStreamNotifier {
     } else if (swapType == const SwapType.pegOut()) {
       final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
       final swapDeliverAsset = ref.read(swapDeliverAssetProvider);
-      final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider);
-      final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
-          ? ref.read(swapSendSatoshiAmountProvider)
-          : null;
-      final recvAmount = (subscribe == const SwapPriceSubscribeState.recv())
-          ? ref.read(swapRecvSatoshiAmountProvider)
-          : null;
+      final feeRate = ref.read(bitcoinCurrentFeeRateNotifierProvider);
+      final sendAmount =
+          (subscribe == const SwapPriceSubscribeState.send())
+              ? ref.read(swapSendSatoshiAmountProvider)
+              : null;
+      final recvAmount =
+          (subscribe == const SwapPriceSubscribeState.recv())
+              ? ref.read(swapRecvSatoshiAmountProvider)
+              : null;
       if (((sendAmount ?? 0) > 0 || (recvAmount ?? 0) > 0) &&
           feeRate is SwapCurrentFeeRateData) {
-        ref.read(walletProvider).getPegOutAmount(sendAmount, recvAmount,
-            feeRate.feeRate.value, swapDeliverAsset.asset.account);
+        ref
+            .read(walletProvider)
+            .getPegOutAmount(
+              sendAmount,
+              recvAmount,
+              feeRate.feeRate.value,
+              swapDeliverAsset.asset.account,
+            );
       }
     }
   }

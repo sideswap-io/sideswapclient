@@ -14,15 +14,9 @@ class JadeLogin extends ConsumerWidget {
         child: Center(
           child: Column(
             children: [
-              const SizedBox(
-                height: 86,
-              ),
-              const JadeCircularProgressIndicator(
-                showLogo: true,
-              ),
-              const SizedBox(
-                height: 24,
-              ),
+              const SizedBox(height: 86),
+              const JadeCircularProgressIndicator(showLogo: true),
+              const SizedBox(height: 24),
               Text(
                 'Logging in...'.tr(),
                 style: Theme.of(context).textTheme.titleLarge,

@@ -12,7 +12,8 @@ part of 'stokr_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$StokrGaidState {
@@ -22,16 +23,14 @@ mixin _$StokrGaidState {
     required TResult Function() loading,
     required TResult Function() registered,
     required TResult Function() unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? loading,
     TResult? Function()? registered,
     TResult? Function()? unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -39,24 +38,21 @@ mixin _$StokrGaidState {
     TResult Function()? registered,
     TResult Function()? unregistered,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(StokrGaidStateEmpty value) empty,
     required TResult Function(StokrGaidStateLoading value) loading,
     required TResult Function(StokrGaidStateRegistered value) registered,
     required TResult Function(StokrGaidStateUnregistered value) unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(StokrGaidStateEmpty value)? empty,
     TResult? Function(StokrGaidStateLoading value)? loading,
     TResult? Function(StokrGaidStateRegistered value)? registered,
     TResult? Function(StokrGaidStateUnregistered value)? unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(StokrGaidStateEmpty value)? empty,
@@ -64,15 +60,15 @@ mixin _$StokrGaidState {
     TResult Function(StokrGaidStateRegistered value)? registered,
     TResult Function(StokrGaidStateUnregistered value)? unregistered,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $StokrGaidStateCopyWith<$Res> {
   factory $StokrGaidStateCopyWith(
-          StokrGaidState value, $Res Function(StokrGaidState) then) =
-      _$StokrGaidStateCopyWithImpl<$Res, StokrGaidState>;
+    StokrGaidState value,
+    $Res Function(StokrGaidState) then,
+  ) = _$StokrGaidStateCopyWithImpl<$Res, StokrGaidState>;
 }
 
 /// @nodoc
@@ -84,22 +80,30 @@ class _$StokrGaidStateCopyWithImpl<$Res, $Val extends StokrGaidState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of StokrGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$StokrGaidStateEmptyImplCopyWith<$Res> {
-  factory _$$StokrGaidStateEmptyImplCopyWith(_$StokrGaidStateEmptyImpl value,
-          $Res Function(_$StokrGaidStateEmptyImpl) then) =
-      __$$StokrGaidStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$StokrGaidStateEmptyImplCopyWith(
+    _$StokrGaidStateEmptyImpl value,
+    $Res Function(_$StokrGaidStateEmptyImpl) then,
+  ) = __$$StokrGaidStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$StokrGaidStateEmptyImplCopyWithImpl<$Res>
     extends _$StokrGaidStateCopyWithImpl<$Res, _$StokrGaidStateEmptyImpl>
     implements _$$StokrGaidStateEmptyImplCopyWith<$Res> {
-  __$$StokrGaidStateEmptyImplCopyWithImpl(_$StokrGaidStateEmptyImpl _value,
-      $Res Function(_$StokrGaidStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$StokrGaidStateEmptyImplCopyWithImpl(
+    _$StokrGaidStateEmptyImpl _value,
+    $Res Function(_$StokrGaidStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StokrGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -204,18 +208,22 @@ abstract class StokrGaidStateEmpty implements StokrGaidState {
 /// @nodoc
 abstract class _$$StokrGaidStateLoadingImplCopyWith<$Res> {
   factory _$$StokrGaidStateLoadingImplCopyWith(
-          _$StokrGaidStateLoadingImpl value,
-          $Res Function(_$StokrGaidStateLoadingImpl) then) =
-      __$$StokrGaidStateLoadingImplCopyWithImpl<$Res>;
+    _$StokrGaidStateLoadingImpl value,
+    $Res Function(_$StokrGaidStateLoadingImpl) then,
+  ) = __$$StokrGaidStateLoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$StokrGaidStateLoadingImplCopyWithImpl<$Res>
     extends _$StokrGaidStateCopyWithImpl<$Res, _$StokrGaidStateLoadingImpl>
     implements _$$StokrGaidStateLoadingImplCopyWith<$Res> {
-  __$$StokrGaidStateLoadingImplCopyWithImpl(_$StokrGaidStateLoadingImpl _value,
-      $Res Function(_$StokrGaidStateLoadingImpl) _then)
-      : super(_value, _then);
+  __$$StokrGaidStateLoadingImplCopyWithImpl(
+    _$StokrGaidStateLoadingImpl _value,
+    $Res Function(_$StokrGaidStateLoadingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StokrGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -320,9 +328,9 @@ abstract class StokrGaidStateLoading implements StokrGaidState {
 /// @nodoc
 abstract class _$$StokrGaidStateRegisteredImplCopyWith<$Res> {
   factory _$$StokrGaidStateRegisteredImplCopyWith(
-          _$StokrGaidStateRegisteredImpl value,
-          $Res Function(_$StokrGaidStateRegisteredImpl) then) =
-      __$$StokrGaidStateRegisteredImplCopyWithImpl<$Res>;
+    _$StokrGaidStateRegisteredImpl value,
+    $Res Function(_$StokrGaidStateRegisteredImpl) then,
+  ) = __$$StokrGaidStateRegisteredImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -330,9 +338,12 @@ class __$$StokrGaidStateRegisteredImplCopyWithImpl<$Res>
     extends _$StokrGaidStateCopyWithImpl<$Res, _$StokrGaidStateRegisteredImpl>
     implements _$$StokrGaidStateRegisteredImplCopyWith<$Res> {
   __$$StokrGaidStateRegisteredImplCopyWithImpl(
-      _$StokrGaidStateRegisteredImpl _value,
-      $Res Function(_$StokrGaidStateRegisteredImpl) _then)
-      : super(_value, _then);
+    _$StokrGaidStateRegisteredImpl _value,
+    $Res Function(_$StokrGaidStateRegisteredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StokrGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -437,9 +448,9 @@ abstract class StokrGaidStateRegistered implements StokrGaidState {
 /// @nodoc
 abstract class _$$StokrGaidStateUnregisteredImplCopyWith<$Res> {
   factory _$$StokrGaidStateUnregisteredImplCopyWith(
-          _$StokrGaidStateUnregisteredImpl value,
-          $Res Function(_$StokrGaidStateUnregisteredImpl) then) =
-      __$$StokrGaidStateUnregisteredImplCopyWithImpl<$Res>;
+    _$StokrGaidStateUnregisteredImpl value,
+    $Res Function(_$StokrGaidStateUnregisteredImpl) then,
+  ) = __$$StokrGaidStateUnregisteredImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -447,9 +458,12 @@ class __$$StokrGaidStateUnregisteredImplCopyWithImpl<$Res>
     extends _$StokrGaidStateCopyWithImpl<$Res, _$StokrGaidStateUnregisteredImpl>
     implements _$$StokrGaidStateUnregisteredImplCopyWith<$Res> {
   __$$StokrGaidStateUnregisteredImplCopyWithImpl(
-      _$StokrGaidStateUnregisteredImpl _value,
-      $Res Function(_$StokrGaidStateUnregisteredImpl) _then)
-      : super(_value, _then);
+    _$StokrGaidStateUnregisteredImpl _value,
+    $Res Function(_$StokrGaidStateUnregisteredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StokrGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

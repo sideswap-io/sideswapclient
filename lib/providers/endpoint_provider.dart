@@ -1,3 +1,4 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -13,7 +14,7 @@ import 'package:sideswap_websocket/sideswap_endpoint.dart';
 part 'endpoint_provider.g.dart';
 
 @riverpod
-EndpointServerProvider endpointServer(EndpointServerRef ref) {
+EndpointServerProvider endpointServer(Ref ref) {
   final endpointServerProvider = EndpointServerProvider(ref);
   ref.onDispose(() {
     endpointServerProvider.stop(force: true);
@@ -23,7 +24,7 @@ EndpointServerProvider endpointServer(EndpointServerRef ref) {
 }
 
 class EndpointServerProvider {
-  final EndpointServerRef ref;
+  final Ref ref;
   EndpointServer? endpointServer;
 
   EndpointServerProvider(this.ref);
@@ -44,87 +45,88 @@ class EndpointServerProvider {
     endpointServer = null;
   }
 
-  void onRequest(
-    EndpointRequest request,
-    String channelId,
-    String id,
-  ) {
+  void onRequest(EndpointRequest request, String channelId, String id) {
     logger.d('$channelId $request');
 
     final isBackendConnected = ref.read(serverConnectionNotifierProvider);
     if (!isBackendConnected) {
       logger.w(
-          'Client requested: $request but SideSwap isn\'t connected to backend yet.');
+        'Client requested: $request but SideSwap isn\'t connected to backend yet.',
+      );
       endpointServer?.sendError(
-          message: 'Unable to execute request right now, try again later',
-          channelId: channelId,
-          id: id);
+        message: 'Unable to execute request right now, try again later',
+        channelId: channelId,
+        id: id,
+      );
       return;
     }
 
     (
       switch (request.type) {
         EndpointRequestType.newAddress => () {
-            ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
-            // wait a bit for backend reply
-            // TODO (malcolmpl): fix this - make listener for received address and then call endpoint function
-            Future.delayed(const Duration(seconds: 3), () {
-              final receiveAddress = ref.read(currentReceiveAddressProvider);
+          ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
+          // wait a bit for backend reply
+          // TODO (malcolmpl): fix this - make listener for received address and then call endpoint function
+          Future.delayed(const Duration(seconds: 3), () {
+            final receiveAddress = ref.read(currentReceiveAddressProvider);
 
-              if (receiveAddress.recvAddress.isNotEmpty) {
-                final reply = EndpointReplyModel(
-                  reply: EndpointReply(
-                    id: id,
-                    type: EndpointReplyType.newAddress,
-                    data: EndpointReplyDataNewAddress(
-                        address: receiveAddress.recvAddress),
+            if (receiveAddress.recvAddress.isNotEmpty) {
+              final reply = EndpointReplyModel(
+                reply: EndpointReply(
+                  id: id,
+                  type: EndpointReplyType.newAddress,
+                  data: EndpointReplyDataNewAddress(
+                    address: receiveAddress.recvAddress,
                   ),
-                );
-                endpointServer?.sendEncrypted(reply, channelId);
-              }
-            });
-          }(),
+                ),
+              );
+              endpointServer?.sendEncrypted(reply, channelId);
+            }
+          });
+        }(),
         EndpointRequestType.createTransaction => () {
-            final data = request.data;
-            (switch (data) {
-              EndpointRequestDataCreateTransaction(
-                address: final address?,
-                assetId: final assetId?,
-                amount: final amount?
-              ) =>
-                () {
-                  final accountAsset = AccountAsset(AccountType.reg, assetId);
-                  final balance =
-                      ref.read(balancesNotifierProvider)[accountAsset] ?? 0;
-                  if (balance == 0) {
-                    logger.w(
-                        'Unable to execute endpoint request. Balance for $assetId is zero');
-                    return;
-                  }
+          final data = request.data;
+          (switch (data) {
+            EndpointRequestDataCreateTransaction(
+              address: final address?,
+              assetId: final assetId?,
+              amount: final amount?,
+            ) =>
+              () {
+                final accountAsset = AccountAsset(AccountType.reg, assetId);
+                final balance =
+                    ref.read(balancesNotifierProvider)[accountAsset] ?? 0;
+                if (balance == 0) {
+                  logger.w(
+                    'Unable to execute endpoint request. Balance for $assetId is zero',
+                  );
+                  return;
+                }
 
-                  final createTransactionData = EICreateTransactionData(
-                      accountAsset: accountAsset,
-                      address: address,
-                      amount: amount);
-                  ref
-                      .read(eiCreateTransactionNotifierProvider.notifier)
-                      .setState(createTransactionData);
+                final createTransactionData = EICreateTransactionData(
+                  accountAsset: accountAsset,
+                  address: address,
+                  amount: amount,
+                );
+                ref
+                    .read(eiCreateTransactionNotifierProvider.notifier)
+                    .setState(createTransactionData);
 
-                  ref.invalidate(createTxStateNotifierProvider);
-                  ref.read(paymentHelperProvider).selectPaymentSend(
-                      amount, accountAsset,
-                      address: address);
-                  ref.read(desktopDialogProvider).closePopups();
-                  ref.read(desktopDialogProvider).showSendTx();
-                }(),
-              _ => () {
-                  logger.w('Invalid request data: $request');
-                }()
-            });
-          }(),
+                ref.invalidate(createTxStateNotifierProvider);
+                ref
+                    .read(paymentHelperProvider)
+                    .selectPaymentSend(amount, accountAsset, address: address);
+                ref.read(desktopDialogProvider).closePopups();
+                ref.read(desktopDialogProvider).showSendTx();
+              }(),
+            _ => () {
+              logger.w('Invalid request data: $request');
+            }(),
+          });
+        }(),
         _ => () {
-            logger.w('Invalid request type: $request');
-          }(),
+          logger.w('Invalid request type: $request');
+        }(),
       },
     );
   }

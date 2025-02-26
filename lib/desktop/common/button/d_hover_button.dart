@@ -176,10 +176,8 @@ class DHoverButtonState extends State<DHoverButton> {
 
 enum ButtonStates { disabled, hovering, pressing, focused, none }
 
-typedef ButtonStateWidgetBuilder = Widget Function(
-  BuildContext context,
-  Set<ButtonStates> states,
-);
+typedef ButtonStateWidgetBuilder =
+    Widget Function(BuildContext context, Set<ButtonStates> states);
 
 typedef ButtonStateResolver<T> = T Function(Set<ButtonStates> states);
 

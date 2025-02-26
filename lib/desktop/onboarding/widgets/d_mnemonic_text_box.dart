@@ -8,17 +8,16 @@ import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
 
 class DMnemonicTextBox extends HookConsumerWidget {
-  const DMnemonicTextBox(
-    this.focusNode, {
-    super.key,
-    this.currentIndex = 1,
-  });
+  const DMnemonicTextBox(this.focusNode, {super.key, this.currentIndex = 1});
 
   final int currentIndex;
   final FocusNode focusNode;
 
   Future<void> onSubmitted(
-      String value, WidgetRef ref, FocusNode focusNode) async {
+    String value,
+    WidgetRef ref,
+    FocusNode focusNode,
+  ) async {
     await ref
         .read(mnemonicWordItemsNotifierProvider.notifier)
         .validateOnSubmit(value, currentIndex);
@@ -46,7 +45,8 @@ class DMnemonicTextBox extends HookConsumerWidget {
 
     controller.text = currentWord.word;
     controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: controller.text.length));
+      TextPosition(offset: controller.text.length),
+    );
 
     final words = ref.watch(mnemonicWordItemsNotifierProvider);
     useAsyncEffect(() async {
@@ -62,15 +62,11 @@ class DMnemonicTextBox extends HookConsumerWidget {
       height: 49,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
         children: [
-          const SizedBox(
-            width: 16,
-          ),
+          const SizedBox(width: 16),
           Expanded(
             child: RawAutocomplete<String>(
               focusNode: focusNode,
@@ -92,15 +88,21 @@ class DMnemonicTextBox extends HookConsumerWidget {
                 return KeyboardListener(
                   focusNode: keyboardListenerFocusNode,
                   onKeyEvent: (value) async {
-                    if (HardwareKeyboard.instance
-                            .isLogicalKeyPressed(LogicalKeyboardKey.tab) ||
-                        HardwareKeyboard.instance
-                            .isLogicalKeyPressed(LogicalKeyboardKey.enter)) {
+                    if (HardwareKeyboard.instance.isLogicalKeyPressed(
+                          LogicalKeyboardKey.tab,
+                        ) ||
+                        HardwareKeyboard.instance.isLogicalKeyPressed(
+                          LogicalKeyboardKey.enter,
+                        )) {
                       await onSubmitted(
-                          textEditingController.text, ref, focusNode);
+                        textEditingController.text,
+                        ref,
+                        focusNode,
+                      );
                       onFieldSubmitted();
-                      final wordItems =
-                          ref.read(mnemonicWordItemsNotifierProvider);
+                      final wordItems = ref.read(
+                        mnemonicWordItemsNotifierProvider,
+                      );
                       if (currentIndex + 1 == wordItems.length) {
                         ref
                             .read(mnemonicWordItemsNotifierProvider.notifier)
@@ -111,9 +113,7 @@ class DMnemonicTextBox extends HookConsumerWidget {
                   child: TextField(
                     controller: textEditingController,
                     focusNode: focusNode,
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(8),
-                    ],
+                    inputFormatters: [LengthLimitingTextInputFormatter(8)],
                     decoration: InputDecoration(
                       isDense: true,
                       prefixIcon: Padding(
@@ -127,8 +127,10 @@ class DMnemonicTextBox extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      prefixIconConstraints:
-                          const BoxConstraints(minWidth: 0, minHeight: 0),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -143,9 +145,11 @@ class DMnemonicTextBox extends HookConsumerWidget {
                       color: Colors.black,
                     ),
                     onChanged: (value) async {
-                      final oldValue = ref
-                              .read(mnemonicWordItemsNotifierProvider)[
-                                  currentIndex]
+                      final oldValue =
+                          ref
+                              .read(
+                                mnemonicWordItemsNotifierProvider,
+                              )[currentIndex]
                               ?.word ??
                           '';
                       await ref
@@ -168,16 +172,11 @@ class DMnemonicTextBox extends HookConsumerWidget {
                 AutocompleteOnSelected<String> onSelected,
                 Iterable<String> options,
               ) {
-                return OptionsView(
-                  options: options,
-                  onSelected: onSelected,
-                );
+                return OptionsView(options: options, onSelected: onSelected);
               },
             ),
           ),
-          const SizedBox(
-            width: 16,
-          ),
+          const SizedBox(width: 16),
         ],
       ),
     );
@@ -214,25 +213,29 @@ class OptionsView extends StatelessWidget {
                     onTap: () {
                       onSelected(option);
                     },
-                    child: Builder(builder: (BuildContext context) {
-                      final bool highlight =
-                          AutocompleteHighlightedOption.of(context) == index;
-                      if (highlight) {
-                        SchedulerBinding.instance
-                            .addPostFrameCallback((Duration timeStamp) {
-                          Scrollable.ensureVisible(context);
-                        });
-                      }
-                      return Container(
-                        height: 54,
-                        width: 200,
-                        color: highlight
-                            ? SideSwapColors.navyBlue
-                            : const Color(0xFF062d44),
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(option),
-                      );
-                    }),
+                    child: Builder(
+                      builder: (BuildContext context) {
+                        final bool highlight =
+                            AutocompleteHighlightedOption.of(context) == index;
+                        if (highlight) {
+                          SchedulerBinding.instance.addPostFrameCallback((
+                            Duration timeStamp,
+                          ) {
+                            Scrollable.ensureVisible(context);
+                          });
+                        }
+                        return Container(
+                          height: 54,
+                          width: 200,
+                          color:
+                              highlight
+                                  ? SideSwapColors.navyBlue
+                                  : const Color(0xFF062d44),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(option),
+                        );
+                      },
+                    ),
                   );
                 }),
               ),

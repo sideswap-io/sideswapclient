@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/common/utils/country_code.dart';
@@ -7,18 +8,21 @@ import 'package:sideswap/common/utils/country_codes.dart';
 part 'countries_provider.g.dart';
 
 @riverpod
-FutureOr<List<CountryCode>> countriesFuture(CountriesFutureRef ref) {
-  final countryCodeList = codes
-      .map((e) => CountryCode(
-            name: e['name'] as String,
-            english: e['english'] as String,
-            countryCode: e['countryCode'] as String,
-            dialCode: e['dialCode'] as String,
-            currencyCode: e['currencyCode'] as String,
-            currencyName: e['currencyName'] as String,
-            iso3Code: e['isoCode'] as String,
-          ))
-      .toList();
+FutureOr<List<CountryCode>> countriesFuture(Ref ref) {
+  final countryCodeList =
+      codes
+          .map(
+            (e) => CountryCode(
+              name: e['name'] as String,
+              english: e['english'] as String,
+              countryCode: e['countryCode'] as String,
+              dialCode: e['dialCode'] as String,
+              currencyCode: e['currencyCode'] as String,
+              currencyName: e['currencyName'] as String,
+              iso3Code: e['isoCode'] as String,
+            ),
+          )
+          .toList();
 
   countryCodeList.sort((a, b) {
     return a.iso3Code.toString().compareTo(b.iso3Code.toString());
@@ -36,13 +40,19 @@ class DefaultSystemCountryAsyncNotifier
 
     final countryCode = switch (countries) {
       AsyncValue(hasValue: true, value: List<CountryCode> countries) => () {
-          final defaultCountryCode = WidgetsBinding
-              .instance.platformDispatcher.locales.first.countryCode;
-          final countryCode = countries.firstWhere(
-              (e) => e.countryCode == defaultCountryCode,
-              orElse: () => countries.first);
-          return countryCode;
-        }(),
+        final defaultCountryCode =
+            WidgetsBinding
+                .instance
+                .platformDispatcher
+                .locales
+                .first
+                .countryCode;
+        final countryCode = countries.firstWhere(
+          (e) => e.countryCode == defaultCountryCode,
+          orElse: () => countries.first,
+        );
+        return countryCode;
+      }(),
       _ => null,
     };
 

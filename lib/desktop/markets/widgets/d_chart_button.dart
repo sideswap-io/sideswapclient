@@ -4,10 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/desktop/common/button/d_button.dart';
 
 class DChartButton extends StatelessWidget {
-  const DChartButton({
-    super.key,
-    required this.onPressed,
-  });
+  const DChartButton({super.key, required this.onPressed});
 
   final VoidCallback? onPressed;
 
@@ -20,18 +17,13 @@ class DChartButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              'assets/chart.svg',
-              width: 14,
-              height: 14,
-            ),
+            SvgPicture.asset('assets/chart.svg', width: 14, height: 14),
             const SizedBox(width: 6),
             Text(
               'Chart'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(fontSize: 13),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontSize: 13),
             ),
           ],
         ),

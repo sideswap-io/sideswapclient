@@ -8,10 +8,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class TxDetailsRowNotes extends ConsumerWidget {
-  const TxDetailsRowNotes({
-    super.key,
-    required this.tx,
-  });
+  const TxDetailsRowNotes({super.key, required this.tx});
 
   final Tx tx;
 
@@ -56,15 +53,15 @@ class TxDetailsRowNotes extends ConsumerWidget {
               onPressed: () {
                 ref.read(walletProvider).editTxMemo(tx);
               },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-              ),
+              style: TextButton.styleFrom(padding: EdgeInsets.zero),
               child: SvgPicture.asset(
                 'assets/copy.svg',
                 width: 18,
                 height: 18,
                 colorFilter: const ColorFilter.mode(
-                    SideSwapColors.brightTurquoise, BlendMode.srcIn),
+                  SideSwapColors.brightTurquoise,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

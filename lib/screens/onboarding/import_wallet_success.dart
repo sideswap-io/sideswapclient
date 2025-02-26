@@ -15,14 +15,15 @@ class ImportWalletSuccess extends ConsumerWidget {
       canPop: false,
       hideCloseButton: true,
       child: ResultPage(
-          resultType: ResultPageType.success,
-          header: 'Success!'.tr(),
-          description:
-              'You have successfully imported your wallet to this device'.tr(),
-          buttonText: 'CONTINUE'.tr(),
-          onPressed: () async {
-            await ref.read(walletProvider).setPinWelcome();
-          }),
+        resultType: ResultPageType.success,
+        header: 'Success!'.tr(),
+        description:
+            'You have successfully imported your wallet to this device'.tr(),
+        buttonText: 'CONTINUE'.tr(),
+        onPressed: () async {
+          await ref.read(walletProvider).setPinWelcome();
+        },
+      ),
     );
   }
 }

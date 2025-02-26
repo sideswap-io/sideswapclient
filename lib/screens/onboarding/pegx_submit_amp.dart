@@ -67,11 +67,7 @@ class PegxSubmitAmp extends HookConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
-            SvgPicture.asset(
-              'assets/pegx_logo.svg',
-              width: 104,
-              height: 24,
-            ),
+            SvgPicture.asset('assets/pegx_logo.svg', width: 104, height: 24),
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: SizedBox(
@@ -93,9 +89,11 @@ class PegxSubmitAmp extends HookConsumerWidget {
                 ampId: ampId,
                 backgroundColor: SideSwapColors.tarawera,
                 prefixTextStyle: Theme.of(context).textTheme.titleSmall?.merge(
-                    const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: SideSwapColors.brightTurquoise)),
+                  const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: SideSwapColors.brightTurquoise,
+                  ),
+                ),
                 icon: Padding(
                   padding: const EdgeInsets.only(left: 10, right: 8),
                   child: SuccessIcon(
@@ -103,15 +101,17 @@ class PegxSubmitAmp extends HookConsumerWidget {
                     height: 20,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: registered
-                          ? SideSwapColors.turquoise
-                          : Colors.transparent,
+                      color:
+                          registered
+                              ? SideSwapColors.turquoise
+                              : Colors.transparent,
                     ),
                     icon: Icon(
                       registered ? Icons.done : Icons.add,
-                      color: registered
-                          ? Colors.white
-                          : SideSwapColors.brightTurquoise,
+                      color:
+                          registered
+                              ? Colors.white
+                              : SideSwapColors.brightTurquoise,
                       size: 14,
                     ),
                   ),
@@ -137,8 +137,8 @@ class PegxSubmitAmp extends HookConsumerWidget {
                   child: Text(
                     'FINISH'.tr(),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -147,19 +147,20 @@ class PegxSubmitAmp extends HookConsumerWidget {
                 width: double.infinity,
                 height: 54,
                 backgroundColor: SideSwapColors.brightTurquoise,
-                onPressed: gaidWaiting.value
-                    ? null
-                    : () {
-                        ref.read(pegxWebsocketClientProvider).addGaid();
-                      },
+                onPressed:
+                    gaidWaiting.value
+                        ? null
+                        : () {
+                          ref.read(pegxWebsocketClientProvider).addGaid();
+                        },
                 child: Row(
                   children: [
                     const Spacer(),
                     Text(
                       'YES'.tr(),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Expanded(
                       child: Row(
@@ -195,8 +196,8 @@ class PegxSubmitAmp extends HookConsumerWidget {
                   child: Text(
                     'CANCEL'.tr(),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

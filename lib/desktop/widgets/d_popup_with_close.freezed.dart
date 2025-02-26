@@ -12,7 +12,8 @@ part of 'd_popup_with_close.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$DialogReturnValue {
@@ -20,47 +21,42 @@ mixin _$DialogReturnValue {
   TResult when<TResult extends Object?>({
     required TResult Function() cancelled,
     required TResult Function() accepted,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? cancelled,
     TResult? Function()? accepted,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? cancelled,
     TResult Function()? accepted,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(DialogReturnValueCancelled value) cancelled,
     required TResult Function(DialogReturnValueAccepted value) accepted,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(DialogReturnValueCancelled value)? cancelled,
     TResult? Function(DialogReturnValueAccepted value)? accepted,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(DialogReturnValueCancelled value)? cancelled,
     TResult Function(DialogReturnValueAccepted value)? accepted,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $DialogReturnValueCopyWith<$Res> {
   factory $DialogReturnValueCopyWith(
-          DialogReturnValue value, $Res Function(DialogReturnValue) then) =
-      _$DialogReturnValueCopyWithImpl<$Res, DialogReturnValue>;
+    DialogReturnValue value,
+    $Res Function(DialogReturnValue) then,
+  ) = _$DialogReturnValueCopyWithImpl<$Res, DialogReturnValue>;
 }
 
 /// @nodoc
@@ -72,25 +68,31 @@ class _$DialogReturnValueCopyWithImpl<$Res, $Val extends DialogReturnValue>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of DialogReturnValue
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$DialogReturnValueCancelledImplCopyWith<$Res> {
   factory _$$DialogReturnValueCancelledImplCopyWith(
-          _$DialogReturnValueCancelledImpl value,
-          $Res Function(_$DialogReturnValueCancelledImpl) then) =
-      __$$DialogReturnValueCancelledImplCopyWithImpl<$Res>;
+    _$DialogReturnValueCancelledImpl value,
+    $Res Function(_$DialogReturnValueCancelledImpl) then,
+  ) = __$$DialogReturnValueCancelledImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$DialogReturnValueCancelledImplCopyWithImpl<$Res>
-    extends _$DialogReturnValueCopyWithImpl<$Res,
-        _$DialogReturnValueCancelledImpl>
+    extends
+        _$DialogReturnValueCopyWithImpl<$Res, _$DialogReturnValueCancelledImpl>
     implements _$$DialogReturnValueCancelledImplCopyWith<$Res> {
   __$$DialogReturnValueCancelledImplCopyWithImpl(
-      _$DialogReturnValueCancelledImpl _value,
-      $Res Function(_$DialogReturnValueCancelledImpl) _then)
-      : super(_value, _then);
+    _$DialogReturnValueCancelledImpl _value,
+    $Res Function(_$DialogReturnValueCancelledImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of DialogReturnValue
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -183,20 +185,23 @@ abstract class DialogReturnValueCancelled implements DialogReturnValue {
 /// @nodoc
 abstract class _$$DialogReturnValueAcceptedImplCopyWith<$Res> {
   factory _$$DialogReturnValueAcceptedImplCopyWith(
-          _$DialogReturnValueAcceptedImpl value,
-          $Res Function(_$DialogReturnValueAcceptedImpl) then) =
-      __$$DialogReturnValueAcceptedImplCopyWithImpl<$Res>;
+    _$DialogReturnValueAcceptedImpl value,
+    $Res Function(_$DialogReturnValueAcceptedImpl) then,
+  ) = __$$DialogReturnValueAcceptedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$DialogReturnValueAcceptedImplCopyWithImpl<$Res>
-    extends _$DialogReturnValueCopyWithImpl<$Res,
-        _$DialogReturnValueAcceptedImpl>
+    extends
+        _$DialogReturnValueCopyWithImpl<$Res, _$DialogReturnValueAcceptedImpl>
     implements _$$DialogReturnValueAcceptedImplCopyWith<$Res> {
   __$$DialogReturnValueAcceptedImplCopyWithImpl(
-      _$DialogReturnValueAcceptedImpl _value,
-      $Res Function(_$DialogReturnValueAcceptedImpl) _then)
-      : super(_value, _then);
+    _$DialogReturnValueAcceptedImpl _value,
+    $Res Function(_$DialogReturnValueAcceptedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of DialogReturnValue
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

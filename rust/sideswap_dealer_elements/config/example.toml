@@ -10,6 +10,12 @@ bitcoin_amount_submit = 0.001
 bitcoin_amount_max = 0.01
 bitcoin_amount_min = 0.0001
 
+# If necessary, add additional whitelisted assets here
+whitelisted_assets = [
+    #"78557eb89ea8439dc1a519f4eb0267c86b261068648a0f84a5c6b55ca39b66f1", # B-JDE (Liquid only)
+    #"649f01bd72fbe33a70508e752044a2b0f91cf73612b70e03f337d095daa8b002", # PXTST (Testnet only)
+]
+
 price_stream = []
 
 [web_server]

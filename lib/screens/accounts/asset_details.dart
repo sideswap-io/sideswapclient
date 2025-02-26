@@ -9,6 +9,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -26,10 +27,10 @@ import 'package:sideswap/screens/accounts/widgets/maximize_list_button.dart';
 part 'asset_details.g.dart';
 
 @riverpod
-StreamController<double> heightPercentController(
-    HeightPercentControllerRef ref) {
-  ref.onDispose(() => ref.state.close());
-  return StreamController<double>();
+StreamController<double> heightPercentController(Ref ref) {
+  final controller = StreamController<double>();
+  ref.onDispose(() => controller.close());
+  return controller;
 }
 
 @riverpod
@@ -55,9 +56,7 @@ class AssetDetails extends HookConsumerWidget {
           alignment: Alignment.topRight,
           child: Padding(
             padding: EdgeInsets.only(right: 16, top: 18),
-            child: WalletTransactions(
-              backgroundColor: Colors.transparent,
-            ),
+            child: WalletTransactions(backgroundColor: Colors.transparent),
           ),
         ),
         AssetDetailsTopHeader(),
@@ -85,8 +84,9 @@ class AssetDetailsTransactionsPanel extends HookConsumerWidget {
     final maximizedPadding = MediaQuery.of(context).padding.top + 70;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final selectedWalletAccountAsset =
-        ref.watch(selectedWalletAccountAssetNotifierProvider);
+    final selectedWalletAccountAsset = ref.watch(
+      selectedWalletAccountAssetNotifierProvider,
+    );
     final allAssets = ref.watch(accountAssetTransactionsProvider);
     final assetList = allAssets[selectedWalletAccountAsset] ?? <TxItem>[];
     final hightPercentController = ref.watch(heightPercentControllerProvider);
@@ -109,9 +109,7 @@ class AssetDetailsTransactionsPanel extends HookConsumerWidget {
         topLeft: Radius.circular(16),
         topRight: Radius.circular(16),
       ),
-      header: AssetDetailsSlidingPanelHeader(
-        panelController: panelController,
-      ),
+      header: AssetDetailsSlidingPanelHeader(panelController: panelController),
       panelBuilder: (sc) {
         return const AssetDetailsPanelBuilder();
       },
@@ -124,14 +122,18 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedWalletAccountAsset =
-        ref.watch(selectedWalletAccountAssetNotifierProvider);
-    final asset = ref.watch(assetsStateProvider
-        .select((value) => value[selectedWalletAccountAsset?.assetId]));
+    final selectedWalletAccountAsset = ref.watch(
+      selectedWalletAccountAssetNotifierProvider,
+    );
+    final asset = ref.watch(
+      assetsStateProvider.select(
+        (value) => value[selectedWalletAccountAsset?.assetId],
+      ),
+    );
 
     useEffect(() {
       ref
-          .read(tokenMarketProvider)
+          .read(tokenMarketNotifierProvider.notifier)
           .requestAssetDetails(assetId: asset?.assetId);
 
       return;
@@ -139,106 +141,110 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
 
     return switch (asset) {
       Asset asset => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 68),
-              ...switch (asset.hasDomain()) {
-                true => [
-                    AssetDetailsText(text: 'Issuer domain'.tr()),
-                    AssetDetailsUnderlineButton(
-                      text: asset.domain,
-                      onPressed: () {
-                        openUrl('https://${asset.domain}');
-                      },
-                    ),
-                  ],
-                _ => [const SizedBox()],
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 68),
+            ...switch (asset.hasDomain()) {
+              true => [
+                AssetDetailsText(text: 'Issuer domain'.tr()),
+                AssetDetailsUnderlineButton(
+                  text: asset.domain,
+                  onPressed: () {
+                    openUrl('https://${asset.domain}');
+                  },
+                ),
+              ],
+              _ => [const SizedBox()],
+            },
+            AssetDetailsText(text: 'Asset'.tr()),
+            Consumer(
+              builder: (context, ref, child) {
+                final isTestnet = ref.read(envProvider.notifier).isTestnet();
+                final assetUrl = generateAssetUrl(
+                  assetId: asset.assetId,
+                  testnet: isTestnet,
+                );
+                return AssetDetailsUnderlineButton(
+                  text: assetUrl,
+                  onPressed: () {
+                    openUrl(assetUrl);
+                  },
+                );
               },
-              AssetDetailsText(text: 'Asset'.tr()),
-              Consumer(
-                builder: (context, ref, child) {
-                  final isTestnet = ref.read(envProvider.notifier).isTestnet();
-                  final assetUrl = generateAssetUrl(
-                      assetId: asset.assetId, testnet: isTestnet);
-                  return AssetDetailsUnderlineButton(
-                    text: assetUrl,
-                    onPressed: () {
-                      openUrl(assetUrl);
-                    },
-                  );
-                },
-              ),
-              ...switch (asset.hasDomainAgentLink()) {
-                true => [
-                    AssetDetailsText(text: 'Registration Agent'.tr()),
-                    AssetDetailsUnderlineButton(
-                      text: asset.domainAgentLink,
-                      onPressed: () {
-                        openUrl(asset.domainAgentLink);
-                      },
-                    ),
-                  ],
-                _ => [const SizedBox()],
+            ),
+            ...switch (asset.hasDomainAgentLink()) {
+              true => [
+                AssetDetailsText(text: 'Registration Agent'.tr()),
+                AssetDetailsUnderlineButton(
+                  text: asset.domainAgentLink,
+                  onPressed: () {
+                    openUrl(asset.domainAgentLink);
+                  },
+                ),
+              ],
+              _ => [const SizedBox()],
+            },
+            AssetDetailsText(text: 'Precision'.tr()),
+            Consumer(
+              builder: (context, ref, child) {
+                final assetPrecision = ref
+                    .watch(assetUtilsProvider)
+                    .getPrecisionForAssetId(assetId: asset.assetId);
+                return AssetDetailsText(
+                  text: '$assetPrecision',
+                  padding: 16,
+                  color: Colors.white,
+                  useSelectable: true,
+                );
               },
-              AssetDetailsText(text: 'Precision'.tr()),
-              Consumer(
-                builder: (context, ref, child) {
-                  final assetPrecision = ref
-                      .watch(assetUtilsProvider)
-                      .getPrecisionForAssetId(assetId: asset.assetId);
-                  return AssetDetailsText(
-                    text: '$assetPrecision',
-                    padding: 16,
-                    color: Colors.white,
-                    useSelectable: true,
-                  );
-                },
-              ),
-              Consumer(
-                builder: (context, ref, child) {
-                  final details =
-                      ref.watch(tokenMarketAssetDetailsProvider)[asset.assetId];
-                  final issuedAmount = details?.stats?.issuedAmount ?? 0;
-                  final burnedAmount = details?.stats?.burnedAmount ?? 0;
-                  final circulatingAmount = issuedAmount - burnedAmount;
-                  final amountProvider = ref.watch(amountToStringProvider);
-                  final assetPrecision = ref
-                      .watch(assetUtilsProvider)
-                      .getPrecisionForAssetId(assetId: asset.assetId);
-                  final circulatingAmountStr = amountProvider.amountToString(
-                      AmountToStringParameters(
-                          amount: circulatingAmount,
-                          precision: assetPrecision));
+            ),
+            Consumer(
+              builder: (context, ref, child) {
+                final details =
+                    ref.watch(tokenMarketNotifierProvider)[asset.assetId];
+                final issuedAmount = details?.stats?.issuedAmount ?? 0;
+                final burnedAmount = details?.stats?.burnedAmount ?? 0;
+                final circulatingAmount = issuedAmount - burnedAmount;
+                final amountProvider = ref.watch(amountToStringProvider);
+                final assetPrecision = ref
+                    .watch(assetUtilsProvider)
+                    .getPrecisionForAssetId(assetId: asset.assetId);
+                final circulatingAmountStr = amountProvider.amountToString(
+                  AmountToStringParameters(
+                    amount: circulatingAmount,
+                    precision: assetPrecision,
+                  ),
+                );
 
-                  return switch (circulatingAmount) {
-                    0 => const SizedBox(),
-                    _ => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AssetDetailsText(text: 'Circulating amount'.tr()),
-                          AssetDetailsText(
-                            text: circulatingAmountStr,
-                            padding: 16,
-                            color: Colors.white,
-                            useSelectable: true,
-                          ),
-                        ],
+                return switch (circulatingAmount) {
+                  0 => const SizedBox(),
+                  _ => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AssetDetailsText(text: 'Circulating amount'.tr()),
+                      AssetDetailsText(
+                        text: circulatingAmountStr,
+                        padding: 16,
+                        color: Colors.white,
+                        useSelectable: true,
                       ),
-                  };
-                },
-              ),
-              AssetDetailsText(text: 'Asset ID'.tr()),
-              AssetDetailsText(
-                text: asset.assetId,
-                padding: 16,
-                color: Colors.white,
-                useSelectable: true,
-              ),
-            ],
-          ),
+                    ],
+                  ),
+                };
+              },
+            ),
+            AssetDetailsText(text: 'Asset ID'.tr()),
+            AssetDetailsText(
+              text: asset.assetId,
+              padding: 16,
+              color: Colors.white,
+              useSelectable: true,
+            ),
+          ],
         ),
+      ),
       _ => const SizedBox(),
     };
   }
@@ -264,19 +270,17 @@ class AssetDetailsText extends StatelessWidget {
       children: [
         switch (useSelectable) {
           true => SelectableText(
-              text,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    color: color,
-                  ),
-            ),
+            text,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 14, color: color),
+          ),
           _ => Text(
-              text,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    color: color,
-                  ),
-            ),
+            text,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 14, color: color),
+          ),
         },
         SizedBox(height: padding),
       ],
@@ -285,8 +289,11 @@ class AssetDetailsText extends StatelessWidget {
 }
 
 class AssetDetailsUnderlineButton extends StatelessWidget {
-  const AssetDetailsUnderlineButton(
-      {super.key, required this.text, required this.onPressed});
+  const AssetDetailsUnderlineButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+  });
 
   final String text;
   final VoidCallback onPressed;
@@ -301,9 +308,7 @@ class AssetDetailsUnderlineButton extends StatelessWidget {
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(0),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(0)),
             ),
           ),
           child: Align(
@@ -311,7 +316,9 @@ class AssetDetailsUnderlineButton extends StatelessWidget {
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 14, decoration: TextDecoration.underline),
+                fontSize: 14,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
         ),
@@ -322,8 +329,10 @@ class AssetDetailsUnderlineButton extends StatelessWidget {
 }
 
 class AssetDetailsSlidingPanelHeader extends StatelessWidget {
-  const AssetDetailsSlidingPanelHeader(
-      {super.key, required this.panelController});
+  const AssetDetailsSlidingPanelHeader({
+    super.key,
+    required this.panelController,
+  });
 
   final PanelController panelController;
 
@@ -339,18 +348,18 @@ class AssetDetailsSlidingPanelHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Asset Info'.tr(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(letterSpacing: 0.35),
+                  'Asset info'.tr(),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(letterSpacing: 0.35),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(right: 3),
                   child: Consumer(
                     builder: (context, ref, child) {
-                      final panelPosition =
-                          ref.watch(panelPositionNotifierProvider);
+                      final panelPosition = ref.watch(
+                        panelPositionNotifierProvider,
+                      );
 
                       return MaximizeListButton(
                         position: panelPosition,
@@ -375,16 +384,16 @@ class AssetDetailsSlidingPanelHeader extends StatelessWidget {
 }
 
 class AssetDetailsBackButton extends ConsumerWidget {
-  const AssetDetailsBackButton({
-    super.key,
-  });
+  const AssetDetailsBackButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CustomBackButton(
       onPressed: () {
         final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
-        ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+        ref
+            .read(uiStateArgsNotifierProvider.notifier)
+            .setWalletMainArguments(
               walletMainArguments.copyWith(
                 navigationItemEnum: WalletMainNavigationItemEnum.accounts,
               ),
@@ -395,9 +404,7 @@ class AssetDetailsBackButton extends ConsumerWidget {
 }
 
 class AssetDetailsTopHeader extends HookConsumerWidget {
-  const AssetDetailsTopHeader({
-    super.key,
-  });
+  const AssetDetailsTopHeader({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -408,8 +415,11 @@ class AssetDetailsTopHeader extends HookConsumerWidget {
     const logoPaddingMax = 32.0;
     const logoPaddingMin = 24.0;
 
-    final heightPercentCallback =
-        useCallback((double percent, double min, double max) {
+    final heightPercentCallback = useCallback((
+      double percent,
+      double min,
+      double max,
+    ) {
       return ((max - min) * percent) + min;
     }, []);
 
@@ -417,10 +427,16 @@ class AssetDetailsTopHeader extends HookConsumerWidget {
       stream: hightPercentController.stream,
       builder: (context, snapshot) {
         final percent = snapshot.hasData ? snapshot.data ?? 1.0 : 1.0;
-        final logoHeight =
-            heightPercentCallback(percent, logoHeightMin, logoHeightMax);
-        final logoPadding =
-            heightPercentCallback(percent, logoPaddingMin, logoPaddingMax);
+        final logoHeight = heightPercentCallback(
+          percent,
+          logoHeightMin,
+          logoHeightMax,
+        );
+        final logoPadding = heightPercentCallback(
+          percent,
+          logoPaddingMin,
+          logoPaddingMax,
+        );
 
         return Stack(
           children: [
@@ -430,11 +446,13 @@ class AssetDetailsTopHeader extends HookConsumerWidget {
                 padding: EdgeInsets.only(top: logoPadding),
                 child: Consumer(
                   builder: (context, ref, child) {
-                    final selectedWalletAccountAsset =
-                        ref.watch(selectedWalletAccountAssetNotifierProvider);
+                    final selectedWalletAccountAsset = ref.watch(
+                      selectedWalletAccountAssetNotifierProvider,
+                    );
                     final assetId = selectedWalletAccountAsset?.assetId;
-                    final icon =
-                        ref.watch(assetImageProvider).getBigImage(assetId);
+                    final icon = ref
+                        .watch(assetImageRepositoryProvider)
+                        .getBigImage(assetId);
                     return SizedBox(
                       width: logoHeight,
                       height: logoHeight,
@@ -448,9 +466,7 @@ class AssetDetailsTopHeader extends HookConsumerWidget {
               alignment: Alignment.topCenter,
               child: Padding(
                 padding: const EdgeInsets.only(top: 106),
-                child: AssetDetailsHeader(
-                  percent: percent,
-                ),
+                child: AssetDetailsHeader(percent: percent),
               ),
             ),
           ],

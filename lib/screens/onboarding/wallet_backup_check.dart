@@ -52,36 +52,37 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
               padding: const EdgeInsets.only(top: 8),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final wordIndices = ref
-                      .watch(walletProvider)
-                      .backupCheckAllWords
-                      .keys
-                      .toList();
+                  final wordIndices =
+                      ref
+                          .watch(walletProvider)
+                          .backupCheckAllWords
+                          .keys
+                          .toList();
 
                   return Column(
-                    children: List<Widget>.generate(
-                      wordIndices.length,
-                      (int index) {
-                        final wordIndex = wordIndices[index];
-                        final words = ref
+                    children: List<Widget>.generate(wordIndices.length, (
+                      int index,
+                    ) {
+                      final wordIndex = wordIndices[index];
+                      final words =
+                          ref
+                              .read(walletProvider)
+                              .backupCheckAllWords[wordIndex] ??
+                          [];
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 32),
+                        child: MnemonicCheckRow(
+                          wordIndex: wordIndex,
+                          words: words,
+                          onTap: (index) {
+                            ref
                                 .read(walletProvider)
-                                .backupCheckAllWords[wordIndex] ??
-                            [];
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 32),
-                          child: MnemonicCheckRow(
-                            wordIndex: wordIndex,
-                            words: words,
-                            onTap: (index) {
-                              ref
-                                  .read(walletProvider)
-                                  .backupNewWalletSelect(wordIndex, index);
-                              validate(ref, context);
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                                .backupNewWalletSelect(wordIndex, index);
+                            validate(ref, context);
+                          },
+                        ),
+                      );
+                    }),
                   );
                 },
               ),
@@ -94,11 +95,12 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
                 width: double.maxFinite,
                 text: 'CONFIRM'.tr(),
                 backgroundColor: SideSwapColors.brightTurquoise,
-                onPressed: _canContinue
-                    ? () {
-                        ref.read(walletProvider).backupNewWalletVerify();
-                      }
-                    : null,
+                onPressed:
+                    _canContinue
+                        ? () {
+                          ref.read(walletProvider).backupNewWalletVerify();
+                        }
+                        : null,
               ),
             ),
           ],

@@ -1,114 +1,191 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/styles/button_styles.dart';
+import 'package:sideswap/common/styles/theme_extensions.dart';
+import 'package:sideswap/desktop/markets/widgets/d_edit_order_dialog.dart';
 import 'package:sideswap/desktop/markets/widgets/d_working_orders_row.dart';
 import 'package:sideswap/desktop/markets/widgets/d_working_order_amount.dart';
 import 'package:sideswap/desktop/markets/widgets/d_working_order_button.dart';
-import 'package:sideswap/models/amount_to_string_model.dart';
-import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
-import 'package:sideswap/providers/timer_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/common/utils/duration_extension.dart';
+import 'package:sideswap/models/ui_own_order.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class DWorkingOrderItem extends ConsumerWidget {
-  const DWorkingOrderItem({
-    super.key,
-    required this.order,
-  });
+class DWorkingOrderItem extends HookConsumerWidget {
+  const DWorkingOrderItem({super.key, required this.order});
 
-  final RequestOrder order;
+  final UiOwnOrder order;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSell =
-        order.sendBitcoins == (order.marketType == MarketType.stablecoin);
-    final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
-    final dirColor = isSell ? sellColor : buyColor;
-    final priceType = order.indexPrice == 0 ? 'Limit'.tr() : 'Tracking'.tr();
-    final orderType = order.private ? 'Private'.tr() : 'Public'.tr();
-    final asset =
-        ref.watch(assetsStateProvider.select((value) => value[order.assetId]));
-    final priceInLiquid =
-        ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
-    final productName = ref.watch(assetUtilsProvider).productName(asset: asset);
-    final assetPrecision = ref
-        .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: order.assetId);
-    final amountProvider = ref.watch(amountToStringProvider);
-    final assetAmountStr = amountProvider.amountToString(
-        AmountToStringParameters(
-            amount: order.assetAmount, precision: assetPrecision));
-    final bitcoinAmountStr = amountProvider
-        .amountToString(AmountToStringParameters(amount: order.bitcoinAmount));
-    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    /// * set background to red when order expiration time is approaching
+    final backgroundColor = useState(Colors.transparent);
+    ref.listen(orderExpireDescriptionProvider(Option.of(order)), (_, __) {
+      if (order.ttl != null && order.ttl! <= 5) {
+        backgroundColor.value = SideSwapColors.bitterSweet.shade500;
+      }
+    });
 
-    return DWorkingOrdersRow(
-      children: [
-        Text(productName),
-        DWorkingOrderAmount(
-          assetId: priceInLiquid ? order.assetId : liquidAssetId,
-          text: priceInLiquid ? assetAmountStr : bitcoinAmountStr,
-        ),
-        DWorkingOrderAmount(
-          assetId: priceInLiquid ? liquidAssetId : order.assetId,
-          text: priceStr(order.price, priceInLiquid),
-        ),
-        DWorkingOrderAmount(
-          assetId: !priceInLiquid ? order.assetId : liquidAssetId,
-          text: !priceInLiquid ? assetAmountStr : bitcoinAmountStr,
-        ),
-        Text(
-          dirStr,
-          style: TextStyle(
-            color: dirColor,
+    final isSell = order.tradeDir == TradeDir.SELL;
+    final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
+    final dirColor =
+        isSell
+            ? Theme.of(context).extension<MarketColorsTheme>()!.sellColor
+            : Theme.of(context).extension<MarketColorsTheme>()!.buyColor;
+
+    final showCancelDialogCallback = useCallback(() {
+      return showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return HookBuilder(
+            builder: (context) {
+              final dialogCancelFocusNode = useFocusNode();
+
+              useEffect(() {
+                dialogCancelFocusNode.requestFocus();
+
+                return;
+              }, const []);
+
+              return AlertDialog(
+                title: Text('Delete order?'.tr()),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                actionsAlignment: MainAxisAlignment.spaceBetween,
+                actions: <Widget>[
+                  TextButton(
+                    style:
+                        Theme.of(
+                          context,
+                        ).extension<SideswapYesButtonStyle>()!.style,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop(true);
+                    },
+                    child: Text('Yes'.tr()).tr(),
+                  ),
+                  TextButton(
+                    focusNode: dialogCancelFocusNode,
+                    style:
+                        Theme.of(
+                          context,
+                        ).extension<SideswapNoButtonStyle>()!.style,
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop(false);
+                    },
+                    child: Text('No'.tr()).tr(),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    });
+
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      color: backgroundColor.value,
+      child: DWorkingOrdersRow(
+        children: [
+          Row(
+            children: [
+              Text(order.productName),
+              if (order.exclamationMark) ...[
+                SizedBox(width: 6),
+                Tooltip(
+                  message:
+                      'Order amount become less than the minimum after partially matching or there is no UTXOs'
+                          .tr(),
+                  child: Icon(
+                    Icons.error_outline,
+                    color: SideSwapColors.bitterSweet,
+                  ),
+                ),
+              ],
+              if (order.questionMark) ...[
+                SizedBox(width: 6),
+                Tooltip(
+                  message:
+                      'Not enough UTXOs to cover the requested amount'.tr(),
+                  child: Icon(Icons.warning_amber_rounded, color: Colors.amber),
+                ),
+              ],
+            ],
           ),
-        ),
-        Text(priceType),
-        Text(orderType),
-        Row(
-          children: [
-            SvgPicture.asset(
-              'assets/clock.svg',
-              width: 14,
-              height: 14,
-            ),
-            const SizedBox(width: 6),
-            Consumer(builder: (context, ref, _) {
-              ref.watch(timerProvider);
-              return Text(order.getExpireDuration().toStringCustomShort());
-            }),
-            const Spacer(),
-            if (order.private) ...[
+          DWorkingOrderAmount(icon: order.amountIcon, text: order.amountString),
+          DWorkingOrderAmount(icon: order.priceIcon, text: order.priceString),
+          DWorkingOrderAmount(icon: order.priceIcon, text: order.total),
+          Text(dirStr, style: TextStyle(color: dirColor)),
+          Text(order.orderTypeDescription),
+          Text(order.offlineSwapTypeDescription),
+          Row(
+            children: [
+              Icon(Symbols.schedule, size: 18),
+              const SizedBox(width: 6),
+              Consumer(
+                builder: (context, ref, child) {
+                  final expire = ref.watch(
+                    orderExpireDescriptionProvider(Option.of(order)),
+                  );
+                  return Text(expire);
+                },
+              ),
+              const Spacer(),
+              if (order.orderType == OrderType.private()) ...[
+                DWorkingOrderButton(
+                  icon: Icon(Symbols.content_copy_rounded, size: 20),
+                  onPressed: () {
+                    final shareUrl = ref.read(
+                      addressToShareByOrderProvider(order),
+                    );
+                    copyToClipboard(context, shareUrl);
+                  },
+                ),
+              ],
+              if (order.offlineSwapType != OfflineSwapType.twoStep()) ...[
+                DWorkingOrderButton(
+                  icon: Icon(Symbols.edit_square_rounded, size: 20),
+                  onPressed: () async {
+                    ref
+                        .read(marketEditDetailsOrderNotifierProvider.notifier)
+                        .setState(order);
+
+                    await showDialog<void>(
+                      context: context,
+                      builder: (context) {
+                        return DEditOrderDialog();
+                      },
+                      routeSettings: RouteSettings(name: orderEditRouteName),
+                      useRootNavigator: false,
+                    );
+
+                    ref.invalidate(marketEditDetailsOrderNotifierProvider);
+                  },
+                ),
+              ],
               DWorkingOrderButton(
-                icon: 'assets/copy3.svg',
-                onPressed: () {
-                  final shareUrl =
-                      ref.read(addressToShareByOrderIdProvider(order.orderId));
-                  copyToClipboard(context, shareUrl);
+                icon: Icon(Symbols.delete_rounded, size: 20),
+                onPressed: () async {
+                  final ret = await showCancelDialogCallback();
+
+                  if (ret == true) {
+                    final msg = To();
+                    msg.orderCancel = To_OrderCancel(orderId: order.orderId);
+                    ref.read(walletProvider).sendMsg(msg);
+                  }
                 },
               ),
             ],
-            DWorkingOrderButton(
-              icon: 'assets/edit2.svg',
-              onPressed: () {
-                ref.read(walletProvider).setOrderRequestView(order);
-              },
-            ),
-            DWorkingOrderButton(
-              icon: 'assets/delete2.svg',
-              onPressed: () async {
-                ref.read(walletProvider).cancelOrder(order.orderId);
-              },
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

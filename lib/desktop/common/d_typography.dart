@@ -22,10 +22,7 @@ class DTypography with Diagnosticable {
     this.caption,
   });
 
-  factory DTypography.standard({
-    Brightness? brightness,
-    Color? color,
-  }) {
+  factory DTypography.standard({Brightness? brightness, Color? color}) {
     assert(brightness != null || color != null);
     color ??= brightness == Brightness.light ? Colors.black : Colors.white;
     return DTypography(
@@ -39,11 +36,7 @@ class DTypography with Diagnosticable {
         color: color,
         fontWeight: FontWeight.w500,
       ),
-      title: TextStyle(
-        fontSize: 22,
-        color: color,
-        fontWeight: FontWeight.w600,
-      ),
+      title: TextStyle(fontSize: 22, color: color, fontWeight: FontWeight.w600),
       subtitle: TextStyle(
         fontSize: 28,
         color: color,

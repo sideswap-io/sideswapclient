@@ -32,7 +32,8 @@ class RegularFlag extends StatelessWidget {
       height: height,
       margin: margin,
       padding: padding,
-      decoration: decoration ??
+      decoration:
+          decoration ??
           ShapeDecoration(
             color: const Color(0x664893BC),
             shape: RoundedRectangleBorder(

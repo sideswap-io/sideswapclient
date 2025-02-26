@@ -25,6 +25,8 @@ enum EventHash<'a> {
 pub struct Order {
     pub asset_pair: AssetPair,
     pub base_amount: u64,
+    pub price: Option<NormalFloat>,
+    pub price_tracking: Option<NormalFloat>,
     pub min_price: Option<NormalFloat>,
     pub max_price: Option<NormalFloat>,
     pub trade_dir: TradeDir,
@@ -112,6 +114,8 @@ impl EventProofs {
             ClientEvent::AddOrder {
                 asset_pair,
                 base_amount,
+                price,
+                price_tracking,
                 min_price,
                 max_price,
                 trade_dir,
@@ -125,6 +129,8 @@ impl EventProofs {
                 self.pending_orders.push_back(Order {
                     asset_pair: *asset_pair,
                     base_amount: *base_amount,
+                    price: *price,
+                    price_tracking: *price_tracking,
                     min_price: *min_price,
                     max_price: *max_price,
                     trade_dir: *trade_dir,
@@ -140,6 +146,8 @@ impl EventProofs {
             ClientEvent::EditOrder {
                 order_id,
                 base_amount,
+                price,
+                price_tracking,
                 min_price,
                 max_price,
                 receive_address,
@@ -151,6 +159,12 @@ impl EventProofs {
                     .ok_or_else(|| anyhow!("can't find order {order_id}"))?;
                 if let Some(base_amount) = base_amount {
                     order.base_amount = *base_amount;
+                }
+                if let Some(price) = price {
+                    order.price = Some(*price);
+                }
+                if let Some(price_tracking) = price_tracking {
+                    order.price_tracking = Some(*price_tracking);
                 }
                 if let Some(min_price) = min_price {
                     order.min_price = Some(*min_price);

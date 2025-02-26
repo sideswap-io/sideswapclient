@@ -33,7 +33,9 @@ class VolumeWidget extends LeafRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, covariant RenderObject renderObject) {
+    BuildContext context,
+    covariant RenderObject renderObject,
+  ) {
     VolumeRenderObject candlestickRenderObject =
         renderObject as VolumeRenderObject;
     candlestickRenderObject._candles = candles;
@@ -78,18 +80,24 @@ class VolumeRenderObject extends RenderBox {
   }
 
   /// draws a single candle
-  void paintBar(PaintingContext context, Offset offset, int index,
-      Candle candle, double range) {
+  void paintBar(
+    PaintingContext context,
+    Offset offset,
+    int index,
+    Candle candle,
+    double range,
+  ) {
     Color color = candle.isBull ? _bullColor : _bearColor;
 
     double x = size.width + offset.dx - (index + 0.5) * _barWidth;
 
     context.canvas.drawLine(
-        Offset(x, offset.dy + (_high - candle.volume) / range),
-        Offset(x, offset.dy + size.height),
-        Paint()
-          ..color = color
-          ..strokeWidth = _barWidth - 1);
+      Offset(x, offset.dy + (_high - candle.volume) / range),
+      Offset(x, offset.dy + size.height),
+      Paint()
+        ..color = color
+        ..strokeWidth = _barWidth - 1,
+    );
   }
 
   @override

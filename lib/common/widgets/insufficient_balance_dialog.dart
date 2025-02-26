@@ -9,7 +9,10 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 
 void showInsufficientBalanceDialog(
-    WidgetRef ref, BuildContext? context, String ticker) {
+  WidgetRef ref,
+  BuildContext? context,
+  String ticker,
+) {
   if (context == null) {
     logger.w('Context is null');
     return;
@@ -27,9 +30,7 @@ void showInsufficientBalanceDialog(
           width: 343,
           height: 378,
           decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
             color: SideSwapColors.blumine,
           ),
           child: Padding(
@@ -55,7 +56,9 @@ void showInsufficientBalanceDialog(
                       width: 23,
                       height: 23,
                       colorFilter: const ColorFilter.mode(
-                          SideSwapColors.bitterSweet, BlendMode.srcIn),
+                        SideSwapColors.bitterSweet,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),

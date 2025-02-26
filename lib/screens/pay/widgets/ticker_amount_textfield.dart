@@ -8,6 +8,7 @@ import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/common/utils/number_spaced_formatter.dart';
 import 'package:sideswap/desktop/main/d_payment_select_asset.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -68,7 +69,8 @@ class TickerAmountTextField extends HookConsumerWidget {
 
     final textfieldFocusNode = focusNode ?? useFocusNode();
     final visibleHintText = useState(
-        swapType == const SwapType.pegIn() && readOnly ? false : showHintText);
+      swapType == const SwapType.pegIn() && readOnly ? false : showHintText,
+    );
 
     useEffect(() {
       textfieldFocusNode.addListener(() {
@@ -95,29 +97,29 @@ class TickerAmountTextField extends HookConsumerWidget {
       Navigator.of(context, rootNavigator: true).push<void>(
         FlavorConfig.isDesktop
             ? DialogRoute(
-                barrierColor: Colors.transparent,
-                builder: (context) {
-                  return DPaymentSelectAsset(
-                    availableAssets: availableAssets,
-                    disabledAssets: disabledAssets,
-                    onSelected: (value) {
-                      onDropdownChanged?.call(value);
-                    },
-                  );
-                },
-                context: context,
-              )
+              barrierColor: Colors.transparent,
+              builder: (context) {
+                return DPaymentSelectAsset(
+                  availableAssets: availableAssets,
+                  disabledAssets: disabledAssets,
+                  onSelected: (value) {
+                    onDropdownChanged?.call(value);
+                  },
+                );
+              },
+              context: context,
+            )
             : MaterialPageRoute(
-                builder: (context) {
-                  return PaymentSelectAsset(
-                    availableAssets: availableAssets,
-                    disabledAssets: disabledAssets,
-                    onSelected: (AccountAsset value) {
-                      onDropdownChanged?.call(value);
-                    },
-                  );
-                },
-              ),
+              builder: (context) {
+                return PaymentSelectAsset(
+                  availableAssets: availableAssets,
+                  disabledAssets: disabledAssets,
+                  onSelected: (AccountAsset value) {
+                    onDropdownChanged?.call(value);
+                  },
+                );
+              },
+            ),
       );
     }
 
@@ -130,9 +132,9 @@ class TickerAmountTextField extends HookConsumerWidget {
             color: switch (showError) {
               true when !readOnly => SideSwapColors.bitterSweet,
               _ => switch (textfieldFocusNode.hasFocus) {
-                  true when !readOnly => SideSwapColors.brightTurquoise,
-                  _ => SideSwapColors.jellyBean,
-                }
+                true when !readOnly => SideSwapColors.brightTurquoise,
+                _ => SideSwapColors.jellyBean,
+              },
             },
             style: BorderStyle.solid,
             width: 1,
@@ -151,7 +153,7 @@ class TickerAmountTextField extends HookConsumerWidget {
                     Consumer(
                       builder: (context, ref, _) {
                         final icon = ref
-                            .watch(assetImageProvider)
+                            .watch(assetImageRepositoryProvider)
                             .getSmallImage(dropdownValue.assetId);
 
                         return icon;
@@ -159,26 +161,27 @@ class TickerAmountTextField extends HookConsumerWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 8),
-                      child: (showAccountsInPopup)
-                          ? GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap:
-                                  dropdownReadOnly ? null : showAccountsPopup,
-                              child: IgnorePointer(
-                                child: TickerAmountDropdown(
-                                  dropdownValue: dropdownValue,
-                                  onDropdownChanged: onDropdownChanged,
-                                  dropdownReadOnly: dropdownReadOnly,
-                                  availableAssets: availableAssets,
+                      child:
+                          (showAccountsInPopup)
+                              ? GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap:
+                                    dropdownReadOnly ? null : showAccountsPopup,
+                                child: IgnorePointer(
+                                  child: TickerAmountDropdown(
+                                    dropdownValue: dropdownValue,
+                                    onDropdownChanged: onDropdownChanged,
+                                    dropdownReadOnly: dropdownReadOnly,
+                                    availableAssets: availableAssets,
+                                  ),
                                 ),
+                              )
+                              : TickerAmountDropdown(
+                                dropdownValue: dropdownValue,
+                                onDropdownChanged: onDropdownChanged,
+                                dropdownReadOnly: dropdownReadOnly,
+                                availableAssets: availableAssets,
                               ),
-                            )
-                          : TickerAmountDropdown(
-                              dropdownValue: dropdownValue,
-                              onDropdownChanged: onDropdownChanged,
-                              dropdownReadOnly: dropdownReadOnly,
-                              availableAssets: availableAssets,
-                            ),
                     ),
                   ],
                 ),
@@ -193,16 +196,19 @@ class TickerAmountTextField extends HookConsumerWidget {
                       textAlign: TextAlign.end,
                       style: textFieldStyle,
                       cursorColor: Colors.white,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       inputFormatters: [
                         CommaTextInputFormatter(),
                         if (assetPrecision == 0) ...[
                           FilteringTextInputFormatter.deny(
-                              RegExp('[\\-|,\\ .A-Za-z]')),
+                            RegExp('[\\-|,\\ .A-Za-z]'),
+                          ),
                         ] else ...[
                           FilteringTextInputFormatter.deny(
-                              RegExp('[\\-|,\\ ]A-Za-z')),
+                            RegExp('[\\-|,\\ ]A-Za-z'),
+                          ),
                         ],
                         DecimalTextInputFormatter(decimalRange: assetPrecision),
                         NumberSpacedFormatter(),
@@ -223,13 +229,11 @@ class TickerAmountTextField extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
-          Expanded(
-            child: Container(),
-          ),
+          Expanded(child: Container()),
         ],
       ),
     );
@@ -265,72 +269,99 @@ class TickerAmountDropdown extends HookConsumerWidget {
           isExpanded: true,
           icon: switch (dropdownReadOnly) {
             true => const SizedBox(),
-            _ => const Icon(
-                Icons.keyboard_arrow_down,
-                color: Colors.white,
-              ),
+            _ => const Icon(Icons.keyboard_arrow_down, color: Colors.white),
           },
           dropdownColor: SideSwapColors.jellyBean,
           style: dropdownTextStyle,
           onChanged: switch (dropdownReadOnly) {
             true => null,
             _ => (value) {
-                return switch (value) {
-                  final value? => onDropdownChanged?.call(value),
-                  _ => () {}(),
-                };
-              },
+              return switch (value) {
+                final value? => onDropdownChanged?.call(value),
+                _ => () {}(),
+              };
+            },
           },
           disabledHint: switch (dropdownReadOnly) {
             true => Row(
-                children: [
-                  Expanded(
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final asset = ref
-                            .watch(assetsStateProvider)[dropdownValue.assetId];
+              children: [
+                Expanded(
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final asset =
+                          ref.watch(assetsStateProvider)[dropdownValue.assetId];
 
-                        return Text(
-                          switch (asset?.ticker) {
-                            final ticker? => ticker,
-                            _ => '',
-                          },
-                          textAlign: TextAlign.left,
-                          style: dropdownTextStyle,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.fade,
-                        );
-                      },
-                    ),
+                      return Text(
+                        switch (asset?.ticker) {
+                          final ticker? => ticker,
+                          _ => '',
+                        },
+                        textAlign: TextAlign.left,
+                        style: dropdownTextStyle,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.fade,
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             _ => null,
           },
           value: dropdownValue,
-          items: availableAssets.map((value) {
-            return DropdownMenuItem<AccountAsset>(
-              value: value,
-              child: Row(
-                children: [
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final asset =
-                          ref.watch(assetsStateProvider)[value.assetId];
-                      final image = ref
-                          .watch(assetImageProvider)
-                          .getSmallImage(asset?.assetId);
+          items:
+              availableAssets.map((value) {
+                return DropdownMenuItem<AccountAsset>(
+                  value: value,
+                  child: Row(
+                    children: [
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final asset =
+                              ref.watch(assetsStateProvider)[value.assetId];
+                          final image = ref
+                              .watch(assetImageRepositoryProvider)
+                              .getSmallImage(asset?.assetId);
 
-                      return image;
-                    },
+                          return image;
+                        },
+                      ),
+                      Container(width: 8),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final asset =
+                              ref.watch(assetsStateProvider)[value.assetId];
+
+                          return switch (asset?.ticker) {
+                            final ticker? => Expanded(
+                              child: Text(
+                                ticker,
+                                textAlign: TextAlign.left,
+                                style: dropdownTextStyle,
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.fade,
+                              ),
+                            ),
+                            _ => const SizedBox(),
+                          };
+                        },
+                      ),
+                    ],
                   ),
-                  Container(width: 8),
-                  Consumer(builder: (context, ref, _) {
-                    final asset = ref.watch(assetsStateProvider)[value.assetId];
+                );
+              }).toList(),
+          selectedItemBuilder: (context) {
+            return availableAssets.map((value) {
+              return Consumer(
+                builder: (context, ref, _) {
+                  final asset = ref.watch(assetsStateProvider)[value.assetId];
 
-                    return switch (asset?.ticker) {
-                      final ticker? => Expanded(
+                  return switch (asset?.ticker) {
+                    final ticker? => Row(
+                      children: [
+                        Expanded(
                           child: Text(
                             ticker,
                             textAlign: TextAlign.left,
@@ -340,34 +371,8 @@ class TickerAmountDropdown extends HookConsumerWidget {
                             overflow: TextOverflow.fade,
                           ),
                         ),
-                      _ => const SizedBox(),
-                    };
-                  }),
-                ],
-              ),
-            );
-          }).toList(),
-          selectedItemBuilder: (context) {
-            return availableAssets.map((value) {
-              return Consumer(
-                builder: (context, ref, _) {
-                  final asset = ref.watch(assetsStateProvider)[value.assetId];
-
-                  return switch (asset?.ticker) {
-                    final ticker? => Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              ticker,
-                              textAlign: TextAlign.left,
-                              style: dropdownTextStyle,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.fade,
-                            ),
-                          ),
-                        ],
-                      ),
+                      ],
+                    ),
                     _ => const SizedBox(),
                   };
                 },

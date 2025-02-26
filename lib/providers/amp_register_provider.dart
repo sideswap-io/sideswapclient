@@ -16,17 +16,9 @@ class SecuritiesItem {
   final String token;
   final String icon;
   final String? assetId;
-  SecuritiesItem({
-    required this.token,
-    required this.icon,
-    this.assetId,
-  });
+  SecuritiesItem({required this.token, required this.icon, this.assetId});
 
-  SecuritiesItem copyWith({
-    String? token,
-    String? icon,
-    String? assetId,
-  }) {
+  SecuritiesItem copyWith({String? token, String? icon, String? assetId}) {
     return SecuritiesItem(
       token: token ?? this.token,
       icon: icon ?? this.icon,
@@ -52,21 +44,26 @@ class SecuritiesItem {
 }
 
 @riverpod
-List<SecuritiesItem> stokrSecurities(StokrSecuritiesRef ref) {
+List<SecuritiesItem> stokrSecurities(Ref ref) {
   final assets = ref.watch(assetsStateProvider);
   return assets.values
-      .where((element) =>
-          element.hasDomainAgent() && element.domainAgent.contains('stokr.io'))
+      .where(
+        (element) =>
+            element.hasDomainAgent() &&
+            element.domainAgent.contains('stokr.io'),
+      )
       .map((e) => SecuritiesItem(token: e.ticker, assetId: e.assetId, icon: ''))
       .toList();
 }
 
 @riverpod
-List<SecuritiesItem> pegxSecurities(PegxSecuritiesRef ref) {
+List<SecuritiesItem> pegxSecurities(Ref ref) {
   final assets = ref.watch(assetsStateProvider);
   return assets.values
-      .where((element) =>
-          element.hasDomainAgent() && element.domainAgent.contains('pegx.io'))
+      .where(
+        (element) =>
+            element.hasDomainAgent() && element.domainAgent.contains('pegx.io'),
+      )
       .map((e) => SecuritiesItem(token: e.ticker, assetId: e.assetId, icon: ''))
       .toList();
 }
@@ -85,14 +82,13 @@ class StokrGaidNotifier extends _$StokrGaidNotifier {
 }
 
 @riverpod
-CheckAmpStatusProvider checkAmpStatus(CheckAmpStatusRef ref) {
+CheckAmpStatusProvider checkAmpStatus(Ref ref) {
   final loginState = ref.watch(serverLoginNotifierProvider);
   final ampId = ref.watch(ampIdNotifierProvider);
-  final pegxAssetId = ref
-      .watch(pegxSecuritiesProvider)
-      .where((e) => e.token == 'SSWP')
-      .first
-      .assetId;
+  final pegxSecurities = ref.watch(pegxSecuritiesProvider);
+
+  final sswp = pegxSecurities.where((e) => e.token == 'SSWP');
+  final pegxAssetId = sswp.isNotEmpty ? sswp.first.assetId : null;
 
   final stokrSecurities = ref.watch(stokrSecuritiesProvider);
 

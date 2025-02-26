@@ -15,7 +15,8 @@ import 'package:sideswap_notifications_platform_interface/sideswap_notifications
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(
-    FCMRemoteMessage message) async {
+  FCMRemoteMessage message,
+) async {
   logger.d('onBackground: $message');
   dynamic details = message.details;
   if (details is String) {
@@ -25,9 +26,11 @@ Future<void> _firebaseMessagingBackgroundHandler(
 
 final sideswapNotificationProvider = AutoDisposeProvider((ref) {
   final plugin = SideswapNotificationsPlugin(
-      androidPlatform: FlavorConfig.isFdroid
-          ? AndroidPlatformEnum.fdroid
-          : AndroidPlatformEnum.android);
+    androidPlatform:
+        FlavorConfig.isFdroid
+            ? AndroidPlatformEnum.fdroid
+            : AndroidPlatformEnum.android,
+  );
   return SideswapNotificationProvider(ref, plugin);
 });
 
@@ -58,17 +61,16 @@ class SideswapNotificationProvider {
   final _delayedNotifications = <FCMPayload>[];
 
   void _handleIncomingNotification(
-      IncomingNotificationType type, FCMRemoteMessage message) {
+    IncomingNotificationType type,
+    FCMRemoteMessage message,
+  ) {
     dynamic details = message.details;
     if (details is String) {
       ref.read(walletProvider).gotPushMessage(details);
     }
 
     final messageJson = {
-      'notification': {
-        'body': message.body,
-        'title': message.title,
-      },
+      'notification': {'body': message.body, 'title': message.title},
       'data': message.data,
     };
 
@@ -120,8 +122,9 @@ class SideswapNotificationProvider {
     if (transItem.tx.hasTxid()) {
       try {
         final txid = transItem.tx.txid;
-        final fcmPayload =
-            _delayedNotifications.firstWhere((e) => e.txid == txid);
+        final fcmPayload = _delayedNotifications.firstWhere(
+          (e) => e.txid == txid,
+        );
 
         logger.d('Delayed found: ${transItem.toDebugString()}');
         _onNotificationData(fcmPayload);
@@ -135,8 +138,9 @@ class SideswapNotificationProvider {
     if (transItem.peg.isPegIn) {
       try {
         final txid = transItem.peg.txidSend;
-        final fcmPayload =
-            _delayedNotifications.firstWhere((e) => e.txid == txid);
+        final fcmPayload = _delayedNotifications.firstWhere(
+          (e) => e.txid == txid,
+        );
 
         logger.d('Delayed found: ${transItem.toDebugString()}');
         _onNotificationData(fcmPayload);
@@ -190,11 +194,7 @@ class SideswapNotificationProvider {
       final payload = FCMPayload(type: payloadType, txid: pegDetected.txHash);
       final title = fcmMessage.notification?.title ?? '';
       final body = fcmMessage.notification?.body ?? '';
-      await _onDefaultNotification(
-        title: title,
-        body: body,
-        payload: payload,
-      );
+      await _onDefaultNotification(title: title, body: body, payload: payload);
       return;
     }
 
@@ -202,10 +202,7 @@ class SideswapNotificationProvider {
     if (orderCancelled != null) {
       final title = fcmMessage.notification?.title ?? '';
       final body = fcmMessage.notification?.body ?? '';
-      await _onDefaultNotification(
-        title: title,
-        body: body,
-      );
+      await _onDefaultNotification(title: title, body: body);
       return;
     }
 
@@ -324,35 +321,38 @@ class SideswapNotificationProvider {
 
     await showDialog<void>(
       context: ref.read(navigatorKeyProvider).currentContext!,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        title: receivedNotification.title != null
-            ? Text(receivedNotification.title ?? '')
-            : null,
-        content: receivedNotification.body != null
-            ? Text(receivedNotification.body ?? '')
-            : null,
-        actions: <Widget>[
-          CupertinoDialogAction(
-            isDefaultAction: false,
-            onPressed: () async {
-              logger.d('Ok pressed');
-              logger.d('Payload: ${receivedNotification.payload}');
-              // handle iOS notification here
+      builder:
+          (BuildContext context) => CupertinoAlertDialog(
+            title:
+                receivedNotification.title != null
+                    ? Text(receivedNotification.title ?? '')
+                    : null,
+            content:
+                receivedNotification.body != null
+                    ? Text(receivedNotification.body ?? '')
+                    : null,
+            actions: <Widget>[
+              CupertinoDialogAction(
+                isDefaultAction: false,
+                onPressed: () async {
+                  logger.d('Ok pressed');
+                  logger.d('Payload: ${receivedNotification.payload}');
+                  // handle iOS notification here
 
-              Navigator.of(context, rootNavigator: true).pop();
-            },
-            child: const Text('Ok'),
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+                child: const Text('Ok'),
+              ),
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () async {
+                  logger.d('Cancel pressed');
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+            ],
           ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () async {
-              logger.d('Cancel pressed');
-              Navigator.of(context, rootNavigator: true).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -364,7 +364,9 @@ class SideswapNotificationProvider {
   }) async {
     final notificationDetails = getNotificationDetails(type: type);
 
-    await ref.read(localNotificationsProvider).showNotification(
+    await ref
+        .read(localNotificationsProvider)
+        .showNotification(
           title ?? '',
           body ?? '',
           notificationDetails: notificationDetails,

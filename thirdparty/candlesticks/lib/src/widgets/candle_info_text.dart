@@ -4,10 +4,7 @@ import 'package:candlesticks/src/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
 
 class CandleInfoText extends StatelessWidget {
-  const CandleInfoText({
-    super.key,
-    required this.candle,
-  });
+  const CandleInfoText({super.key, required this.candle});
 
   final Candle candle;
 
@@ -28,32 +25,44 @@ class CandleInfoText extends StatelessWidget {
         children: <TextSpan>[
           const TextSpan(text: "   O: "),
           TextSpan(
-              text: HelperFunctions.priceToString(candle.open),
-              style: TextStyle(
-                  color: candle.isBull
+            text: HelperFunctions.priceToString(candle.open),
+            style: TextStyle(
+              color:
+                  candle.isBull
                       ? Theme.of(context).primaryGreen
-                      : Theme.of(context).primaryRed)),
+                      : Theme.of(context).primaryRed,
+            ),
+          ),
           const TextSpan(text: "   H: "),
           TextSpan(
-              text: HelperFunctions.priceToString(candle.high),
-              style: TextStyle(
-                  color: candle.isBull
+            text: HelperFunctions.priceToString(candle.high),
+            style: TextStyle(
+              color:
+                  candle.isBull
                       ? Theme.of(context).primaryGreen
-                      : Theme.of(context).primaryRed)),
+                      : Theme.of(context).primaryRed,
+            ),
+          ),
           const TextSpan(text: "   L: "),
           TextSpan(
-              text: HelperFunctions.priceToString(candle.low),
-              style: TextStyle(
-                  color: candle.isBull
+            text: HelperFunctions.priceToString(candle.low),
+            style: TextStyle(
+              color:
+                  candle.isBull
                       ? Theme.of(context).primaryGreen
-                      : Theme.of(context).primaryRed)),
+                      : Theme.of(context).primaryRed,
+            ),
+          ),
           const TextSpan(text: "   C: "),
           TextSpan(
-              text: HelperFunctions.priceToString(candle.close),
-              style: TextStyle(
-                  color: candle.isBull
+            text: HelperFunctions.priceToString(candle.close),
+            style: TextStyle(
+              color:
+                  candle.isBull
                       ? Theme.of(context).primaryGreen
-                      : Theme.of(context).primaryRed)),
+                      : Theme.of(context).primaryRed,
+            ),
+          ),
           const TextSpan(text: "\n\n"),
           const TextSpan(text: "Volume: "),
           TextSpan(text: candle.volume.toString()),

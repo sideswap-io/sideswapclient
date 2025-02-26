@@ -6,7 +6,7 @@ part of 'common_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$isAddrTypeValidHash() => r'b20a6bb2339b315b4aa5a619eed521f69204a0f4';
+String _$isAddrTypeValidHash() => r'406cf7c3edbc038973a5cba2cb12b2cd9fc49335';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -39,24 +39,15 @@ class IsAddrTypeValidFamily extends Family<bool> {
   const IsAddrTypeValidFamily();
 
   /// See also [isAddrTypeValid].
-  IsAddrTypeValidProvider call(
-    String addr,
-    AddrType addrType,
-  ) {
-    return IsAddrTypeValidProvider(
-      addr,
-      addrType,
-    );
+  IsAddrTypeValidProvider call(String addr, AddrType addrType) {
+    return IsAddrTypeValidProvider(addr, addrType);
   }
 
   @override
   IsAddrTypeValidProvider getProviderOverride(
     covariant IsAddrTypeValidProvider provider,
   ) {
-    return call(
-      provider.addr,
-      provider.addrType,
-    );
+    return call(provider.addr, provider.addrType);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -77,27 +68,21 @@ class IsAddrTypeValidFamily extends Family<bool> {
 /// See also [isAddrTypeValid].
 class IsAddrTypeValidProvider extends AutoDisposeProvider<bool> {
   /// See also [isAddrTypeValid].
-  IsAddrTypeValidProvider(
-    String addr,
-    AddrType addrType,
-  ) : this._internal(
-          (ref) => isAddrTypeValid(
-            ref as IsAddrTypeValidRef,
-            addr,
-            addrType,
-          ),
-          from: isAddrTypeValidProvider,
-          name: r'isAddrTypeValidProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$isAddrTypeValidHash,
-          dependencies: IsAddrTypeValidFamily._dependencies,
-          allTransitiveDependencies:
-              IsAddrTypeValidFamily._allTransitiveDependencies,
-          addr: addr,
-          addrType: addrType,
-        );
+  IsAddrTypeValidProvider(String addr, AddrType addrType)
+    : this._internal(
+        (ref) => isAddrTypeValid(ref as IsAddrTypeValidRef, addr, addrType),
+        from: isAddrTypeValidProvider,
+        name: r'isAddrTypeValidProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$isAddrTypeValidHash,
+        dependencies: IsAddrTypeValidFamily._dependencies,
+        allTransitiveDependencies:
+            IsAddrTypeValidFamily._allTransitiveDependencies,
+        addr: addr,
+        addrType: addrType,
+      );
 
   IsAddrTypeValidProvider._internal(
     super._createNotifier, {
@@ -114,9 +99,7 @@ class IsAddrTypeValidProvider extends AutoDisposeProvider<bool> {
   final AddrType addrType;
 
   @override
-  Override overrideWith(
-    bool Function(IsAddrTypeValidRef provider) create,
-  ) {
+  Override overrideWith(bool Function(IsAddrTypeValidRef provider) create) {
     return ProviderOverride(
       origin: this,
       override: IsAddrTypeValidProvider._internal(
@@ -154,6 +137,8 @@ class IsAddrTypeValidProvider extends AutoDisposeProvider<bool> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin IsAddrTypeValidRef on AutoDisposeProviderRef<bool> {
   /// The parameter `addr` of this provider.
   String get addr;
@@ -171,5 +156,6 @@ class _IsAddrTypeValidProviderElement extends AutoDisposeProviderElement<bool>
   @override
   AddrType get addrType => (origin as IsAddrTypeValidProvider).addrType;
 }
+
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

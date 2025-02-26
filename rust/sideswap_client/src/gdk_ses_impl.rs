@@ -5,17 +5,19 @@ use crate::{
     worker::{self, AccountId},
 };
 use anyhow::{anyhow, bail, ensure};
-use elements::AssetId;
 use elements::{
     hashes::Hash, pset::PartiallySignedTransaction, secp256k1_zkp::global::SECP256K1, TxOutSecrets,
 };
+use elements::{AssetId, EcdsaSighashType};
 use gdk_ses::HwData;
 use log::{debug, info, warn};
+use secp256k1::SecretKey;
 use serde_bytes::ByteBuf;
 use sideswap_api::Asset;
 use sideswap_common::{
     b64,
     env::Env,
+    green_backend::GREEN_DUMMY_SIG,
     network::Network,
     pset::p2pkh_script,
     pset_blind::get_blinding_nonces,
@@ -1027,17 +1029,6 @@ pub fn convert_tx(tx: &gdk_json::Transaction) -> models::Transaction {
     }
 }
 
-pub fn get_redeem_script(utxo: &gdk_json::UnspentOutput) -> elements::Script {
-    if let Some(public_key) = utxo.public_key.as_ref() {
-        sideswap_common::pset::p2shwpkh_redeem_script(public_key)
-    } else {
-        elements::script::Builder::new()
-            .push_int(0)
-            .push_slice(&elements::WScriptHash::hash(utxo.prevout_script.as_bytes())[..])
-            .into_script()
-    }
-}
-
 unsafe fn load_transactions(
     data: &GdkSesImpl,
 ) -> Result<Vec<gdk_json::Transaction>, anyhow::Error> {
@@ -1188,6 +1179,62 @@ unsafe fn get_selected_utxos(
     Ok(inputs)
 }
 
+struct TxSize {
+    input_count: i32,
+    output_count: i32,
+    size: i64,
+    vsize: i64,
+    discount_vsize: i64,
+    network_fee: i64,
+    fee_per_byte: f64,
+}
+
+fn get_tx_size(
+    mut tx: elements::Transaction,
+    policy_asset: &AssetId,
+    utxos: &[gdk_json::UnspentOutput],
+) -> TxSize {
+    let network_fee = tx.fee_in(*policy_asset);
+
+    let tx_copy = tx.clone();
+    let mut sighash_cache = elements::sighash::SighashCache::new(&tx_copy);
+
+    let bytes_to_grind = 0; // Upper bound (because Jade can't grind)
+    let secret_key = SecretKey::from_slice(&[0xcd; 32]).expect("must not fail");
+
+    for (input_index, input) in tx.input.iter_mut().enumerate() {
+        let utxo = utxos.iter().find(|utxo| {
+            utxo.txhash == input.previous_output.txid && utxo.vout == input.previous_output.vout
+        });
+
+        if let Some(utxo) = utxo {
+            let redeem_script = get_redeem_script(&utxo);
+            input.script_sig = elements::script::Builder::new()
+                .push_slice(redeem_script.as_bytes())
+                .into_script();
+
+            input.witness.script_witness = get_witness(
+                &mut sighash_cache,
+                utxo,
+                input_index,
+                elements::EcdsaSighashType::All,
+                &secret_key,
+                bytes_to_grind,
+            );
+        }
+    }
+
+    TxSize {
+        input_count: tx.input.len() as i32,
+        output_count: tx.output.len() as i32,
+        size: tx.size() as i64,
+        vsize: tx.vsize() as i64,
+        discount_vsize: tx.discount_vsize() as i64,
+        network_fee: network_fee as i64,
+        fee_per_byte: network_fee as f64 / tx.discount_vsize() as f64,
+    }
+}
+
 unsafe fn try_create_tx(
     data: &mut GdkSesImpl,
     cache: &mut CreatedTxCache,
@@ -1282,10 +1329,11 @@ unsafe fn try_create_tx(
     }
 
     let inputs = used_utxos
-        .into_iter()
+        .iter()
         .map(|utxo| {
             let script_pub_key = utxo
                 .script
+                .clone()
                 .unwrap_or_else(|| p2pkh_script(&utxo.public_key.unwrap()));
 
             send_tx::pset::PsetInput {
@@ -1317,7 +1365,18 @@ unsafe fn try_create_tx(
     })?;
 
     let tx = pset.extract_tx()?;
+
     let id = tx.txid().to_string();
+
+    let TxSize {
+        input_count,
+        output_count,
+        size,
+        vsize,
+        discount_vsize,
+        network_fee,
+        fee_per_byte,
+    } = get_tx_size(tx, &data.policy_asset, &used_utxos);
 
     cache.created_txs.insert(
         id.clone(),
@@ -1336,13 +1395,14 @@ unsafe fn try_create_tx(
     Ok(ffi::proto::CreatedTx {
         id,
         req,
-        input_count: tx.input.len() as i32,
-        output_count: tx.output.len() as i32,
-        size: tx.size() as i64,
-        vsize: tx.vsize() as i64,
-        network_fee: network_fee as i64,
+        input_count,
+        output_count,
+        size,
+        vsize,
+        discount_vsize,
+        network_fee,
         server_fee: None,
-        fee_per_byte: network_fee as f64 / tx.vsize() as f64,
+        fee_per_byte,
         addressees,
     })
 }
@@ -1355,7 +1415,7 @@ unsafe fn try_create_payjoin(
 ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
     let utxos = try_get_unspent_outputs(data)?.unspent_outputs;
 
-    let utxos = if req.utxos.is_empty() {
+    let all_utxos = if req.utxos.is_empty() {
         utxos
             .into_values()
             .flat_map(|utxos| utxos.into_iter())
@@ -1364,15 +1424,16 @@ unsafe fn try_create_payjoin(
         get_selected_utxos(utxos, &req.utxos)?
     };
 
-    ensure!(utxos
+    ensure!(all_utxos
         .iter()
         .all(|utxo| utxo.public_key.is_some() || utxo.script.is_some()));
 
-    let utxos = utxos
-        .into_iter()
+    let utxos = all_utxos
+        .iter()
         .map(|utxo| {
             let script_pub_key = utxo
                 .script
+                .clone()
                 .unwrap_or_else(|| p2pkh_script(&utxo.public_key.unwrap()));
             sideswap_payjoin::Utxo {
                 txid: utxo.txhash,
@@ -1426,7 +1487,18 @@ unsafe fn try_create_payjoin(
     )?;
 
     let tx = resp.pset.extract_tx()?;
+
     let id = tx.txid().to_string();
+
+    let TxSize {
+        input_count,
+        output_count,
+        size,
+        vsize,
+        discount_vsize,
+        network_fee,
+        fee_per_byte,
+    } = get_tx_size(tx, &data.policy_asset, &all_utxos);
 
     cache.created_txs.insert(
         id.clone(),
@@ -1444,13 +1516,14 @@ unsafe fn try_create_payjoin(
     Ok(ffi::proto::CreatedTx {
         id,
         req,
-        input_count: tx.input.len() as i32,
-        output_count: tx.output.len() as i32,
-        size: tx.size() as i64,
-        vsize: tx.vsize() as i64,
-        network_fee: resp.network_fee as i64,
+        input_count,
+        output_count,
+        size,
+        vsize,
+        discount_vsize,
+        network_fee,
         server_fee: Some(resp.asset_fee as i64),
-        fee_per_byte: resp.network_fee as f64 / tx.vsize() as f64,
+        fee_per_byte,
         addressees,
     })
 }
@@ -2137,4 +2210,48 @@ fn take_utxos<'a>(
         selected.push(utxo);
     }
     selected
+}
+
+pub fn get_redeem_script(utxo: &gdk_json::UnspentOutput) -> elements::Script {
+    if let Some(public_key) = utxo.public_key.as_ref() {
+        sideswap_common::pset::p2shwpkh_redeem_script(public_key)
+    } else {
+        elements::script::Builder::new()
+            .push_int(0)
+            .push_slice(&elements::WScriptHash::hash(utxo.prevout_script.as_bytes())[..])
+            .into_script()
+    }
+}
+
+pub fn get_witness(
+    sighash_cache: &mut elements::sighash::SighashCache<&elements::Transaction>,
+    utxo: &gdk_json::UnspentOutput,
+    input_index: usize,
+    sighash_type: EcdsaSighashType,
+    priv_key: &SecretKey,
+    bytes_to_grind: usize,
+) -> Vec<Vec<u8>> {
+    let value = utxo.commitment.into_inner();
+    let sighash =
+        sighash_cache.segwitv0_sighash(input_index, &utxo.prevout_script, value, sighash_type);
+    let message =
+        elements::secp256k1_zkp::Message::from_digest_slice(&sighash[..]).expect("must not fail");
+
+    let signature = SECP256K1.sign_ecdsa_grind_r(&message, &priv_key, bytes_to_grind);
+    let signature = elements_miniscript::elementssig_to_rawsig(&(signature, sighash_type));
+
+    match utxo.address_type {
+        gdk_json::AddressType::P2shP2wpkh => {
+            let pub_key = priv_key.public_key(&SECP256K1);
+            vec![signature, pub_key.serialize().to_vec()]
+        }
+        gdk_json::AddressType::P2wsh => {
+            vec![
+                vec![],
+                GREEN_DUMMY_SIG.to_vec(),
+                signature,
+                utxo.prevout_script.to_bytes(),
+            ]
+        }
+    }
 }

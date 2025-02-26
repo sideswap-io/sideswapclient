@@ -59,14 +59,15 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
                     child: Text(
                       'Regular'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: walletTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            walletTypeFlag ==
                                     const InputsWalletTypeFlagRegular()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -96,14 +97,14 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
                     child: Text(
                       'AMP'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: walletTypeFlag ==
-                                    const InputsWalletTypeFlagAmp()
+                        fontSize: 13,
+                        color:
+                            walletTypeFlag == const InputsWalletTypeFlagAmp()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -122,8 +123,9 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
 
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).addressesButtonStyle(false);
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .addressesButtonStyle(false);
 
     final walletTypeFlag = ref.watch(inputsWalletTypeFlagNotifierProvider);
 
@@ -131,14 +133,23 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
       height: 32,
       child: DButton(
         key: buttonKey,
-        style: clicked.value
-            ? buttonStyle?.merge(DButtonStyle(
-                backgroundColor: ButtonState.all(SideSwapColors.prussianBlue)))
-            : buttonStyle,
+        style:
+            clicked.value
+                ? buttonStyle?.merge(
+                  DButtonStyle(
+                    backgroundColor: ButtonState.all(
+                      SideSwapColors.prussianBlue,
+                    ),
+                  ),
+                )
+                : buttonStyle,
         onPressed: () async {
           clicked.value = true;
-          final result =
-              await showFilterMenu(context, buttonKey, walletTypeFlag);
+          final result = await showFilterMenu(
+            context,
+            buttonKey,
+            walletTypeFlag,
+          );
           (switch (result) {
             InputsWalletTypeFlag result => ref
                 .read(inputsWalletTypeFlagNotifierProvider.notifier)
@@ -160,10 +171,9 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
                   InputsWalletTypeFlagRegular() => 'Regular'.tr(),
                   InputsWalletTypeFlagAmp() => 'AMP'.tr(),
                 },
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(fontSize: 13),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(fontSize: 13),
               ),
               const SizedBox(width: 6),
               AnimatedDropdownArrow(target: clicked.value ? 1 : 0),

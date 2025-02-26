@@ -24,10 +24,7 @@ class InputsWalletTypeFlagNotifier extends _$InputsWalletTypeFlagNotifier {
 
 @freezed
 sealed class InputsTxItem with _$InputsTxItem {
-  const factory InputsTxItem({
-    String? tx,
-    int? satoshi,
-  }) = _InputsTxItem;
+  const factory InputsTxItem({String? tx, int? satoshi}) = _InputsTxItem;
 }
 
 @freezed
@@ -43,9 +40,7 @@ sealed class InputsAddressItem with _$InputsAddressItem {
 
 @freezed
 sealed class InputsItem with _$InputsItem {
-  const factory InputsItem({
-    List<InputsAddressItem>? inputs,
-  }) = _InputsItem;
+  const factory InputsItem({List<InputsAddressItem>? inputs}) = _InputsItem;
 }
 
 @riverpod

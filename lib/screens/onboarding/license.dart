@@ -10,9 +10,7 @@ import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class LicenseTerms extends ConsumerWidget {
-  const LicenseTerms({
-    super.key,
-  });
+  const LicenseTerms({super.key});
 
   Future<String> loadLicense() async {
     return await rootBundle.loadString('LICENSE');
@@ -48,7 +46,11 @@ class LicenseTerms extends ConsumerWidget {
                 shadowColor: const Color(0xFF1E6389),
                 child: Padding(
                   padding: const EdgeInsets.only(
-                      left: 8, right: 8, top: 8, bottom: 8),
+                    left: 8,
+                    right: 8,
+                    top: 8,
+                    bottom: 8,
+                  ),
                   child: SingleChildScrollView(
                     child: Center(
                       child: FutureBuilder(
@@ -94,9 +96,10 @@ class LicenseTerms extends ConsumerWidget {
                   onPressed: () async {
                     ref.read(walletProvider).setLicenseAccepted();
                     return switch (firstLaunchState) {
-                      FirstLaunchStateCreateWallet() => await ref
-                          .read(walletProvider)
-                          .setReviewLicenseCreateWallet(),
+                      FirstLaunchStateCreateWallet() =>
+                        await ref
+                            .read(walletProvider)
+                            .setReviewLicenseCreateWallet(),
                       _ => ref.read(walletProvider).startMnemonicImport(),
                     };
                   },

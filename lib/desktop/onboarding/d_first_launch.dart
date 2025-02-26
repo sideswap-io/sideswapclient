@@ -43,88 +43,87 @@ class DFirstLaunch extends HookConsumerWidget {
           useRootNavigator: false,
           barrierDismissible: false,
           context: ref.read(navigatorKeyProvider).currentContext!,
-          builder: (_) => DContentDialog(
-            constraints: const BoxConstraints(maxWidth: 628),
-            title: Center(child: Text('Select env'.tr())),
-            content: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Changes will take effect after application restart.'
-                            .tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
+          builder:
+              (_) => DContentDialog(
+                constraints: const BoxConstraints(maxWidth: 628),
+                title: Center(child: Text('Select env'.tr())),
+                content: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Changes will take effect after application restart.'
+                                .tr(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ...envValues().map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Consumer(
+                          builder: (context, ref, _) {
+                            final selectedEnv = ref.watch(selectedEnvProvider);
+
+                            return DRadioButton(
+                              checked: e == selectedEnv,
+                              semanticLabel: envName(e),
+                              content: Text(envName(e)),
+                              onChanged: (value) async {
+                                await ref
+                                    .read(selectedEnvProvider.notifier)
+                                    .setSelectedEnv(e);
+                              },
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                ...envValues().map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final selectedEnv = ref.watch(selectedEnvProvider);
-
-                        return DRadioButton(
-                          checked: e == selectedEnv,
-                          semanticLabel: envName(e),
-                          content: Text(envName(e)),
-                          onChanged: (value) async {
-                            await ref
-                                .read(selectedEnvProvider.notifier)
-                                .setSelectedEnv(e);
-                          },
-                        );
-                      },
                     ),
+                  ],
+                ),
+                actions: [
+                  DCustomTextBigButton(
+                    width: 266,
+                    child: Consumer(
+                      builder: ((context, ref, _) {
+                        final env = ref.watch(envProvider);
+                        final selectedEnv = ref.watch(selectedEnvProvider);
+                        return env == selectedEnv
+                            ? Text('CLOSE'.tr())
+                            : Text('SWITCH AND EXIT'.tr());
+                      }),
+                    ),
+                    onPressed: () {
+                      final selectedEnv = ref.read(selectedEnvProvider);
+                      ref.read(envProvider.notifier).setEnv(selectedEnv);
+
+                      // and also reset network settings model
+                      ref
+                          .read(networkSettingsNotifierProvider.notifier)
+                          .setModel(const NetworkSettingsModelEmpty());
+
+                      exit(0);
+                    },
                   ),
-                ),
-              ],
-            ),
-            actions: [
-              DCustomTextBigButton(
-                width: 266,
-                child: Consumer(
-                  builder: ((context, ref, _) {
-                    final env = ref.watch(envProvider);
-                    final selectedEnv = ref.watch(selectedEnvProvider);
-                    return env == selectedEnv
-                        ? Text('CLOSE'.tr())
-                        : Text('SWITCH AND EXIT'.tr());
-                  }),
-                ),
-                onPressed: () {
-                  final selectedEnv = ref.read(selectedEnvProvider);
-                  ref.read(envProvider.notifier).setEnv(selectedEnv);
-
-                  // and also reset network settings model
-                  ref
-                      .read(networkSettingsNotifierProvider.notifier)
-                      .setModel(const NetworkSettingsModelEmpty());
-
-                  exit(0);
-                },
+                  DCustomFilledBigButton(
+                    child: Text('CANCEL'.tr()),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ref.read(walletProvider).goBack();
+                    },
+                  ),
+                ],
               ),
-              DCustomFilledBigButton(
-                child: Text('CANCEL'.tr()),
-                onPressed: () {
-                  Navigator.pop(context);
-                  ref.read(walletProvider).goBack();
-                },
-              ),
-            ],
-          ),
         );
       }
     });
@@ -162,38 +161,36 @@ class DFirstLaunch extends HookConsumerWidget {
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
                   'Settlement infrastructure for a digital era'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
               ...switch (serverLoginState) {
                 ServerLoginStateError() => [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 48),
-                      child: Text(
-                        'Connection issues detected. Check your network connection and restart the app.'
-                            .tr(),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(color: SideSwapColors.bitterSweet),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 48),
+                    child: Text(
+                      'Connection issues detected. Check your network connection and restart the app.'
+                          .tr(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: SideSwapColors.bitterSweet,
                       ),
                     ),
-                  ],
+                  ),
+                ],
                 _ => [const SizedBox()],
               },
               Padding(
                 padding: EdgeInsets.only(
-                    top: serverLoginState is ServerLoginStateError ? 78 : 126),
+                  top: serverLoginState is ServerLoginStateError ? 78 : 126,
+                ),
                 child: DCustomFilledBigButton(
                   onPressed: () async {
                     ref
                         .read(firstLaunchStateNotifierProvider.notifier)
                         .setFirstLaunchState(
-                            const FirstLaunchStateCreateWallet());
+                          const FirstLaunchStateCreateWallet(),
+                        );
 
                     await ref
                         .read(walletProvider)
@@ -215,7 +212,8 @@ class DFirstLaunch extends HookConsumerWidget {
                     ref
                         .read(firstLaunchStateNotifierProvider.notifier)
                         .setFirstLaunchState(
-                            const FirstLaunchStateImportWallet());
+                          const FirstLaunchStateImportWallet(),
+                        );
                   },
                   child: Text('IMPORT WALLET'.tr()),
                 ),
@@ -245,9 +243,7 @@ class DFirstLaunch extends HookConsumerWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(
-                          width: 10,
-                        ),
+                        const SizedBox(width: 10),
                         const Text('JADE'),
                         const Spacer(),
                       ],
@@ -267,9 +263,7 @@ class DFirstLaunch extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ...switch (serverLoginState) {
-                  ServerLoginStateError() => [
-                      const DeleteWalletButton(),
-                    ],
+                  ServerLoginStateError() => [const DeleteWalletButton()],
                   _ => [const SizedBox()],
                 },
                 const SizedBox(width: 8),
@@ -294,30 +288,29 @@ class DeleteWalletButton extends ConsumerWidget {
       width: 170,
       height: 39,
       child: DCustomTextBigButton(
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: SvgPicture.asset('assets/delete.svg'),
-              ),
-              const SizedBox(width: 10),
-              Text('Delete wallet'.tr()),
-            ],
-          ),
-          onPressed: () {
-            ref
-                .read(launchPageDeleteWalletNotifierProvider.notifier)
-                .setState(const LaunchPageDeleteWalletStateDelete());
-          }),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset('assets/delete.svg'),
+            ),
+            const SizedBox(width: 10),
+            Text('Delete wallet'.tr()),
+          ],
+        ),
+        onPressed: () {
+          ref
+              .read(launchPageDeleteWalletNotifierProvider.notifier)
+              .setState(const LaunchPageDeleteWalletStateDelete());
+        },
+      ),
     );
   }
 }
 
 class DFirstLaunchNetworkSettingsButton extends ConsumerWidget {
-  const DFirstLaunchNetworkSettingsButton({
-    super.key,
-  });
+  const DFirstLaunchNetworkSettingsButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -325,25 +318,26 @@ class DFirstLaunchNetworkSettingsButton extends ConsumerWidget {
       width: 170,
       height: 39,
       child: DCustomTextBigButton(
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: SvgPicture.asset('assets/network.svg'),
-              ),
-              const SizedBox(width: 10),
-              Text('Network'.tr()),
-            ],
-          ),
-          onPressed: () async {
-            await showDialog<void>(
-              useRootNavigator: false,
-              barrierDismissible: false,
-              context: context,
-              builder: (_) => const DNetworkAccessOnboarding(),
-            );
-          }),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset('assets/network.svg'),
+            ),
+            const SizedBox(width: 10),
+            Text('Network'.tr()),
+          ],
+        ),
+        onPressed: () async {
+          await showDialog<void>(
+            useRootNavigator: false,
+            barrierDismissible: false,
+            context: context,
+            builder: (_) => const DNetworkAccessOnboarding(),
+          );
+        },
+      ),
     );
   }
 }
@@ -351,10 +345,7 @@ class DFirstLaunchNetworkSettingsButton extends ConsumerWidget {
 class FirstLaunchClickableLogo extends StatelessWidget {
   final VoidCallback? onPressed;
 
-  const FirstLaunchClickableLogo({
-    super.key,
-    this.onPressed,
-  });
+  const FirstLaunchClickableLogo({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -365,16 +356,13 @@ class FirstLaunchClickableLogo extends StatelessWidget {
       hint: 'Change environment',
       child: FocusableActionDetector(
         actions: <Type, Action<Intent>>{
-          ActivateIntent:
-              CallbackAction<Intent>(onInvoke: (intent) => onPressed?.call()),
+          ActivateIntent: CallbackAction<Intent>(
+            onInvoke: (intent) => onPressed?.call(),
+          ),
         },
         child: GestureDetector(
           onTap: onPressed,
-          child: SvgPicture.asset(
-            'assets/logo.svg',
-            width: 110,
-            height: 108,
-          ),
+          child: SvgPicture.asset('assets/logo.svg', width: 110, height: 108),
         ),
       ),
     );

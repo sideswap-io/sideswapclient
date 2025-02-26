@@ -1,11 +1,16 @@
+use std::{str::FromStr, sync::Arc};
+
 use elements::{Address, AssetId};
 use sideswap_api::{
     mkt::{AssetPair, AssetType, OrdId, QuoteId, TradeDir},
     Asset,
 };
 use sideswap_common::{
-    channel_helpers::UncheckedUnboundedSender, dealer_ticker::dealer_ticker_to_asset_id,
-    exchange_pair::ExchangePair, network::Network, types::asset_int_amount_,
+    channel_helpers::UncheckedUnboundedSender,
+    dealer_ticker::{DealerTicker, TickerLoader},
+    exchange_pair::ExchangePair,
+    types::asset_int_amount_,
+    verify,
 };
 use sideswap_types::{normal_float::NormalFloat, timestamp_ms::TimestampMs};
 use tokio::sync::{mpsc::UnboundedSender, oneshot};
@@ -17,7 +22,7 @@ use super::{
 
 #[derive(Clone)]
 pub struct Controller {
-    network: Network,
+    ticker_loader: Arc<TickerLoader>,
     command_sender: UnboundedSender<ClientCommand>,
 }
 
@@ -31,11 +36,23 @@ async fn recv_res<T>(receiver: oneshot::Receiver<Result<T, super::Error>>) -> Re
 }
 
 impl Controller {
-    pub fn new(network: Network, command_sender: UnboundedSender<ClientCommand>) -> Controller {
+    pub fn new(
+        ticker_loader: Arc<TickerLoader>,
+        command_sender: UnboundedSender<ClientCommand>,
+    ) -> Controller {
         Controller {
-            network,
+            ticker_loader,
             command_sender,
         }
+    }
+
+    pub fn parse_ticker(&self, value: &str) -> Result<DealerTicker, Error> {
+        let ticker = DealerTicker::from_str(value)?;
+        verify!(
+            self.ticker_loader.has_ticker(ticker),
+            Error::UnknownTicker(value.to_owned())
+        );
+        Ok(ticker)
     }
 
     fn send_command(&self, command: ClientCommand) {
@@ -152,9 +169,9 @@ impl Controller {
             TradeDir::Sell => exchange_pair.quote,
             TradeDir::Buy => exchange_pair.base,
         };
-        let recv_asset_id = dealer_ticker_to_asset_id(self.network, recv_asset);
+        let recv_asset_id = self.ticker_loader.asset_id(recv_asset);
 
-        let receive_address = self.resolve_recv_address(recv_asset_id).await?;
+        let receive_address = self.resolve_recv_address(*recv_asset_id).await?;
         let change_address = self.new_address().await?;
 
         let (res_sender, res_receiver) = oneshot::channel();
@@ -179,7 +196,7 @@ impl Controller {
         price: Option<NormalFloat>,
     ) -> Result<OwnOrder, Error> {
         let order = self.own_order(order_id).await?;
-        let base_precision = order.exchange_pair.base.asset_precision();
+        let base_precision = self.ticker_loader.precision(order.exchange_pair.base);
         let base_amount = base_amount.map(|amount| asset_int_amount_(amount, base_precision));
 
         let (res_sender, res_receiver) = oneshot::channel();
@@ -272,8 +289,8 @@ impl Controller {
         private_id: Option<Box<String>>,
     ) -> Result<StartQuotesResp, Error> {
         let asset_pair = AssetPair {
-            base: dealer_ticker_to_asset_id(self.network, exchange_pair.base),
-            quote: dealer_ticker_to_asset_id(self.network, exchange_pair.quote),
+            base: *self.ticker_loader.asset_id(exchange_pair.base),
+            quote: *self.ticker_loader.asset_id(exchange_pair.quote),
         };
 
         let base_trade_dir = trade_dir.base_trade_dir(asset_type);
@@ -284,7 +301,7 @@ impl Controller {
         let change_address = self.new_address().await?;
 
         let asset = exchange_pair.asset(asset_type);
-        let asset_precision = asset.asset_precision();
+        let asset_precision = self.ticker_loader.precision(asset);
         let amount = try_convert_asset_amount(amount, asset_precision)?;
 
         let (res_sender, res_receiver) = oneshot::channel();

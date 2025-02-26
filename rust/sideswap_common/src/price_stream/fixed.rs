@@ -24,7 +24,7 @@ pub async fn get_price(client: &HttpClient, market: &Market) -> Result<PricePair
                 client,
                 ExchangePair {
                     base: DealerTicker::LBTC,
-                    quote: DealerTicker::USDt,
+                    quote: DealerTicker::USDT,
                 },
             )
             .await?;
@@ -37,7 +37,7 @@ pub async fn get_price(client: &HttpClient, market: &Market) -> Result<PricePair
             })
         }
 
-        DealerTicker::USDt => Ok(PricePair {
+        DealerTicker::USDT => Ok(PricePair {
             bid: params.bid,
             ask: params.ask,
         }),

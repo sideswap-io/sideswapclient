@@ -78,19 +78,21 @@ class DContentDialog extends ConsumerWidget {
                     }
                     return Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: actions!.map((e) {
-                        final index = actions!.indexOf(e);
-                        return Expanded(
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.only(
-                              end: index != (actions!.length - 1)
-                                  ? style.actionsSpacing ?? 3
-                                  : 0,
-                            ),
-                            child: e,
-                          ),
-                        );
-                      }).toList(),
+                      children:
+                          actions!.map((e) {
+                            final index = actions!.indexOf(e);
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsetsDirectional.only(
+                                  end:
+                                      index != (actions!.length - 1)
+                                          ? style.actionsSpacing ?? 3
+                                          : 0,
+                                ),
+                                child: e,
+                              ),
+                            );
+                          }).toList(),
                     );
                   }(),
                 ),
@@ -124,22 +126,24 @@ class DContentDialogTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleHeight = height == null
-        ? content == null
-            ? 36.0
-            : 44.0
-        : height! < 28
+    final titleHeight =
+        height == null
+            ? content == null
+                ? 36.0
+                : 44.0
+            : height! < 28
             ? 28.0
             : height!;
     return SizedBox(
-        height: titleHeight,
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: hideBack
-                  ? const SizedBox()
-                  : DIconButton(
+      height: titleHeight,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child:
+                hideBack
+                    ? const SizedBox()
+                    : DIconButton(
                       icon: const Icon(
                         Icons.arrow_back_ios_new,
                         color: SideSwapColors.freshAir,
@@ -147,12 +151,13 @@ class DContentDialogTitle extends StatelessWidget {
                       ),
                       onPressed: onBack,
                     ),
-            ),
-            Align(
-              alignment: Alignment.topRight,
-              child: hideClose
-                  ? const SizedBox()
-                  : DIconButton(
+          ),
+          Align(
+            alignment: Alignment.topRight,
+            child:
+                hideClose
+                    ? const SizedBox()
+                    : DIconButton(
                       icon: const Icon(
                         Icons.close,
                         color: SideSwapColors.freshAir,
@@ -160,12 +165,13 @@ class DContentDialogTitle extends StatelessWidget {
                       ),
                       onPressed: onClose,
                     ),
-            ),
-            Align(
-              alignment: contentAlignment ?? Alignment.bottomCenter,
-              child: content ?? const SizedBox(),
-            ),
-          ],
-        ));
+          ),
+          Align(
+            alignment: contentAlignment ?? Alignment.bottomCenter,
+            child: content ?? const SizedBox(),
+          ),
+        ],
+      ),
+    );
   }
 }

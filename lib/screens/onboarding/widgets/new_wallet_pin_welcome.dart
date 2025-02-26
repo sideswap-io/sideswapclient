@@ -21,11 +21,11 @@ class NewWalletPinWelcome extends ConsumerWidget {
   ) async {
     return switch (firstLaunchState) {
       FirstLaunchStateImportWallet() => () async {
-          await ref.read(walletProvider).setImportWalletBiometricPrompt();
-        }(),
+        await ref.read(walletProvider).setImportWalletBiometricPrompt();
+      }(),
       _ => () async {
-          await ref.read(walletProvider).newWalletBiometricPrompt();
-        }(),
+        await ref.read(walletProvider).newWalletBiometricPrompt();
+      }(),
     };
   }
 
@@ -35,20 +35,20 @@ class NewWalletPinWelcome extends ConsumerWidget {
 
     return FlavorConfig.isDesktop
         ? DPinWelcome(
-            onYesPressed: () {
-              onYesPressedCallback(ref);
-            },
-            onNoPressed: () async {
-              await onNoPressedCallback(ref, firstLaunchState);
-            },
-          )
+          onYesPressed: () {
+            onYesPressedCallback(ref);
+          },
+          onNoPressed: () async {
+            await onNoPressedCallback(ref, firstLaunchState);
+          },
+        )
         : PinWelcome(
-            onYesPressed: () {
-              onYesPressedCallback(ref);
-            },
-            onNoPressed: () async {
-              await onNoPressedCallback(ref, firstLaunchState);
-            },
-          );
+          onYesPressed: () {
+            onYesPressedCallback(ref);
+          },
+          onNoPressed: () async {
+            await onNoPressedCallback(ref, firstLaunchState);
+          },
+        );
   }
 }

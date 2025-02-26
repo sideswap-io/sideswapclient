@@ -13,14 +13,15 @@ String _$serverConnectionNotifierHash() =>
 @ProviderFor(ServerConnectionNotifier)
 final serverConnectionNotifierProvider =
     NotifierProvider<ServerConnectionNotifier, bool>.internal(
-  ServerConnectionNotifier.new,
-  name: r'serverConnectionNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$serverConnectionNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      ServerConnectionNotifier.new,
+      name: r'serverConnectionNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$serverConnectionNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$ServerConnectionNotifier = Notifier<bool>;
 String _$serverLoginNotifierHash() =>
@@ -30,15 +31,16 @@ String _$serverLoginNotifierHash() =>
 @ProviderFor(ServerLoginNotifier)
 final serverLoginNotifierProvider =
     NotifierProvider<ServerLoginNotifier, ServerLoginState>.internal(
-  ServerLoginNotifier.new,
-  name: r'serverLoginNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$serverLoginNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      ServerLoginNotifier.new,
+      name: r'serverLoginNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$serverLoginNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$ServerLoginNotifier = Notifier<ServerLoginState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

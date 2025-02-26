@@ -10,7 +10,7 @@ class SideSwapScaffold extends ConsumerStatefulWidget {
   const SideSwapScaffold({
     super.key,
     this.canPop,
-    this.onPopInvoked,
+    this.onPopInvokedWithResult,
     this.extendBody = false,
     this.extendBodyBehindAppBar = false,
     this.appBar,
@@ -36,7 +36,7 @@ class SideSwapScaffold extends ConsumerStatefulWidget {
 
   final bool sideSwapBackground;
   final bool? canPop;
-  final void Function(bool)? onPopInvoked;
+  final PopInvokedWithResultCallback<dynamic>? onPopInvokedWithResult;
   final bool extendBody;
   final bool extendBodyBehindAppBar;
   final PreferredSizeWidget? appBar;
@@ -77,39 +77,41 @@ class SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
     }
 
     final statusBarTopPadding = MediaQuery.of(context).padding.top;
-    final body = widget.sideSwapBackground
-        ? CustomPaint(
-            painter: BackgroundPainter(topPadding: statusBarTopPadding),
-            child: widget.body,
-          )
-        : widget.body;
+    final body =
+        widget.sideSwapBackground
+            ? CustomPaint(
+              painter: BackgroundPainter(topPadding: statusBarTopPadding),
+              child: widget.body,
+            )
+            : widget.body;
 
     final scaffold = Scaffold(
-        extendBody: widget.extendBody,
-        extendBodyBehindAppBar:
-            widget.sideSwapBackground ? true : widget.extendBodyBehindAppBar,
-        appBar: widget.appBar,
-        body: body,
-        floatingActionButton: widget.floatingActionButton,
-        floatingActionButtonLocation: widget.floatingActionButtonLocation,
-        floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
-        persistentFooterButtons: widget.persistentFooterButtons,
-        drawer: widget.drawer,
-        endDrawer: widget.endDrawer,
-        drawerScrimColor: widget.drawerScrimColor,
-        backgroundColor: widget.backgroundColor,
-        bottomNavigationBar: widget.bottomNavigationBar,
-        bottomSheet: widget.bottomSheet,
-        resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
-        primary: widget.primary,
-        drawerDragStartBehavior: widget.drawerDragStartBehavior,
-        drawerEdgeDragWidth: widget.drawerEdgeDragWidth,
-        drawerEnableOpenDragGesture: widget.drawerEnableOpenDragGesture,
-        endDrawerEnableOpenDragGesture: widget.endDrawerEnableOpenDragGesture);
+      extendBody: widget.extendBody,
+      extendBodyBehindAppBar:
+          widget.sideSwapBackground ? true : widget.extendBodyBehindAppBar,
+      appBar: widget.appBar,
+      body: body,
+      floatingActionButton: widget.floatingActionButton,
+      floatingActionButtonLocation: widget.floatingActionButtonLocation,
+      floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
+      persistentFooterButtons: widget.persistentFooterButtons,
+      drawer: widget.drawer,
+      endDrawer: widget.endDrawer,
+      drawerScrimColor: widget.drawerScrimColor,
+      backgroundColor: widget.backgroundColor,
+      bottomNavigationBar: widget.bottomNavigationBar,
+      bottomSheet: widget.bottomSheet,
+      resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
+      primary: widget.primary,
+      drawerDragStartBehavior: widget.drawerDragStartBehavior,
+      drawerEdgeDragWidth: widget.drawerEdgeDragWidth,
+      drawerEnableOpenDragGesture: widget.drawerEnableOpenDragGesture,
+      endDrawerEnableOpenDragGesture: widget.endDrawerEnableOpenDragGesture,
+    );
 
     return PopScope(
       canPop: widget.canPop ?? false,
-      onPopInvoked: widget.onPopInvoked,
+      onPopInvokedWithResult: widget.onPopInvokedWithResult,
       child: scaffold,
     );
   }

@@ -59,14 +59,15 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'Show all'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: balanceTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            balanceTypeFlag ==
                                     const AddressesBalanceFlagShowAll()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -96,14 +97,15 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'Hide empty'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: balanceTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            balanceTypeFlag ==
                                     const AddressesBalanceFlagHideEmpty()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -122,33 +124,44 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
 
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).addressesButtonStyle(false);
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .addressesButtonStyle(false);
 
     final balanceTypeFlag = ref.watch(addressesBalanceTypeFlagNotifierProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Balance'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(color: SideSwapColors.cornFlower, fontSize: 12)),
+        Text(
+          'Balance'.tr(),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: SideSwapColors.cornFlower,
+            fontSize: 12,
+          ),
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 32,
           child: DButton(
             key: buttonKey,
-            style: clicked.value
-                ? buttonStyle?.merge(DButtonStyle(
-                    backgroundColor:
-                        ButtonState.all(SideSwapColors.prussianBlue)))
-                : buttonStyle,
+            style:
+                clicked.value
+                    ? buttonStyle?.merge(
+                      DButtonStyle(
+                        backgroundColor: ButtonState.all(
+                          SideSwapColors.prussianBlue,
+                        ),
+                      ),
+                    )
+                    : buttonStyle,
             onPressed: () async {
               clicked.value = true;
-              final result =
-                  await showSortMenu(context, buttonKey, balanceTypeFlag);
+              final result = await showSortMenu(
+                context,
+                buttonKey,
+                balanceTypeFlag,
+              );
               (switch (result) {
                 AddressesBalanceFlagHideEmpty result => ref
                     .read(addressesBalanceTypeFlagNotifierProvider.notifier)
@@ -170,14 +183,15 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
                       AddressesBalanceFlagHideEmpty() => 'Hide empty'.tr(),
                       _ => 'Show all'.tr(),
                     },
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelMedium
-                        ?.copyWith(fontSize: 13),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMedium?.copyWith(fontSize: 13),
                   ),
                   const SizedBox(width: 6),
                   AnimatedDropdownArrow(
-                      target: clicked.value ? 0 : 1, initFrom: 1),
+                    target: clicked.value ? 0 : 1,
+                    initFrom: 1,
+                  ),
                 ],
               ),
             ),

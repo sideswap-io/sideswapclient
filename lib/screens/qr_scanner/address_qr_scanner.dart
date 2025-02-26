@@ -23,10 +23,7 @@ import 'package:sideswap_permissions/sideswap_permissions.dart';
 class AddressQrScanner extends HookConsumerWidget {
   final BIP21AddressTypeEnum? expectedAddress;
 
-  const AddressQrScanner({
-    super.key,
-    this.expectedAddress,
-  });
+  const AddressQrScanner({super.key, this.expectedAddress});
 
   Future<void> onQrViewCreated(
     BuildContext context,
@@ -39,56 +36,58 @@ class AddressQrScanner extends HookConsumerWidget {
 
     final navigator = Navigator.of(context);
 
-    final linkResultState =
-        ref.read(universalLinkProvider).handleAppUrlStr(code);
+    final linkResultState = ref
+        .read(universalLinkProvider)
+        .handleAppUrlStr(code);
 
     return switch (linkResultState) {
       LinkResultState.success => () {
-          Navigator.of(context).pop();
-          return;
-        }(),
+        Navigator.of(context).pop();
+        return;
+      }(),
       LinkResultState.failed || LinkResultState.failedUriPath => () {
-          errorCallback('Invalid QR code'.tr());
-          return;
-        }(),
+        errorCallback('Invalid QR code'.tr());
+        return;
+      }(),
       _ => () async {
-          final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-          logger.d(liquidAssetId);
+        final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+        logger.d(liquidAssetId);
 
-          final result =
-              await ref.read(qrcodeHelperProvider).parseDynamicQrCode(code);
+        final result = await ref
+            .read(qrcodeHelperProvider)
+            .parseDynamicQrCode(code);
 
-          result.match((l) => errorCallback('Invalid QR code'), (r) {
-            if (r.error != null) {
-              errorCallback(r.errorMessage ?? 'Invalid QR code'.tr());
-              return;
-            }
+        result.match((l) => errorCallback('Invalid QR code'), (r) {
+          if (r.error != null) {
+            errorCallback(r.errorMessage ?? 'Invalid QR code'.tr());
+            return;
+          }
 
-            if (r.outputsData != null) {
-              ref
-                  .read(qrCodeResultModelNotifierProvider.notifier)
-                  .setModel(QrCodeResultModelData(result: r));
-              return;
-            }
-
-            if (r.assetId != null &&
-                ref.read(assetsStateProvider)[r.assetId] == null) {
-              errorCallback('Unknown asset'.tr());
-              return;
-            }
-
-            if (expectedAddress != null && r.addressType != expectedAddress) {
-              errorCallback('Invalid QR code'.tr());
-              return;
-            }
-
+          if (r.outputsData != null) {
             ref
                 .read(qrCodeResultModelNotifierProvider.notifier)
                 .setModel(QrCodeResultModelData(result: r));
-          });
+            return;
+          }
 
-          navigator.pop();
-        }(),
+          if (r.assetId != null &&
+              ref.read(assetsStateProvider)[r.assetId] == null) {
+            errorCallback('Unknown asset'.tr());
+            return;
+          }
+
+          if (expectedAddress != null && r.addressType != expectedAddress) {
+            errorCallback('Invalid QR code'.tr());
+            return;
+          }
+
+          ref
+              .read(qrCodeResultModelNotifierProvider.notifier)
+              .setModel(QrCodeResultModelData(result: r));
+        });
+
+        navigator.pop();
+      }(),
     };
   }
 
@@ -97,17 +96,18 @@ class AddressQrScanner extends HookConsumerWidget {
     final hasCameraPermission = useState(false);
 
     final errorCallback = useCallback((String errorMessage) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          errorMessage,
-          style: Theme.of(context)
-              .textTheme
-              .bodyLarge
-              ?.copyWith(color: Colors.white),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.white),
+          ),
+          duration: const Duration(seconds: 3),
+          backgroundColor: SideSwapColors.chathamsBlue,
         ),
-        duration: const Duration(seconds: 3),
-        backgroundColor: SideSwapColors.chathamsBlue,
-      ));
+      );
     }, const []);
 
     useAsyncEffect(() async {
@@ -144,7 +144,7 @@ class AddressQrScanner extends HookConsumerWidget {
 
     return SideSwapScaffold(
       canPop: true,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         cameraController?.dispose();
       },
       extendBodyBehindAppBar: true,
@@ -189,19 +189,15 @@ class AddressQrScanner extends HookConsumerWidget {
                   innerHeight: 285,
                   radius: 25,
                 ),
-                child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                ),
+                child: Container(color: Colors.black.withValues(alpha: 0.5)),
               ),
               Center(
                 child: Container(
                   width: 285,
                   height: 285,
                   decoration: const ShapeDecoration(
-                      shape: QrScannerOverlayShape(
-                    radius: 25,
-                    borderWidth: 4,
-                  )),
+                    shape: QrScannerOverlayShape(radius: 25, borderWidth: 4),
+                  ),
                 ),
               ),
             ],

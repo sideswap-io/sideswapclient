@@ -5,7 +5,6 @@ part 'ui_state_args_provider.g.dart';
 enum WalletMainNavigationItemEnum {
   home,
   accounts,
-  // assetSelect,
   assetDetails,
   transactions,
   pegs,
@@ -28,52 +27,66 @@ class WalletMainArguments {
   WalletMainArguments fromIndex(int value) {
     return switch (value) {
       0 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.home),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.home,
+      ),
       1 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.accounts),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.accounts,
+      ),
       2 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.markets),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.markets,
+      ),
       3 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.swap),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.swap,
+      ),
       4 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.pegs),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.pegs,
+      ),
       5 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.addresses),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.addresses,
+      ),
       _ => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.home),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.home,
+      ),
     };
   }
 
   WalletMainArguments fromIndexDesktop(int value) {
     return switch (value) {
       0 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.home),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.home,
+      ),
       1 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.markets),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.markets,
+      ),
       2 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.swap),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.swap,
+      ),
       3 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.transactions),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.transactions,
+      ),
       4 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.pegs),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.pegs,
+      ),
       5 => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.addresses),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.addresses,
+      ),
       _ => copyWith(
-          currentIndex: value,
-          navigationItemEnum: WalletMainNavigationItemEnum.home),
+        currentIndex: value,
+        navigationItemEnum: WalletMainNavigationItemEnum.home,
+      ),
     };
   }
 
@@ -120,12 +133,5 @@ class UiStateArgsNotifier extends _$UiStateArgsNotifier {
 
   void setWalletMainArguments(WalletMainArguments value) {
     state = value;
-  }
-
-  void clear() {
-    state = WalletMainArguments(
-      currentIndex: 0,
-      navigationItemEnum: WalletMainNavigationItemEnum.home,
-    );
   }
 }

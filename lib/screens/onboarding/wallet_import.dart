@@ -20,8 +20,8 @@ extension Utility on BuildContext {
   void nextEditableTextFocus() {
     do {
       FocusScope.of(this).nextFocus();
-    } while (
-        FocusScope.of(this).focusedChild?.context?.widget is! EditableText);
+    } while (FocusScope.of(this).focusedChild?.context?.widget
+        is! EditableText);
   }
 }
 
@@ -35,11 +35,15 @@ class WalletImportInputs extends ConsumerStatefulWidget {
 }
 
 class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
-  late List<ValueNotifier<String>> words =
-      List.generate(widget.wordCount, (index) => ValueNotifier(''));
+  late List<ValueNotifier<String>> words = List.generate(
+    widget.wordCount,
+    (index) => ValueNotifier(''),
+  );
   final wordList = <String>[];
-  late final List<bool> _errorField =
-      List<bool>.generate(widget.wordCount, (index) => false);
+  late final List<bool> _errorField = List<bool>.generate(
+    widget.wordCount,
+    (index) => false,
+  );
 
   final _textEditingControllerList = <TextEditingController>[];
   final _focusNodeList = <FocusNode>[];
@@ -53,8 +57,10 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
   double _textFieldLeftPadding = 0;
 
   String getMnemonic() {
-    final result = words.fold<String>('',
-        (previousValue, element) => '$previousValue ${element.value.trim()}');
+    final result = words.fold<String>(
+      '',
+      (previousValue, element) => '$previousValue ${element.value.trim()}',
+    );
     return result.trim();
   }
 
@@ -134,14 +140,17 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
 
     // animate instead jumpTo may cause bugs
     if (index == 0) {
-      _listScrollController
-          ?.jumpTo(_listScrollController?.position.minScrollExtent ?? 0);
+      _listScrollController?.jumpTo(
+        _listScrollController?.position.minScrollExtent ?? 0,
+      );
     } else if (index == widget.wordCount - 1) {
-      _listScrollController
-          ?.jumpTo(_listScrollController?.position.maxScrollExtent ?? 0);
+      _listScrollController?.jumpTo(
+        _listScrollController?.position.maxScrollExtent ?? 0,
+      );
     } else {
-      _listScrollController
-          ?.jumpTo((_textFieldWidth * index + additionalPadding));
+      _listScrollController?.jumpTo(
+        (_textFieldWidth * index + additionalPadding),
+      );
     }
 
     if (index < _focusNodeList.length) {
@@ -254,8 +263,10 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    _textFieldLeftPadding =
-        max((screenWidth - _textFieldWidth - (8 * _textFieldPadding)) / 2, 0);
+    _textFieldLeftPadding = max(
+      (screenWidth - _textFieldWidth - (8 * _textFieldPadding)) / 2,
+      0,
+    );
 
     return Column(
       children: [
@@ -266,129 +277,134 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
             controller: _listScrollController,
             scrollDirection: Axis.horizontal,
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            children: List<Widget>.generate(
-              widget.wordCount,
-              (index) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left:
-                        index == 0 ? _textFieldLeftPadding : _textFieldPadding,
-                    right: index == widget.wordCount - 1
-                        ? _textFieldLeftPadding + 2 * _textFieldPadding
-                        : 0,
+            children: List<Widget>.generate(widget.wordCount, (index) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: index == 0 ? _textFieldLeftPadding : _textFieldPadding,
+                  right:
+                      index == widget.wordCount - 1
+                          ? _textFieldLeftPadding + 2 * _textFieldPadding
+                          : 0,
+                ),
+                child: Container(
+                  width: _textFieldWidth,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color:
+                        _selectedItem == index
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.3),
                   ),
-                  child: Container(
-                    width: _textFieldWidth,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: _selectedItem == index
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.3),
+                  child: TypeAheadFormField<String>(
+                    hideOnEmpty: true,
+                    hideOnLoading: true,
+                    debounceDuration: Duration.zero,
+                    animationDuration: Duration.zero,
+                    suggestionsBoxController: _suggestionsBoxController,
+                    suggestionsBoxDecoration: const SuggestionsBoxDecoration(
+                      constraints: BoxConstraints(maxHeight: 17 * 12),
+                      color: Color(0xFF1E6389),
                     ),
-                    child: TypeAheadFormField<String>(
-                      hideOnEmpty: true,
-                      hideOnLoading: true,
-                      debounceDuration: Duration.zero,
-                      animationDuration: Duration.zero,
-                      suggestionsBoxController: _suggestionsBoxController,
-                      suggestionsBoxDecoration: const SuggestionsBoxDecoration(
-                        constraints: BoxConstraints(maxHeight: 17 * 12),
-                        color: Color(0xFF1E6389),
+                    textFieldConfiguration: TextFieldConfiguration(
+                      controller: _textEditingControllerList[index],
+                      focusNode: _focusNodeList[index],
+                      textCapitalization: TextCapitalization.none,
+                      textInputAction:
+                          index == widget.wordCount - 1
+                              ? TextInputAction.done
+                              : TextInputAction.next,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black,
                       ),
-                      textFieldConfiguration: TextFieldConfiguration(
-                        controller: _textEditingControllerList[index],
-                        focusNode: _focusNodeList[index],
-                        textCapitalization: TextCapitalization.none,
-                        textInputAction: index == widget.wordCount - 1
-                            ? TextInputAction.done
-                            : TextInputAction.next,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
+                      keyboardType: TextInputType.visiblePassword,
+                      decoration: SideSwapInputDecoration(
+                        fillColor: Colors.transparent,
+                        isDense: true,
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        contentPadding: const EdgeInsets.only(
+                          left: 10,
+                          bottom: 10,
+                          top: 10,
+                          right: 10,
                         ),
-                        keyboardType: TextInputType.visiblePassword,
-                        decoration: SideSwapInputDecoration(
-                          fillColor: Colors.transparent,
-                          isDense: true,
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.only(
-                              left: 10, bottom: 10, top: 10, right: 10),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 16),
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.normal,
-                                color: SideSwapColors.brightTurquoise,
-                              ),
-                            ),
-                          ),
-                          prefixIconConstraints:
-                              const BoxConstraints(minWidth: 0, minHeight: 0),
-                          hintText: '',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                        ),
-                        onChanged: (value) {
-                          final oldValue = words[index].value;
-                          words[index].value = value;
-
-                          if (oldValue != value) {
-                            tryJump(index);
-                          }
-                        },
-                        onTap: () {
-                          _jumpTo(index, unfocus: false);
-                        },
-                        onSubmitted: (value) async {
-                          _jumpTo(index + 1);
-                          if (index >= widget.wordCount - 1) {
-                            await validateFinal(ref);
-                          }
-                        },
-                        onEditingComplete: () async {
-                          _jumpTo(index + 1);
-                          if (index >= widget.wordCount - 1) {
-                            await validateFinal(ref);
-                          }
-                        },
-                      ),
-                      suggestionsCallback: (pattern) async {
-                        return getSuggestions(pattern);
-                      },
-                      itemBuilder: (context, suggestion) {
-                        return ListTile(
-                          title: Text(
-                            suggestion,
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 16),
+                          child: Text(
+                            '${index + 1}',
                             style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.normal,
-                              color: Colors.white,
+                              color: SideSwapColors.brightTurquoise,
                             ),
                           ),
-                        );
+                        ),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 0,
+                          minHeight: 0,
+                        ),
+                        hintText: '',
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                      ),
+                      onChanged: (value) {
+                        final oldValue = words[index].value;
+                        words[index].value = value;
+
+                        if (oldValue != value) {
+                          tryJump(index);
+                        }
                       },
-                      onSuggestionSelected: (suggestion) async {
-                        _textEditingControllerList[index].text = suggestion;
-                        setState(() {
-                          _focusNodeList[index].unfocus();
-                        });
+                      onTap: () {
+                        _jumpTo(index, unfocus: false);
+                      },
+                      onSubmitted: (value) async {
                         _jumpTo(index + 1);
                         if (index >= widget.wordCount - 1) {
                           await validateFinal(ref);
                         }
                       },
-                      onSaved: (value) {},
+                      onEditingComplete: () async {
+                        _jumpTo(index + 1);
+                        if (index >= widget.wordCount - 1) {
+                          await validateFinal(ref);
+                        }
+                      },
                     ),
+                    suggestionsCallback: (pattern) async {
+                      return getSuggestions(pattern);
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(
+                          suggestion,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                    onSuggestionSelected: (suggestion) async {
+                      _textEditingControllerList[index].text = suggestion;
+                      setState(() {
+                        _focusNodeList[index].unfocus();
+                      });
+                      _jumpTo(index + 1);
+                      if (index >= widget.wordCount - 1) {
+                        await validateFinal(ref);
+                      }
+                    },
+                    onSaved: (value) {},
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            }),
           ),
         ),
         const SizedBox(height: 38),
@@ -431,74 +447,81 @@ class WalletImportState extends State<WalletImport> {
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       key: _scaffoldKey,
-      appBar: CustomAppBar(
-        title: 'Enter your recovery phrase'.tr(),
-      ),
+      appBar: CustomAppBar(title: 'Enter your recovery phrase'.tr()),
       body: SafeArea(
         child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                  minWidth: constraints.maxWidth,
-                  minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Container(
-                        width: double.maxFinite,
-                        height: 39,
-                        decoration: BoxDecoration(
-                          color: _colorToggleBackground,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: SwapButton(
-                                color: shortMnemonic
-                                    ? _colorToggleOn
-                                    : _colorToggleBackground,
-                                text: '12 words'.tr(),
-                                textColor: shortMnemonic
-                                    ? _colorToggleTextOn
-                                    : _colorToggleTextOff,
-                                onPressed: () => setState(() {
-                                  shortMnemonic = true;
-                                }),
+          builder:
+              (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: constraints.maxWidth,
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Container(
+                            width: double.maxFinite,
+                            height: 39,
+                            decoration: BoxDecoration(
+                              color: _colorToggleBackground,
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(10),
                               ),
                             ),
-                            Expanded(
-                              child: SwapButton(
-                                color: !shortMnemonic
-                                    ? _colorToggleOn
-                                    : _colorToggleBackground,
-                                text: '24 words'.tr(),
-                                textColor: !shortMnemonic
-                                    ? _colorToggleTextOn
-                                    : _colorToggleTextOff,
-                                onPressed: () => setState(() {
-                                  shortMnemonic = false;
-                                }),
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: SwapButton(
+                                    color:
+                                        shortMnemonic
+                                            ? _colorToggleOn
+                                            : _colorToggleBackground,
+                                    text: '12 words'.tr(),
+                                    textColor:
+                                        shortMnemonic
+                                            ? _colorToggleTextOn
+                                            : _colorToggleTextOff,
+                                    onPressed:
+                                        () => setState(() {
+                                          shortMnemonic = true;
+                                        }),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: SwapButton(
+                                    color:
+                                        !shortMnemonic
+                                            ? _colorToggleOn
+                                            : _colorToggleBackground,
+                                    text: '24 words'.tr(),
+                                    textColor:
+                                        !shortMnemonic
+                                            ? _colorToggleTextOn
+                                            : _colorToggleTextOff,
+                                    onPressed:
+                                        () => setState(() {
+                                          shortMnemonic = false;
+                                        }),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 24),
+                        WalletImportInputs(
+                          key: ValueKey(shortMnemonic),
+                          wordCount: shortMnemonic ? 12 : 24,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    WalletImportInputs(
-                      key: ValueKey(shortMnemonic),
-                      wordCount: shortMnemonic ? 12 : 24,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
         ),
       ),
     );

@@ -22,7 +22,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -96,12 +96,13 @@ class DSettingsAboutUs extends HookConsumerWidget {
                       text: 'Licenses'.tr(),
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
-                            context,
-                            RawDialogRoute<Widget>(
-                              pageBuilder: (_, __, ___) =>
-                                  const DSettingsLicenses(),
-                            ),
-                            (route) => route.isFirst);
+                          context,
+                          RawDialogRoute<Widget>(
+                            pageBuilder:
+                                (_, __, ___) => const DSettingsLicenses(),
+                          ),
+                          (route) => route.isFirst,
+                        );
                       },
                     ),
                   ),
@@ -126,9 +127,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
               onPressed: () {
                 ref.read(walletProvider).goBack();
               },
-              child: Text(
-                'BACK'.tr(),
-              ),
+              child: Text('BACK'.tr()),
             ),
           ),
         ],

@@ -12,7 +12,8 @@ part of 'addresses_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$UtxosItem {
@@ -24,7 +25,9 @@ mixin _$UtxosItem {
   bool? get isConfidential => throw _privateConstructorUsedError;
   int? get account => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of UtxosItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $UtxosItemCopyWith<UtxosItem> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -34,14 +37,15 @@ abstract class $UtxosItemCopyWith<$Res> {
   factory $UtxosItemCopyWith(UtxosItem value, $Res Function(UtxosItem) then) =
       _$UtxosItemCopyWithImpl<$Res, UtxosItem>;
   @useResult
-  $Res call(
-      {String? txid,
-      int? vout,
-      String? assetId,
-      int? amount,
-      bool? isInternal,
-      bool? isConfidential,
-      int? account});
+  $Res call({
+    String? txid,
+    int? vout,
+    String? assetId,
+    int? amount,
+    bool? isInternal,
+    bool? isConfidential,
+    int? account,
+  });
 }
 
 /// @nodoc
@@ -54,6 +58,8 @@ class _$UtxosItemCopyWithImpl<$Res, $Val extends UtxosItem>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of UtxosItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -65,36 +71,46 @@ class _$UtxosItemCopyWithImpl<$Res, $Val extends UtxosItem>
     Object? isConfidential = freezed,
     Object? account = freezed,
   }) {
-    return _then(_value.copyWith(
-      txid: freezed == txid
-          ? _value.txid
-          : txid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      vout: freezed == vout
-          ? _value.vout
-          : vout // ignore: cast_nullable_to_non_nullable
-              as int?,
-      assetId: freezed == assetId
-          ? _value.assetId
-          : assetId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isInternal: freezed == isInternal
-          ? _value.isInternal
-          : isInternal // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isConfidential: freezed == isConfidential
-          ? _value.isConfidential
-          : isConfidential // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      account: freezed == account
-          ? _value.account
-          : account // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            txid:
+                freezed == txid
+                    ? _value.txid
+                    : txid // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            vout:
+                freezed == vout
+                    ? _value.vout
+                    : vout // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            assetId:
+                freezed == assetId
+                    ? _value.assetId
+                    : assetId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            amount:
+                freezed == amount
+                    ? _value.amount
+                    : amount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            isInternal:
+                freezed == isInternal
+                    ? _value.isInternal
+                    : isInternal // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            isConfidential:
+                freezed == isConfidential
+                    ? _value.isConfidential
+                    : isConfidential // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            account:
+                freezed == account
+                    ? _value.account
+                    : account // ignore: cast_nullable_to_non_nullable
+                        as int?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -102,18 +118,20 @@ class _$UtxosItemCopyWithImpl<$Res, $Val extends UtxosItem>
 abstract class _$$UtxosItemImplCopyWith<$Res>
     implements $UtxosItemCopyWith<$Res> {
   factory _$$UtxosItemImplCopyWith(
-          _$UtxosItemImpl value, $Res Function(_$UtxosItemImpl) then) =
-      __$$UtxosItemImplCopyWithImpl<$Res>;
+    _$UtxosItemImpl value,
+    $Res Function(_$UtxosItemImpl) then,
+  ) = __$$UtxosItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String? txid,
-      int? vout,
-      String? assetId,
-      int? amount,
-      bool? isInternal,
-      bool? isConfidential,
-      int? account});
+  $Res call({
+    String? txid,
+    int? vout,
+    String? assetId,
+    int? amount,
+    bool? isInternal,
+    bool? isConfidential,
+    int? account,
+  });
 }
 
 /// @nodoc
@@ -121,9 +139,12 @@ class __$$UtxosItemImplCopyWithImpl<$Res>
     extends _$UtxosItemCopyWithImpl<$Res, _$UtxosItemImpl>
     implements _$$UtxosItemImplCopyWith<$Res> {
   __$$UtxosItemImplCopyWithImpl(
-      _$UtxosItemImpl _value, $Res Function(_$UtxosItemImpl) _then)
-      : super(_value, _then);
+    _$UtxosItemImpl _value,
+    $Res Function(_$UtxosItemImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of UtxosItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -135,50 +156,60 @@ class __$$UtxosItemImplCopyWithImpl<$Res>
     Object? isConfidential = freezed,
     Object? account = freezed,
   }) {
-    return _then(_$UtxosItemImpl(
-      txid: freezed == txid
-          ? _value.txid
-          : txid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      vout: freezed == vout
-          ? _value.vout
-          : vout // ignore: cast_nullable_to_non_nullable
-              as int?,
-      assetId: freezed == assetId
-          ? _value.assetId
-          : assetId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isInternal: freezed == isInternal
-          ? _value.isInternal
-          : isInternal // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      isConfidential: freezed == isConfidential
-          ? _value.isConfidential
-          : isConfidential // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      account: freezed == account
-          ? _value.account
-          : account // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
+    return _then(
+      _$UtxosItemImpl(
+        txid:
+            freezed == txid
+                ? _value.txid
+                : txid // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        vout:
+            freezed == vout
+                ? _value.vout
+                : vout // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        assetId:
+            freezed == assetId
+                ? _value.assetId
+                : assetId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        amount:
+            freezed == amount
+                ? _value.amount
+                : amount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        isInternal:
+            freezed == isInternal
+                ? _value.isInternal
+                : isInternal // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        isConfidential:
+            freezed == isConfidential
+                ? _value.isConfidential
+                : isConfidential // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        account:
+            freezed == account
+                ? _value.account
+                : account // ignore: cast_nullable_to_non_nullable
+                    as int?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$UtxosItemImpl implements _UtxosItem {
-  const _$UtxosItemImpl(
-      {this.txid,
-      this.vout,
-      this.assetId,
-      this.amount,
-      this.isInternal,
-      this.isConfidential,
-      this.account});
+  const _$UtxosItemImpl({
+    this.txid,
+    this.vout,
+    this.assetId,
+    this.amount,
+    this.isInternal,
+    this.isConfidential,
+    this.account,
+  });
 
   @override
   final String? txid;
@@ -217,10 +248,20 @@ class _$UtxosItemImpl implements _UtxosItem {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, txid, vout, assetId, amount,
-      isInternal, isConfidential, account);
+  int get hashCode => Object.hash(
+    runtimeType,
+    txid,
+    vout,
+    assetId,
+    amount,
+    isInternal,
+    isConfidential,
+    account,
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of UtxosItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$UtxosItemImplCopyWith<_$UtxosItemImpl> get copyWith =>
@@ -228,14 +269,15 @@ class _$UtxosItemImpl implements _UtxosItem {
 }
 
 abstract class _UtxosItem implements UtxosItem {
-  const factory _UtxosItem(
-      {final String? txid,
-      final int? vout,
-      final String? assetId,
-      final int? amount,
-      final bool? isInternal,
-      final bool? isConfidential,
-      final int? account}) = _$UtxosItemImpl;
+  const factory _UtxosItem({
+    final String? txid,
+    final int? vout,
+    final String? assetId,
+    final int? amount,
+    final bool? isInternal,
+    final bool? isConfidential,
+    final int? account,
+  }) = _$UtxosItemImpl;
 
   @override
   String? get txid;
@@ -251,8 +293,11 @@ abstract class _UtxosItem implements UtxosItem {
   bool? get isConfidential;
   @override
   int? get account;
+
+  /// Create a copy of UtxosItem
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UtxosItemImplCopyWith<_$UtxosItemImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -266,7 +311,9 @@ mixin _$AddressesItem {
   bool? get isInternal => throw _privateConstructorUsedError;
   List<UtxosItem>? get utxos => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AddressesItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $AddressesItemCopyWith<AddressesItem> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -274,16 +321,18 @@ mixin _$AddressesItem {
 /// @nodoc
 abstract class $AddressesItemCopyWith<$Res> {
   factory $AddressesItemCopyWith(
-          AddressesItem value, $Res Function(AddressesItem) then) =
-      _$AddressesItemCopyWithImpl<$Res, AddressesItem>;
+    AddressesItem value,
+    $Res Function(AddressesItem) then,
+  ) = _$AddressesItemCopyWithImpl<$Res, AddressesItem>;
   @useResult
-  $Res call(
-      {int? account,
-      String? address,
-      String? unconfidentialAddress,
-      int? index,
-      bool? isInternal,
-      List<UtxosItem>? utxos});
+  $Res call({
+    int? account,
+    String? address,
+    String? unconfidentialAddress,
+    int? index,
+    bool? isInternal,
+    List<UtxosItem>? utxos,
+  });
 }
 
 /// @nodoc
@@ -296,6 +345,8 @@ class _$AddressesItemCopyWithImpl<$Res, $Val extends AddressesItem>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of AddressesItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -306,32 +357,41 @@ class _$AddressesItemCopyWithImpl<$Res, $Val extends AddressesItem>
     Object? isInternal = freezed,
     Object? utxos = freezed,
   }) {
-    return _then(_value.copyWith(
-      account: freezed == account
-          ? _value.account
-          : account // ignore: cast_nullable_to_non_nullable
-              as int?,
-      address: freezed == address
-          ? _value.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String?,
-      unconfidentialAddress: freezed == unconfidentialAddress
-          ? _value.unconfidentialAddress
-          : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
-              as String?,
-      index: freezed == index
-          ? _value.index
-          : index // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isInternal: freezed == isInternal
-          ? _value.isInternal
-          : isInternal // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      utxos: freezed == utxos
-          ? _value.utxos
-          : utxos // ignore: cast_nullable_to_non_nullable
-              as List<UtxosItem>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            account:
+                freezed == account
+                    ? _value.account
+                    : account // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            address:
+                freezed == address
+                    ? _value.address
+                    : address // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            unconfidentialAddress:
+                freezed == unconfidentialAddress
+                    ? _value.unconfidentialAddress
+                    : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            index:
+                freezed == index
+                    ? _value.index
+                    : index // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            isInternal:
+                freezed == isInternal
+                    ? _value.isInternal
+                    : isInternal // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            utxos:
+                freezed == utxos
+                    ? _value.utxos
+                    : utxos // ignore: cast_nullable_to_non_nullable
+                        as List<UtxosItem>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -339,17 +399,19 @@ class _$AddressesItemCopyWithImpl<$Res, $Val extends AddressesItem>
 abstract class _$$AddressesItemImplCopyWith<$Res>
     implements $AddressesItemCopyWith<$Res> {
   factory _$$AddressesItemImplCopyWith(
-          _$AddressesItemImpl value, $Res Function(_$AddressesItemImpl) then) =
-      __$$AddressesItemImplCopyWithImpl<$Res>;
+    _$AddressesItemImpl value,
+    $Res Function(_$AddressesItemImpl) then,
+  ) = __$$AddressesItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {int? account,
-      String? address,
-      String? unconfidentialAddress,
-      int? index,
-      bool? isInternal,
-      List<UtxosItem>? utxos});
+  $Res call({
+    int? account,
+    String? address,
+    String? unconfidentialAddress,
+    int? index,
+    bool? isInternal,
+    List<UtxosItem>? utxos,
+  });
 }
 
 /// @nodoc
@@ -357,9 +419,12 @@ class __$$AddressesItemImplCopyWithImpl<$Res>
     extends _$AddressesItemCopyWithImpl<$Res, _$AddressesItemImpl>
     implements _$$AddressesItemImplCopyWith<$Res> {
   __$$AddressesItemImplCopyWithImpl(
-      _$AddressesItemImpl _value, $Res Function(_$AddressesItemImpl) _then)
-      : super(_value, _then);
+    _$AddressesItemImpl _value,
+    $Res Function(_$AddressesItemImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of AddressesItem
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -370,46 +435,54 @@ class __$$AddressesItemImplCopyWithImpl<$Res>
     Object? isInternal = freezed,
     Object? utxos = freezed,
   }) {
-    return _then(_$AddressesItemImpl(
-      account: freezed == account
-          ? _value.account
-          : account // ignore: cast_nullable_to_non_nullable
-              as int?,
-      address: freezed == address
-          ? _value.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String?,
-      unconfidentialAddress: freezed == unconfidentialAddress
-          ? _value.unconfidentialAddress
-          : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
-              as String?,
-      index: freezed == index
-          ? _value.index
-          : index // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isInternal: freezed == isInternal
-          ? _value.isInternal
-          : isInternal // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      utxos: freezed == utxos
-          ? _value._utxos
-          : utxos // ignore: cast_nullable_to_non_nullable
-              as List<UtxosItem>?,
-    ));
+    return _then(
+      _$AddressesItemImpl(
+        account:
+            freezed == account
+                ? _value.account
+                : account // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        address:
+            freezed == address
+                ? _value.address
+                : address // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        unconfidentialAddress:
+            freezed == unconfidentialAddress
+                ? _value.unconfidentialAddress
+                : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        index:
+            freezed == index
+                ? _value.index
+                : index // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        isInternal:
+            freezed == isInternal
+                ? _value.isInternal
+                : isInternal // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        utxos:
+            freezed == utxos
+                ? _value._utxos
+                : utxos // ignore: cast_nullable_to_non_nullable
+                    as List<UtxosItem>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$AddressesItemImpl implements _AddressesItem {
-  const _$AddressesItemImpl(
-      {this.account,
-      this.address,
-      this.unconfidentialAddress,
-      this.index,
-      this.isInternal,
-      final List<UtxosItem>? utxos})
-      : _utxos = utxos;
+  const _$AddressesItemImpl({
+    this.account,
+    this.address,
+    this.unconfidentialAddress,
+    this.index,
+    this.isInternal,
+    final List<UtxosItem>? utxos,
+  }) : _utxos = utxos;
 
   @override
   final int? account;
@@ -453,15 +526,18 @@ class _$AddressesItemImpl implements _AddressesItem {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      account,
-      address,
-      unconfidentialAddress,
-      index,
-      isInternal,
-      const DeepCollectionEquality().hash(_utxos));
+    runtimeType,
+    account,
+    address,
+    unconfidentialAddress,
+    index,
+    isInternal,
+    const DeepCollectionEquality().hash(_utxos),
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AddressesItem
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AddressesItemImplCopyWith<_$AddressesItemImpl> get copyWith =>
@@ -469,13 +545,14 @@ class _$AddressesItemImpl implements _AddressesItem {
 }
 
 abstract class _AddressesItem implements AddressesItem {
-  const factory _AddressesItem(
-      {final int? account,
-      final String? address,
-      final String? unconfidentialAddress,
-      final int? index,
-      final bool? isInternal,
-      final List<UtxosItem>? utxos}) = _$AddressesItemImpl;
+  const factory _AddressesItem({
+    final int? account,
+    final String? address,
+    final String? unconfidentialAddress,
+    final int? index,
+    final bool? isInternal,
+    final List<UtxosItem>? utxos,
+  }) = _$AddressesItemImpl;
 
   @override
   int? get account;
@@ -489,8 +566,11 @@ abstract class _AddressesItem implements AddressesItem {
   bool? get isInternal;
   @override
   List<UtxosItem>? get utxos;
+
+  /// Create a copy of AddressesItem
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AddressesItemImplCopyWith<_$AddressesItemImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -499,7 +579,9 @@ abstract class _AddressesItem implements AddressesItem {
 mixin _$AddressesModel {
   List<AddressesItem>? get addresses => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AddressesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $AddressesModelCopyWith<AddressesModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -507,8 +589,9 @@ mixin _$AddressesModel {
 /// @nodoc
 abstract class $AddressesModelCopyWith<$Res> {
   factory $AddressesModelCopyWith(
-          AddressesModel value, $Res Function(AddressesModel) then) =
-      _$AddressesModelCopyWithImpl<$Res, AddressesModel>;
+    AddressesModel value,
+    $Res Function(AddressesModel) then,
+  ) = _$AddressesModelCopyWithImpl<$Res, AddressesModel>;
   @useResult
   $Res call({List<AddressesItem>? addresses});
 }
@@ -523,26 +606,31 @@ class _$AddressesModelCopyWithImpl<$Res, $Val extends AddressesModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of AddressesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? addresses = freezed,
-  }) {
-    return _then(_value.copyWith(
-      addresses: freezed == addresses
-          ? _value.addresses
-          : addresses // ignore: cast_nullable_to_non_nullable
-              as List<AddressesItem>?,
-    ) as $Val);
+  $Res call({Object? addresses = freezed}) {
+    return _then(
+      _value.copyWith(
+            addresses:
+                freezed == addresses
+                    ? _value.addresses
+                    : addresses // ignore: cast_nullable_to_non_nullable
+                        as List<AddressesItem>?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$AddressesModelImplCopyWith<$Res>
     implements $AddressesModelCopyWith<$Res> {
-  factory _$$AddressesModelImplCopyWith(_$AddressesModelImpl value,
-          $Res Function(_$AddressesModelImpl) then) =
-      __$$AddressesModelImplCopyWithImpl<$Res>;
+  factory _$$AddressesModelImplCopyWith(
+    _$AddressesModelImpl value,
+    $Res Function(_$AddressesModelImpl) then,
+  ) = __$$AddressesModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({List<AddressesItem>? addresses});
@@ -553,20 +641,24 @@ class __$$AddressesModelImplCopyWithImpl<$Res>
     extends _$AddressesModelCopyWithImpl<$Res, _$AddressesModelImpl>
     implements _$$AddressesModelImplCopyWith<$Res> {
   __$$AddressesModelImplCopyWithImpl(
-      _$AddressesModelImpl _value, $Res Function(_$AddressesModelImpl) _then)
-      : super(_value, _then);
+    _$AddressesModelImpl _value,
+    $Res Function(_$AddressesModelImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of AddressesModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? addresses = freezed,
-  }) {
-    return _then(_$AddressesModelImpl(
-      addresses: freezed == addresses
-          ? _value._addresses
-          : addresses // ignore: cast_nullable_to_non_nullable
-              as List<AddressesItem>?,
-    ));
+  $Res call({Object? addresses = freezed}) {
+    return _then(
+      _$AddressesModelImpl(
+        addresses:
+            freezed == addresses
+                ? _value._addresses
+                : addresses // ignore: cast_nullable_to_non_nullable
+                    as List<AddressesItem>?,
+      ),
+    );
   }
 }
 
@@ -574,7 +666,7 @@ class __$$AddressesModelImplCopyWithImpl<$Res>
 
 class _$AddressesModelImpl implements _AddressesModel {
   const _$AddressesModelImpl({final List<AddressesItem>? addresses})
-      : _addresses = addresses;
+    : _addresses = addresses;
 
   final List<AddressesItem>? _addresses;
   @override
@@ -596,20 +688,26 @@ class _$AddressesModelImpl implements _AddressesModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AddressesModelImpl &&
-            const DeepCollectionEquality()
-                .equals(other._addresses, _addresses));
+            const DeepCollectionEquality().equals(
+              other._addresses,
+              _addresses,
+            ));
   }
 
   @override
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(_addresses));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AddressesModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AddressesModelImplCopyWith<_$AddressesModelImpl> get copyWith =>
       __$$AddressesModelImplCopyWithImpl<_$AddressesModelImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _AddressesModel implements AddressesModel {
@@ -618,8 +716,11 @@ abstract class _AddressesModel implements AddressesModel {
 
   @override
   List<AddressesItem>? get addresses;
+
+  /// Create a copy of AddressesModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AddressesModelImplCopyWith<_$AddressesModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -632,16 +733,14 @@ mixin _$LoadAddressesState {
     required TResult Function() loading,
     required TResult Function(From_LoadAddresses loadAddresses) data,
     required TResult Function(String errorMsg) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? loading,
     TResult? Function(From_LoadAddresses loadAddresses)? data,
     TResult? Function(String errorMsg)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -649,24 +748,21 @@ mixin _$LoadAddressesState {
     TResult Function(From_LoadAddresses loadAddresses)? data,
     TResult Function(String errorMsg)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoadAddressesStateEmpty value) empty,
     required TResult Function(LoadAddressesStateLoading value) loading,
     required TResult Function(LoadAddressesStateData value) data,
     required TResult Function(LoadAddressesStateError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoadAddressesStateEmpty value)? empty,
     TResult? Function(LoadAddressesStateLoading value)? loading,
     TResult? Function(LoadAddressesStateData value)? data,
     TResult? Function(LoadAddressesStateError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoadAddressesStateEmpty value)? empty,
@@ -674,15 +770,15 @@ mixin _$LoadAddressesState {
     TResult Function(LoadAddressesStateData value)? data,
     TResult Function(LoadAddressesStateError value)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $LoadAddressesStateCopyWith<$Res> {
   factory $LoadAddressesStateCopyWith(
-          LoadAddressesState value, $Res Function(LoadAddressesState) then) =
-      _$LoadAddressesStateCopyWithImpl<$Res, LoadAddressesState>;
+    LoadAddressesState value,
+    $Res Function(LoadAddressesState) then,
+  ) = _$LoadAddressesStateCopyWithImpl<$Res, LoadAddressesState>;
 }
 
 /// @nodoc
@@ -694,25 +790,31 @@ class _$LoadAddressesStateCopyWithImpl<$Res, $Val extends LoadAddressesState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$LoadAddressesStateEmptyImplCopyWith<$Res> {
   factory _$$LoadAddressesStateEmptyImplCopyWith(
-          _$LoadAddressesStateEmptyImpl value,
-          $Res Function(_$LoadAddressesStateEmptyImpl) then) =
-      __$$LoadAddressesStateEmptyImplCopyWithImpl<$Res>;
+    _$LoadAddressesStateEmptyImpl value,
+    $Res Function(_$LoadAddressesStateEmptyImpl) then,
+  ) = __$$LoadAddressesStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LoadAddressesStateEmptyImplCopyWithImpl<$Res>
-    extends _$LoadAddressesStateCopyWithImpl<$Res,
-        _$LoadAddressesStateEmptyImpl>
+    extends
+        _$LoadAddressesStateCopyWithImpl<$Res, _$LoadAddressesStateEmptyImpl>
     implements _$$LoadAddressesStateEmptyImplCopyWith<$Res> {
   __$$LoadAddressesStateEmptyImplCopyWithImpl(
-      _$LoadAddressesStateEmptyImpl _value,
-      $Res Function(_$LoadAddressesStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$LoadAddressesStateEmptyImpl _value,
+    $Res Function(_$LoadAddressesStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -817,20 +919,23 @@ abstract class LoadAddressesStateEmpty implements LoadAddressesState {
 /// @nodoc
 abstract class _$$LoadAddressesStateLoadingImplCopyWith<$Res> {
   factory _$$LoadAddressesStateLoadingImplCopyWith(
-          _$LoadAddressesStateLoadingImpl value,
-          $Res Function(_$LoadAddressesStateLoadingImpl) then) =
-      __$$LoadAddressesStateLoadingImplCopyWithImpl<$Res>;
+    _$LoadAddressesStateLoadingImpl value,
+    $Res Function(_$LoadAddressesStateLoadingImpl) then,
+  ) = __$$LoadAddressesStateLoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LoadAddressesStateLoadingImplCopyWithImpl<$Res>
-    extends _$LoadAddressesStateCopyWithImpl<$Res,
-        _$LoadAddressesStateLoadingImpl>
+    extends
+        _$LoadAddressesStateCopyWithImpl<$Res, _$LoadAddressesStateLoadingImpl>
     implements _$$LoadAddressesStateLoadingImplCopyWith<$Res> {
   __$$LoadAddressesStateLoadingImplCopyWithImpl(
-      _$LoadAddressesStateLoadingImpl _value,
-      $Res Function(_$LoadAddressesStateLoadingImpl) _then)
-      : super(_value, _then);
+    _$LoadAddressesStateLoadingImpl _value,
+    $Res Function(_$LoadAddressesStateLoadingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -935,9 +1040,9 @@ abstract class LoadAddressesStateLoading implements LoadAddressesState {
 /// @nodoc
 abstract class _$$LoadAddressesStateDataImplCopyWith<$Res> {
   factory _$$LoadAddressesStateDataImplCopyWith(
-          _$LoadAddressesStateDataImpl value,
-          $Res Function(_$LoadAddressesStateDataImpl) then) =
-      __$$LoadAddressesStateDataImplCopyWithImpl<$Res>;
+    _$LoadAddressesStateDataImpl value,
+    $Res Function(_$LoadAddressesStateDataImpl) then,
+  ) = __$$LoadAddressesStateDataImplCopyWithImpl<$Res>;
   @useResult
   $Res call({From_LoadAddresses loadAddresses});
 }
@@ -947,21 +1052,23 @@ class __$$LoadAddressesStateDataImplCopyWithImpl<$Res>
     extends _$LoadAddressesStateCopyWithImpl<$Res, _$LoadAddressesStateDataImpl>
     implements _$$LoadAddressesStateDataImplCopyWith<$Res> {
   __$$LoadAddressesStateDataImplCopyWithImpl(
-      _$LoadAddressesStateDataImpl _value,
-      $Res Function(_$LoadAddressesStateDataImpl) _then)
-      : super(_value, _then);
+    _$LoadAddressesStateDataImpl _value,
+    $Res Function(_$LoadAddressesStateDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? loadAddresses = null,
-  }) {
-    return _then(_$LoadAddressesStateDataImpl(
-      null == loadAddresses
-          ? _value.loadAddresses
-          : loadAddresses // ignore: cast_nullable_to_non_nullable
-              as From_LoadAddresses,
-    ));
+  $Res call({Object? loadAddresses = null}) {
+    return _then(
+      _$LoadAddressesStateDataImpl(
+        null == loadAddresses
+            ? _value.loadAddresses
+            : loadAddresses // ignore: cast_nullable_to_non_nullable
+                as From_LoadAddresses,
+      ),
+    );
   }
 }
 
@@ -990,12 +1097,17 @@ class _$LoadAddressesStateDataImpl implements LoadAddressesStateData {
   @override
   int get hashCode => Object.hash(runtimeType, loadAddresses);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LoadAddressesStateDataImplCopyWith<_$LoadAddressesStateDataImpl>
-      get copyWith => __$$LoadAddressesStateDataImplCopyWithImpl<
-          _$LoadAddressesStateDataImpl>(this, _$identity);
+  get copyWith =>
+      __$$LoadAddressesStateDataImplCopyWithImpl<_$LoadAddressesStateDataImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -1077,42 +1189,47 @@ abstract class LoadAddressesStateData implements LoadAddressesState {
       _$LoadAddressesStateDataImpl;
 
   From_LoadAddresses get loadAddresses;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoadAddressesStateDataImplCopyWith<_$LoadAddressesStateDataImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$LoadAddressesStateErrorImplCopyWith<$Res> {
   factory _$$LoadAddressesStateErrorImplCopyWith(
-          _$LoadAddressesStateErrorImpl value,
-          $Res Function(_$LoadAddressesStateErrorImpl) then) =
-      __$$LoadAddressesStateErrorImplCopyWithImpl<$Res>;
+    _$LoadAddressesStateErrorImpl value,
+    $Res Function(_$LoadAddressesStateErrorImpl) then,
+  ) = __$$LoadAddressesStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String errorMsg});
 }
 
 /// @nodoc
 class __$$LoadAddressesStateErrorImplCopyWithImpl<$Res>
-    extends _$LoadAddressesStateCopyWithImpl<$Res,
-        _$LoadAddressesStateErrorImpl>
+    extends
+        _$LoadAddressesStateCopyWithImpl<$Res, _$LoadAddressesStateErrorImpl>
     implements _$$LoadAddressesStateErrorImplCopyWith<$Res> {
   __$$LoadAddressesStateErrorImplCopyWithImpl(
-      _$LoadAddressesStateErrorImpl _value,
-      $Res Function(_$LoadAddressesStateErrorImpl) _then)
-      : super(_value, _then);
+    _$LoadAddressesStateErrorImpl _value,
+    $Res Function(_$LoadAddressesStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? errorMsg = null,
-  }) {
-    return _then(_$LoadAddressesStateErrorImpl(
-      null == errorMsg
-          ? _value.errorMsg
-          : errorMsg // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? errorMsg = null}) {
+    return _then(
+      _$LoadAddressesStateErrorImpl(
+        null == errorMsg
+            ? _value.errorMsg
+            : errorMsg // ignore: cast_nullable_to_non_nullable
+                as String,
+      ),
+    );
   }
 }
 
@@ -1141,12 +1258,15 @@ class _$LoadAddressesStateErrorImpl implements LoadAddressesStateError {
   @override
   int get hashCode => Object.hash(runtimeType, errorMsg);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LoadAddressesStateErrorImplCopyWith<_$LoadAddressesStateErrorImpl>
-      get copyWith => __$$LoadAddressesStateErrorImplCopyWithImpl<
-          _$LoadAddressesStateErrorImpl>(this, _$identity);
+  get copyWith => __$$LoadAddressesStateErrorImplCopyWithImpl<
+    _$LoadAddressesStateErrorImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1228,9 +1348,12 @@ abstract class LoadAddressesStateError implements LoadAddressesState {
       _$LoadAddressesStateErrorImpl;
 
   String get errorMsg;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LoadAddressesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoadAddressesStateErrorImplCopyWith<_$LoadAddressesStateErrorImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1241,16 +1364,14 @@ mixin _$LoadUtxosState {
     required TResult Function() loading,
     required TResult Function(From_LoadUtxos loadUtxos) data,
     required TResult Function(String errorMsg) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? loading,
     TResult? Function(From_LoadUtxos loadUtxos)? data,
     TResult? Function(String errorMsg)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -1258,24 +1379,21 @@ mixin _$LoadUtxosState {
     TResult Function(From_LoadUtxos loadUtxos)? data,
     TResult Function(String errorMsg)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoadUtxosStateEmpty value) empty,
     required TResult Function(LoadUtxosStateLoading value) loading,
     required TResult Function(LoadUtxosStateData value) data,
     required TResult Function(LoadUtxosStateError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoadUtxosStateEmpty value)? empty,
     TResult? Function(LoadUtxosStateLoading value)? loading,
     TResult? Function(LoadUtxosStateData value)? data,
     TResult? Function(LoadUtxosStateError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoadUtxosStateEmpty value)? empty,
@@ -1283,15 +1401,15 @@ mixin _$LoadUtxosState {
     TResult Function(LoadUtxosStateData value)? data,
     TResult Function(LoadUtxosStateError value)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $LoadUtxosStateCopyWith<$Res> {
   factory $LoadUtxosStateCopyWith(
-          LoadUtxosState value, $Res Function(LoadUtxosState) then) =
-      _$LoadUtxosStateCopyWithImpl<$Res, LoadUtxosState>;
+    LoadUtxosState value,
+    $Res Function(LoadUtxosState) then,
+  ) = _$LoadUtxosStateCopyWithImpl<$Res, LoadUtxosState>;
 }
 
 /// @nodoc
@@ -1303,22 +1421,30 @@ class _$LoadUtxosStateCopyWithImpl<$Res, $Val extends LoadUtxosState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$LoadUtxosStateEmptyImplCopyWith<$Res> {
-  factory _$$LoadUtxosStateEmptyImplCopyWith(_$LoadUtxosStateEmptyImpl value,
-          $Res Function(_$LoadUtxosStateEmptyImpl) then) =
-      __$$LoadUtxosStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$LoadUtxosStateEmptyImplCopyWith(
+    _$LoadUtxosStateEmptyImpl value,
+    $Res Function(_$LoadUtxosStateEmptyImpl) then,
+  ) = __$$LoadUtxosStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LoadUtxosStateEmptyImplCopyWithImpl<$Res>
     extends _$LoadUtxosStateCopyWithImpl<$Res, _$LoadUtxosStateEmptyImpl>
     implements _$$LoadUtxosStateEmptyImplCopyWith<$Res> {
-  __$$LoadUtxosStateEmptyImplCopyWithImpl(_$LoadUtxosStateEmptyImpl _value,
-      $Res Function(_$LoadUtxosStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$LoadUtxosStateEmptyImplCopyWithImpl(
+    _$LoadUtxosStateEmptyImpl _value,
+    $Res Function(_$LoadUtxosStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1423,18 +1549,22 @@ abstract class LoadUtxosStateEmpty implements LoadUtxosState {
 /// @nodoc
 abstract class _$$LoadUtxosStateLoadingImplCopyWith<$Res> {
   factory _$$LoadUtxosStateLoadingImplCopyWith(
-          _$LoadUtxosStateLoadingImpl value,
-          $Res Function(_$LoadUtxosStateLoadingImpl) then) =
-      __$$LoadUtxosStateLoadingImplCopyWithImpl<$Res>;
+    _$LoadUtxosStateLoadingImpl value,
+    $Res Function(_$LoadUtxosStateLoadingImpl) then,
+  ) = __$$LoadUtxosStateLoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LoadUtxosStateLoadingImplCopyWithImpl<$Res>
     extends _$LoadUtxosStateCopyWithImpl<$Res, _$LoadUtxosStateLoadingImpl>
     implements _$$LoadUtxosStateLoadingImplCopyWith<$Res> {
-  __$$LoadUtxosStateLoadingImplCopyWithImpl(_$LoadUtxosStateLoadingImpl _value,
-      $Res Function(_$LoadUtxosStateLoadingImpl) _then)
-      : super(_value, _then);
+  __$$LoadUtxosStateLoadingImplCopyWithImpl(
+    _$LoadUtxosStateLoadingImpl _value,
+    $Res Function(_$LoadUtxosStateLoadingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1538,9 +1668,10 @@ abstract class LoadUtxosStateLoading implements LoadUtxosState {
 
 /// @nodoc
 abstract class _$$LoadUtxosStateDataImplCopyWith<$Res> {
-  factory _$$LoadUtxosStateDataImplCopyWith(_$LoadUtxosStateDataImpl value,
-          $Res Function(_$LoadUtxosStateDataImpl) then) =
-      __$$LoadUtxosStateDataImplCopyWithImpl<$Res>;
+  factory _$$LoadUtxosStateDataImplCopyWith(
+    _$LoadUtxosStateDataImpl value,
+    $Res Function(_$LoadUtxosStateDataImpl) then,
+  ) = __$$LoadUtxosStateDataImplCopyWithImpl<$Res>;
   @useResult
   $Res call({From_LoadUtxos loadUtxos});
 }
@@ -1549,21 +1680,24 @@ abstract class _$$LoadUtxosStateDataImplCopyWith<$Res> {
 class __$$LoadUtxosStateDataImplCopyWithImpl<$Res>
     extends _$LoadUtxosStateCopyWithImpl<$Res, _$LoadUtxosStateDataImpl>
     implements _$$LoadUtxosStateDataImplCopyWith<$Res> {
-  __$$LoadUtxosStateDataImplCopyWithImpl(_$LoadUtxosStateDataImpl _value,
-      $Res Function(_$LoadUtxosStateDataImpl) _then)
-      : super(_value, _then);
+  __$$LoadUtxosStateDataImplCopyWithImpl(
+    _$LoadUtxosStateDataImpl _value,
+    $Res Function(_$LoadUtxosStateDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? loadUtxos = null,
-  }) {
-    return _then(_$LoadUtxosStateDataImpl(
-      null == loadUtxos
-          ? _value.loadUtxos
-          : loadUtxos // ignore: cast_nullable_to_non_nullable
-              as From_LoadUtxos,
-    ));
+  $Res call({Object? loadUtxos = null}) {
+    return _then(
+      _$LoadUtxosStateDataImpl(
+        null == loadUtxos
+            ? _value.loadUtxos
+            : loadUtxos // ignore: cast_nullable_to_non_nullable
+                as From_LoadUtxos,
+      ),
+    );
   }
 }
 
@@ -1592,12 +1726,16 @@ class _$LoadUtxosStateDataImpl implements LoadUtxosStateData {
   @override
   int get hashCode => Object.hash(runtimeType, loadUtxos);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LoadUtxosStateDataImplCopyWith<_$LoadUtxosStateDataImpl> get copyWith =>
       __$$LoadUtxosStateDataImplCopyWithImpl<_$LoadUtxosStateDataImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -1679,16 +1817,20 @@ abstract class LoadUtxosStateData implements LoadUtxosState {
       _$LoadUtxosStateDataImpl;
 
   From_LoadUtxos get loadUtxos;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoadUtxosStateDataImplCopyWith<_$LoadUtxosStateDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$LoadUtxosStateErrorImplCopyWith<$Res> {
-  factory _$$LoadUtxosStateErrorImplCopyWith(_$LoadUtxosStateErrorImpl value,
-          $Res Function(_$LoadUtxosStateErrorImpl) then) =
-      __$$LoadUtxosStateErrorImplCopyWithImpl<$Res>;
+  factory _$$LoadUtxosStateErrorImplCopyWith(
+    _$LoadUtxosStateErrorImpl value,
+    $Res Function(_$LoadUtxosStateErrorImpl) then,
+  ) = __$$LoadUtxosStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String errorMsg});
 }
@@ -1697,21 +1839,24 @@ abstract class _$$LoadUtxosStateErrorImplCopyWith<$Res> {
 class __$$LoadUtxosStateErrorImplCopyWithImpl<$Res>
     extends _$LoadUtxosStateCopyWithImpl<$Res, _$LoadUtxosStateErrorImpl>
     implements _$$LoadUtxosStateErrorImplCopyWith<$Res> {
-  __$$LoadUtxosStateErrorImplCopyWithImpl(_$LoadUtxosStateErrorImpl _value,
-      $Res Function(_$LoadUtxosStateErrorImpl) _then)
-      : super(_value, _then);
+  __$$LoadUtxosStateErrorImplCopyWithImpl(
+    _$LoadUtxosStateErrorImpl _value,
+    $Res Function(_$LoadUtxosStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? errorMsg = null,
-  }) {
-    return _then(_$LoadUtxosStateErrorImpl(
-      null == errorMsg
-          ? _value.errorMsg
-          : errorMsg // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? errorMsg = null}) {
+    return _then(
+      _$LoadUtxosStateErrorImpl(
+        null == errorMsg
+            ? _value.errorMsg
+            : errorMsg // ignore: cast_nullable_to_non_nullable
+                as String,
+      ),
+    );
   }
 }
 
@@ -1740,12 +1885,16 @@ class _$LoadUtxosStateErrorImpl implements LoadUtxosStateError {
   @override
   int get hashCode => Object.hash(runtimeType, errorMsg);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$LoadUtxosStateErrorImplCopyWith<_$LoadUtxosStateErrorImpl> get copyWith =>
       __$$LoadUtxosStateErrorImplCopyWithImpl<_$LoadUtxosStateErrorImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -1827,7 +1976,10 @@ abstract class LoadUtxosStateError implements LoadUtxosState {
       _$LoadUtxosStateErrorImpl;
 
   String get errorMsg;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of LoadUtxosState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoadUtxosStateErrorImplCopyWith<_$LoadUtxosStateErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1838,47 +1990,42 @@ mixin _$AddressDetailsState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(AddressesItem addressesItem) data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(AddressesItem addressesItem)? data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(AddressesItem addressesItem)? data,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(AddressDetailsStateEmpty value) empty,
     required TResult Function(AddressDetailsStateData value) data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AddressDetailsStateEmpty value)? empty,
     TResult? Function(AddressDetailsStateData value)? data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AddressDetailsStateEmpty value)? empty,
     TResult Function(AddressDetailsStateData value)? data,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AddressDetailsStateCopyWith<$Res> {
   factory $AddressDetailsStateCopyWith(
-          AddressDetailsState value, $Res Function(AddressDetailsState) then) =
-      _$AddressDetailsStateCopyWithImpl<$Res, AddressDetailsState>;
+    AddressDetailsState value,
+    $Res Function(AddressDetailsState) then,
+  ) = _$AddressDetailsStateCopyWithImpl<$Res, AddressDetailsState>;
 }
 
 /// @nodoc
@@ -1890,25 +2037,31 @@ class _$AddressDetailsStateCopyWithImpl<$Res, $Val extends AddressDetailsState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AddressDetailsState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$AddressDetailsStateEmptyImplCopyWith<$Res> {
   factory _$$AddressDetailsStateEmptyImplCopyWith(
-          _$AddressDetailsStateEmptyImpl value,
-          $Res Function(_$AddressDetailsStateEmptyImpl) then) =
-      __$$AddressDetailsStateEmptyImplCopyWithImpl<$Res>;
+    _$AddressDetailsStateEmptyImpl value,
+    $Res Function(_$AddressDetailsStateEmptyImpl) then,
+  ) = __$$AddressDetailsStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressDetailsStateEmptyImplCopyWithImpl<$Res>
-    extends _$AddressDetailsStateCopyWithImpl<$Res,
-        _$AddressDetailsStateEmptyImpl>
+    extends
+        _$AddressDetailsStateCopyWithImpl<$Res, _$AddressDetailsStateEmptyImpl>
     implements _$$AddressDetailsStateEmptyImplCopyWith<$Res> {
   __$$AddressDetailsStateEmptyImplCopyWithImpl(
-      _$AddressDetailsStateEmptyImpl _value,
-      $Res Function(_$AddressDetailsStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$AddressDetailsStateEmptyImpl _value,
+    $Res Function(_$AddressDetailsStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressDetailsState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2001,9 +2154,9 @@ abstract class AddressDetailsStateEmpty implements AddressDetailsState {
 /// @nodoc
 abstract class _$$AddressDetailsStateDataImplCopyWith<$Res> {
   factory _$$AddressDetailsStateDataImplCopyWith(
-          _$AddressDetailsStateDataImpl value,
-          $Res Function(_$AddressDetailsStateDataImpl) then) =
-      __$$AddressDetailsStateDataImplCopyWithImpl<$Res>;
+    _$AddressDetailsStateDataImpl value,
+    $Res Function(_$AddressDetailsStateDataImpl) then,
+  ) = __$$AddressDetailsStateDataImplCopyWithImpl<$Res>;
   @useResult
   $Res call({AddressesItem addressesItem});
 
@@ -2012,27 +2165,31 @@ abstract class _$$AddressDetailsStateDataImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$AddressDetailsStateDataImplCopyWithImpl<$Res>
-    extends _$AddressDetailsStateCopyWithImpl<$Res,
-        _$AddressDetailsStateDataImpl>
+    extends
+        _$AddressDetailsStateCopyWithImpl<$Res, _$AddressDetailsStateDataImpl>
     implements _$$AddressDetailsStateDataImplCopyWith<$Res> {
   __$$AddressDetailsStateDataImplCopyWithImpl(
-      _$AddressDetailsStateDataImpl _value,
-      $Res Function(_$AddressDetailsStateDataImpl) _then)
-      : super(_value, _then);
+    _$AddressDetailsStateDataImpl _value,
+    $Res Function(_$AddressDetailsStateDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of AddressDetailsState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? addressesItem = null,
-  }) {
-    return _then(_$AddressDetailsStateDataImpl(
-      null == addressesItem
-          ? _value.addressesItem
-          : addressesItem // ignore: cast_nullable_to_non_nullable
-              as AddressesItem,
-    ));
+  $Res call({Object? addressesItem = null}) {
+    return _then(
+      _$AddressDetailsStateDataImpl(
+        null == addressesItem
+            ? _value.addressesItem
+            : addressesItem // ignore: cast_nullable_to_non_nullable
+                as AddressesItem,
+      ),
+    );
   }
 
+  /// Create a copy of AddressDetailsState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AddressesItemCopyWith<$Res> get addressesItem {
@@ -2067,12 +2224,15 @@ class _$AddressDetailsStateDataImpl implements AddressDetailsStateData {
   @override
   int get hashCode => Object.hash(runtimeType, addressesItem);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AddressDetailsState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AddressDetailsStateDataImplCopyWith<_$AddressDetailsStateDataImpl>
-      get copyWith => __$$AddressDetailsStateDataImplCopyWithImpl<
-          _$AddressDetailsStateDataImpl>(this, _$identity);
+  get copyWith => __$$AddressDetailsStateDataImplCopyWithImpl<
+    _$AddressDetailsStateDataImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2142,9 +2302,12 @@ abstract class AddressDetailsStateData implements AddressDetailsState {
       _$AddressDetailsStateDataImpl;
 
   AddressesItem get addressesItem;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AddressDetailsState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AddressDetailsStateDataImplCopyWith<_$AddressDetailsStateDataImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -2154,57 +2317,54 @@ mixin _$AddressesWalletTypeFlag {
     required TResult Function() all,
     required TResult Function() regular,
     required TResult Function() amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? all,
     TResult? Function()? regular,
     TResult? Function()? amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? all,
     TResult Function()? regular,
     TResult Function()? amp,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(AddressesWalletTypeFlagAll value) all,
     required TResult Function(AddressesWalletTypeFlagRegular value) regular,
     required TResult Function(AddressesWalletTypeFlagAmp value) amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AddressesWalletTypeFlagAll value)? all,
     TResult? Function(AddressesWalletTypeFlagRegular value)? regular,
     TResult? Function(AddressesWalletTypeFlagAmp value)? amp,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AddressesWalletTypeFlagAll value)? all,
     TResult Function(AddressesWalletTypeFlagRegular value)? regular,
     TResult Function(AddressesWalletTypeFlagAmp value)? amp,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AddressesWalletTypeFlagCopyWith<$Res> {
-  factory $AddressesWalletTypeFlagCopyWith(AddressesWalletTypeFlag value,
-          $Res Function(AddressesWalletTypeFlag) then) =
-      _$AddressesWalletTypeFlagCopyWithImpl<$Res, AddressesWalletTypeFlag>;
+  factory $AddressesWalletTypeFlagCopyWith(
+    AddressesWalletTypeFlag value,
+    $Res Function(AddressesWalletTypeFlag) then,
+  ) = _$AddressesWalletTypeFlagCopyWithImpl<$Res, AddressesWalletTypeFlag>;
 }
 
 /// @nodoc
-class _$AddressesWalletTypeFlagCopyWithImpl<$Res,
-        $Val extends AddressesWalletTypeFlag>
+class _$AddressesWalletTypeFlagCopyWithImpl<
+  $Res,
+  $Val extends AddressesWalletTypeFlag
+>
     implements $AddressesWalletTypeFlagCopyWith<$Res> {
   _$AddressesWalletTypeFlagCopyWithImpl(this._value, this._then);
 
@@ -2212,25 +2372,34 @@ class _$AddressesWalletTypeFlagCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AddressesWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$AddressesWalletTypeFlagAllImplCopyWith<$Res> {
   factory _$$AddressesWalletTypeFlagAllImplCopyWith(
-          _$AddressesWalletTypeFlagAllImpl value,
-          $Res Function(_$AddressesWalletTypeFlagAllImpl) then) =
-      __$$AddressesWalletTypeFlagAllImplCopyWithImpl<$Res>;
+    _$AddressesWalletTypeFlagAllImpl value,
+    $Res Function(_$AddressesWalletTypeFlagAllImpl) then,
+  ) = __$$AddressesWalletTypeFlagAllImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesWalletTypeFlagAllImplCopyWithImpl<$Res>
-    extends _$AddressesWalletTypeFlagCopyWithImpl<$Res,
-        _$AddressesWalletTypeFlagAllImpl>
+    extends
+        _$AddressesWalletTypeFlagCopyWithImpl<
+          $Res,
+          _$AddressesWalletTypeFlagAllImpl
+        >
     implements _$$AddressesWalletTypeFlagAllImplCopyWith<$Res> {
   __$$AddressesWalletTypeFlagAllImplCopyWithImpl(
-      _$AddressesWalletTypeFlagAllImpl _value,
-      $Res Function(_$AddressesWalletTypeFlagAllImpl) _then)
-      : super(_value, _then);
+    _$AddressesWalletTypeFlagAllImpl _value,
+    $Res Function(_$AddressesWalletTypeFlagAllImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2329,20 +2498,26 @@ abstract class AddressesWalletTypeFlagAll implements AddressesWalletTypeFlag {
 /// @nodoc
 abstract class _$$AddressesWalletTypeFlagRegularImplCopyWith<$Res> {
   factory _$$AddressesWalletTypeFlagRegularImplCopyWith(
-          _$AddressesWalletTypeFlagRegularImpl value,
-          $Res Function(_$AddressesWalletTypeFlagRegularImpl) then) =
-      __$$AddressesWalletTypeFlagRegularImplCopyWithImpl<$Res>;
+    _$AddressesWalletTypeFlagRegularImpl value,
+    $Res Function(_$AddressesWalletTypeFlagRegularImpl) then,
+  ) = __$$AddressesWalletTypeFlagRegularImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesWalletTypeFlagRegularImplCopyWithImpl<$Res>
-    extends _$AddressesWalletTypeFlagCopyWithImpl<$Res,
-        _$AddressesWalletTypeFlagRegularImpl>
+    extends
+        _$AddressesWalletTypeFlagCopyWithImpl<
+          $Res,
+          _$AddressesWalletTypeFlagRegularImpl
+        >
     implements _$$AddressesWalletTypeFlagRegularImplCopyWith<$Res> {
   __$$AddressesWalletTypeFlagRegularImplCopyWithImpl(
-      _$AddressesWalletTypeFlagRegularImpl _value,
-      $Res Function(_$AddressesWalletTypeFlagRegularImpl) _then)
-      : super(_value, _then);
+    _$AddressesWalletTypeFlagRegularImpl _value,
+    $Res Function(_$AddressesWalletTypeFlagRegularImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2444,20 +2619,26 @@ abstract class AddressesWalletTypeFlagRegular
 /// @nodoc
 abstract class _$$AddressesWalletTypeFlagAmpImplCopyWith<$Res> {
   factory _$$AddressesWalletTypeFlagAmpImplCopyWith(
-          _$AddressesWalletTypeFlagAmpImpl value,
-          $Res Function(_$AddressesWalletTypeFlagAmpImpl) then) =
-      __$$AddressesWalletTypeFlagAmpImplCopyWithImpl<$Res>;
+    _$AddressesWalletTypeFlagAmpImpl value,
+    $Res Function(_$AddressesWalletTypeFlagAmpImpl) then,
+  ) = __$$AddressesWalletTypeFlagAmpImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesWalletTypeFlagAmpImplCopyWithImpl<$Res>
-    extends _$AddressesWalletTypeFlagCopyWithImpl<$Res,
-        _$AddressesWalletTypeFlagAmpImpl>
+    extends
+        _$AddressesWalletTypeFlagCopyWithImpl<
+          $Res,
+          _$AddressesWalletTypeFlagAmpImpl
+        >
     implements _$$AddressesWalletTypeFlagAmpImplCopyWith<$Res> {
   __$$AddressesWalletTypeFlagAmpImplCopyWithImpl(
-      _$AddressesWalletTypeFlagAmpImpl _value,
-      $Res Function(_$AddressesWalletTypeFlagAmpImpl) _then)
-      : super(_value, _then);
+    _$AddressesWalletTypeFlagAmpImpl _value,
+    $Res Function(_$AddressesWalletTypeFlagAmpImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesWalletTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2560,57 +2741,54 @@ mixin _$AddressesAddressTypeFlag {
     required TResult Function() all,
     required TResult Function() internal,
     required TResult Function() external,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? all,
     TResult? Function()? internal,
     TResult? Function()? external,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? all,
     TResult Function()? internal,
     TResult Function()? external,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(AddressesAddressTypeFlagAll value) all,
     required TResult Function(AddressesAddressTypeFlagInternal value) internal,
     required TResult Function(AddressesAddressTypeFlagExternal value) external,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AddressesAddressTypeFlagAll value)? all,
     TResult? Function(AddressesAddressTypeFlagInternal value)? internal,
     TResult? Function(AddressesAddressTypeFlagExternal value)? external,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AddressesAddressTypeFlagAll value)? all,
     TResult Function(AddressesAddressTypeFlagInternal value)? internal,
     TResult Function(AddressesAddressTypeFlagExternal value)? external,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AddressesAddressTypeFlagCopyWith<$Res> {
-  factory $AddressesAddressTypeFlagCopyWith(AddressesAddressTypeFlag value,
-          $Res Function(AddressesAddressTypeFlag) then) =
-      _$AddressesAddressTypeFlagCopyWithImpl<$Res, AddressesAddressTypeFlag>;
+  factory $AddressesAddressTypeFlagCopyWith(
+    AddressesAddressTypeFlag value,
+    $Res Function(AddressesAddressTypeFlag) then,
+  ) = _$AddressesAddressTypeFlagCopyWithImpl<$Res, AddressesAddressTypeFlag>;
 }
 
 /// @nodoc
-class _$AddressesAddressTypeFlagCopyWithImpl<$Res,
-        $Val extends AddressesAddressTypeFlag>
+class _$AddressesAddressTypeFlagCopyWithImpl<
+  $Res,
+  $Val extends AddressesAddressTypeFlag
+>
     implements $AddressesAddressTypeFlagCopyWith<$Res> {
   _$AddressesAddressTypeFlagCopyWithImpl(this._value, this._then);
 
@@ -2618,25 +2796,34 @@ class _$AddressesAddressTypeFlagCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AddressesAddressTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$AddressesAddressTypeFlagAllImplCopyWith<$Res> {
   factory _$$AddressesAddressTypeFlagAllImplCopyWith(
-          _$AddressesAddressTypeFlagAllImpl value,
-          $Res Function(_$AddressesAddressTypeFlagAllImpl) then) =
-      __$$AddressesAddressTypeFlagAllImplCopyWithImpl<$Res>;
+    _$AddressesAddressTypeFlagAllImpl value,
+    $Res Function(_$AddressesAddressTypeFlagAllImpl) then,
+  ) = __$$AddressesAddressTypeFlagAllImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesAddressTypeFlagAllImplCopyWithImpl<$Res>
-    extends _$AddressesAddressTypeFlagCopyWithImpl<$Res,
-        _$AddressesAddressTypeFlagAllImpl>
+    extends
+        _$AddressesAddressTypeFlagCopyWithImpl<
+          $Res,
+          _$AddressesAddressTypeFlagAllImpl
+        >
     implements _$$AddressesAddressTypeFlagAllImplCopyWith<$Res> {
   __$$AddressesAddressTypeFlagAllImplCopyWithImpl(
-      _$AddressesAddressTypeFlagAllImpl _value,
-      $Res Function(_$AddressesAddressTypeFlagAllImpl) _then)
-      : super(_value, _then);
+    _$AddressesAddressTypeFlagAllImpl _value,
+    $Res Function(_$AddressesAddressTypeFlagAllImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesAddressTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2736,20 +2923,26 @@ abstract class AddressesAddressTypeFlagAll implements AddressesAddressTypeFlag {
 /// @nodoc
 abstract class _$$AddressesAddressTypeFlagInternalImplCopyWith<$Res> {
   factory _$$AddressesAddressTypeFlagInternalImplCopyWith(
-          _$AddressesAddressTypeFlagInternalImpl value,
-          $Res Function(_$AddressesAddressTypeFlagInternalImpl) then) =
-      __$$AddressesAddressTypeFlagInternalImplCopyWithImpl<$Res>;
+    _$AddressesAddressTypeFlagInternalImpl value,
+    $Res Function(_$AddressesAddressTypeFlagInternalImpl) then,
+  ) = __$$AddressesAddressTypeFlagInternalImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesAddressTypeFlagInternalImplCopyWithImpl<$Res>
-    extends _$AddressesAddressTypeFlagCopyWithImpl<$Res,
-        _$AddressesAddressTypeFlagInternalImpl>
+    extends
+        _$AddressesAddressTypeFlagCopyWithImpl<
+          $Res,
+          _$AddressesAddressTypeFlagInternalImpl
+        >
     implements _$$AddressesAddressTypeFlagInternalImplCopyWith<$Res> {
   __$$AddressesAddressTypeFlagInternalImplCopyWithImpl(
-      _$AddressesAddressTypeFlagInternalImpl _value,
-      $Res Function(_$AddressesAddressTypeFlagInternalImpl) _then)
-      : super(_value, _then);
+    _$AddressesAddressTypeFlagInternalImpl _value,
+    $Res Function(_$AddressesAddressTypeFlagInternalImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesAddressTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2851,20 +3044,26 @@ abstract class AddressesAddressTypeFlagInternal
 /// @nodoc
 abstract class _$$AddressesAddressTypeFlagExternalImplCopyWith<$Res> {
   factory _$$AddressesAddressTypeFlagExternalImplCopyWith(
-          _$AddressesAddressTypeFlagExternalImpl value,
-          $Res Function(_$AddressesAddressTypeFlagExternalImpl) then) =
-      __$$AddressesAddressTypeFlagExternalImplCopyWithImpl<$Res>;
+    _$AddressesAddressTypeFlagExternalImpl value,
+    $Res Function(_$AddressesAddressTypeFlagExternalImpl) then,
+  ) = __$$AddressesAddressTypeFlagExternalImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesAddressTypeFlagExternalImplCopyWithImpl<$Res>
-    extends _$AddressesAddressTypeFlagCopyWithImpl<$Res,
-        _$AddressesAddressTypeFlagExternalImpl>
+    extends
+        _$AddressesAddressTypeFlagCopyWithImpl<
+          $Res,
+          _$AddressesAddressTypeFlagExternalImpl
+        >
     implements _$$AddressesAddressTypeFlagExternalImplCopyWith<$Res> {
   __$$AddressesAddressTypeFlagExternalImplCopyWithImpl(
-      _$AddressesAddressTypeFlagExternalImpl _value,
-      $Res Function(_$AddressesAddressTypeFlagExternalImpl) _then)
-      : super(_value, _then);
+    _$AddressesAddressTypeFlagExternalImpl _value,
+    $Res Function(_$AddressesAddressTypeFlagExternalImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesAddressTypeFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2969,52 +3168,49 @@ mixin _$AddressesBalanceFlag {
   TResult when<TResult extends Object?>({
     required TResult Function() showAll,
     required TResult Function() hideEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? showAll,
     TResult? Function()? hideEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? showAll,
     TResult Function()? hideEmpty,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(AddressesBalanceFlagShowAll value) showAll,
     required TResult Function(AddressesBalanceFlagHideEmpty value) hideEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AddressesBalanceFlagShowAll value)? showAll,
     TResult? Function(AddressesBalanceFlagHideEmpty value)? hideEmpty,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AddressesBalanceFlagShowAll value)? showAll,
     TResult Function(AddressesBalanceFlagHideEmpty value)? hideEmpty,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $AddressesBalanceFlagCopyWith<$Res> {
-  factory $AddressesBalanceFlagCopyWith(AddressesBalanceFlag value,
-          $Res Function(AddressesBalanceFlag) then) =
-      _$AddressesBalanceFlagCopyWithImpl<$Res, AddressesBalanceFlag>;
+  factory $AddressesBalanceFlagCopyWith(
+    AddressesBalanceFlag value,
+    $Res Function(AddressesBalanceFlag) then,
+  ) = _$AddressesBalanceFlagCopyWithImpl<$Res, AddressesBalanceFlag>;
 }
 
 /// @nodoc
-class _$AddressesBalanceFlagCopyWithImpl<$Res,
-        $Val extends AddressesBalanceFlag>
+class _$AddressesBalanceFlagCopyWithImpl<
+  $Res,
+  $Val extends AddressesBalanceFlag
+>
     implements $AddressesBalanceFlagCopyWith<$Res> {
   _$AddressesBalanceFlagCopyWithImpl(this._value, this._then);
 
@@ -3022,25 +3218,34 @@ class _$AddressesBalanceFlagCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AddressesBalanceFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$AddressesBalanceFlagShowAllImplCopyWith<$Res> {
   factory _$$AddressesBalanceFlagShowAllImplCopyWith(
-          _$AddressesBalanceFlagShowAllImpl value,
-          $Res Function(_$AddressesBalanceFlagShowAllImpl) then) =
-      __$$AddressesBalanceFlagShowAllImplCopyWithImpl<$Res>;
+    _$AddressesBalanceFlagShowAllImpl value,
+    $Res Function(_$AddressesBalanceFlagShowAllImpl) then,
+  ) = __$$AddressesBalanceFlagShowAllImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesBalanceFlagShowAllImplCopyWithImpl<$Res>
-    extends _$AddressesBalanceFlagCopyWithImpl<$Res,
-        _$AddressesBalanceFlagShowAllImpl>
+    extends
+        _$AddressesBalanceFlagCopyWithImpl<
+          $Res,
+          _$AddressesBalanceFlagShowAllImpl
+        >
     implements _$$AddressesBalanceFlagShowAllImplCopyWith<$Res> {
   __$$AddressesBalanceFlagShowAllImplCopyWithImpl(
-      _$AddressesBalanceFlagShowAllImpl _value,
-      $Res Function(_$AddressesBalanceFlagShowAllImpl) _then)
-      : super(_value, _then);
+    _$AddressesBalanceFlagShowAllImpl _value,
+    $Res Function(_$AddressesBalanceFlagShowAllImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesBalanceFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -3134,20 +3339,26 @@ abstract class AddressesBalanceFlagShowAll implements AddressesBalanceFlag {
 /// @nodoc
 abstract class _$$AddressesBalanceFlagHideEmptyImplCopyWith<$Res> {
   factory _$$AddressesBalanceFlagHideEmptyImplCopyWith(
-          _$AddressesBalanceFlagHideEmptyImpl value,
-          $Res Function(_$AddressesBalanceFlagHideEmptyImpl) then) =
-      __$$AddressesBalanceFlagHideEmptyImplCopyWithImpl<$Res>;
+    _$AddressesBalanceFlagHideEmptyImpl value,
+    $Res Function(_$AddressesBalanceFlagHideEmptyImpl) then,
+  ) = __$$AddressesBalanceFlagHideEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$AddressesBalanceFlagHideEmptyImplCopyWithImpl<$Res>
-    extends _$AddressesBalanceFlagCopyWithImpl<$Res,
-        _$AddressesBalanceFlagHideEmptyImpl>
+    extends
+        _$AddressesBalanceFlagCopyWithImpl<
+          $Res,
+          _$AddressesBalanceFlagHideEmptyImpl
+        >
     implements _$$AddressesBalanceFlagHideEmptyImplCopyWith<$Res> {
   __$$AddressesBalanceFlagHideEmptyImplCopyWithImpl(
-      _$AddressesBalanceFlagHideEmptyImpl _value,
-      $Res Function(_$AddressesBalanceFlagHideEmptyImpl) _then)
-      : super(_value, _then);
+    _$AddressesBalanceFlagHideEmptyImpl _value,
+    $Res Function(_$AddressesBalanceFlagHideEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AddressesBalanceFlag
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -3244,24 +3455,32 @@ mixin _$InputListItemExpandedState {
   int? get hash => throw _privateConstructorUsedError;
   bool get expanded => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputListItemExpandedState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InputListItemExpandedStateCopyWith<InputListItemExpandedState>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $InputListItemExpandedStateCopyWith<$Res> {
-  factory $InputListItemExpandedStateCopyWith(InputListItemExpandedState value,
-          $Res Function(InputListItemExpandedState) then) =
-      _$InputListItemExpandedStateCopyWithImpl<$Res,
-          InputListItemExpandedState>;
+  factory $InputListItemExpandedStateCopyWith(
+    InputListItemExpandedState value,
+    $Res Function(InputListItemExpandedState) then,
+  ) =
+      _$InputListItemExpandedStateCopyWithImpl<
+        $Res,
+        InputListItemExpandedState
+      >;
   @useResult
   $Res call({int? hash, bool expanded});
 }
 
 /// @nodoc
-class _$InputListItemExpandedStateCopyWithImpl<$Res,
-        $Val extends InputListItemExpandedState>
+class _$InputListItemExpandedStateCopyWithImpl<
+  $Res,
+  $Val extends InputListItemExpandedState
+>
     implements $InputListItemExpandedStateCopyWith<$Res> {
   _$InputListItemExpandedStateCopyWithImpl(this._value, this._then);
 
@@ -3270,22 +3489,26 @@ class _$InputListItemExpandedStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of InputListItemExpandedState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? hash = freezed,
-    Object? expanded = null,
-  }) {
-    return _then(_value.copyWith(
-      hash: freezed == hash
-          ? _value.hash
-          : hash // ignore: cast_nullable_to_non_nullable
-              as int?,
-      expanded: null == expanded
-          ? _value.expanded
-          : expanded // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
+  $Res call({Object? hash = freezed, Object? expanded = null}) {
+    return _then(
+      _value.copyWith(
+            hash:
+                freezed == hash
+                    ? _value.hash
+                    : hash // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            expanded:
+                null == expanded
+                    ? _value.expanded
+                    : expanded // ignore: cast_nullable_to_non_nullable
+                        as bool,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -3293,9 +3516,9 @@ class _$InputListItemExpandedStateCopyWithImpl<$Res,
 abstract class _$$InputListItemExpandedStateImplCopyWith<$Res>
     implements $InputListItemExpandedStateCopyWith<$Res> {
   factory _$$InputListItemExpandedStateImplCopyWith(
-          _$InputListItemExpandedStateImpl value,
-          $Res Function(_$InputListItemExpandedStateImpl) then) =
-      __$$InputListItemExpandedStateImplCopyWithImpl<$Res>;
+    _$InputListItemExpandedStateImpl value,
+    $Res Function(_$InputListItemExpandedStateImpl) then,
+  ) = __$$InputListItemExpandedStateImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int? hash, bool expanded});
@@ -3303,30 +3526,36 @@ abstract class _$$InputListItemExpandedStateImplCopyWith<$Res>
 
 /// @nodoc
 class __$$InputListItemExpandedStateImplCopyWithImpl<$Res>
-    extends _$InputListItemExpandedStateCopyWithImpl<$Res,
-        _$InputListItemExpandedStateImpl>
+    extends
+        _$InputListItemExpandedStateCopyWithImpl<
+          $Res,
+          _$InputListItemExpandedStateImpl
+        >
     implements _$$InputListItemExpandedStateImplCopyWith<$Res> {
   __$$InputListItemExpandedStateImplCopyWithImpl(
-      _$InputListItemExpandedStateImpl _value,
-      $Res Function(_$InputListItemExpandedStateImpl) _then)
-      : super(_value, _then);
+    _$InputListItemExpandedStateImpl _value,
+    $Res Function(_$InputListItemExpandedStateImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of InputListItemExpandedState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? hash = freezed,
-    Object? expanded = null,
-  }) {
-    return _then(_$InputListItemExpandedStateImpl(
-      hash: freezed == hash
-          ? _value.hash
-          : hash // ignore: cast_nullable_to_non_nullable
-              as int?,
-      expanded: null == expanded
-          ? _value.expanded
-          : expanded // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+  $Res call({Object? hash = freezed, Object? expanded = null}) {
+    return _then(
+      _$InputListItemExpandedStateImpl(
+        hash:
+            freezed == hash
+                ? _value.hash
+                : hash // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        expanded:
+            null == expanded
+                ? _value.expanded
+                : expanded // ignore: cast_nullable_to_non_nullable
+                    as bool,
+      ),
+    );
   }
 }
 
@@ -3359,26 +3588,33 @@ class _$InputListItemExpandedStateImpl implements _InputListItemExpandedState {
   @override
   int get hashCode => Object.hash(runtimeType, hash, expanded);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InputListItemExpandedState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InputListItemExpandedStateImplCopyWith<_$InputListItemExpandedStateImpl>
-      get copyWith => __$$InputListItemExpandedStateImplCopyWithImpl<
-          _$InputListItemExpandedStateImpl>(this, _$identity);
+  get copyWith => __$$InputListItemExpandedStateImplCopyWithImpl<
+    _$InputListItemExpandedStateImpl
+  >(this, _$identity);
 }
 
 abstract class _InputListItemExpandedState
     implements InputListItemExpandedState {
-  const factory _InputListItemExpandedState(
-      {final int? hash,
-      final bool expanded}) = _$InputListItemExpandedStateImpl;
+  const factory _InputListItemExpandedState({
+    final int? hash,
+    final bool expanded,
+  }) = _$InputListItemExpandedStateImpl;
 
   @override
   int? get hash;
   @override
   bool get expanded;
+
+  /// Create a copy of InputListItemExpandedState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InputListItemExpandedStateImplCopyWith<_$InputListItemExpandedStateImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

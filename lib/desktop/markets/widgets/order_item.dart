@@ -1,89 +1,167 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
+import 'package:sideswap/common/styles/theme_extensions.dart';
+import 'package:sideswap/common/widgets/order_depth_container.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
-import 'package:sideswap/models/amount_to_string_model.dart';
-import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/desktop/markets/widgets/d_edit_order_dialog.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/orders_panel_provider.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class OrderItem extends ConsumerWidget {
-  const OrderItem({
-    super.key,
-    required this.order,
-  });
+class OrderItem extends HookConsumerWidget {
+  const OrderItem({super.key, this.order});
 
-  final RequestOrder order;
+  final InternalUiOrder? order;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset =
-        ref.watch(assetsStateProvider.select((value) => value[order.assetId]));
-    final pricedInLiquid =
-        ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
-    final assetPrecision = ref
-        .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: order.assetId);
-    final isLeft = order.sendBitcoins == pricedInLiquid;
-    final color = isLeft ? buyColor : sellColor;
-    final amount = pricedInLiquid ? order.assetAmount : order.bitcoinAmount;
-    final amountPrecision = pricedInLiquid ? assetPrecision : 8;
-    final amountProvider = ref.watch(amountToStringProvider);
-    final amountStr = amountProvider.amountToString(
-        AmountToStringParameters(amount: amount, precision: amountPrecision));
+    final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
+    final color =
+        order?.tradeDir == TradeDir.BUY
+            ? Theme.of(context).extension<MarketColorsTheme>()!.buyColor
+            : Theme.of(context).extension<MarketColorsTheme>()!.sellColor;
 
     final list = [
-      Text(
-        amountStr,
-        style: const TextStyle(
-          fontSize: 13,
-        ),
-      ),
+      Text(order?.amountString ?? '', style: const TextStyle(fontSize: 13)),
       const Spacer(),
-      if (order.own)
-        Container(
-          width: 5,
-          height: 5,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-          ),
+      if (order?.orderType == InternalUiOrderType.own())
+        Row(
+          children: [
+            Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: order == null ? null : color,
+              ),
+            ),
+          ],
         ),
       const SizedBox(width: 6),
       Text(
-        priceStr(order.price, pricedInLiquid),
-        style: TextStyle(
-          fontSize: 13,
-          color: color,
-        ),
+        order?.priceString ?? '',
+        style: TextStyle(fontSize: 13, color: color),
       ),
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 3),
       child: DHoverButton(
         builder: (context, states) {
-          return Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              color: !states.isHovering
-                  ? SideSwapColors.chathamsBlue
-                  : (isLeft
-                      ? const Color(0xFF176683)
-                      : const Color(0xFF4C5D79)),
+          final percent = order?.amountPercent ?? .0;
+          return CustomPaint(
+            painter: OrderDepthContainerPainer(
+              drawEmpty: order == null,
+              depthPercent: percent,
+              backgroundColor:
+                  !states.isHovering
+                      ? SideSwapColors.chathamsBlue
+                      : (order?.tradeDir == TradeDir.BUY
+                          ? const Color(0xFF176683)
+                          : const Color(0xFF4C5D79)),
+              depthColor:
+                  order?.tradeDir == TradeDir.BUY
+                      ? Theme.of(context)
+                          .extension<MarketColorsTheme>()!
+                          .buyColor!
+                          .withValues(alpha: 0.2)
+                      : Theme.of(context)
+                          .extension<MarketColorsTheme>()!
+                          .sellColor!
+                          .withValues(alpha: 0.2),
+              borderRadius: const BorderRadius.all(Radius.circular(4)),
+              border:
+                  order?.orderType == InternalUiOrderType.own()
+                      ? order?.tradeDir == TradeDir.BUY
+                          ? Border.all(
+                            color:
+                                Theme.of(
+                                  context,
+                                ).extension<MarketColorsTheme>()!.buyColor!,
+                          )
+                          : Border.all(
+                            color:
+                                Theme.of(
+                                  context,
+                                ).extension<MarketColorsTheme>()!.sellColor!,
+                          )
+                      : null,
+              side:
+                  order?.tradeDir == TradeDir.BUY
+                      ? OrderDepthSide.right()
+                      : OrderDepthSide.left(),
             ),
-            child: Row(children: isLeft ? list : list.reversed.toList()),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+              child: Row(
+                children:
+                    order?.tradeDir == TradeDir.BUY
+                        ? list
+                        : list.reversed.toList(),
+              ),
+            ),
           );
         },
-        onPressed: () {
-          if (order.own) {
-            ref.read(walletProvider).setOrderRequestView(order);
-          } else {
-            ref.read(walletProvider).linkOrder(order.orderId);
+        onPressed: () async {
+          if (order == null) {
+            return;
+          }
+
+          final uiOrder = uiOwnOrders.firstWhereOrNull(
+            (e) => e.orderId == order?.orderId,
+          );
+
+          if (FlavorConfig.isDesktop) {
+            if (uiOrder != null) {
+              ref
+                  .read(marketEditDetailsOrderNotifierProvider.notifier)
+                  .setState(uiOrder);
+
+              await showDialog<void>(
+                context: context,
+                builder: (context) {
+                  return DEditOrderDialog();
+                },
+                routeSettings: RouteSettings(name: orderEditRouteName),
+                useRootNavigator: false,
+              );
+
+              ref.invalidate(marketEditDetailsOrderNotifierProvider);
+              return;
+            }
+          }
+
+          // * Mobile can't edit orders!
+
+          // update limit order panel by order amount, price and direction
+          ref.invalidate(marketTypeSwitchStateNotifierProvider);
+          if (order != null && order!.tradeDir != null) {
+            ref
+                .read(tradeDirStateNotifierProvider.notifier)
+                .setSide(
+                  order?.tradeDir == TradeDir.BUY
+                      ? TradeDir.SELL
+                      : TradeDir.BUY,
+                );
+            ref
+                .read(limitOrderPriceAmountControllerNotifierProvider.notifier)
+                .setState(order!.priceString);
+          }
+
+          // move to mobile limit page
+          if (!FlavorConfig.isDesktop) {
+            // do not move if it's own order
+            if (uiOrder != null) {
+              return;
+            }
+
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.marketLimit);
           }
         },
       ),

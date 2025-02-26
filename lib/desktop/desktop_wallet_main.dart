@@ -32,8 +32,9 @@ class DesktopWalletMain extends HookConsumerWidget {
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
       WalletMainNavigationItemEnum.transactions => const DTxHistory(),
       WalletMainNavigationItemEnum.markets => const DMarkets(),
-      WalletMainNavigationItemEnum.swap =>
-        const DSwapMain(key: ValueKey(false)),
+      WalletMainNavigationItemEnum.swap => const DSwapMain(
+        key: ValueKey(false),
+      ),
       WalletMainNavigationItemEnum.pegs => const DSwapMain(key: ValueKey(true)),
       WalletMainNavigationItemEnum.addresses => const DAddresses(),
     };
@@ -48,17 +49,16 @@ class DesktopWalletMain extends HookConsumerWidget {
       content: PageStorage(
         bucket: pageStorageBucket,
         child: Column(
-          children: [
-            Expanded(child: getChild(walletMainArguments)),
-          ],
+          children: [Expanded(child: getChild(walletMainArguments))],
         ),
       ),
       bottomBar: DesktopMainBottomNavigationBar(
         currentIndex: walletMainArguments.currentIndex,
         onTap: (index) {
           ref.read(swapHelperProvider).swapReset();
-          final newWalletMainArguments =
-              walletMainArguments.fromIndexDesktop(index);
+          final newWalletMainArguments = walletMainArguments.fromIndexDesktop(
+            index,
+          );
           ref
               .read(uiStateArgsNotifierProvider.notifier)
               .setWalletMainArguments(newWalletMainArguments);
@@ -78,9 +78,7 @@ class DesktopWalletMain extends HookConsumerWidget {
 }
 
 class DSwapMain extends StatelessWidget {
-  const DSwapMain({
-    super.key,
-  });
+  const DSwapMain({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -108,9 +106,7 @@ class DSwapMain extends StatelessWidget {
 }
 
 class TopToolbar extends ConsumerWidget {
-  const TopToolbar({
-    super.key,
-  });
+  const TopToolbar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

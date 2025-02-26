@@ -16,6 +16,7 @@ import 'package:sideswap/listeners/warmup_app_listener.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
+import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/route_providers.dart';
@@ -32,8 +33,11 @@ class DesktopRootWidget extends HookConsumerWidget {
     final navigatorKey = ref.watch(navigatorKeyProvider);
 
     useEffect(() {
-      Future<bool> onPinBlockade(String? title, bool showBackButton,
-          PinKeyboardAcceptType iconType) async {
+      Future<bool> onPinBlockade(
+        String? title,
+        bool showBackButton,
+        PinKeyboardAcceptType iconType,
+      ) async {
         final ret = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -64,6 +68,8 @@ class DesktopRootWidget extends HookConsumerWidget {
         ref
             .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.noWallet);
+        ref.invalidate(serverLoginNotifierProvider);
+        ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
       }
     });
 
@@ -99,24 +105,24 @@ class DesktopRootWidget extends HookConsumerWidget {
             return switch (env) {
               0 => const SizedBox(),
               _ => Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 5,
-                      ),
-                      child: Text(
-                        envName(env),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.white,
-                        ),
+                alignment: Alignment.topCenter,
+                child: Container(
+                  color: Colors.transparent,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top + 5,
+                    ),
+                    child: Text(
+                      envName(env),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
+              ),
             };
           },
         ),

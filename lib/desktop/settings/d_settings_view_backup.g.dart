@@ -12,15 +12,16 @@ String _$isCopyEnabledHash() => r'95d79de474a1dbf4d669979b15d48d5cdc5aefd3';
 @ProviderFor(IsCopyEnabled)
 final isCopyEnabledProvider =
     AutoDisposeNotifierProvider<IsCopyEnabled, bool>.internal(
-  IsCopyEnabled.new,
-  name: r'isCopyEnabledProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$isCopyEnabledHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      IsCopyEnabled.new,
+      name: r'isCopyEnabledProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$isCopyEnabledHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$IsCopyEnabled = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

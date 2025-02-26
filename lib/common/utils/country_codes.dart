@@ -6,7 +6,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '93',
     'currencyCode': 'AFN',
     'currencyName': 'Afghan afghani',
-    'isoCode': 'AFG'
+    'isoCode': 'AFG',
   },
   {
     'name': 'Åland',
@@ -15,7 +15,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+358-18',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'ALA'
+    'isoCode': 'ALA',
   },
   {
     'name': 'Shqipëria',
@@ -24,7 +24,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '355',
     'currencyCode': 'ALL',
     'currencyName': 'Albanian lek',
-    'isoCode': 'ALB'
+    'isoCode': 'ALB',
   },
   {
     'name': 'الجزائر',
@@ -33,7 +33,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '213',
     'currencyCode': 'DZD',
     'currencyName': 'Algerian dinar',
-    'isoCode': 'DZA'
+    'isoCode': 'DZA',
   },
   {
     'name': 'American Samoa',
@@ -42,7 +42,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-684',
     'currencyCode': 'USD',
     'currencyName': 'United State Dollar',
-    'isoCode': 'ASM'
+    'isoCode': 'ASM',
   },
   {
     'name': 'Andorra',
@@ -51,7 +51,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '376',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'AND'
+    'isoCode': 'AND',
   },
   {
     'name': 'Angola',
@@ -60,7 +60,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '244',
     'currencyCode': 'AOA',
     'currencyName': 'Angolan kwanza',
-    'isoCode': 'AGO'
+    'isoCode': 'AGO',
   },
   {
     'name': 'Anguilla',
@@ -69,9 +69,9 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-264',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'AIA'
+    'isoCode': 'AIA',
   },
-/*
+  /*
   {
     'name': 'Antarctica',
     'english': 'Antarctica',
@@ -89,7 +89,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-268',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'ATG'
+    'isoCode': 'ATG',
   },
   {
     'name': 'Argentina',
@@ -98,7 +98,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '54',
     'currencyCode': 'ARS',
     'currencyName': 'Argentine peso',
-    'isoCode': 'ARG'
+    'isoCode': 'ARG',
   },
   {
     'name': 'Հայաստան',
@@ -107,7 +107,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '374',
     'currencyCode': 'AMD',
     'currencyName': 'Armenian dram',
-    'isoCode': 'ARM'
+    'isoCode': 'ARM',
   },
   {
     'name': 'Aruba',
@@ -116,7 +116,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '297',
     'currencyCode': 'AWG',
     'currencyName': 'Aruban florin',
-    'isoCode': 'ABW'
+    'isoCode': 'ABW',
   },
   {
     'name': 'Australia',
@@ -125,7 +125,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '61',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'AUS'
+    'isoCode': 'AUS',
   },
   {
     'name': 'Österreich',
@@ -134,7 +134,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '43',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'AUT'
+    'isoCode': 'AUT',
   },
   {
     'name': 'Azərbaycan',
@@ -143,7 +143,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '994',
     'currencyCode': 'AZN',
     'currencyName': 'Azerbaijani manat',
-    'isoCode': 'AZE'
+    'isoCode': 'AZE',
   },
   {
     'name': 'Bahamas',
@@ -152,7 +152,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-242',
     'currencyCode': 'BSD',
     'currencyName': 'Bahamian dollar',
-    'isoCode': 'BHS'
+    'isoCode': 'BHS',
   },
   {
     'name': '‏البحرين',
@@ -161,7 +161,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '973',
     'currencyCode': 'BHD',
     'currencyName': 'Bahraini dinar',
-    'isoCode': 'BHR'
+    'isoCode': 'BHR',
   },
   {
     'name': 'Bangladesh',
@@ -170,7 +170,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '880',
     'currencyCode': 'BDT',
     'currencyName': 'Bangladeshi taka',
-    'isoCode': 'BGD'
+    'isoCode': 'BGD',
   },
   {
     'name': 'Barbados',
@@ -179,7 +179,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-246',
     'currencyCode': 'BBD',
     'currencyName': 'Barbadian dollar',
-    'isoCode': 'BRB'
+    'isoCode': 'BRB',
   },
   {
     'name': 'Белару́сь',
@@ -188,7 +188,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '375',
     'currencyCode': 'BYR',
     'currencyName': 'New Belarusian ruble',
-    'isoCode': 'BLR'
+    'isoCode': 'BLR',
   },
   {
     'name': 'België',
@@ -197,7 +197,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '32',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'BEL'
+    'isoCode': 'BEL',
   },
   {
     'name': 'Belize',
@@ -206,7 +206,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '501',
     'currencyCode': 'BZD',
     'currencyName': 'Belize dollar',
-    'isoCode': 'BLZ'
+    'isoCode': 'BLZ',
   },
   {
     'name': 'Bénin',
@@ -215,7 +215,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '229',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'BEN'
+    'isoCode': 'BEN',
   },
   {
     'name': 'Bermuda',
@@ -224,7 +224,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-441',
     'currencyCode': 'BMD',
     'currencyName': 'Bermudian dollar',
-    'isoCode': 'BMU'
+    'isoCode': 'BMU',
   },
   {
     'name': 'ʼbrug-yul',
@@ -233,7 +233,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '975',
     'currencyCode': 'BTN',
     'currencyName': 'Bhutanese ngultrum',
-    'isoCode': 'BTN'
+    'isoCode': 'BTN',
   },
   {
     'name': 'Bolivia',
@@ -242,7 +242,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '591',
     'currencyCode': 'BOB',
     'currencyName': 'Bolivian boliviano',
-    'isoCode': 'BOL'
+    'isoCode': 'BOL',
   },
   {
     'name': 'Bonaire, Saint Eustatius and Saba',
@@ -251,7 +251,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '599',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'BES'
+    'isoCode': 'BES',
   },
   {
     'name': 'Bosna i Hercegovina',
@@ -260,7 +260,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '387',
     'currencyCode': 'BAM',
     'currencyName': 'Bosnia and Herzegovina convertible mark',
-    'isoCode': 'BIH'
+    'isoCode': 'BIH',
   },
   {
     'name': 'Botswana',
@@ -269,7 +269,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '267',
     'currencyCode': 'BWP',
     'currencyName': 'Botswana pula',
-    'isoCode': 'BWA'
+    'isoCode': 'BWA',
   },
   {
     'name': 'Bouvetøya',
@@ -278,7 +278,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '',
     'currencyCode': 'NOK',
     'currencyName': 'Norwegian krone',
-    'isoCode': 'BVT'
+    'isoCode': 'BVT',
   },
   {
     'name': 'Brasil',
@@ -287,7 +287,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '55',
     'currencyCode': 'BRL',
     'currencyName': 'Brazilian real',
-    'isoCode': 'BRA'
+    'isoCode': 'BRA',
   },
   {
     'name': 'British Indian Ocean Territory',
@@ -296,7 +296,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '246',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'IOT'
+    'isoCode': 'IOT',
   },
   {
     'name': 'British Virgin Islands',
@@ -305,7 +305,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-284',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'VGB'
+    'isoCode': 'VGB',
   },
   {
     'name': 'Negara Brunei Darussalam',
@@ -314,7 +314,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '673',
     'currencyCode': 'BND',
     'currencyName': 'Brunei dollar',
-    'isoCode': 'BRN'
+    'isoCode': 'BRN',
   },
   {
     'name': 'България',
@@ -323,7 +323,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '359',
     'currencyCode': 'BGN',
     'currencyName': 'Bulgarian lev',
-    'isoCode': 'BGR'
+    'isoCode': 'BGR',
   },
   {
     'name': 'Burkina Faso',
@@ -332,7 +332,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '226',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'BFA'
+    'isoCode': 'BFA',
   },
   {
     'name': 'Burundi',
@@ -341,7 +341,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '257',
     'currencyCode': 'BIF',
     'currencyName': 'Burundian franc',
-    'isoCode': 'BDI'
+    'isoCode': 'BDI',
   },
   {
     'name': 'Kâmpŭchéa',
@@ -350,7 +350,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '855',
     'currencyCode': 'KHR',
     'currencyName': 'Cambodian riel',
-    'isoCode': 'KHM'
+    'isoCode': 'KHM',
   },
   {
     'name': 'Cameroon',
@@ -359,7 +359,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '237',
     'currencyCode': 'XAF',
     'currencyName': 'Central African CFA franc',
-    'isoCode': 'CMR'
+    'isoCode': 'CMR',
   },
   {
     'name': 'Canada',
@@ -368,7 +368,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '1',
     'currencyCode': 'CAD',
     'currencyName': 'Canadian dollar',
-    'isoCode': 'CAN'
+    'isoCode': 'CAN',
   },
   {
     'name': 'Cabo Verde',
@@ -377,7 +377,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '238',
     'currencyCode': 'CVE',
     'currencyName': 'Cape Verdean escudo',
-    'isoCode': 'CPV'
+    'isoCode': 'CPV',
   },
   {
     'name': 'Cayman Islands',
@@ -386,7 +386,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-345',
     'currencyCode': 'KYD',
     'currencyName': 'Cayman Islands dollar',
-    'isoCode': 'CYM'
+    'isoCode': 'CYM',
   },
   {
     'name': 'Ködörösêse tî Bêafrîka',
@@ -395,7 +395,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '236',
     'currencyCode': 'XAF',
     'currencyName': 'Central African CFA franc',
-    'isoCode': 'CAF'
+    'isoCode': 'CAF',
   },
   {
     'name': 'Tchad',
@@ -404,7 +404,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '235',
     'currencyCode': 'XAF',
     'currencyName': 'Central African CFA franc',
-    'isoCode': 'TCD'
+    'isoCode': 'TCD',
   },
   {
     'name': 'Chile',
@@ -413,7 +413,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '56',
     'currencyCode': 'CLP',
     'currencyName': 'Chilean peso',
-    'isoCode': 'CHL'
+    'isoCode': 'CHL',
   },
   {
     'name': '中国',
@@ -422,7 +422,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '86',
     'currencyCode': 'CNY',
     'currencyName': 'Chinese yuan',
-    'isoCode': 'CHN'
+    'isoCode': 'CHN',
   },
   {
     'name': 'Christmas Island',
@@ -431,7 +431,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '61',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'CXR'
+    'isoCode': 'CXR',
   },
   {
     'name': 'Cocos (Keeling) Islands',
@@ -440,7 +440,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '61',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'CCK'
+    'isoCode': 'CCK',
   },
   {
     'name': 'Colombia',
@@ -449,7 +449,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '57',
     'currencyCode': 'COP',
     'currencyName': 'Colombian peso',
-    'isoCode': 'COL'
+    'isoCode': 'COL',
   },
   {
     'name': 'Kòrsou',
@@ -467,7 +467,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '269',
     'currencyCode': 'KMF',
     'currencyName': 'Comorian franc',
-    'isoCode': 'COM'
+    'isoCode': 'COM',
   },
   {
     'name': 'Cook Islands',
@@ -476,7 +476,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '682',
     'currencyCode': 'NZD',
     'currencyName': 'New Zealand dollar',
-    'isoCode': 'COK'
+    'isoCode': 'COK',
   },
   {
     'name': 'Costa Rica',
@@ -485,7 +485,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '506',
     'currencyCode': 'CRC',
     'currencyName': 'Costa Rican colón',
-    'isoCode': 'CRI'
+    'isoCode': 'CRI',
   },
   {
     'name': 'Hrvatska',
@@ -494,7 +494,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '385',
     'currencyCode': 'HRK',
     'currencyName': 'Croatian kuna',
-    'isoCode': 'HRV'
+    'isoCode': 'HRV',
   },
   {
     'name': 'Cuba',
@@ -503,7 +503,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '53',
     'currencyCode': 'CUP',
     'currencyName': 'Cuban convertible peso',
-    'isoCode': 'CUB'
+    'isoCode': 'CUB',
   },
   {
     'name': 'Κύπρος',
@@ -512,7 +512,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '357',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'CYP'
+    'isoCode': 'CYP',
   },
   {
     'name': 'Česká republika',
@@ -521,7 +521,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '420',
     'currencyCode': 'CZK',
     'currencyName': 'Czech koruna',
-    'isoCode': 'CZE'
+    'isoCode': 'CZE',
   },
   {
     'name': 'République démocratique du Congo',
@@ -530,7 +530,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '243',
     'currencyCode': 'CDF',
     'currencyName': 'Congolese franc',
-    'isoCode': 'COD'
+    'isoCode': 'COD',
   },
   {
     'name': 'Danmark',
@@ -539,7 +539,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '45',
     'currencyCode': 'DKK',
     'currencyName': 'Danish krone',
-    'isoCode': 'DNK'
+    'isoCode': 'DNK',
   },
   {
     'name': 'Djibouti',
@@ -548,7 +548,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '253',
     'currencyCode': 'DJF',
     'currencyName': 'Djiboutian franc',
-    'isoCode': 'DJI'
+    'isoCode': 'DJI',
   },
   {
     'name': 'Dominica',
@@ -557,7 +557,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-767',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'DMA'
+    'isoCode': 'DMA',
   },
   {
     'name': 'República Dominicana',
@@ -566,7 +566,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-809 and 1-829',
     'currencyCode': 'DOP',
     'currencyName': 'Dominican peso',
-    'isoCode': 'DOM'
+    'isoCode': 'DOM',
   },
   {
     'name': 'Timor-Leste',
@@ -575,7 +575,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '670',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'TLS'
+    'isoCode': 'TLS',
   },
   {
     'name': 'Ecuador',
@@ -584,7 +584,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '593',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'ECU'
+    'isoCode': 'ECU',
   },
   {
     'name': 'مصر‎',
@@ -593,7 +593,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '20',
     'currencyCode': 'EGP',
     'currencyName': 'Egyptian pound',
-    'isoCode': 'EGY'
+    'isoCode': 'EGY',
   },
   {
     'name': 'الصحراء الغربية',
@@ -602,7 +602,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '212',
     'currencyCode': 'MAD',
     'currencyName': 'Moroccan Dirham',
-    'isoCode': 'ESH'
+    'isoCode': 'ESH',
   },
   {
     'name': 'El Salvador',
@@ -611,7 +611,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '503',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'SLV'
+    'isoCode': 'SLV',
   },
   {
     'name': 'Guinea Ecuatorial',
@@ -620,7 +620,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '240',
     'currencyCode': 'XAF',
     'currencyName': 'Central African CFA franc',
-    'isoCode': 'GNQ'
+    'isoCode': 'GNQ',
   },
   {
     'name': 'ኤርትራ',
@@ -629,7 +629,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '291',
     'currencyCode': 'ERN',
     'currencyName': 'Eritrean nakfa',
-    'isoCode': 'ERI'
+    'isoCode': 'ERI',
   },
   {
     'name': 'Eesti',
@@ -638,7 +638,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '372',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'EST'
+    'isoCode': 'EST',
   },
   {
     'name': 'ኢትዮጵያ',
@@ -647,7 +647,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '251',
     'currencyCode': 'ETB',
     'currencyName': 'Ethiopian birr',
-    'isoCode': 'ETH'
+    'isoCode': 'ETH',
   },
   {
     'name': 'Falkland Islands',
@@ -656,7 +656,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '500',
     'currencyCode': 'FKP',
     'currencyName': 'Falkland Islands pound',
-    'isoCode': 'FLK'
+    'isoCode': 'FLK',
   },
   {
     'name': 'Føroyar',
@@ -665,7 +665,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '298',
     'currencyCode': 'DKK',
     'currencyName': 'Danish krone',
-    'isoCode': 'FRO'
+    'isoCode': 'FRO',
   },
   {
     'name': 'Fiji',
@@ -674,7 +674,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '679',
     'currencyCode': 'FJD',
     'currencyName': 'Fijian dollar',
-    'isoCode': 'FJI'
+    'isoCode': 'FJI',
   },
   {
     'name': 'Suomi',
@@ -683,7 +683,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '358',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'FIN'
+    'isoCode': 'FIN',
   },
   {
     'name': 'France',
@@ -692,7 +692,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '33',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'FRA'
+    'isoCode': 'FRA',
   },
   {
     'name': 'Guyane française',
@@ -701,7 +701,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '594',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'GUF'
+    'isoCode': 'GUF',
   },
   {
     'name': 'Polynésie française',
@@ -710,7 +710,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '689',
     'currencyCode': 'XPF',
     'currencyName': 'CFP franc',
-    'isoCode': 'PYF'
+    'isoCode': 'PYF',
   },
   {
     'name': 'Territoire des Terres australes et antarctiques fr',
@@ -719,7 +719,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'ATF'
+    'isoCode': 'ATF',
   },
   {
     'name': 'Gabon',
@@ -728,7 +728,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '241',
     'currencyCode': 'XAF',
     'currencyName': 'Central African CFA franc',
-    'isoCode': 'GAB'
+    'isoCode': 'GAB',
   },
   {
     'name': 'Gambia',
@@ -737,7 +737,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '220',
     'currencyCode': 'GMD',
     'currencyName': 'Gambian dalasi',
-    'isoCode': 'GMB'
+    'isoCode': 'GMB',
   },
   {
     'name': 'საქართველო',
@@ -746,7 +746,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '995',
     'currencyCode': 'GEL',
     'currencyName': 'Georgian Lari',
-    'isoCode': 'GEO'
+    'isoCode': 'GEO',
   },
   {
     'name': 'Deutschland',
@@ -755,7 +755,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '49',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'DEU'
+    'isoCode': 'DEU',
   },
   {
     'name': 'Ghana',
@@ -764,7 +764,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '233',
     'currencyCode': 'GHS',
     'currencyName': 'Ghanaian cedi',
-    'isoCode': 'GHA'
+    'isoCode': 'GHA',
   },
   {
     'name': 'Gibraltar',
@@ -773,7 +773,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '350',
     'currencyCode': 'GIP',
     'currencyName': 'Gibraltar pound',
-    'isoCode': 'GIB'
+    'isoCode': 'GIB',
   },
   {
     'name': 'Ελλάδα',
@@ -782,7 +782,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '30',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'GRC'
+    'isoCode': 'GRC',
   },
   {
     'name': 'Kalaallit Nunaat',
@@ -791,7 +791,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '299',
     'currencyCode': 'DKK',
     'currencyName': 'Danish krone',
-    'isoCode': 'GRL'
+    'isoCode': 'GRL',
   },
   {
     'name': 'Grenada',
@@ -800,7 +800,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-473',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'GRD'
+    'isoCode': 'GRD',
   },
   {
     'name': 'Guadeloupe',
@@ -809,7 +809,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '590',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'GLP'
+    'isoCode': 'GLP',
   },
   {
     'name': 'Guam',
@@ -818,7 +818,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-671',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'GUM'
+    'isoCode': 'GUM',
   },
   {
     'name': 'Guatemala',
@@ -827,7 +827,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '502',
     'currencyCode': 'GTQ',
     'currencyName': 'Guatemalan quetzal',
-    'isoCode': 'GTM'
+    'isoCode': 'GTM',
   },
   {
     'name': 'Guernsey',
@@ -836,7 +836,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+44-1481',
     'currencyCode': 'GBP',
     'currencyName': 'British pound',
-    'isoCode': 'GGY'
+    'isoCode': 'GGY',
   },
   {
     'name': 'Guinée',
@@ -845,7 +845,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '224',
     'currencyCode': 'GNF',
     'currencyName': 'Guinean franc',
-    'isoCode': 'GIN'
+    'isoCode': 'GIN',
   },
   {
     'name': 'Guiné-Bissau',
@@ -854,7 +854,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '245',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'GNB'
+    'isoCode': 'GNB',
   },
   {
     'name': 'Guyana',
@@ -863,7 +863,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '592',
     'currencyCode': 'GYD',
     'currencyName': 'Guyanese dollar',
-    'isoCode': 'GUY'
+    'isoCode': 'GUY',
   },
   {
     'name': 'Haïti',
@@ -872,7 +872,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '509',
     'currencyCode': 'HTG',
     'currencyName': 'Haitian gourde',
-    'isoCode': 'HTI'
+    'isoCode': 'HTI',
   },
   {
     'name': 'Heard Island and McDonald Islands',
@@ -881,7 +881,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': ' ',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'HMD'
+    'isoCode': 'HMD',
   },
   {
     'name': 'Honduras',
@@ -890,7 +890,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '504',
     'currencyCode': 'HNL',
     'currencyName': 'Honduran lempira',
-    'isoCode': 'HND'
+    'isoCode': 'HND',
   },
   {
     'name': '香港',
@@ -899,7 +899,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '852',
     'currencyCode': 'HKD',
     'currencyName': 'Hong Kong dollar',
-    'isoCode': 'HKG'
+    'isoCode': 'HKG',
   },
   {
     'name': 'Magyarország',
@@ -908,7 +908,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '36',
     'currencyCode': 'HUF',
     'currencyName': 'Hungarian forint',
-    'isoCode': 'HUN'
+    'isoCode': 'HUN',
   },
   {
     'name': 'Ísland',
@@ -917,7 +917,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '354',
     'currencyCode': 'ISK',
     'currencyName': 'Icelandic króna',
-    'isoCode': 'ISL'
+    'isoCode': 'ISL',
   },
   {
     'name': 'भारत',
@@ -926,7 +926,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '91',
     'currencyCode': 'INR',
     'currencyName': 'Indian rupee',
-    'isoCode': 'IND'
+    'isoCode': 'IND',
   },
   {
     'name': 'Indonesia',
@@ -935,7 +935,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '62',
     'currencyCode': 'IDR',
     'currencyName': 'Indonesian rupiah',
-    'isoCode': 'IDN'
+    'isoCode': 'IDN',
   },
   {
     'name': 'ایران',
@@ -944,7 +944,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '98',
     'currencyCode': 'IRR',
     'currencyName': 'Iranian rial',
-    'isoCode': 'IRN'
+    'isoCode': 'IRN',
   },
   {
     'name': 'العراق',
@@ -953,7 +953,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '964',
     'currencyCode': 'IQD',
     'currencyName': 'Iraqi dinar',
-    'isoCode': 'IRQ'
+    'isoCode': 'IRQ',
   },
   {
     'name': 'Éire',
@@ -962,7 +962,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '353',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'IRL'
+    'isoCode': 'IRL',
   },
   {
     'name': 'Isle of Man',
@@ -971,7 +971,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+44-1624',
     'currencyCode': 'GBP',
     'currencyName': 'British pound',
-    'isoCode': 'IMN'
+    'isoCode': 'IMN',
   },
   {
     'name': 'יִשְׂרָאֵל',
@@ -980,7 +980,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '972',
     'currencyCode': 'ILS',
     'currencyName': 'Israeli new shekel',
-    'isoCode': 'ISR'
+    'isoCode': 'ISR',
   },
   {
     'name': 'Italia',
@@ -989,7 +989,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '39',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'ITA'
+    'isoCode': 'ITA',
   },
   {
     'name': "Côte d'Ivoire",
@@ -998,7 +998,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '225',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'CIV'
+    'isoCode': 'CIV',
   },
   {
     'name': 'Jamaica',
@@ -1007,7 +1007,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-876',
     'currencyCode': 'JMD',
     'currencyName': 'Jamaican dollar',
-    'isoCode': 'JAM'
+    'isoCode': 'JAM',
   },
   {
     'name': '日本',
@@ -1016,7 +1016,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '81',
     'currencyCode': 'JPY',
     'currencyName': 'Japanese yen',
-    'isoCode': 'JPN'
+    'isoCode': 'JPN',
   },
   {
     'name': 'Jersey',
@@ -1025,7 +1025,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+44-1534',
     'currencyCode': 'GBP',
     'currencyName': 'British pound',
-    'isoCode': 'JEY'
+    'isoCode': 'JEY',
   },
   {
     'name': 'الأردن',
@@ -1034,7 +1034,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '962',
     'currencyCode': 'JOD',
     'currencyName': 'Jordanian dinar',
-    'isoCode': 'JOR'
+    'isoCode': 'JOR',
   },
   {
     'name': 'Қазақстан',
@@ -1043,7 +1043,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '7',
     'currencyCode': 'KZT',
     'currencyName': 'Kazakhstani tenge',
-    'isoCode': 'KAZ'
+    'isoCode': 'KAZ',
   },
   {
     'name': 'Kenya',
@@ -1052,7 +1052,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '254',
     'currencyCode': 'KES',
     'currencyName': 'Kenyan shilling',
-    'isoCode': 'KEN'
+    'isoCode': 'KEN',
   },
   {
     'name': 'Kiribati',
@@ -1061,7 +1061,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '686',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'KIR'
+    'isoCode': 'KIR',
   },
   {
     'name': 'Republika e Kosovës',
@@ -1070,7 +1070,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'XKX'
+    'isoCode': 'XKX',
   },
   {
     'name': 'الكويت',
@@ -1079,7 +1079,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '965',
     'currencyCode': 'KWD',
     'currencyName': 'Kuwaiti dinar',
-    'isoCode': 'KWT'
+    'isoCode': 'KWT',
   },
   {
     'name': 'Кыргызстан',
@@ -1088,7 +1088,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '996',
     'currencyCode': 'KGS',
     'currencyName': 'Kyrgyzstani som',
-    'isoCode': 'KGZ'
+    'isoCode': 'KGZ',
   },
   {
     'name': 'ສປປລາວ',
@@ -1097,7 +1097,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '856',
     'currencyCode': 'LAK',
     'currencyName': 'Lao kip',
-    'isoCode': 'LAO'
+    'isoCode': 'LAO',
   },
   {
     'name': 'Latvija',
@@ -1106,7 +1106,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '371',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'LVA'
+    'isoCode': 'LVA',
   },
   {
     'name': 'لبنان',
@@ -1115,7 +1115,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '961',
     'currencyCode': 'LBP',
     'currencyName': 'Lebanese pound',
-    'isoCode': 'LBN'
+    'isoCode': 'LBN',
   },
   {
     'name': 'Lesotho',
@@ -1124,7 +1124,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '266',
     'currencyCode': 'LSL',
     'currencyName': 'Lesotho loti',
-    'isoCode': 'LSO'
+    'isoCode': 'LSO',
   },
   {
     'name': 'Liberia',
@@ -1133,7 +1133,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '231',
     'currencyCode': 'LRD',
     'currencyName': 'Liberian dollar',
-    'isoCode': 'LBR'
+    'isoCode': 'LBR',
   },
   {
     'name': '‏ليبيا',
@@ -1142,7 +1142,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '218',
     'currencyCode': 'LYD',
     'currencyName': 'Libyan dinar',
-    'isoCode': 'LBY'
+    'isoCode': 'LBY',
   },
   {
     'name': 'Liechtenstein',
@@ -1151,7 +1151,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '423',
     'currencyCode': 'CHF',
     'currencyName': 'Swiss franc',
-    'isoCode': 'LIE'
+    'isoCode': 'LIE',
   },
   {
     'name': 'Lietuva',
@@ -1160,7 +1160,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '370',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'LTU'
+    'isoCode': 'LTU',
   },
   {
     'name': 'Luxembourg',
@@ -1169,7 +1169,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '352',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'LUX'
+    'isoCode': 'LUX',
   },
   {
     'name': '澳門',
@@ -1178,7 +1178,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '853',
     'currencyCode': 'MOP',
     'currencyName': 'Macanese pataca',
-    'isoCode': 'MAC'
+    'isoCode': 'MAC',
   },
   {
     'name': 'Македонија',
@@ -1187,7 +1187,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '389',
     'currencyCode': 'MKD',
     'currencyName': 'Macedonian denar',
-    'isoCode': 'MKD'
+    'isoCode': 'MKD',
   },
   {
     'name': 'Madagasikara',
@@ -1196,7 +1196,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '261',
     'currencyCode': 'MGA',
     'currencyName': 'Malagasy ariary',
-    'isoCode': 'MDG'
+    'isoCode': 'MDG',
   },
   {
     'name': 'Malawi',
@@ -1205,7 +1205,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '265',
     'currencyCode': 'MWK',
     'currencyName': 'Malawian kwacha',
-    'isoCode': 'MWI'
+    'isoCode': 'MWI',
   },
   {
     'name': 'Malaysia',
@@ -1214,7 +1214,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '60',
     'currencyCode': 'MYR',
     'currencyName': 'Malaysian ringgit',
-    'isoCode': 'MYS'
+    'isoCode': 'MYS',
   },
   {
     'name': 'Maldives',
@@ -1223,7 +1223,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '960',
     'currencyCode': 'MVR',
     'currencyName': 'Maldivian rufiyaa',
-    'isoCode': 'MDV'
+    'isoCode': 'MDV',
   },
   {
     'name': 'Mali',
@@ -1232,7 +1232,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '223',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'MLI'
+    'isoCode': 'MLI',
   },
   {
     'name': 'Malta',
@@ -1241,7 +1241,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '356',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'MLT'
+    'isoCode': 'MLT',
   },
   {
     'name': 'M̧ajeļ',
@@ -1250,7 +1250,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '692',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'MHL'
+    'isoCode': 'MHL',
   },
   {
     'name': 'Martinique',
@@ -1259,7 +1259,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '596',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'MTQ'
+    'isoCode': 'MTQ',
   },
   {
     'name': 'موريتانيا',
@@ -1268,7 +1268,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '222',
     'currencyCode': 'MRO',
     'currencyName': 'Mauritanian ouguiya',
-    'isoCode': 'MRT'
+    'isoCode': 'MRT',
   },
   {
     'name': 'Maurice',
@@ -1277,7 +1277,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '230',
     'currencyCode': 'MUR',
     'currencyName': 'Mauritian rupee',
-    'isoCode': 'MUS'
+    'isoCode': 'MUS',
   },
   {
     'name': 'Mayotte',
@@ -1286,7 +1286,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '262',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'MYT'
+    'isoCode': 'MYT',
   },
   {
     'name': 'México',
@@ -1295,7 +1295,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '52',
     'currencyCode': 'MXN',
     'currencyName': 'Mexican peso',
-    'isoCode': 'MEX'
+    'isoCode': 'MEX',
   },
   {
     'name': 'Micronesia',
@@ -1304,7 +1304,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '691',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'FSM'
+    'isoCode': 'FSM',
   },
   {
     'name': 'Moldova',
@@ -1313,7 +1313,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '373',
     'currencyCode': 'MDL',
     'currencyName': 'Moldovan leu',
-    'isoCode': 'MDA'
+    'isoCode': 'MDA',
   },
   {
     'name': 'Monaco',
@@ -1322,7 +1322,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '377',
     'currencyCode': 'EUR',
     'currencyName': 'Moldovan leu',
-    'isoCode': 'MCO'
+    'isoCode': 'MCO',
   },
   {
     'name': 'Монгол улс',
@@ -1331,7 +1331,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '976',
     'currencyCode': 'MNT',
     'currencyName': 'Mongolian tögrög',
-    'isoCode': 'MNG'
+    'isoCode': 'MNG',
   },
   {
     'name': 'Црна Гора',
@@ -1340,7 +1340,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '382',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'MNE'
+    'isoCode': 'MNE',
   },
   {
     'name': 'Montserrat',
@@ -1349,7 +1349,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-664',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'MSR'
+    'isoCode': 'MSR',
   },
   {
     'name': 'المغرب',
@@ -1358,7 +1358,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '212',
     'currencyCode': 'MAD',
     'currencyName': 'Moroccan dirham',
-    'isoCode': 'MAR'
+    'isoCode': 'MAR',
   },
   {
     'name': 'Moçambique',
@@ -1367,7 +1367,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '258',
     'currencyCode': 'MZN',
     'currencyName': 'Mozambican metical',
-    'isoCode': 'MOZ'
+    'isoCode': 'MOZ',
   },
   {
     'name': 'Myanma',
@@ -1376,7 +1376,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '95',
     'currencyCode': 'MMK',
     'currencyName': 'Burmese kyat',
-    'isoCode': 'MMR'
+    'isoCode': 'MMR',
   },
   {
     'name': 'Namibia',
@@ -1385,7 +1385,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '264',
     'currencyCode': 'NAD',
     'currencyName': 'Namibian dollar',
-    'isoCode': 'NAM'
+    'isoCode': 'NAM',
   },
   {
     'name': 'Nauru',
@@ -1394,7 +1394,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '674',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'NRU'
+    'isoCode': 'NRU',
   },
   {
     'name': 'नपल',
@@ -1403,7 +1403,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '977',
     'currencyCode': 'NPR',
     'currencyName': 'Nepalese rupee',
-    'isoCode': 'NPL'
+    'isoCode': 'NPL',
   },
   {
     'name': 'Nederland',
@@ -1412,7 +1412,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '31',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'NLD'
+    'isoCode': 'NLD',
   },
   {
     'name': 'Nouvelle-Calédonie',
@@ -1421,7 +1421,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '687',
     'currencyCode': 'XPF',
     'currencyName': 'CFP franc',
-    'isoCode': 'NCL'
+    'isoCode': 'NCL',
   },
   {
     'name': 'New Zealand',
@@ -1430,7 +1430,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '64',
     'currencyCode': 'NZD',
     'currencyName': 'New Zealand dollar',
-    'isoCode': 'NZL'
+    'isoCode': 'NZL',
   },
   {
     'name': 'Nicaragua',
@@ -1439,7 +1439,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '505',
     'currencyCode': 'NIO',
     'currencyName': 'Nicaraguan córdoba',
-    'isoCode': 'NIC'
+    'isoCode': 'NIC',
   },
   {
     'name': 'Niger',
@@ -1448,7 +1448,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '227',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'NER'
+    'isoCode': 'NER',
   },
   {
     'name': 'Nigeria',
@@ -1457,7 +1457,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '234',
     'currencyCode': 'NGN',
     'currencyName': 'Nigerian naira',
-    'isoCode': 'NGA'
+    'isoCode': 'NGA',
   },
   {
     'name': 'Niuē',
@@ -1466,7 +1466,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '683',
     'currencyCode': 'NZD',
     'currencyName': 'New Zealand dollar',
-    'isoCode': 'NIU'
+    'isoCode': 'NIU',
   },
   {
     'name': 'Norfolk Island',
@@ -1475,7 +1475,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '672',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'NFK'
+    'isoCode': 'NFK',
   },
   {
     'name': '북한',
@@ -1484,7 +1484,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '850',
     'currencyCode': 'KPW',
     'currencyName': 'North Korean won',
-    'isoCode': 'PRK'
+    'isoCode': 'PRK',
   },
   {
     'name': 'Northern Mariana Islands',
@@ -1493,7 +1493,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-670',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'MNP'
+    'isoCode': 'MNP',
   },
   {
     'name': 'Norge',
@@ -1502,7 +1502,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '47',
     'currencyCode': 'NOK',
     'currencyName': 'Norwegian krone',
-    'isoCode': 'NOR'
+    'isoCode': 'NOR',
   },
   {
     'name': 'عمان',
@@ -1511,7 +1511,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '968',
     'currencyCode': 'OMR',
     'currencyName': 'Omani rial',
-    'isoCode': 'OMN'
+    'isoCode': 'OMN',
   },
   {
     'name': 'Pakistan',
@@ -1520,7 +1520,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '92',
     'currencyCode': 'PKR',
     'currencyName': 'Pakistani rupee',
-    'isoCode': 'PAK'
+    'isoCode': 'PAK',
   },
   {
     'name': 'Palau',
@@ -1529,7 +1529,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '680',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'PLW'
+    'isoCode': 'PLW',
   },
   {
     'name': 'فلسطين',
@@ -1538,7 +1538,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '970',
     'currencyCode': 'ILS',
     'currencyName': 'Israeli new sheqel',
-    'isoCode': 'PSE'
+    'isoCode': 'PSE',
   },
   {
     'name': 'Panamá',
@@ -1547,7 +1547,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '507',
     'currencyCode': 'PAB',
     'currencyName': 'Panamanian balboa',
-    'isoCode': 'PAN'
+    'isoCode': 'PAN',
   },
   {
     'name': 'Papua Niugini',
@@ -1556,7 +1556,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '675',
     'currencyCode': 'PGK',
     'currencyName': 'Papua New Guinean kina',
-    'isoCode': 'PNG'
+    'isoCode': 'PNG',
   },
   {
     'name': 'Paraguay',
@@ -1565,7 +1565,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '595',
     'currencyCode': 'PYG',
     'currencyName': 'Paraguayan guaraní',
-    'isoCode': 'PRY'
+    'isoCode': 'PRY',
   },
   {
     'name': 'Perú',
@@ -1574,7 +1574,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '51',
     'currencyCode': 'PEN',
     'currencyName': 'Peruvian sol',
-    'isoCode': 'PER'
+    'isoCode': 'PER',
   },
   {
     'name': 'Pilipinas',
@@ -1583,7 +1583,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '63',
     'currencyCode': 'PHP',
     'currencyName': 'Philippine peso',
-    'isoCode': 'PHL'
+    'isoCode': 'PHL',
   },
   {
     'name': 'Pitcairn Islands',
@@ -1592,7 +1592,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '870',
     'currencyCode': 'NZD',
     'currencyName': 'New Zealand dollar',
-    'isoCode': 'PCN'
+    'isoCode': 'PCN',
   },
   {
     'name': 'Polska',
@@ -1601,7 +1601,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '48',
     'currencyCode': 'PLN',
     'currencyName': 'Polish złoty',
-    'isoCode': 'POL'
+    'isoCode': 'POL',
   },
   {
     'name': 'Portugal',
@@ -1610,7 +1610,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '351',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'PRT'
+    'isoCode': 'PRT',
   },
   {
     'name': 'Puerto Rico',
@@ -1619,7 +1619,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-787 and 1-939',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'PRI'
+    'isoCode': 'PRI',
   },
   {
     'name': 'قطر',
@@ -1628,7 +1628,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '974',
     'currencyCode': 'QAR',
     'currencyName': 'Qatari riyal',
-    'isoCode': 'QAT'
+    'isoCode': 'QAT',
   },
   {
     'name': 'République du Congo',
@@ -1637,7 +1637,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '242',
     'currencyCode': 'XAF',
     'currencyName': 'Central African CFA franc',
-    'isoCode': 'COG'
+    'isoCode': 'COG',
   },
   {
     'name': 'La Réunion',
@@ -1646,7 +1646,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '262',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'REU'
+    'isoCode': 'REU',
   },
   {
     'name': 'România',
@@ -1655,7 +1655,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '40',
     'currencyCode': 'RON',
     'currencyName': 'Romanian leu',
-    'isoCode': 'ROU'
+    'isoCode': 'ROU',
   },
   {
     'name': 'Россия',
@@ -1664,7 +1664,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '7',
     'currencyCode': 'RUB',
     'currencyName': 'Russian ruble',
-    'isoCode': 'RUS'
+    'isoCode': 'RUS',
   },
   {
     'name': 'Rwanda',
@@ -1673,7 +1673,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '250',
     'currencyCode': 'RWF',
     'currencyName': 'Rwandan franc',
-    'isoCode': 'RWA'
+    'isoCode': 'RWA',
   },
   {
     'name': 'Saint-Barthélemy',
@@ -1682,7 +1682,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '590',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'BLM'
+    'isoCode': 'BLM',
   },
   {
     'name': 'Saint Helena',
@@ -1691,7 +1691,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '290',
     'currencyCode': 'SHP',
     'currencyName': 'Saint Helena pound',
-    'isoCode': 'SHN'
+    'isoCode': 'SHN',
   },
   {
     'name': 'Saint Kitts and Nevis',
@@ -1700,7 +1700,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-869',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'KNA'
+    'isoCode': 'KNA',
   },
   {
     'name': 'Saint Lucia',
@@ -1709,7 +1709,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-758',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'LCA'
+    'isoCode': 'LCA',
   },
   {
     'name': 'Saint-Martin',
@@ -1718,7 +1718,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '590',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'MAF'
+    'isoCode': 'MAF',
   },
   {
     'name': 'Saint-Pierre-et-Miquelon',
@@ -1727,7 +1727,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '508',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'SPM'
+    'isoCode': 'SPM',
   },
   {
     'name': 'Saint Vincent and the Grenadines',
@@ -1736,7 +1736,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-784',
     'currencyCode': 'XCD',
     'currencyName': 'East Caribbean dollar',
-    'isoCode': 'VCT'
+    'isoCode': 'VCT',
   },
   {
     'name': 'Samoa',
@@ -1745,7 +1745,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '685',
     'currencyCode': 'WST',
     'currencyName': 'Samoan tālā',
-    'isoCode': 'WSM'
+    'isoCode': 'WSM',
   },
   {
     'name': 'San Marino',
@@ -1754,7 +1754,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '378',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'SMR'
+    'isoCode': 'SMR',
   },
   {
     'name': 'São Tomé e Príncipe',
@@ -1763,7 +1763,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '239',
     'currencyCode': 'STD',
     'currencyName': 'São Tomé and Príncipe dobra',
-    'isoCode': 'STP'
+    'isoCode': 'STP',
   },
   {
     'name': 'العربية السعودية',
@@ -1772,7 +1772,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '966',
     'currencyCode': 'SAR',
     'currencyName': 'Saudi riyal',
-    'isoCode': 'SAU'
+    'isoCode': 'SAU',
   },
   {
     'name': 'Sénégal',
@@ -1781,7 +1781,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '221',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'SEN'
+    'isoCode': 'SEN',
   },
   {
     'name': 'Србија',
@@ -1790,7 +1790,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '381',
     'currencyCode': 'RSD',
     'currencyName': 'Serbian dinar',
-    'isoCode': 'SRB'
+    'isoCode': 'SRB',
   },
   {
     'name': 'Seychelles',
@@ -1799,7 +1799,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '248',
     'currencyCode': 'SCR',
     'currencyName': 'Seychellois rupee',
-    'isoCode': 'SYC'
+    'isoCode': 'SYC',
   },
   {
     'name': 'Sierra Leone',
@@ -1808,7 +1808,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '232',
     'currencyCode': 'SLL',
     'currencyName': 'Sierra Leonean leone',
-    'isoCode': 'SLE'
+    'isoCode': 'SLE',
   },
   {
     'name': 'Singapore',
@@ -1817,7 +1817,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '65',
     'currencyCode': 'SGD',
     'currencyName': 'Singapore dollar',
-    'isoCode': 'SGP'
+    'isoCode': 'SGP',
   },
   {
     'name': 'Slovensko',
@@ -1826,7 +1826,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '421',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'SVK'
+    'isoCode': 'SVK',
   },
   {
     'name': 'Slovenija',
@@ -1835,7 +1835,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '386',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'SVN'
+    'isoCode': 'SVN',
   },
   {
     'name': 'Solomon Islands',
@@ -1844,7 +1844,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '677',
     'currencyCode': 'SBD',
     'currencyName': 'Solomon Islands dollar',
-    'isoCode': 'SLB'
+    'isoCode': 'SLB',
   },
   {
     'name': 'Soomaaliya',
@@ -1853,7 +1853,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '252',
     'currencyCode': 'SOS',
     'currencyName': 'Somali shilling',
-    'isoCode': 'SOM'
+    'isoCode': 'SOM',
   },
   {
     'name': 'South Africa',
@@ -1862,7 +1862,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '27',
     'currencyCode': 'ZAR',
     'currencyName': 'South African rand',
-    'isoCode': 'ZAF'
+    'isoCode': 'ZAF',
   },
   {
     'name': 'South Georgia',
@@ -1871,7 +1871,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '',
     'currencyCode': 'GBP',
     'currencyName': 'British pound',
-    'isoCode': 'SGS'
+    'isoCode': 'SGS',
   },
   {
     'name': '대한민국',
@@ -1880,7 +1880,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '82',
     'currencyCode': 'KRW',
     'currencyName': 'South Korean won',
-    'isoCode': 'KOR'
+    'isoCode': 'KOR',
   },
   {
     'name': 'South Sudan',
@@ -1889,7 +1889,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '211',
     'currencyCode': 'SSP',
     'currencyName': 'South Sudanese pound',
-    'isoCode': 'SSD'
+    'isoCode': 'SSD',
   },
   {
     'name': 'España',
@@ -1898,7 +1898,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '34',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'ESP'
+    'isoCode': 'ESP',
   },
   {
     'name': 'śrī laṃkāva',
@@ -1907,7 +1907,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '94',
     'currencyCode': 'LKR',
     'currencyName': 'Sri Lankan rupee',
-    'isoCode': 'LKA'
+    'isoCode': 'LKA',
   },
   {
     'name': 'السودان',
@@ -1916,7 +1916,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '249',
     'currencyCode': 'SDG',
     'currencyName': 'Sudanese pound',
-    'isoCode': 'SDN'
+    'isoCode': 'SDN',
   },
   {
     'name': 'Suriname',
@@ -1925,7 +1925,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '597',
     'currencyCode': 'SRD',
     'currencyName': 'Surinamese dollar',
-    'isoCode': 'SUR'
+    'isoCode': 'SUR',
   },
   {
     'name': 'Svalbard og Jan Mayen',
@@ -1934,7 +1934,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '47',
     'currencyCode': 'NOK',
     'currencyName': 'Norwegian krone',
-    'isoCode': 'SJM'
+    'isoCode': 'SJM',
   },
   {
     'name': 'Swaziland',
@@ -1943,7 +1943,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '268',
     'currencyCode': 'SZL',
     'currencyName': 'Swazi lilangeni',
-    'isoCode': 'SWZ'
+    'isoCode': 'SWZ',
   },
   {
     'name': 'Sverige',
@@ -1952,7 +1952,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '46',
     'currencyCode': 'SEK',
     'currencyName': 'Swedish krona',
-    'isoCode': 'SWE'
+    'isoCode': 'SWE',
   },
   {
     'name': 'Sint Maarten',
@@ -1961,7 +1961,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '599',
     'currencyCode': 'ANG',
     'currencyName': 'Netherlands Antillean guilder',
-    'isoCode': 'SXM'
+    'isoCode': 'SXM',
   },
   {
     'name': 'Schweiz',
@@ -1970,7 +1970,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '41',
     'currencyCode': 'CHF',
     'currencyName': 'Swiss franc',
-    'isoCode': 'CHE'
+    'isoCode': 'CHE',
   },
   {
     'name': 'سوريا',
@@ -1979,7 +1979,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '963',
     'currencyCode': 'SYP',
     'currencyName': 'Syrian pound',
-    'isoCode': 'SYR'
+    'isoCode': 'SYR',
   },
   {
     'name': '臺灣',
@@ -1988,7 +1988,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '886',
     'currencyCode': 'TWD',
     'currencyName': 'New Taiwan dollar',
-    'isoCode': 'TWN'
+    'isoCode': 'TWN',
   },
   {
     'name': 'Тоҷикистон',
@@ -1997,7 +1997,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '992',
     'currencyCode': 'TJS',
     'currencyName': 'Tajikistani somoni',
-    'isoCode': 'TJK'
+    'isoCode': 'TJK',
   },
   {
     'name': 'Tanzania',
@@ -2006,7 +2006,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '255',
     'currencyCode': 'TZS',
     'currencyName': 'Tanzanian shilling',
-    'isoCode': 'TZA'
+    'isoCode': 'TZA',
   },
   {
     'name': 'ประเทศไทย',
@@ -2015,7 +2015,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '66',
     'currencyCode': 'THB',
     'currencyName': 'Thai baht',
-    'isoCode': 'THA'
+    'isoCode': 'THA',
   },
   {
     'name': 'Togo',
@@ -2024,7 +2024,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '228',
     'currencyCode': 'XOF',
     'currencyName': 'West African CFA franc',
-    'isoCode': 'TGO'
+    'isoCode': 'TGO',
   },
   {
     'name': 'Tokelau',
@@ -2033,7 +2033,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '690',
     'currencyCode': 'NZD',
     'currencyName': 'New Zealand dollar',
-    'isoCode': 'TKL'
+    'isoCode': 'TKL',
   },
   {
     'name': 'Tonga',
@@ -2042,7 +2042,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '676',
     'currencyCode': 'TOP',
     'currencyName': 'Tongan paʻanga',
-    'isoCode': 'TON'
+    'isoCode': 'TON',
   },
   {
     'name': 'Trinidad and Tobago',
@@ -2051,7 +2051,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-868',
     'currencyCode': 'TTD',
     'currencyName': 'Trinidad and Tobago dollar',
-    'isoCode': 'TTO'
+    'isoCode': 'TTO',
   },
   {
     'name': 'تونس',
@@ -2060,7 +2060,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '216',
     'currencyCode': 'TND',
     'currencyName': 'Tunisian dinar',
-    'isoCode': 'TUN'
+    'isoCode': 'TUN',
   },
   {
     'name': 'Türkiye',
@@ -2069,7 +2069,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '90',
     'currencyCode': 'TRY',
     'currencyName': 'Turkish lira',
-    'isoCode': 'TUR'
+    'isoCode': 'TUR',
   },
   {
     'name': 'Türkmenistan',
@@ -2078,7 +2078,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '993',
     'currencyCode': 'TMT',
     'currencyName': 'Turkmenistan manat',
-    'isoCode': 'TKM'
+    'isoCode': 'TKM',
   },
   {
     'name': 'Turks and Caicos Islands',
@@ -2087,7 +2087,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-649',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'TCA'
+    'isoCode': 'TCA',
   },
   {
     'name': 'Tuvalu',
@@ -2096,7 +2096,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '688',
     'currencyCode': 'AUD',
     'currencyName': 'Australian dollar',
-    'isoCode': 'TUV'
+    'isoCode': 'TUV',
   },
   {
     'name': 'United States Virgin Islands',
@@ -2105,7 +2105,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '+1-340',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'VIR'
+    'isoCode': 'VIR',
   },
   {
     'name': 'Uganda',
@@ -2114,7 +2114,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '256',
     'currencyCode': 'UGX',
     'currencyName': 'Ugandan shilling',
-    'isoCode': 'UGA'
+    'isoCode': 'UGA',
   },
   {
     'name': 'Україна',
@@ -2123,7 +2123,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '380',
     'currencyCode': 'UAH',
     'currencyName': 'Ukrainian hryvnia',
-    'isoCode': 'UKR'
+    'isoCode': 'UKR',
   },
   {
     'name': 'دولة الإمارات العربية المتحدة',
@@ -2132,7 +2132,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '971',
     'currencyCode': 'AED',
     'currencyName': 'United Arab Emirates dirham',
-    'isoCode': 'ARE'
+    'isoCode': 'ARE',
   },
   {
     'name': 'United Kingdom',
@@ -2141,7 +2141,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '44',
     'currencyCode': 'GBP',
     'currencyName': 'British pound',
-    'isoCode': 'GBR'
+    'isoCode': 'GBR',
   },
   {
     'name': 'United States Minor Outlying Islands',
@@ -2150,7 +2150,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '1',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'UMI'
+    'isoCode': 'UMI',
   },
   {
     'name': 'United States',
@@ -2159,7 +2159,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '1',
     'currencyCode': 'USD',
     'currencyName': 'United States dollar',
-    'isoCode': 'USA'
+    'isoCode': 'USA',
   },
   {
     'name': 'Uruguay',
@@ -2168,7 +2168,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '598',
     'currencyCode': 'UYU',
     'currencyName': 'Uruguayan peso',
-    'isoCode': 'URY'
+    'isoCode': 'URY',
   },
   {
     'name': 'O‘zbekiston',
@@ -2177,7 +2177,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '998',
     'currencyCode': 'UZS',
     'currencyName': "Uzbekistani so'm",
-    'isoCode': 'UZB'
+    'isoCode': 'UZB',
   },
   {
     'name': 'Vanuatu',
@@ -2186,7 +2186,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '678',
     'currencyCode': 'VUV',
     'currencyName': 'Vanuatu vatu',
-    'isoCode': 'VUT'
+    'isoCode': 'VUT',
   },
   {
     'name': 'Vaticano',
@@ -2195,7 +2195,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '379',
     'currencyCode': 'EUR',
     'currencyName': 'Euro',
-    'isoCode': 'VAT'
+    'isoCode': 'VAT',
   },
   {
     'name': 'Venezuela',
@@ -2204,7 +2204,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '58',
     'currencyCode': 'VEF',
     'currencyName': 'Venezuelan bolívar',
-    'isoCode': 'VEN'
+    'isoCode': 'VEN',
   },
   {
     'name': 'Việt Nam',
@@ -2213,7 +2213,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '84',
     'currencyCode': 'VND',
     'currencyName': 'Vietnamese đồng',
-    'isoCode': 'VNM'
+    'isoCode': 'VNM',
   },
   {
     'name': 'Wallis et Futuna',
@@ -2222,7 +2222,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '681',
     'currencyCode': 'XPF',
     'currencyName': 'CFP franc',
-    'isoCode': 'WLF'
+    'isoCode': 'WLF',
   },
   {
     'name': 'اليَمَن',
@@ -2231,7 +2231,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '967',
     'currencyCode': 'YER',
     'currencyName': 'Yemeni rial',
-    'isoCode': 'YEM'
+    'isoCode': 'YEM',
   },
   {
     'name': 'Zambia',
@@ -2240,7 +2240,7 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '260',
     'currencyCode': 'ZMK',
     'currencyName': 'Zambian kwacha',
-    'isoCode': 'ZMB'
+    'isoCode': 'ZMB',
   },
   {
     'name': 'Zimbabwe',
@@ -2249,6 +2249,6 @@ const List<Map<String, dynamic>> codes = [
     'dialCode': '263',
     'currencyCode': 'ZWL',
     'currencyName': 'Botswana pula',
-    'isoCode': 'ZWE'
-  }
+    'isoCode': 'ZWE',
+  },
 ];

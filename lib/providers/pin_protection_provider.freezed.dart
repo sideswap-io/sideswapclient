@@ -12,7 +12,8 @@ part of 'pin_protection_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$PinUnlockState {
@@ -22,16 +23,14 @@ mixin _$PinUnlockState {
     required TResult Function() success,
     required TResult Function() wrong,
     required TResult Function() failed,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? success,
     TResult? Function()? wrong,
     TResult? Function()? failed,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -39,24 +38,21 @@ mixin _$PinUnlockState {
     TResult Function()? wrong,
     TResult Function()? failed,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PinUnlockStateEmpty value) empty,
     required TResult Function(PinUnlockStateSuccess value) success,
     required TResult Function(PinUnlockStateWrong value) wrong,
     required TResult Function(PinUnlockStateFailed value) failed,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PinUnlockStateEmpty value)? empty,
     TResult? Function(PinUnlockStateSuccess value)? success,
     TResult? Function(PinUnlockStateWrong value)? wrong,
     TResult? Function(PinUnlockStateFailed value)? failed,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PinUnlockStateEmpty value)? empty,
@@ -64,15 +60,15 @@ mixin _$PinUnlockState {
     TResult Function(PinUnlockStateWrong value)? wrong,
     TResult Function(PinUnlockStateFailed value)? failed,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PinUnlockStateCopyWith<$Res> {
   factory $PinUnlockStateCopyWith(
-          PinUnlockState value, $Res Function(PinUnlockState) then) =
-      _$PinUnlockStateCopyWithImpl<$Res, PinUnlockState>;
+    PinUnlockState value,
+    $Res Function(PinUnlockState) then,
+  ) = _$PinUnlockStateCopyWithImpl<$Res, PinUnlockState>;
 }
 
 /// @nodoc
@@ -84,22 +80,30 @@ class _$PinUnlockStateCopyWithImpl<$Res, $Val extends PinUnlockState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PinUnlockState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PinUnlockStateEmptyImplCopyWith<$Res> {
-  factory _$$PinUnlockStateEmptyImplCopyWith(_$PinUnlockStateEmptyImpl value,
-          $Res Function(_$PinUnlockStateEmptyImpl) then) =
-      __$$PinUnlockStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$PinUnlockStateEmptyImplCopyWith(
+    _$PinUnlockStateEmptyImpl value,
+    $Res Function(_$PinUnlockStateEmptyImpl) then,
+  ) = __$$PinUnlockStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinUnlockStateEmptyImplCopyWithImpl<$Res>
     extends _$PinUnlockStateCopyWithImpl<$Res, _$PinUnlockStateEmptyImpl>
     implements _$$PinUnlockStateEmptyImplCopyWith<$Res> {
-  __$$PinUnlockStateEmptyImplCopyWithImpl(_$PinUnlockStateEmptyImpl _value,
-      $Res Function(_$PinUnlockStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$PinUnlockStateEmptyImplCopyWithImpl(
+    _$PinUnlockStateEmptyImpl _value,
+    $Res Function(_$PinUnlockStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinUnlockState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -204,18 +208,22 @@ abstract class PinUnlockStateEmpty implements PinUnlockState {
 /// @nodoc
 abstract class _$$PinUnlockStateSuccessImplCopyWith<$Res> {
   factory _$$PinUnlockStateSuccessImplCopyWith(
-          _$PinUnlockStateSuccessImpl value,
-          $Res Function(_$PinUnlockStateSuccessImpl) then) =
-      __$$PinUnlockStateSuccessImplCopyWithImpl<$Res>;
+    _$PinUnlockStateSuccessImpl value,
+    $Res Function(_$PinUnlockStateSuccessImpl) then,
+  ) = __$$PinUnlockStateSuccessImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinUnlockStateSuccessImplCopyWithImpl<$Res>
     extends _$PinUnlockStateCopyWithImpl<$Res, _$PinUnlockStateSuccessImpl>
     implements _$$PinUnlockStateSuccessImplCopyWith<$Res> {
-  __$$PinUnlockStateSuccessImplCopyWithImpl(_$PinUnlockStateSuccessImpl _value,
-      $Res Function(_$PinUnlockStateSuccessImpl) _then)
-      : super(_value, _then);
+  __$$PinUnlockStateSuccessImplCopyWithImpl(
+    _$PinUnlockStateSuccessImpl _value,
+    $Res Function(_$PinUnlockStateSuccessImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinUnlockState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -319,18 +327,23 @@ abstract class PinUnlockStateSuccess implements PinUnlockState {
 
 /// @nodoc
 abstract class _$$PinUnlockStateWrongImplCopyWith<$Res> {
-  factory _$$PinUnlockStateWrongImplCopyWith(_$PinUnlockStateWrongImpl value,
-          $Res Function(_$PinUnlockStateWrongImpl) then) =
-      __$$PinUnlockStateWrongImplCopyWithImpl<$Res>;
+  factory _$$PinUnlockStateWrongImplCopyWith(
+    _$PinUnlockStateWrongImpl value,
+    $Res Function(_$PinUnlockStateWrongImpl) then,
+  ) = __$$PinUnlockStateWrongImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinUnlockStateWrongImplCopyWithImpl<$Res>
     extends _$PinUnlockStateCopyWithImpl<$Res, _$PinUnlockStateWrongImpl>
     implements _$$PinUnlockStateWrongImplCopyWith<$Res> {
-  __$$PinUnlockStateWrongImplCopyWithImpl(_$PinUnlockStateWrongImpl _value,
-      $Res Function(_$PinUnlockStateWrongImpl) _then)
-      : super(_value, _then);
+  __$$PinUnlockStateWrongImplCopyWithImpl(
+    _$PinUnlockStateWrongImpl _value,
+    $Res Function(_$PinUnlockStateWrongImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinUnlockState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -434,18 +447,23 @@ abstract class PinUnlockStateWrong implements PinUnlockState {
 
 /// @nodoc
 abstract class _$$PinUnlockStateFailedImplCopyWith<$Res> {
-  factory _$$PinUnlockStateFailedImplCopyWith(_$PinUnlockStateFailedImpl value,
-          $Res Function(_$PinUnlockStateFailedImpl) then) =
-      __$$PinUnlockStateFailedImplCopyWithImpl<$Res>;
+  factory _$$PinUnlockStateFailedImplCopyWith(
+    _$PinUnlockStateFailedImpl value,
+    $Res Function(_$PinUnlockStateFailedImpl) then,
+  ) = __$$PinUnlockStateFailedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PinUnlockStateFailedImplCopyWithImpl<$Res>
     extends _$PinUnlockStateCopyWithImpl<$Res, _$PinUnlockStateFailedImpl>
     implements _$$PinUnlockStateFailedImplCopyWith<$Res> {
-  __$$PinUnlockStateFailedImplCopyWithImpl(_$PinUnlockStateFailedImpl _value,
-      $Res Function(_$PinUnlockStateFailedImpl) _then)
-      : super(_value, _then);
+  __$$PinUnlockStateFailedImplCopyWithImpl(
+    _$PinUnlockStateFailedImpl _value,
+    $Res Function(_$PinUnlockStateFailedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PinUnlockState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

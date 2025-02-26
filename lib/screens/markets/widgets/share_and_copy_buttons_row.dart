@@ -43,8 +43,10 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
                   'assets/share3.svg',
                   width: 20,
                   height: 24,
-                  colorFilter:
-                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ],
             ),
@@ -72,8 +74,10 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
                   'assets/copy.svg',
                   width: 20,
                   height: 24,
-                  colorFilter:
-                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ],
             ),

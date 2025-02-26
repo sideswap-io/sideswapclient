@@ -8,9 +8,8 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DStokrNeedRegisterPopup extends ConsumerWidget {
   const DStokrNeedRegisterPopup({super.key});
@@ -20,9 +19,12 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
     final defaultDialogTheme =
         ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
-    final selectedAccountAsset =
-        ref.watch(marketSelectedAccountAssetStateProvider);
-    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    // TODO (malcolmpl): Old markets
+    // final selectedAccountAsset =
+    //     ref.watch(marketSelectedAccountAssetStateProvider);
+    // final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    // TODO (malcolmpl): fix this!
+    final Asset? asset = null;
 
     return DContentDialog(
       title: DContentDialogTitle(
@@ -34,8 +36,12 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
       style: const DContentDialogThemeData().merge(
         defaultDialogTheme.merge(
           const DContentDialogThemeData(
-            titlePadding:
-                EdgeInsets.only(top: 24, bottom: 0, left: 24, right: 24),
+            titlePadding: EdgeInsets.only(
+              top: 24,
+              bottom: 0,
+              left: 24,
+              right: 24,
+            ),
           ),
         ),
       ),
@@ -49,9 +55,9 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
               const SizedBox(height: 31),
               Text(
                 'Please complete the following steps on STOKR:'.tr(),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontSize: 20,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontSize: 20),
               ),
               const SizedBox(height: 24),
               const DStokrStepsContainer(),
@@ -78,18 +84,14 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
 }
 
 class DStokrStepsContainer extends StatelessWidget {
-  const DStokrStepsContainer({
-    super.key,
-  });
+  const DStokrStepsContainer({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: SideSwapColors.chathamsBlue,
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -134,11 +136,7 @@ class DotRowText extends StatelessWidget {
 }
 
 class WarningRowText extends StatelessWidget {
-  const WarningRowText(
-    this.text, {
-    super.key,
-    this.textStyle,
-  });
+  const WarningRowText(this.text, {super.key, this.textStyle});
 
   final String? text;
   final TextStyle? textStyle;
@@ -151,32 +149,26 @@ class WarningRowText extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           text ?? '',
-          style: textStyle ??
-              Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(color: SideSwapColors.yellowOrange),
-        )
+          style:
+              textStyle ??
+              Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: SideSwapColors.yellowOrange,
+              ),
+        ),
       ],
     );
   }
 }
 
 class SmallBlueDot extends StatelessWidget {
-  const SmallBlueDot({
-    super.key,
-    this.color = SideSwapColors.brightTurquoise,
-  });
+  const SmallBlueDot({super.key, this.color = SideSwapColors.brightTurquoise});
 
   final Color? color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       width: 4,
       height: 4,
     );
@@ -184,9 +176,7 @@ class SmallBlueDot extends StatelessWidget {
 }
 
 class DStokrErrorIcon extends StatelessWidget {
-  const DStokrErrorIcon({
-    super.key,
-  });
+  const DStokrErrorIcon({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -195,10 +185,7 @@ class DStokrErrorIcon extends StatelessWidget {
       height: 104,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: SideSwapColors.bitterSweet,
-          width: 8,
-        ),
+        border: Border.all(color: SideSwapColors.bitterSweet, width: 8),
       ),
       child: Center(
         child: SvgPicture.asset(

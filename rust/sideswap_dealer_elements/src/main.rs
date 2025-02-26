@@ -1,10 +1,10 @@
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 use serde::Deserialize;
 use sideswap_api::mkt::AssetPair;
 use sideswap_common::{
     channel_helpers::UncheckedUnboundedSender,
-    dealer_ticker::DealerTicker,
+    dealer_ticker::{DealerTicker, TickerLoader, WhitelistedAssets},
     rpc::{self, RpcServer},
     types::Amount,
 };
@@ -29,6 +29,7 @@ struct Settings {
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
     price_stream: sideswap_common::price_stream::Markets,
+    whitelisted_assets: Option<WhitelistedAssets>,
 }
 
 struct Data {
@@ -37,6 +38,7 @@ struct Data {
     market_command_sender: UncheckedUnboundedSender<market::Command>,
     utxo_data: UtxoData,
     price_stream: price_stream::Data,
+    ticker_loader: Arc<TickerLoader>,
 }
 
 fn process_dealer_event(data: &mut Data, event: dealer_rpc::Event) {
@@ -108,7 +110,7 @@ fn process_timer(data: &mut Data) {
 
     data.market_command_sender
         .send(market::Command::AutomaticOrders {
-            orders: data.price_stream.market_prices(),
+            orders: data.price_stream.market_prices(&data.ticker_loader),
         });
 }
 
@@ -134,6 +136,16 @@ async fn main() {
 
     let server_url = settings.env.base_server_ws_url();
 
+    let ticker_loader = Arc::new(
+        TickerLoader::load(
+            &settings.work_dir,
+            settings.whitelisted_assets.as_ref(),
+            settings.env.d().network,
+        )
+        .await
+        .expect("must not fail"),
+    );
+
     let tickers = settings
         .price_stream
         .iter()
@@ -150,6 +162,7 @@ async fn main() {
         bitcoin_amount_min: Amount::from_bitcoin(settings.bitcoin_amount_min),
         bitcoin_amount_max: Amount::from_bitcoin(settings.bitcoin_amount_max),
         api_key: settings.api_key.clone(),
+        ticker_loader: Arc::clone(&ticker_loader),
     };
     let (dealer_sender, mut dealer_receiver) = dealer_rpc::spawn_async(params);
 
@@ -160,10 +173,15 @@ async fn main() {
         work_dir: settings.work_dir.clone(),
         web_server: settings.web_server.clone(),
         ws_server: settings.ws_server.clone(),
+        ticker_loader: Arc::clone(&ticker_loader),
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
-    let price_stream = price_stream::Data::new(settings.env, settings.price_stream.clone());
+    let price_stream = price_stream::Data::new(
+        settings.env,
+        settings.price_stream.clone(),
+        Arc::clone(&ticker_loader),
+    );
 
     let mut data = Data {
         settings,
@@ -173,6 +191,7 @@ async fn main() {
             confifential_only: true,
         }),
         price_stream,
+        ticker_loader,
     };
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));

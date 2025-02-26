@@ -23,24 +23,26 @@ class AmpBottomPanelBody extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (prefix != null) ...[
-          prefix!,
-          const Spacer(),
-        ],
+        if (prefix != null) ...[prefix!, const Spacer()],
         SvgPicture.asset(
           'assets/web_icon_transparent.svg',
           width: 20,
           height: 20,
-          colorFilter:
-              const ColorFilter.mode(SideSwapColors.glacier, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(
+            SideSwapColors.glacier,
+            BlendMode.srcIn,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 6),
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () =>
-                  openUrl(url, mode: LaunchMode.externalNonBrowserApplication),
+              onTap:
+                  () => openUrl(
+                    url,
+                    mode: LaunchMode.externalNonBrowserApplication,
+                  ),
               child: Text(
                 urlText,
                 style: textStyle?.merge(

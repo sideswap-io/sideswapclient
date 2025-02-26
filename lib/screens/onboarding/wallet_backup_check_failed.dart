@@ -21,8 +21,8 @@ class WalletBackupCheckFailed extends ConsumerWidget {
         onPressed: () => ref.read(walletProvider).goBack(),
         visibleSecondButton: true,
         secondButtonText: 'SEE MY 12 WORDS AGAIN'.tr(),
-        onSecondButtonPressed: () =>
-            ref.read(walletProvider).backupNewWalletEnable(),
+        onSecondButtonPressed:
+            () => ref.read(walletProvider).backupNewWalletEnable(),
       ),
     );
   }

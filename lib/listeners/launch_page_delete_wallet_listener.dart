@@ -67,10 +67,9 @@ class DeleteWalletConfirmationDialog extends ConsumerWidget {
         child: DContentDialogTitle(
           content: Text(
             'Delete wallet'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .displaySmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           onClose: () {
             Navigator.pop(context, false);
@@ -99,9 +98,7 @@ class DeleteWalletConfirmationDialog extends ConsumerWidget {
                     onPressed: () {
                       Navigator.pop(context, true);
                     },
-                    child: Text(
-                      'YES'.tr(),
-                    ),
+                    child: Text('YES'.tr()),
                   ),
                   DCustomFilledBigButton(
                     width: 150,
@@ -109,9 +106,7 @@ class DeleteWalletConfirmationDialog extends ConsumerWidget {
                     onPressed: () {
                       Navigator.pop(context, false);
                     },
-                    child: Text(
-                      'NO'.tr(),
-                    ),
+                    child: Text('NO'.tr()),
                   ),
                 ],
               ),

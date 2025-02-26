@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 class PageDots extends StatelessWidget {
-  const PageDots({
-    super.key,
-    this.maxSelectedDots = 0,
-  });
+  const PageDots({super.key, this.maxSelectedDots = 0});
 
   final int maxSelectedDots;
 
@@ -23,11 +20,12 @@ class PageDots extends StatelessWidget {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: i < maxSelectedDots
-                    ? i < maxSelectedDots - 1
-                        ? const Color(0xFF167399)
-                        : SideSwapColors.brightTurquoise
-                    : Colors.transparent,
+                color:
+                    i < maxSelectedDots
+                        ? i < maxSelectedDots - 1
+                            ? const Color(0xFF167399)
+                            : SideSwapColors.brightTurquoise
+                        : Colors.transparent,
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
                   color: SideSwapColors.brightTurquoise,

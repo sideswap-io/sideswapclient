@@ -54,7 +54,9 @@ class TxCircleImageState extends State<TxCircleImage> {
           'assets/tx_peg_in.svg',
           width: _largeWidth,
           colorFilter: ColorFilter.mode(
-              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
+            widget.fake ? _fakeIconColor : frameColor,
+            BlendMode.srcIn,
+          ),
         );
         break;
       case TxCircleImageType.pegOut:
@@ -66,7 +68,9 @@ class TxCircleImageState extends State<TxCircleImage> {
             'assets/tx_peg_in.svg',
             width: _largeWidth,
             colorFilter: ColorFilter.mode(
-                widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
+              widget.fake ? _fakeIconColor : frameColor,
+              BlendMode.srcIn,
+            ),
           ),
         );
         break;
@@ -76,7 +80,9 @@ class TxCircleImageState extends State<TxCircleImage> {
           'assets/tx_swap.svg',
           width: _swapWidth,
           colorFilter: ColorFilter.mode(
-              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
+            widget.fake ? _fakeIconColor : frameColor,
+            BlendMode.srcIn,
+          ),
         );
         break;
       case TxCircleImageType.sent:
@@ -85,7 +91,9 @@ class TxCircleImageState extends State<TxCircleImage> {
           'assets/top_right_arrow.svg',
           width: _smallWidth,
           colorFilter: ColorFilter.mode(
-              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
+            widget.fake ? _fakeIconColor : frameColor,
+            BlendMode.srcIn,
+          ),
         );
         break;
       case TxCircleImageType.received:
@@ -94,7 +102,9 @@ class TxCircleImageState extends State<TxCircleImage> {
           'assets/bottom_left_arrow.svg',
           width: _smallWidth,
           colorFilter: ColorFilter.mode(
-              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
+            widget.fake ? _fakeIconColor : frameColor,
+            BlendMode.srcIn,
+          ),
         );
         break;
       case TxCircleImageType.sentAvatar:
@@ -105,9 +115,7 @@ class TxCircleImageState extends State<TxCircleImage> {
         break;
       case TxCircleImageType.unknown:
         frameColor = Colors.redAccent;
-        image = CircleAvatar(
-          backgroundColor: frameColor,
-        );
+        image = CircleAvatar(backgroundColor: frameColor);
         break;
     }
     return Container(
@@ -121,10 +129,7 @@ class TxCircleImageState extends State<TxCircleImage> {
           width: 2,
         ),
       ),
-      child: CircleAvatar(
-        backgroundColor: Colors.transparent,
-        child: image,
-      ),
+      child: CircleAvatar(backgroundColor: Colors.transparent, child: image),
     );
   }
 }

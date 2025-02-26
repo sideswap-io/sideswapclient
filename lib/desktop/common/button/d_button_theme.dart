@@ -54,17 +54,37 @@ class DButtonStyle with Diagnosticable {
 
   static DButtonStyle lerp(DButtonStyle? a, DButtonStyle? b, double t) {
     return DButtonStyle(
-      textStyle:
-          ButtonState.lerp(a?.textStyle, b?.textStyle, t, TextStyle.lerp),
+      textStyle: ButtonState.lerp(
+        a?.textStyle,
+        b?.textStyle,
+        t,
+        TextStyle.lerp,
+      ),
       backgroundColor: ButtonState.lerp(
-          a?.backgroundColor, b?.backgroundColor, t, Color.lerp),
+        a?.backgroundColor,
+        b?.backgroundColor,
+        t,
+        Color.lerp,
+      ),
       foregroundColor: ButtonState.lerp(
-          a?.foregroundColor, b?.foregroundColor, t, Color.lerp),
-      shadowColor:
-          ButtonState.lerp(a?.shadowColor, b?.shadowColor, t, Color.lerp),
+        a?.foregroundColor,
+        b?.foregroundColor,
+        t,
+        Color.lerp,
+      ),
+      shadowColor: ButtonState.lerp(
+        a?.shadowColor,
+        b?.shadowColor,
+        t,
+        Color.lerp,
+      ),
       elevation: ButtonState.lerp(a?.elevation, b?.elevation, t, lerpDouble),
-      padding:
-          ButtonState.lerp(a?.padding, b?.padding, t, EdgeInsetsGeometry.lerp),
+      padding: ButtonState.lerp(
+        a?.padding,
+        b?.padding,
+        t,
+        EdgeInsetsGeometry.lerp,
+      ),
       border: ButtonState.lerp(a?.border, b?.border, t, (a, b, t) {
         if (a == null && b == null) return null;
         if (a == null) return b;
@@ -74,22 +94,13 @@ class DButtonStyle with Diagnosticable {
       shape: ButtonState.lerp(a?.shape, b?.shape, t, (a, b, t) {
         return ShapeBorder.lerp(a, b, t) as OutlinedBorder;
       }),
-      iconSize: ButtonState.lerp(
-        a?.iconSize,
-        b?.iconSize,
-        t,
-        lerpDouble,
-      ),
+      iconSize: ButtonState.lerp(a?.iconSize, b?.iconSize, t, lerpDouble),
     );
   }
 }
 
 class DButtonTheme extends InheritedTheme {
-  const DButtonTheme({
-    super.key,
-    required super.child,
-    required this.data,
-  });
+  const DButtonTheme({super.key, required super.child, required this.data});
 
   final DButtonThemeData data;
 
@@ -98,13 +109,15 @@ class DButtonTheme extends InheritedTheme {
     required DButtonThemeData data,
     required Widget child,
   }) {
-    return Builder(builder: (BuildContext context) {
-      return DButtonTheme(
-        key: key,
-        data: _getInheritedButtonThemeData(context)?.merge(data) ?? data,
-        child: child,
-      );
-    });
+    return Builder(
+      builder: (BuildContext context) {
+        return DButtonTheme(
+          key: key,
+          data: _getInheritedButtonThemeData(context)?.merge(data) ?? data,
+          child: child,
+        );
+      },
+    );
   }
 
   static DButtonThemeData of(BuildContext context) {
@@ -148,11 +161,11 @@ class DButtonThemeData with Diagnosticable {
   });
 
   const DButtonThemeData.all(DButtonStyle? style)
-      : defaultButtonStyle = style,
-        filledButtonStyle = style,
-        textButtonStyle = style,
-        outlinedButtonStyle = style,
-        iconButtonStyle = style;
+    : defaultButtonStyle = style,
+      filledButtonStyle = style,
+      textButtonStyle = style,
+      outlinedButtonStyle = style,
+      iconButtonStyle = style;
 
   static DButtonThemeData lerp(
     DButtonThemeData? a,
@@ -177,16 +190,30 @@ class DButtonThemeData with Diagnosticable {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DButtonStyle>(
-          'outlinedButtonStyle', outlinedButtonStyle))
-      ..add(DiagnosticsProperty<DButtonStyle>(
-          'filledButtonStyle', filledButtonStyle))
       ..add(
-          DiagnosticsProperty<DButtonStyle>('textButtonStyle', textButtonStyle))
-      ..add(DiagnosticsProperty<DButtonStyle>(
-          'defaultButtonStyle', defaultButtonStyle))
-      ..add(DiagnosticsProperty<DButtonStyle>(
-          'iconButtonStyle', iconButtonStyle));
+        DiagnosticsProperty<DButtonStyle>(
+          'outlinedButtonStyle',
+          outlinedButtonStyle,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DButtonStyle>(
+          'filledButtonStyle',
+          filledButtonStyle,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DButtonStyle>('textButtonStyle', textButtonStyle),
+      )
+      ..add(
+        DiagnosticsProperty<DButtonStyle>(
+          'defaultButtonStyle',
+          defaultButtonStyle,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DButtonStyle>('iconButtonStyle', iconButtonStyle),
+      );
   }
 
   static Color buttonColor(Brightness brightness, Set<ButtonStates> states) {
@@ -219,23 +246,38 @@ class DButtonThemeData with Diagnosticable {
             ? theme.colorScheme.secondary
             : theme.colorScheme.secondary
         : states.isHovering
-            ? isDark
-                ? theme.colorScheme.secondary
-                : theme.colorScheme.secondary
-            : theme.colorScheme.secondary;
+        ? isDark
+            ? theme.colorScheme.secondary
+            : theme.colorScheme.secondary
+        : theme.colorScheme.secondary;
   }
 
   static Color uncheckedInputColor(
-      Brightness brightness, Color disabledColor, Set<ButtonStates> states) {
+    Brightness brightness,
+    Color disabledColor,
+    Set<ButtonStates> states,
+  ) {
     if (brightness == Brightness.light) {
-      if (states.isDisabled) return disabledColor;
-      if (states.isPressing) return const Color(0xFF221D08).withOpacity(0.155);
-      if (states.isHovering) return const Color(0xFF221D08).withOpacity(0.055);
+      if (states.isDisabled) {
+        return disabledColor;
+      }
+      if (states.isPressing) {
+        return const Color(0xFF221D08).withValues(alpha: 0.155);
+      }
+      if (states.isHovering) {
+        return const Color(0xFF221D08).withValues(alpha: 0.055);
+      }
       return Colors.transparent;
     } else {
-      if (states.isDisabled) return disabledColor;
-      if (states.isPressing) return const Color(0xFFFFF3E8).withOpacity(0.080);
-      if (states.isHovering) return const Color(0xFFFFF3E8).withOpacity(0.12);
+      if (states.isDisabled) {
+        return disabledColor;
+      }
+      if (states.isPressing) {
+        return const Color(0xFFFFF3E8).withValues(alpha: 0.080);
+      }
+      if (states.isHovering) {
+        return const Color(0xFFFFF3E8).withValues(alpha: 0.12);
+      }
       return Colors.transparent;
     }
   }

@@ -39,7 +39,6 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
   final parser = ArgParser();
   parser.addFlag('mobileMode', abbr: 'm');
   parser.addFlag('localEndpoint', abbr: 'E');
-  parser.addFlag('onboardingUserFeatures', abbr: 'O');
   parser.addFlag('networkSettings', abbr: 'n', defaultsTo: true);
   parser.addFlag('enableJade', abbr: 'j', defaultsTo: true);
 
@@ -47,7 +46,6 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
 
   final runMobile = results['mobileMode'] as bool;
   final enableLocalEndpoint = results['localEndpoint'] as bool;
-  final onboardingUserFeatures = results['onboardingUserFeatures'] as bool;
   final networkSettings = results['networkSettings'] as bool;
   final enableJade = results['enableJade'] as bool;
 
@@ -104,15 +102,16 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     (switch (level) {
       LevelMessages.debug => logger.d('[$name] ${object.toString()}'),
       LevelMessages.info => logger.i('[$name] ${object.toString()}'),
-      LevelMessages.warning =>
-        logger.w('[$name] ${object.toString()} ${StackTrace.current}'),
+      LevelMessages.warning => logger.w(
+        '[$name] ${object.toString()} ${StackTrace.current}',
+      ),
       LevelMessages.error => () {
-          logger.e('[$name] ${object.toString()}');
-          logger.d(StackTrace.current);
-        }(),
+        logger.e('[$name] ${object.toString()}');
+        logger.d(StackTrace.current);
+      }(),
       _ => () {
-          // do nothing
-        }(),
+        // do nothing
+      }(),
     });
   }
 
@@ -126,7 +125,6 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     FlavorConfig(
       flavor: Flavor.production,
       values: FlavorValues(
-        enableOnboardingUserFeatures: false,
         enableNetworkSettings: true,
         enableJade: true,
         enableLocalEndpoint: false,
@@ -135,16 +133,16 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     );
 
     final plugin = SideswapNotificationsPlugin(
-        androidPlatform: FlavorConfig.isFdroid
-            ? AndroidPlatformEnum.fdroid
-            : AndroidPlatformEnum.android);
+      androidPlatform:
+          FlavorConfig.isFdroid
+              ? AndroidPlatformEnum.fdroid
+              : AndroidPlatformEnum.android,
+    );
     await plugin.firebaseInitializeApp();
 
     runApp(
       ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(sharedPrefs)],
         child: const AppMain(),
       ),
     );
@@ -155,7 +153,6 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
   FlavorConfig(
     flavor: Flavor.production,
     values: FlavorValues(
-      enableOnboardingUserFeatures: onboardingUserFeatures,
       enableNetworkSettings: networkSettings,
       enableJade: enableJade,
       enableLocalEndpoint: enableLocalEndpoint,
@@ -165,9 +162,7 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
 
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(sharedPrefs)],
       child: const DesktopAppMain(),
     ),
   );

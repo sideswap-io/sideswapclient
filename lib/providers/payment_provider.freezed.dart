@@ -12,7 +12,8 @@ part of 'payment_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$CreateTxState {
@@ -22,16 +23,14 @@ mixin _$CreateTxState {
     required TResult Function() creating,
     required TResult Function(CreatedTx createdTx) created,
     required TResult Function(String? errorMsg) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? creating,
     TResult? Function(CreatedTx createdTx)? created,
     TResult? Function(String? errorMsg)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -39,24 +38,21 @@ mixin _$CreateTxState {
     TResult Function(CreatedTx createdTx)? created,
     TResult Function(String? errorMsg)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(CreateTxStateEmpty value) empty,
     required TResult Function(CreateTxStateCreating value) creating,
     required TResult Function(CreateTxStateCreated value) created,
     required TResult Function(CreateTxStateError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(CreateTxStateEmpty value)? empty,
     TResult? Function(CreateTxStateCreating value)? creating,
     TResult? Function(CreateTxStateCreated value)? created,
     TResult? Function(CreateTxStateError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(CreateTxStateEmpty value)? empty,
@@ -64,15 +60,15 @@ mixin _$CreateTxState {
     TResult Function(CreateTxStateCreated value)? created,
     TResult Function(CreateTxStateError value)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $CreateTxStateCopyWith<$Res> {
   factory $CreateTxStateCopyWith(
-          CreateTxState value, $Res Function(CreateTxState) then) =
-      _$CreateTxStateCopyWithImpl<$Res, CreateTxState>;
+    CreateTxState value,
+    $Res Function(CreateTxState) then,
+  ) = _$CreateTxStateCopyWithImpl<$Res, CreateTxState>;
 }
 
 /// @nodoc
@@ -84,22 +80,30 @@ class _$CreateTxStateCopyWithImpl<$Res, $Val extends CreateTxState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$CreateTxStateEmptyImplCopyWith<$Res> {
-  factory _$$CreateTxStateEmptyImplCopyWith(_$CreateTxStateEmptyImpl value,
-          $Res Function(_$CreateTxStateEmptyImpl) then) =
-      __$$CreateTxStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$CreateTxStateEmptyImplCopyWith(
+    _$CreateTxStateEmptyImpl value,
+    $Res Function(_$CreateTxStateEmptyImpl) then,
+  ) = __$$CreateTxStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$CreateTxStateEmptyImplCopyWithImpl<$Res>
     extends _$CreateTxStateCopyWithImpl<$Res, _$CreateTxStateEmptyImpl>
     implements _$$CreateTxStateEmptyImplCopyWith<$Res> {
-  __$$CreateTxStateEmptyImplCopyWithImpl(_$CreateTxStateEmptyImpl _value,
-      $Res Function(_$CreateTxStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$CreateTxStateEmptyImplCopyWithImpl(
+    _$CreateTxStateEmptyImpl _value,
+    $Res Function(_$CreateTxStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -203,18 +207,22 @@ abstract class CreateTxStateEmpty implements CreateTxState {
 /// @nodoc
 abstract class _$$CreateTxStateCreatingImplCopyWith<$Res> {
   factory _$$CreateTxStateCreatingImplCopyWith(
-          _$CreateTxStateCreatingImpl value,
-          $Res Function(_$CreateTxStateCreatingImpl) then) =
-      __$$CreateTxStateCreatingImplCopyWithImpl<$Res>;
+    _$CreateTxStateCreatingImpl value,
+    $Res Function(_$CreateTxStateCreatingImpl) then,
+  ) = __$$CreateTxStateCreatingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$CreateTxStateCreatingImplCopyWithImpl<$Res>
     extends _$CreateTxStateCopyWithImpl<$Res, _$CreateTxStateCreatingImpl>
     implements _$$CreateTxStateCreatingImplCopyWith<$Res> {
-  __$$CreateTxStateCreatingImplCopyWithImpl(_$CreateTxStateCreatingImpl _value,
-      $Res Function(_$CreateTxStateCreatingImpl) _then)
-      : super(_value, _then);
+  __$$CreateTxStateCreatingImplCopyWithImpl(
+    _$CreateTxStateCreatingImpl _value,
+    $Res Function(_$CreateTxStateCreatingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -318,9 +326,10 @@ abstract class CreateTxStateCreating implements CreateTxState {
 
 /// @nodoc
 abstract class _$$CreateTxStateCreatedImplCopyWith<$Res> {
-  factory _$$CreateTxStateCreatedImplCopyWith(_$CreateTxStateCreatedImpl value,
-          $Res Function(_$CreateTxStateCreatedImpl) then) =
-      __$$CreateTxStateCreatedImplCopyWithImpl<$Res>;
+  factory _$$CreateTxStateCreatedImplCopyWith(
+    _$CreateTxStateCreatedImpl value,
+    $Res Function(_$CreateTxStateCreatedImpl) then,
+  ) = __$$CreateTxStateCreatedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({CreatedTx createdTx});
 }
@@ -329,21 +338,24 @@ abstract class _$$CreateTxStateCreatedImplCopyWith<$Res> {
 class __$$CreateTxStateCreatedImplCopyWithImpl<$Res>
     extends _$CreateTxStateCopyWithImpl<$Res, _$CreateTxStateCreatedImpl>
     implements _$$CreateTxStateCreatedImplCopyWith<$Res> {
-  __$$CreateTxStateCreatedImplCopyWithImpl(_$CreateTxStateCreatedImpl _value,
-      $Res Function(_$CreateTxStateCreatedImpl) _then)
-      : super(_value, _then);
+  __$$CreateTxStateCreatedImplCopyWithImpl(
+    _$CreateTxStateCreatedImpl _value,
+    $Res Function(_$CreateTxStateCreatedImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? createdTx = null,
-  }) {
-    return _then(_$CreateTxStateCreatedImpl(
-      null == createdTx
-          ? _value.createdTx
-          : createdTx // ignore: cast_nullable_to_non_nullable
-              as CreatedTx,
-    ));
+  $Res call({Object? createdTx = null}) {
+    return _then(
+      _$CreateTxStateCreatedImpl(
+        null == createdTx
+            ? _value.createdTx
+            : createdTx // ignore: cast_nullable_to_non_nullable
+                as CreatedTx,
+      ),
+    );
   }
 }
 
@@ -372,13 +384,17 @@ class _$CreateTxStateCreatedImpl implements CreateTxStateCreated {
   @override
   int get hashCode => Object.hash(runtimeType, createdTx);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$CreateTxStateCreatedImplCopyWith<_$CreateTxStateCreatedImpl>
-      get copyWith =>
-          __$$CreateTxStateCreatedImplCopyWithImpl<_$CreateTxStateCreatedImpl>(
-              this, _$identity);
+  get copyWith =>
+      __$$CreateTxStateCreatedImplCopyWithImpl<_$CreateTxStateCreatedImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -460,16 +476,20 @@ abstract class CreateTxStateCreated implements CreateTxState {
       _$CreateTxStateCreatedImpl;
 
   CreatedTx get createdTx;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CreateTxStateCreatedImplCopyWith<_$CreateTxStateCreatedImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$CreateTxStateErrorImplCopyWith<$Res> {
-  factory _$$CreateTxStateErrorImplCopyWith(_$CreateTxStateErrorImpl value,
-          $Res Function(_$CreateTxStateErrorImpl) then) =
-      __$$CreateTxStateErrorImplCopyWithImpl<$Res>;
+  factory _$$CreateTxStateErrorImplCopyWith(
+    _$CreateTxStateErrorImpl value,
+    $Res Function(_$CreateTxStateErrorImpl) then,
+  ) = __$$CreateTxStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String? errorMsg});
 }
@@ -478,21 +498,25 @@ abstract class _$$CreateTxStateErrorImplCopyWith<$Res> {
 class __$$CreateTxStateErrorImplCopyWithImpl<$Res>
     extends _$CreateTxStateCopyWithImpl<$Res, _$CreateTxStateErrorImpl>
     implements _$$CreateTxStateErrorImplCopyWith<$Res> {
-  __$$CreateTxStateErrorImplCopyWithImpl(_$CreateTxStateErrorImpl _value,
-      $Res Function(_$CreateTxStateErrorImpl) _then)
-      : super(_value, _then);
+  __$$CreateTxStateErrorImplCopyWithImpl(
+    _$CreateTxStateErrorImpl _value,
+    $Res Function(_$CreateTxStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? errorMsg = freezed,
-  }) {
-    return _then(_$CreateTxStateErrorImpl(
-      errorMsg: freezed == errorMsg
-          ? _value.errorMsg
-          : errorMsg // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? errorMsg = freezed}) {
+    return _then(
+      _$CreateTxStateErrorImpl(
+        errorMsg:
+            freezed == errorMsg
+                ? _value.errorMsg
+                : errorMsg // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -521,12 +545,16 @@ class _$CreateTxStateErrorImpl implements CreateTxStateError {
   @override
   int get hashCode => Object.hash(runtimeType, errorMsg);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$CreateTxStateErrorImplCopyWith<_$CreateTxStateErrorImpl> get copyWith =>
       __$$CreateTxStateErrorImplCopyWithImpl<_$CreateTxStateErrorImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -608,7 +636,10 @@ abstract class CreateTxStateError implements CreateTxState {
       _$CreateTxStateErrorImpl;
 
   String? get errorMsg;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of CreateTxState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CreateTxStateErrorImplCopyWith<_$CreateTxStateErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -619,47 +650,42 @@ mixin _$SendTxState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() sending,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? sending,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? sending,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(SendTxStateEmpty value) empty,
     required TResult Function(SendTxStateSending value) sending,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(SendTxStateEmpty value)? empty,
     TResult? Function(SendTxStateSending value)? sending,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SendTxStateEmpty value)? empty,
     TResult Function(SendTxStateSending value)? sending,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $SendTxStateCopyWith<$Res> {
   factory $SendTxStateCopyWith(
-          SendTxState value, $Res Function(SendTxState) then) =
-      _$SendTxStateCopyWithImpl<$Res, SendTxState>;
+    SendTxState value,
+    $Res Function(SendTxState) then,
+  ) = _$SendTxStateCopyWithImpl<$Res, SendTxState>;
 }
 
 /// @nodoc
@@ -671,22 +697,30 @@ class _$SendTxStateCopyWithImpl<$Res, $Val extends SendTxState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of SendTxState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$SendTxStateEmptyImplCopyWith<$Res> {
-  factory _$$SendTxStateEmptyImplCopyWith(_$SendTxStateEmptyImpl value,
-          $Res Function(_$SendTxStateEmptyImpl) then) =
-      __$$SendTxStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$SendTxStateEmptyImplCopyWith(
+    _$SendTxStateEmptyImpl value,
+    $Res Function(_$SendTxStateEmptyImpl) then,
+  ) = __$$SendTxStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$SendTxStateEmptyImplCopyWithImpl<$Res>
     extends _$SendTxStateCopyWithImpl<$Res, _$SendTxStateEmptyImpl>
     implements _$$SendTxStateEmptyImplCopyWith<$Res> {
-  __$$SendTxStateEmptyImplCopyWithImpl(_$SendTxStateEmptyImpl _value,
-      $Res Function(_$SendTxStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$SendTxStateEmptyImplCopyWithImpl(
+    _$SendTxStateEmptyImpl _value,
+    $Res Function(_$SendTxStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SendTxState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -777,18 +811,23 @@ abstract class SendTxStateEmpty implements SendTxState {
 
 /// @nodoc
 abstract class _$$SendTxStateSendingImplCopyWith<$Res> {
-  factory _$$SendTxStateSendingImplCopyWith(_$SendTxStateSendingImpl value,
-          $Res Function(_$SendTxStateSendingImpl) then) =
-      __$$SendTxStateSendingImplCopyWithImpl<$Res>;
+  factory _$$SendTxStateSendingImplCopyWith(
+    _$SendTxStateSendingImpl value,
+    $Res Function(_$SendTxStateSendingImpl) then,
+  ) = __$$SendTxStateSendingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$SendTxStateSendingImplCopyWithImpl<$Res>
     extends _$SendTxStateCopyWithImpl<$Res, _$SendTxStateSendingImpl>
     implements _$$SendTxStateSendingImplCopyWith<$Res> {
-  __$$SendTxStateSendingImplCopyWithImpl(_$SendTxStateSendingImpl _value,
-      $Res Function(_$SendTxStateSendingImpl) _then)
-      : super(_value, _then);
+  __$$SendTxStateSendingImplCopyWithImpl(
+    _$SendTxStateSendingImpl _value,
+    $Res Function(_$SendTxStateSendingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SendTxState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

@@ -25,34 +25,34 @@ class SwapButton extends StatelessWidget {
       child: Container(
         height: 36,
         decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(8.0),
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
           color: color,
         ),
         child: TextButton(
-            onPressed: onPressed,
-            style: TextButton.styleFrom(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8),
-                ),
-              ),
-              padding: EdgeInsets.zero,
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
-            child: switch (child) {
-              Widget child => child,
-              _ => Center(
-                  child: Text(
-                    text ?? '',
-                    maxLines: 1,
-                    softWrap: false,
-                    style: textStyle ??
-                        Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500, color: textColor),
-                  ),
-                )
-            }),
+            padding: EdgeInsets.zero,
+          ),
+          child: switch (child) {
+            Widget child => child,
+            _ => Center(
+              child: Text(
+                text ?? '',
+                maxLines: 1,
+                softWrap: false,
+                style:
+                    textStyle ??
+                    Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: textColor,
+                    ),
+              ),
+            ),
+          },
+        ),
       ),
     );
   }

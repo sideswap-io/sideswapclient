@@ -27,8 +27,8 @@ class DSettingsLogs extends ConsumerWidget {
 
     (switch (saveLocation) {
       final saveLocation? => () async {
-          await file.saveTo(saveLocation.path);
-        }(),
+        await file.saveTo(saveLocation.path);
+      }(),
       _ => () {}(),
     });
   }
@@ -42,8 +42,10 @@ class DSettingsLogs extends ConsumerWidget {
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         box.localToGlobal(buttonOffset, ancestor: overlay),
-        box.localToGlobal(box.size.bottomRight(Offset.zero) + Offset.zero,
-            ancestor: overlay),
+        box.localToGlobal(
+          box.size.bottomRight(Offset.zero) + Offset.zero,
+          ancestor: overlay,
+        ),
       ),
       Offset.zero & overlay.size,
     );
@@ -52,14 +54,8 @@ class DSettingsLogs extends ConsumerWidget {
       context: context,
       position: position,
       items: [
-        PopupMenuItem<int>(
-          value: 1,
-          child: Text('Export log'.tr()),
-        ),
-        PopupMenuItem<int>(
-          value: 2,
-          child: Text('Export previous log'.tr()),
-        ),
+        PopupMenuItem<int>(value: 1, child: Text('Export log'.tr())),
+        PopupMenuItem<int>(value: 2, child: Text('Export previous log'.tr())),
       ],
     );
 
@@ -74,14 +70,15 @@ class DSettingsLogs extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme =
         ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
-    final defaultButtonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .buttonThemeData
-        .defaultButtonStyle;
+    final defaultButtonStyle =
+        ref
+            .watch(desktopAppThemeNotifierProvider)
+            .buttonThemeData
+            .defaultButtonStyle;
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -132,9 +129,7 @@ class DSettingsLogs extends ConsumerWidget {
               onPressed: () {
                 ref.read(walletProvider).goBack();
               },
-              child: Text(
-                'BACK'.tr(),
-              ),
+              child: Text('BACK'.tr()),
             ),
           ),
         ],

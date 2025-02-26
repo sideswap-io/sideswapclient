@@ -8,9 +8,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 
 class FeeRates extends StatelessWidget {
-  const FeeRates({
-    super.key,
-  });
+  const FeeRates({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,63 +23,68 @@ class FeeRates extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, right: 16),
-          child: Consumer(builder: (context, ref, _) {
-            final feeRates = ref.watch(bitcoinFeeRatesProvider);
+          child: Consumer(
+            builder: (context, ref, _) {
+              final feeRates = ref.watch(bitcoinFeeRatesProvider);
 
-            return ListView.builder(
-              itemCount: feeRates.length,
-              itemBuilder: (context, index) {
-                if (feeRates.isNotEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Container(
-                      height: 50,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(8),
+              return ListView.builder(
+                itemCount: feeRates.length,
+                itemBuilder: (context, index) {
+                  if (feeRates.isNotEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          color: SideSwapColors.chathamsBlue,
                         ),
-                        color: SideSwapColors.chathamsBlue,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(8),
-                          ),
-                          onTap: () {
-                            ref
-                                .read(bitcoinCurrentFeeRateStateNotifierProvider
-                                    .notifier)
-                                .setFeeRate(feeRates[index]);
-                            Navigator.of(context).pop();
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(8),
                             ),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                ref.read(bitcoinFeeRateDescriptionProvider(
-                                    feeRates[index])),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
+                            onTap: () {
+                              ref
+                                  .read(
+                                    bitcoinCurrentFeeRateNotifierProvider
+                                        .notifier,
+                                  )
+                                  .setFeeRate(feeRates[index]);
+                              Navigator.of(context).pop();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  ref.read(
+                                    bitcoinFeeRateDescriptionProvider(
+                                      feeRates[index],
+                                    ),
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                } else {
-                  return const SizedBox();
-                }
-              },
-            );
-          }),
+                    );
+                  } else {
+                    return const SizedBox();
+                  }
+                },
+              );
+            },
+          ),
         ),
       ),
     );

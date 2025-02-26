@@ -5,9 +5,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/csv_provider.dart';
 
 class CsvExportButton extends HookConsumerWidget {
-  const CsvExportButton({
-    super.key,
-  });
+  const CsvExportButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,19 +19,18 @@ class CsvExportButton extends HookConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: disabled
-            ? null
-            : () async {
-                final box = context.findRenderObject() as RenderBox?;
-                await ref.read(csvNotifierProvider.notifier).share(box);
-              },
+        onTap:
+            disabled
+                ? null
+                : () async {
+                  final box = context.findRenderObject() as RenderBox?;
+                  await ref.read(csvNotifierProvider.notifier).share(box);
+                },
         borderRadius: BorderRadius.circular(21),
         child: Container(
           width: 42,
           height: 42,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-          ),
+          decoration: const BoxDecoration(shape: BoxShape.circle),
           child: Center(
             child: Row(
               children: [
@@ -43,12 +40,13 @@ class CsvExportButton extends HookConsumerWidget {
                     'assets/export2.svg',
                     width: 23,
                     height: 23,
-                    colorFilter: disabled
-                        ? const ColorFilter.mode(
-                            SideSwapColors.jellyBean,
-                            BlendMode.srcIn,
-                          )
-                        : null,
+                    colorFilter:
+                        disabled
+                            ? const ColorFilter.mode(
+                              SideSwapColors.jellyBean,
+                              BlendMode.srcIn,
+                            )
+                            : null,
                   ),
                 ),
               ],

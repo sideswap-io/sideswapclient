@@ -23,17 +23,15 @@ class AnimatedDropdownArrow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
-      'assets/arrow_down.svg',
-      colorFilter: ColorFilter.mode(
-        iconColor,
-        BlendMode.srcIn,
-      ),
-    )
+          'assets/arrow_down.svg',
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+        )
         .animate(
-            target: target,
-            onInit: (controller) {
-              controller.forward(from: initFrom);
-            })
+          target: target,
+          onInit: (controller) {
+            controller.forward(from: initFrom);
+          },
+        )
         .rotate(begin: 0, end: -0.5, duration: duration);
   }
 }

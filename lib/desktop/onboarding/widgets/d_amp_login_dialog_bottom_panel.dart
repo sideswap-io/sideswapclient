@@ -19,7 +19,8 @@ class DAmpLoginDialogBottomPanel extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = ref.watch(
-        desktopAppThemeNotifierProvider.select((value) => value.textTheme));
+      desktopAppThemeNotifierProvider.select((value) => value.textTheme),
+    );
 
     return Container(
       width: double.infinity,

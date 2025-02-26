@@ -59,14 +59,15 @@ class DAddressesAddressTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'All'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: addressTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            addressTypeFlag ==
                                     const AddressesAddressTypeFlagAll()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -96,14 +97,15 @@ class DAddressesAddressTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'Internal'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: addressTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            addressTypeFlag ==
                                     const AddressesAddressTypeFlagInternal()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -133,14 +135,15 @@ class DAddressesAddressTypePopupMenu extends HookConsumerWidget {
                     child: Text(
                       'External'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: addressTypeFlag ==
+                        fontSize: 13,
+                        color:
+                            addressTypeFlag ==
                                     const AddressesAddressTypeFlagExternal()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -159,33 +162,44 @@ class DAddressesAddressTypePopupMenu extends HookConsumerWidget {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
 
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).addressesButtonStyle(false);
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .addressesButtonStyle(false);
 
     final addressTypeFlag = ref.watch(addressesAddressTypeFlagNotifierProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Address'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(color: SideSwapColors.cornFlower, fontSize: 12)),
+        Text(
+          'Address'.tr(),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: SideSwapColors.cornFlower,
+            fontSize: 12,
+          ),
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 32,
           child: DButton(
             key: buttonKey,
-            style: clicked.value
-                ? buttonStyle?.merge(DButtonStyle(
-                    backgroundColor:
-                        ButtonState.all(SideSwapColors.prussianBlue)))
-                : buttonStyle,
+            style:
+                clicked.value
+                    ? buttonStyle?.merge(
+                      DButtonStyle(
+                        backgroundColor: ButtonState.all(
+                          SideSwapColors.prussianBlue,
+                        ),
+                      ),
+                    )
+                    : buttonStyle,
             onPressed: () async {
               clicked.value = true;
-              final result =
-                  await showSortMenu(context, buttonKey, addressTypeFlag);
+              final result = await showSortMenu(
+                context,
+                buttonKey,
+                addressTypeFlag,
+              );
               (switch (result) {
                 AddressesAddressTypeFlag result => ref
                     .read(addressesAddressTypeFlagNotifierProvider.notifier)
@@ -208,14 +222,15 @@ class DAddressesAddressTypePopupMenu extends HookConsumerWidget {
                       AddressesAddressTypeFlagExternal() => 'External'.tr(),
                       _ => 'All'.tr(),
                     },
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelMedium
-                        ?.copyWith(fontSize: 13),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMedium?.copyWith(fontSize: 13),
                   ),
                   const SizedBox(width: 6),
                   AnimatedDropdownArrow(
-                      target: clicked.value ? 0 : 1, initFrom: 1),
+                    target: clicked.value ? 0 : 1,
+                    initFrom: 1,
+                  ),
                 ],
               ),
             ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/client_ffi.dart';
@@ -47,10 +48,8 @@ class RequestConversionRates extends _$RequestConversionRates {
 
 @freezed
 sealed class ConversionRate with _$ConversionRate {
-  const factory ConversionRate({
-    required String name,
-    required Decimal rate,
-  }) = _ConversionRate;
+  const factory ConversionRate({required String name, required Decimal rate}) =
+      _ConversionRate;
 }
 
 @freezed
@@ -72,31 +71,33 @@ class ConversionRatesNotifier extends _$ConversionRatesNotifier {
     bool update = false;
 
     for (final key in fromConversionRates.usdConversionRates.keys) {
-      final rate = Decimal.tryParse(
-              '${fromConversionRates.usdConversionRates[key] ?? .0}') ??
+      final rate =
+          Decimal.tryParse(
+            '${fromConversionRates.usdConversionRates[key] ?? .0}',
+          ) ??
           Decimal.zero;
       if (rate == Decimal.zero) {
         logger.w('$key conversion rate is zero!');
         continue;
       }
 
-      final index =
-          usdConversionRates.indexWhere((element) => element.name == key);
+      final index = usdConversionRates.indexWhere(
+        (element) => element.name == key,
+      );
 
       final newConversionRate = ConversionRate(name: key, rate: rate);
       (switch (index) {
         -1 => () {
-            usdConversionRates.add(newConversionRate);
-            update = true;
-          }(),
+          usdConversionRates.add(newConversionRate);
+          update = true;
+        }(),
         _ => () {
-            final oldConversionRate = usdConversionRates[index];
-            if (oldConversionRate.name == key &&
-                oldConversionRate.rate != rate) {
-              usdConversionRates[index] = newConversionRate;
-              update = true;
-            }
-          }(),
+          final oldConversionRate = usdConversionRates[index];
+          if (oldConversionRate.name == key && oldConversionRate.rate != rate) {
+            usdConversionRates[index] = newConversionRate;
+            update = true;
+          }
+        }(),
       });
     }
 
@@ -119,9 +120,10 @@ class DefaultConversionRateNotifier extends _$DefaultConversionRateNotifier {
     // try to find saved assetId
     final savedCurrency = switch (defaultCurrency) {
       final defaultCurrency? => () {
-          return conversionRates
-              .firstWhereOrNull((element) => element.name == defaultCurrency);
-        }(),
+        return conversionRates.firstWhereOrNull(
+          (element) => element.name == defaultCurrency,
+        );
+      }(),
       _ => null,
     };
 
@@ -129,10 +131,11 @@ class DefaultConversionRateNotifier extends _$DefaultConversionRateNotifier {
     return switch (savedCurrency) {
       final savedCurrency? => savedCurrency,
       _ => () {
-          const defaultCurrencyName = 'USD';
-          return conversionRates.firstWhereOrNull(
-              (element) => element.name == defaultCurrencyName);
-        }(),
+        const defaultCurrencyName = 'USD';
+        return conversionRates.firstWhereOrNull(
+          (element) => element.name == defaultCurrencyName,
+        );
+      }(),
     };
   }
 
@@ -148,8 +151,7 @@ class DefaultConversionRateNotifier extends _$DefaultConversionRateNotifier {
 }
 
 @riverpod
-Decimal defaultConversionRateMultiplier(
-    DefaultConversionRateMultiplierRef ref) {
+Decimal defaultConversionRateMultiplier(Ref ref) {
   final conversionRate = ref.watch(defaultConversionRateNotifierProvider);
   return switch (conversionRate) {
     final conversionRate? => conversionRate.rate,

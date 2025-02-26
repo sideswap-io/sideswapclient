@@ -12,16 +12,19 @@ String _$mobileAppThemeNotifierHash() =>
 /// See also [MobileAppThemeNotifier].
 @ProviderFor(MobileAppThemeNotifier)
 final mobileAppThemeNotifierProvider = AutoDisposeNotifierProvider<
-    MobileAppThemeNotifier, MobileThemeData>.internal(
+  MobileAppThemeNotifier,
+  MobileThemeData
+>.internal(
   MobileAppThemeNotifier.new,
   name: r'mobileAppThemeNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$mobileAppThemeNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$mobileAppThemeNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$MobileAppThemeNotifier = AutoDisposeNotifier<MobileThemeData>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

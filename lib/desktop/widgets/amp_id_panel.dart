@@ -56,12 +56,13 @@ class AmpIdPanel extends StatelessWidget {
               onTap: onTap,
               child: Text(
                 'AMP ID:',
-                style: prefixTextStyle ??
+                style:
+                    prefixTextStyle ??
                     Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: SideSwapColors.brightTurquoise,
-                        ),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: SideSwapColors.brightTurquoise,
+                    ),
               ),
             ),
           ),
@@ -73,11 +74,12 @@ class AmpIdPanel extends StatelessWidget {
               onTap: onTap,
               child: Text(
                 ampId,
-                style: ampIdTextStyle ??
+                style:
+                    ampIdTextStyle ??
                     Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                        ),
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                    ),
               ),
             ),
           ),
@@ -85,40 +87,38 @@ class AmpIdPanel extends StatelessWidget {
           ...switch (icon) {
             final icon? => [icon],
             _ => [
-                const Spacer(),
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: FlavorConfig.isDesktop
-                      ? Consumer(builder: (context, ref, _) {
-                          final buttonStyle = ref
-                              .watch(desktopAppThemeNotifierProvider)
-                              .mainBottomNavigationBarButtonStyle;
+              const Spacer(),
+              SizedBox(
+                width: 32,
+                height: 32,
+                child:
+                    FlavorConfig.isDesktop
+                        ? Consumer(
+                          builder: (context, ref, _) {
+                            final buttonStyle =
+                                ref
+                                    .watch(desktopAppThemeNotifierProvider)
+                                    .mainBottomNavigationBarButtonStyle;
 
-                          return DButton(
-                            style: buttonStyle,
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/copy2.svg',
-                                width: copyIconWidth,
-                                height: copyIconHeight,
+                            return DButton(
+                              style: buttonStyle,
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/copy2.svg',
+                                  width: copyIconWidth,
+                                  height: copyIconHeight,
+                                ),
                               ),
-                            ),
-                            onPressed: () async {
-                              await copyToClipboard(
-                                context,
-                                ampId,
-                              );
-                            },
-                          );
-                        })
-                      : IconButton(
+                              onPressed: () async {
+                                await copyToClipboard(context, ampId);
+                              },
+                            );
+                          },
+                        )
+                        : IconButton(
                           padding: EdgeInsets.zero,
                           onPressed: () async {
-                            await copyToClipboard(
-                              context,
-                              ampId,
-                            );
+                            await copyToClipboard(context, ampId);
                           },
                           icon: SvgPicture.asset(
                             'assets/copy2.svg',
@@ -126,9 +126,9 @@ class AmpIdPanel extends StatelessWidget {
                             height: copyIconHeight,
                           ),
                         ),
-                ),
-                const SizedBox(width: 6),
-              ]
+              ),
+              const SizedBox(width: 6),
+            ],
           },
         ],
       ),

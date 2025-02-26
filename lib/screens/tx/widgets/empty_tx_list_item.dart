@@ -24,9 +24,7 @@ class EmptyTxListItem extends StatelessWidget {
             height: 64,
             decoration: const BoxDecoration(
               color: Color(0xFF167399),
-              borderRadius: BorderRadius.all(
-                Radius.circular(12),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             child: Padding(
               padding: const EdgeInsets.only(left: 10, right: 16),
@@ -45,17 +43,15 @@ class EmptyTxListItem extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        EmptyTextContainer(
-                          width: 116,
-                        ),
+                        EmptyTextContainer(width: 116),
                         Spacer(),
                         Row(
                           children: [
                             EmptyTextContainer(width: 26),
                             SizedBox(width: 4),
-                            EmptyTextContainer(width: 60)
+                            EmptyTextContainer(width: 60),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -119,9 +115,7 @@ class EmptyTextContainerState extends State<EmptyTextContainer> {
       height: height,
       decoration: BoxDecoration(
         color: widget.color,
-        borderRadius: BorderRadius.all(
-          Radius.circular(radius),
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(radius)),
         border: widget.border,
       ),
     );

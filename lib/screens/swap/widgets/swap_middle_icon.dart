@@ -6,11 +6,7 @@ import 'package:sideswap/screens/swap/widgets/rounded_text_label.dart';
 import 'package:sideswap/screens/swap/widgets/swap_arrows_button.dart';
 
 class SwapMiddleIcon extends ConsumerWidget {
-  const SwapMiddleIcon({
-    super.key,
-    required this.visibleToggles,
-    this.onTap,
-  });
+  const SwapMiddleIcon({super.key, required this.visibleToggles, this.onTap});
 
   final _swapIconSize = 48.0;
   final bool visibleToggles;
@@ -22,19 +18,14 @@ class SwapMiddleIcon extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
         children: [
-          SwapArrowsButton(
-            radius: _swapIconSize,
-            onTap: onTap,
-          ),
+          SwapArrowsButton(radius: _swapIconSize, onTap: onTap),
           Padding(
             padding: const EdgeInsets.only(left: 8),
             child: Consumer(
               builder: (context, ref, _) {
                 final swapPriceText = ref.watch(swapPriceTextProvider);
                 return switch (swapPriceText) {
-                  final swapPriceText? => RoundedTextLabel(
-                      text: swapPriceText,
-                    ),
+                  final swapPriceText? => RoundedTextLabel(text: swapPriceText),
                   _ => const SizedBox(),
                 };
               },

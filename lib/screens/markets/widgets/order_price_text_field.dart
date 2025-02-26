@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -32,8 +32,11 @@ class OrderPriceTextField extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultCurrencyConversion = ref.watch(
-        defaultCurrencyConversionProvider(asset?.assetId ?? '',
-            double.tryParse(controller?.text ?? '0') ?? 0));
+      defaultCurrencyConversionWithTickerProvider(
+        asset?.assetId ?? '',
+        double.tryParse(controller?.text ?? '0') ?? 0,
+      ),
+    );
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -85,11 +88,7 @@ class OrderPriceTextField extends ConsumerWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: icon,
-                      ),
+                      SizedBox(width: 24, height: 24, child: icon),
                       Padding(
                         padding: const EdgeInsets.only(left: 5),
                         child: Row(
@@ -106,7 +105,7 @@ class OrderPriceTextField extends ConsumerWidget {
                               Asset(:final ampMarket) when ampMarket =>
                                 const AmpFlag(),
                               _ => const SizedBox(),
-                            }
+                            },
                           ],
                         ),
                       ),
@@ -125,15 +124,18 @@ class OrderPriceTextField extends ConsumerWidget {
                             ),
                             onEditingComplete: onEditingComplete,
                             keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
+                              decimal: true,
+                            ),
                             inputFormatters: [
                               CommaTextInputFormatter(),
                               if (precision == 0) ...[
                                 FilteringTextInputFormatter.deny(
-                                    RegExp('[\\-|,\\ .]')),
+                                  RegExp('[\\-|,\\ .]'),
+                                ),
                               ] else ...[
                                 FilteringTextInputFormatter.deny(
-                                    RegExp('[\\-|,\\ ]')),
+                                  RegExp('[\\-|,\\ ]'),
+                                ),
                               ],
                               DecimalTextInputFormatter(
                                 decimalRange: precision,

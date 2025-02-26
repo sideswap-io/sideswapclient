@@ -9,11 +9,7 @@ class DStokrLoginDialog extends HookConsumerWidget {
   final Widget? content;
   final VoidCallback? onClose;
 
-  const DStokrLoginDialog({
-    super.key,
-    this.content,
-    this.onClose,
-  });
+  const DStokrLoginDialog({super.key, this.content, this.onClose});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -7,30 +7,20 @@ part of 'stokr_providers.dart';
 // **************************************************************************
 
 _$StokrSettingsModelImpl _$$StokrSettingsModelImplFromJson(Map json) =>
-    _$StokrSettingsModelImpl(
-      firstRun: json['firstRun'] as bool? ?? true,
-    );
+    _$StokrSettingsModelImpl(firstRun: json['firstRun'] as bool? ?? true);
 
 Map<String, dynamic> _$$StokrSettingsModelImplToJson(
-    _$StokrSettingsModelImpl instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('firstRun', instance.firstRun);
-  return val;
-}
+  _$StokrSettingsModelImpl instance,
+) => <String, dynamic>{
+  if (instance.firstRun case final value?) 'firstRun': value,
+};
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
 String _$stokrCountryBlacklistSearchHash() =>
-    r'4a1f76d00e4f22c417a5af10c7aa196eaefaf4a3';
+    r'2d7c3fa7b40d68a42fee449a01ec799a079ff980';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -64,21 +54,15 @@ class StokrCountryBlacklistSearchFamily
   const StokrCountryBlacklistSearchFamily();
 
   /// See also [stokrCountryBlacklistSearch].
-  StokrCountryBlacklistSearchProvider call(
-    String value,
-  ) {
-    return StokrCountryBlacklistSearchProvider(
-      value,
-    );
+  StokrCountryBlacklistSearchProvider call(String value) {
+    return StokrCountryBlacklistSearchProvider(value);
   }
 
   @override
   StokrCountryBlacklistSearchProvider getProviderOverride(
     covariant StokrCountryBlacklistSearchProvider provider,
   ) {
-    return call(
-      provider.value,
-    );
+    return call(provider.value);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -100,24 +84,23 @@ class StokrCountryBlacklistSearchFamily
 class StokrCountryBlacklistSearchProvider
     extends AutoDisposeFutureProvider<List<CountryCode>> {
   /// See also [stokrCountryBlacklistSearch].
-  StokrCountryBlacklistSearchProvider(
-    String value,
-  ) : this._internal(
-          (ref) => stokrCountryBlacklistSearch(
-            ref as StokrCountryBlacklistSearchRef,
-            value,
-          ),
-          from: stokrCountryBlacklistSearchProvider,
-          name: r'stokrCountryBlacklistSearchProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$stokrCountryBlacklistSearchHash,
-          dependencies: StokrCountryBlacklistSearchFamily._dependencies,
-          allTransitiveDependencies:
-              StokrCountryBlacklistSearchFamily._allTransitiveDependencies,
-          value: value,
-        );
+  StokrCountryBlacklistSearchProvider(String value)
+    : this._internal(
+        (ref) => stokrCountryBlacklistSearch(
+          ref as StokrCountryBlacklistSearchRef,
+          value,
+        ),
+        from: stokrCountryBlacklistSearchProvider,
+        name: r'stokrCountryBlacklistSearchProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$stokrCountryBlacklistSearchHash,
+        dependencies: StokrCountryBlacklistSearchFamily._dependencies,
+        allTransitiveDependencies:
+            StokrCountryBlacklistSearchFamily._allTransitiveDependencies,
+        value: value,
+      );
 
   StokrCountryBlacklistSearchProvider._internal(
     super._createNotifier, {
@@ -134,8 +117,9 @@ class StokrCountryBlacklistSearchProvider
   @override
   Override overrideWith(
     FutureOr<List<CountryCode>> Function(
-            StokrCountryBlacklistSearchRef provider)
-        create,
+      StokrCountryBlacklistSearchRef provider,
+    )
+    create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -170,6 +154,8 @@ class StokrCountryBlacklistSearchProvider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin StokrCountryBlacklistSearchRef
     on AutoDisposeFutureProviderRef<List<CountryCode>> {
   /// The parameter `value` of this provider.
@@ -191,50 +177,57 @@ String _$stokrSettingsNotifierHash() =>
 /// See also [StokrSettingsNotifier].
 @ProviderFor(StokrSettingsNotifier)
 final stokrSettingsNotifierProvider = AutoDisposeNotifierProvider<
-    StokrSettingsNotifier, StokrSettingsModel>.internal(
+  StokrSettingsNotifier,
+  StokrSettingsModel
+>.internal(
   StokrSettingsNotifier.new,
   name: r'stokrSettingsNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$stokrSettingsNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$stokrSettingsNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$StokrSettingsNotifier = AutoDisposeNotifier<StokrSettingsModel>;
 String _$stokrBlockedCountriesHash() =>
-    r'a135ec2e67b3712a348a0a961201640740381ed4';
+    r'0abee5718d749587a715a5a4d11d4502f26bbb35';
 
 /// See also [StokrBlockedCountries].
 @ProviderFor(StokrBlockedCountries)
 final stokrBlockedCountriesProvider = AutoDisposeAsyncNotifierProvider<
-    StokrBlockedCountries, List<CountryCode>>.internal(
+  StokrBlockedCountries,
+  List<CountryCode>
+>.internal(
   StokrBlockedCountries.new,
   name: r'stokrBlockedCountriesProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$stokrBlockedCountriesHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$stokrBlockedCountriesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$StokrBlockedCountries = AutoDisposeAsyncNotifier<List<CountryCode>>;
-String _$stokrLastSelectedAccountAssetNotifierHash() =>
-    r'5adb603cedb1897efe858665ce5c36c43dafe52b';
+String _$stokrLastSelectedAssetNotifierHash() =>
+    r'ce88939d4b6b336495ed2dcc50a1ddb3243139dc';
 
-/// See also [StokrLastSelectedAccountAssetNotifier].
-@ProviderFor(StokrLastSelectedAccountAssetNotifier)
-final stokrLastSelectedAccountAssetNotifierProvider = NotifierProvider<
-    StokrLastSelectedAccountAssetNotifier, AccountAsset?>.internal(
-  StokrLastSelectedAccountAssetNotifier.new,
-  name: r'stokrLastSelectedAccountAssetNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$stokrLastSelectedAccountAssetNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+/// See also [StokrLastSelectedAssetNotifier].
+@ProviderFor(StokrLastSelectedAssetNotifier)
+final stokrLastSelectedAssetNotifierProvider =
+    NotifierProvider<StokrLastSelectedAssetNotifier, Option<Asset>>.internal(
+      StokrLastSelectedAssetNotifier.new,
+      name: r'stokrLastSelectedAssetNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$stokrLastSelectedAssetNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef _$StokrLastSelectedAccountAssetNotifier = Notifier<AccountAsset?>;
+typedef _$StokrLastSelectedAssetNotifier = Notifier<Option<Asset>>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

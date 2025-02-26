@@ -10,6 +10,7 @@ import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -26,10 +27,11 @@ class SubAccountAssetList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final iconButtonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .buttonThemeData
-        .iconButtonStyle;
+    final iconButtonStyle =
+        ref
+            .watch(desktopAppThemeNotifierProvider)
+            .buttonThemeData
+            .iconButtonStyle;
     final expanded = useState(true);
     final controller = useAnimationController(
       duration: const Duration(milliseconds: 200),
@@ -75,7 +77,9 @@ class SubAccountAssetList extends HookConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   AnimatedDropdownArrow(
-                      target: expanded.value ? 1 : 0, initFrom: 1),
+                    target: expanded.value ? 1 : 0,
+                    initFrom: 1,
+                  ),
                   const Spacer(),
                 ],
               ),
@@ -95,14 +99,12 @@ class SubAccountAssetList extends HookConsumerWidget {
                   child: SizedBox(
                     width: 577,
                     child: Column(
-                      children: List.generate(
-                        accounts.length,
-                        (index) {
-                          return SubAccountAssetTile(
-                              account: accounts[index],
-                              showDivider: index < accounts.length - 1);
-                        },
-                      ),
+                      children: List.generate(accounts.length, (index) {
+                        return SubAccountAssetTile(
+                          account: accounts[index],
+                          showDivider: index < accounts.length - 1,
+                        );
+                      }),
                     ),
                   ),
                 ),
@@ -110,15 +112,18 @@ class SubAccountAssetList extends HookConsumerWidget {
             );
           },
         ),
-        const SizedBox(height: 10)
+        const SizedBox(height: 10),
       ],
     );
   }
 }
 
 class SubAccountAssetTile extends ConsumerWidget {
-  const SubAccountAssetTile(
-      {super.key, required this.account, this.showDivider = false});
+  const SubAccountAssetTile({
+    super.key,
+    required this.account,
+    this.showDivider = false,
+  });
 
   final AccountAsset account;
   final bool showDivider;
@@ -135,9 +140,12 @@ class SubAccountAssetTile extends ConsumerWidget {
                 children: [
                   Consumer(
                     builder: (context, ref, child) {
-                      final icon = ref.watch(assetImageProvider).getSmallImage(
-                          account.assetId,
-                          filterQuality: FilterQuality.medium);
+                      final icon = ref
+                          .watch(assetImageRepositoryProvider)
+                          .getSmallImage(
+                            account.assetId,
+                            filterQuality: FilterQuality.medium,
+                          );
 
                       return icon;
                     },
@@ -145,8 +153,11 @@ class SubAccountAssetTile extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Consumer(
                     builder: (context, ref, child) {
-                      final asset = ref.watch(assetsStateProvider
-                          .select((value) => value[account.assetId]));
+                      final asset = ref.watch(
+                        assetsStateProvider.select(
+                          (value) => value[account.assetId],
+                        ),
+                      );
 
                       return Text(
                         asset?.ticker ?? '',
@@ -159,13 +170,19 @@ class SubAccountAssetTile extends ConsumerWidget {
                     builder: (context, ref, child) {
                       final balance =
                           ref.watch(balancesNotifierProvider)[account] ?? 0;
-                      final asset = ref.watch(assetsStateProvider
-                          .select((value) => value[account.assetId]));
+                      final asset = ref.watch(
+                        assetsStateProvider.select(
+                          (value) => value[account.assetId],
+                        ),
+                      );
                       final balanceStr = ref
                           .watch(amountToStringProvider)
-                          .amountToString(AmountToStringParameters(
+                          .amountToString(
+                            AmountToStringParameters(
                               amount: balance,
-                              precision: asset?.precision ?? 0));
+                              precision: asset?.precision ?? 0,
+                            ),
+                          );
                       return Text(
                         balanceStr,
                         style: const TextStyle(fontSize: 16),
@@ -181,10 +198,7 @@ class SubAccountAssetTile extends ConsumerWidget {
           },
         ),
         if (showDivider) ...[
-          Container(
-            height: 1,
-            color: SideSwapColors.jellyBean,
-          ),
+          Container(height: 1, color: SideSwapColors.jellyBean),
         ],
       ],
     );

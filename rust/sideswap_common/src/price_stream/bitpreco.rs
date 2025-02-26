@@ -18,10 +18,10 @@ pub async fn get_price(client: &HttpClient, market: &Market) -> Result<PricePair
     let exchange_pair = market.exchange_pair();
 
     let (url, expected_market) = match (exchange_pair.base, exchange_pair.quote) {
-        (DealerTicker::LBTC, DealerTicker::DePix) => {
+        (DealerTicker::LBTC, DealerTicker::DEPIX) => {
             ("https://api.bitpreco.com/btc-brl/ticker", "BTC-BRL")
         }
-        (DealerTicker::USDt, DealerTicker::DePix) => {
+        (DealerTicker::USDT, DealerTicker::DEPIX) => {
             ("https://api.bitpreco.com/usdt-brl/ticker", "USDT-BRL")
         }
         _ => panic!("unexpected exchange_pair {exchange_pair}"),

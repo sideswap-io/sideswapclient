@@ -7,11 +7,7 @@ import 'package:sideswap_notifications/src/sideswap_notifications_macos.dart';
 import 'package:sideswap_notifications/src/sideswap_notifications_windows.dart';
 import 'package:sideswap_notifications_platform_interface/sideswap_notifications_platform_interface.dart';
 
-enum AndroidPlatformEnum {
-  android,
-  fdroid,
-  none,
-}
+enum AndroidPlatformEnum { android, fdroid, none }
 
 class SideswapNotificationsPlugin {
   SideswapNotificationsPlugin._internal() {
@@ -75,12 +71,8 @@ class SideswapNotificationsPlugin {
     );
   }
 
-  InitializationSettings getLocalNotificationsInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
+  InitializationSettings getLocalNotificationsInitializationSettings() {
     return SideswapNotificationsPlatformInterface.instance
-        .getLocalNotificationsInitializationSettings(
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+        .getLocalNotificationsInitializationSettings();
   }
 }

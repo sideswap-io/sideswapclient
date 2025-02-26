@@ -48,39 +48,35 @@ class AmpServiceRegisterBox extends HookConsumerWidget {
         padding: padding,
         child: Column(
           children: [
-            SvgPicture.asset(
-              boxLogo,
-              height: 20,
-            ),
-            SizedBox(
-              height: 206,
+            SvgPicture.asset(boxLogo, height: 20),
+            Flexible(
+              flex: 100,
               child: Padding(
                 padding: const EdgeInsets.only(top: 17),
-                child: AmpSecuritiesList(
-                  items: items,
-                ),
+                child: AmpSecuritiesList(items: items),
               ),
             ),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.only(top: 17),
-              child: FlavorConfig.isDesktop
-                  ? AmpDesktopRegisterButton(
-                      registered: registered,
-                      onPressed: loading ? null : onPressed,
-                      child: AmpRegisterButtonBody(
+              child:
+                  FlavorConfig.isDesktop
+                      ? AmpDesktopRegisterButton(
                         registered: registered,
-                        loading: loading,
-                      ),
-                    )
-                  : AmpMobileRegisterButton(
-                      registered: registered,
-                      onPressed: loading ? null : onPressed,
-                      child: AmpRegisterButtonBody(
+                        onPressed: loading ? null : onPressed,
+                        child: AmpRegisterButtonBody(
+                          registered: registered,
+                          loading: loading,
+                        ),
+                      )
+                      : AmpMobileRegisterButton(
                         registered: registered,
-                        loading: loading,
+                        onPressed: loading ? null : onPressed,
+                        child: AmpRegisterButtonBody(
+                          registered: registered,
+                          loading: loading,
+                        ),
                       ),
-                    ),
             ),
           ],
         ),
@@ -103,50 +99,43 @@ class AmpRegisterButtonBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return loading
         ? Text(
-            'CHECKING...'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
-          )
+          'CHECKING...'.tr(),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+        )
         : registered
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (FlavorConfig.isDesktop) ...[
-                    const Padding(
-                      padding: EdgeInsets.only(right: 8),
-                      child: SuccessIcon(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: SideSwapColors.turquoise,
-                        ),
-                        icon: Icon(
-                          Icons.done,
-                          color: Colors.white,
-                          size: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                  Text(
-                    'REGISTERED'.tr(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  )
-                ],
-              )
-            : Text(
-                'REGISTER'.tr(),
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              );
+        ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (FlavorConfig.isDesktop) ...[
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: SuccessIcon(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: SideSwapColors.turquoise,
+                  ),
+                  icon: Icon(Icons.done, color: Colors.white, size: 12),
+                ),
+              ),
+            ],
+            Text(
+              'REGISTERED'.tr(),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        )
+        : Text(
+          'REGISTER'.tr(),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+        );
   }
 }
 
@@ -171,20 +160,19 @@ class AmpDesktopRegisterButton extends HookConsumerWidget {
       width: 253,
       height: 44,
       onPressed: onPressed,
-      style: registered
-          ? buttonThemes.filledButtonStyle?.merge(
-              DButtonStyle(
-                backgroundColor: ButtonState.all<Color>(
-                  SideSwapColors.tarawera,
-                ),
-                border: ButtonState.all<BorderSide>(
-                  const BorderSide(
-                    color: SideSwapColors.turquoise,
+      style:
+          registered
+              ? buttonThemes.filledButtonStyle?.merge(
+                DButtonStyle(
+                  backgroundColor: ButtonState.all<Color>(
+                    SideSwapColors.tarawera,
+                  ),
+                  border: ButtonState.all<BorderSide>(
+                    const BorderSide(color: SideSwapColors.turquoise),
                   ),
                 ),
-              ),
-            )
-          : buttonThemes.filledButtonStyle,
+              )
+              : buttonThemes.filledButtonStyle,
       child: child,
     );
   }

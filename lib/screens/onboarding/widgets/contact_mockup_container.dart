@@ -3,11 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
-enum ContactMockupIcon {
-  male1,
-  male2,
-  female1,
-}
+enum ContactMockupIcon { male1, male2, female1 }
 
 class EmptyLineData {
   EmptyLineData(this.width, this.height, this.color);

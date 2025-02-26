@@ -1,12 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
 part 'assets_precache_provider.g.dart';
 
 @riverpod
-FutureOr<bool> assetsPrecacheFuture(AssetsPrecacheFutureRef ref) async {
+FutureOr<bool> assetsPrecacheFuture(Ref ref) async {
   logger.d('Precaching assets...');
 
   final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
@@ -19,8 +20,10 @@ FutureOr<bool> assetsPrecacheFuture(AssetsPrecacheFutureRef ref) async {
     logger.d('Precaching: $svgImage');
     try {
       final loader = SvgAssetLoader(svgImage);
-      await svg.cache
-          .putIfAbsent(loader.cacheKey(null), () => loader.loadBytes(null));
+      await svg.cache.putIfAbsent(
+        loader.cacheKey(null),
+        () => loader.loadBytes(null),
+      );
     } catch (e) {
       logger.e('Error precaching $svgImage: $e');
     }

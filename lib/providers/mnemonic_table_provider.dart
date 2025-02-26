@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/providers/wallet.dart';
@@ -20,25 +21,20 @@ class CurrentMnemonicIndexNotifier extends _$CurrentMnemonicIndexNotifier {
 }
 
 @riverpod
-FutureOr<List<String>> wordListFuture(WordListFutureRef ref) async {
+FutureOr<List<String>> wordListFuture(Ref ref) async {
   return [
-    ...const LineSplitter()
-        .convert(await rootBundle.loadString('assets/wordlist.txt'))
+    ...const LineSplitter().convert(
+      await rootBundle.loadString('assets/wordlist.txt'),
+    ),
   ]..sort();
 }
 
 class WordItem {
   final String word;
   final bool isCorrect;
-  WordItem({
-    this.word = '',
-    this.isCorrect = false,
-  });
+  WordItem({this.word = '', this.isCorrect = false});
 
-  WordItem copyWith({
-    String? word,
-    bool? isCorrect,
-  }) {
+  WordItem copyWith({String? word, bool? isCorrect}) {
     return WordItem(
       word: word ?? this.word,
       isCorrect: isCorrect ?? this.isCorrect,
@@ -82,13 +78,17 @@ class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
     final mnemonicCounter = ref.watch(mnemonicWordsCounterNotifierProvider);
     final words = ref.watch(walletProvider).getMnemonicWords();
     if (words.isNotEmpty) {
-      return Map.fromEntries(List.generate(
+      return Map.fromEntries(
+        List.generate(
           words.length,
           (index) =>
-              MapEntry(index, WordItem(word: words[index], isCorrect: true))));
+              MapEntry(index, WordItem(word: words[index], isCorrect: true)),
+        ),
+      );
     }
     return Map.fromEntries(
-        List.generate(mnemonicCounter, (index) => MapEntry(index, WordItem())));
+      List.generate(mnemonicCounter, (index) => MapEntry(index, WordItem())),
+    );
   }
 
   void setItems(Map<int, WordItem> value) {
@@ -133,7 +133,8 @@ class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
     }
 
     Future.microtask(
-        () => ref.read(walletProvider).importMnemonic(newMnemonic));
+      () => ref.read(walletProvider).importMnemonic(newMnemonic),
+    );
   }
 
   String mnemonic() {
@@ -142,7 +143,9 @@ class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
       wordList.add(wordItem.word);
     }
     final result = wordList.fold<String>(
-        '', (previousValue, element) => '$previousValue ${element.trim()}');
+      '',
+      (previousValue, element) => '$previousValue ${element.trim()}',
+    );
     return result.trim();
   }
 
@@ -182,8 +185,10 @@ class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
     if (choosedWords.contains(searchWord)) {
       final choosedIndex = choosedWords.indexOf(searchWord);
       final wordItems = {...state};
-      wordItems[currentIndex] =
-          WordItem(word: choosedWords[choosedIndex], isCorrect: true);
+      wordItems[currentIndex] = WordItem(
+        word: choosedWords[choosedIndex],
+        isCorrect: true,
+      );
       nextWord(currentIndex);
       state = wordItems;
     }

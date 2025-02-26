@@ -55,9 +55,7 @@ class DNewWalletBackupPrompt extends HookConsumerWidget {
               ),
               const Padding(
                 padding: EdgeInsets.only(top: 32),
-                child: PageDots(
-                  maxSelectedDots: 1,
-                ),
+                child: PageDots(maxSelectedDots: 1),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 48),
@@ -77,8 +75,9 @@ class DNewWalletBackupPrompt extends HookConsumerWidget {
                   height: 49,
                   child: Text('NOT NOW'.tr()),
                   onPressed: () async {
-                    Navigator.of(context)
-                        .pushNamed('/newWalletBackupSkipPrompt');
+                    Navigator.of(
+                      context,
+                    ).pushNamed('/newWalletBackupSkipPrompt');
                   },
                 ),
               ),

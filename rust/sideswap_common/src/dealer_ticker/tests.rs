@@ -1,37 +1,21 @@
-use std::path::PathBuf;
-
 use super::*;
 
 #[test]
-fn names() {
-    for &ticker in DealerTicker::ALL {
-        let name = dealer_ticker_to_asset_ticker(ticker);
-        let ticker2 = dealer_ticker_from_asset_ticker(name).unwrap();
-        assert_eq!(ticker, ticker2);
-    }
+fn basic() {
+    assert_eq!(DealerTicker::LBTC.as_str(), "L-BTC");
+    assert_eq!(DealerTicker::from_str("L-BTC").unwrap(), DealerTicker::LBTC);
+
+    assert_eq!(DealerTicker::USDT.as_str(), "USDt");
+    assert_eq!(DealerTicker::from_str("USDt").unwrap(), DealerTicker::USDT);
 }
 
-#[tokio::test]
-async fn dealer_tickers() {
-    let network = Network::Liquid;
+#[test]
+fn long_ticker_name() {
+    let ticker = DealerTicker::const_parse("12345678");
+    assert_eq!(ticker.as_str(), "12345678");
+}
 
-    let gdk_registry =
-        crate::gdk_registry_cache::GdkRegistryCache::new(network, &PathBuf::from("/tmp/sideswap/"))
-            .await;
-
-    for &dealer_ticker in DealerTicker::ALL {
-        let asset_id = dealer_ticker_to_asset_id(network, dealer_ticker);
-        if asset_id == network.d().policy_asset.asset_id() {
-            continue;
-        }
-        let asset = gdk_registry.get_asset(&asset_id).unwrap();
-        let expected_ticker = asset.ticker.unwrap();
-        let parsed_dealer_ticker = dealer_ticker_from_asset_ticker(&expected_ticker.0).unwrap();
-        assert_eq!(
-            expected_ticker.0,
-            dealer_ticker_to_asset_ticker(dealer_ticker)
-        );
-        assert_eq!(asset.precision, dealer_ticker.asset_precision());
-        assert_eq!(dealer_ticker, parsed_dealer_ticker);
-    }
+#[test]
+fn too_long_err() {
+    let _err = DealerTicker::from_str("123456789").unwrap_err();
 }

@@ -1,41 +1,65 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:sideswap/common/enums.dart';
+import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common/utils/enum_as_string.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
-import 'package:sideswap/common/utils/build_config.dart';
-import 'package:sideswap_protobuf/sideswap_api.dart';
-import 'package:sideswap/providers/wallet.dart';
 
-part 'universal_link_provider.g.dart';
 part 'universal_link_provider.freezed.dart';
+part 'universal_link_provider.g.dart';
+
+typedef SwapLinkResultCallback = void Function(Int64 orderId, String privateId);
+
+@freezed
+sealed class LinkResultDetails with _$LinkResultDetails {
+  const factory LinkResultDetails.swap({String? orderId, String? privateId}) =
+      LinkResultDetailsSwap;
+}
 
 @freezed
 sealed class LinkResultState with _$LinkResultState {
+  const factory LinkResultState.empty() = LinkResultStateEmpty;
   const factory LinkResultState.unknown() = LinkResultStateUnknown;
   const factory LinkResultState.unknownUri() = LinkResultStateUnknownUri;
   const factory LinkResultState.unknownScheme() = LinkResultStateUnknownScheme;
   const factory LinkResultState.unknownHost() = LinkResultStateUnknownHost;
   const factory LinkResultState.failed() = LinkResultStateFailed;
   const factory LinkResultState.failedUriPath() = LinkResultStateFailedUriPath;
-  const factory LinkResultState.success() = LinkResultStateSuccess;
+  const factory LinkResultState.success({LinkResultDetails? details}) =
+      LinkResultStateSuccess;
 }
 
 @Riverpod(keepAlive: true)
-UniversalLink universalLink(UniversalLinkRef ref) {
-  return UniversalLink(ref);
+class UniversalLinkResultStateNotifier
+    extends _$UniversalLinkResultStateNotifier {
+  @override
+  LinkResultState build() {
+    return LinkResultState.empty();
+  }
+
+  void setState(LinkResultState linkResultState) {
+    state = linkResultState;
+  }
+}
+
+@Riverpod(keepAlive: true)
+UniversalLink universalLink(Ref ref) {
+  final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+  return UniversalLink(walletMainArguments, ref);
 }
 
 String getSendLinkUrl(String address) {
@@ -44,9 +68,11 @@ String getSendLinkUrl(String address) {
 
 class UniversalLink {
   final Ref ref;
+  final WalletMainArguments walletMainArguments;
+
   final _appLinks = AppLinks();
 
-  UniversalLink(this.ref);
+  UniversalLink(this.walletMainArguments, this.ref);
 
   bool _initialUriIsHandled = false;
   StreamSubscription<Uri>? uriLinkSubscription;
@@ -61,16 +87,22 @@ class UniversalLink {
       // It will handle app links while the app is already started - be it in
       // the foreground or in the background.
       uriLinkSubscription?.cancel();
-      uriLinkSubscription = _appLinks.uriLinkStream.listen((Uri? uri) {
-        logger.d('got uri: $uri');
-        latestUri = uri;
-        if (uri != null) {
-          handleAppUri(uri);
-        }
-      }, onError: (Object err) {
-        logger.e('got err: $err');
-        latestUri = null;
-      });
+      uriLinkSubscription = _appLinks.uriLinkStream.listen(
+        (Uri? uri) {
+          logger.d('got uri: $uri');
+          latestUri = uri;
+          if (uri != null) {
+            final linkResultState = handleAppUri(uri);
+            ref
+                .read(universalLinkResultStateNotifierProvider.notifier)
+                .setState(linkResultState);
+          }
+        },
+        onError: (Object err) {
+          logger.e('got err: $err');
+          latestUri = null;
+        },
+      );
     }
   }
 
@@ -131,38 +163,20 @@ class UniversalLink {
   }
 
   LinkResultState handleSubmitOrder(Uri uri) {
-    final orderId = uri.queryParameters['order_id'];
-    if (orderId != null && orderId.length == 64) {
-      ref.read(walletProvider).linkOrder(orderId);
-      return const LinkResultState.success();
-    }
-
     return const LinkResultState.failed();
   }
 
   LinkResultState handleSwapPrompt(Uri uri) {
-    final market = uri.queryParameters['market'];
-    final orderId = uri.queryParameters['order_id'];
-    if (orderId is String && orderId.isNotEmpty && market == 'p2p') {
-      ref.read(walletProvider).linkOrder(orderId);
-      return const LinkResultState.success();
+    final orderId = uri.queryParameters['order_id'] ?? '';
+    final privateId = uri.queryParameters['private_id'] ?? '';
+
+    if (orderId.isNotEmpty) {
+      return LinkResultState.success(
+        details: LinkResultDetails.swap(orderId: orderId, privateId: privateId),
+      );
     }
 
-    try {
-      final swap = SwapDetails();
-      swap.orderId = uri.queryParameters['order_id']!;
-      swap.sendAsset = uri.queryParameters['send_asset']!;
-      swap.recvAsset = uri.queryParameters['recv_asset']!;
-      swap.sendAmount = Int64(int.parse(uri.queryParameters['send_amount']!));
-      swap.recvAmount = Int64(int.parse(uri.queryParameters['recv_amount']!));
-      swap.uploadUrl = uri.queryParameters['upload_url']!;
-
-      ref.read(walletProvider).startSwapPrompt(swap);
-      return const LinkResultState.success();
-    } on Exception catch (e) {
-      logger.w('swap prompt URL parse error: $e');
-      return const LinkResultState.failed();
-    }
+    return LinkResultState.failed();
   }
 
   LinkResultState handleSendLink(Uri uri) {
@@ -170,9 +184,9 @@ class UniversalLink {
     if (address != null) {
       ref
           .read(paymentAmountPageArgumentsNotifierProvider.notifier)
-          .setPaymentAmountPageArguments(PaymentAmountPageArguments(
-            result: QrCodeResult(address: address),
-          ));
+          .setPaymentAmountPageArguments(
+            PaymentAmountPageArguments(result: QrCodeResult(address: address)),
+          );
       ref
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.paymentAmountPage);
@@ -191,8 +205,10 @@ class UniversalLink {
       return const LinkResultState.failed();
     }
 
-    final addressType =
-        enumValueFromString(addressTypeParameter, BIP21AddressTypeEnum.values);
+    final addressType = enumValueFromString(
+      addressTypeParameter,
+      BIP21AddressTypeEnum.values,
+    );
 
     if (addressType == null) {
       logger.w('cannot convert uri address type');
@@ -222,22 +238,50 @@ class UniversalLink {
     return result.match((l) => const LinkResultState.unknownScheme(), (r) {
       ref
           .read(paymentAmountPageArgumentsNotifierProvider.notifier)
-          .setPaymentAmountPageArguments(PaymentAmountPageArguments(
-            result: QrCodeResult(
-              amount: r.amount,
-              label: r.label,
-              message: r.message,
-              assetId: r.assetId,
-              ticker: r.ticker,
-              address: r.address,
-              addressType: r.addressType,
+          .setPaymentAmountPageArguments(
+            PaymentAmountPageArguments(
+              result: QrCodeResult(
+                amount: r.amount,
+                label: r.label,
+                message: r.message,
+                assetId: r.assetId,
+                ticker: r.ticker,
+                address: r.address,
+                addressType: r.addressType,
+              ),
             ),
-          ));
+          );
       ref
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.paymentAmountPage);
 
       return const LinkResultState.success();
     });
+  }
+
+  bool handleSwapLinkResult(
+    LinkResultState linkResultState,
+    SwapLinkResultCallback callback,
+  ) {
+    if (linkResultState is! LinkResultStateSuccess) {
+      return false;
+    }
+
+    final details = linkResultState.details;
+
+    if (details == null ||
+        details.orderId == null ||
+        details.privateId == null) {
+      return false;
+    }
+
+    final orderId = Int64.tryParseInt(details.orderId!);
+
+    if (orderId == null) {
+      return false;
+    }
+
+    callback.call(orderId, details.privateId!);
+    return true;
   }
 }

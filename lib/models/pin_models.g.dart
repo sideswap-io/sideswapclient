@@ -7,15 +7,11 @@ part of 'pin_models.dart';
 // **************************************************************************
 
 _$PinDataStateEmptyImpl _$$PinDataStateEmptyImplFromJson(Map json) =>
-    _$PinDataStateEmptyImpl(
-      $type: json['runtimeType'] as String?,
-    );
+    _$PinDataStateEmptyImpl($type: json['runtimeType'] as String?);
 
 Map<String, dynamic> _$$PinDataStateEmptyImplToJson(
-        _$PinDataStateEmptyImpl instance) =>
-    <String, dynamic>{
-      'runtimeType': instance.$type,
-    };
+  _$PinDataStateEmptyImpl instance,
+) => <String, dynamic>{'runtimeType': instance.$type};
 
 _$PinDataStateErrorImpl _$$PinDataStateErrorImplFromJson(Map json) =>
     _$PinDataStateErrorImpl(
@@ -24,11 +20,11 @@ _$PinDataStateErrorImpl _$$PinDataStateErrorImplFromJson(Map json) =>
     );
 
 Map<String, dynamic> _$$PinDataStateErrorImplToJson(
-        _$PinDataStateErrorImpl instance) =>
-    <String, dynamic>{
-      'message': instance.message,
-      'runtimeType': instance.$type,
-    };
+  _$PinDataStateErrorImpl instance,
+) => <String, dynamic>{
+  'message': instance.message,
+  'runtimeType': instance.$type,
+};
 
 _$PinDataStateDataImpl _$$PinDataStateDataImplFromJson(Map json) =>
     _$PinDataStateDataImpl(
@@ -40,11 +36,11 @@ _$PinDataStateDataImpl _$$PinDataStateDataImplFromJson(Map json) =>
     );
 
 Map<String, dynamic> _$$PinDataStateDataImplToJson(
-        _$PinDataStateDataImpl instance) =>
-    <String, dynamic>{
-      'salt': instance.salt,
-      'encryptedData': instance.encryptedData,
-      'pinIdentifier': instance.pinIdentifier,
-      'hmac': instance.hmac,
-      'runtimeType': instance.$type,
-    };
+  _$PinDataStateDataImpl instance,
+) => <String, dynamic>{
+  'salt': instance.salt,
+  'encryptedData': instance.encryptedData,
+  'pinIdentifier': instance.pinIdentifier,
+  'hmac': instance.hmac,
+  'runtimeType': instance.$type,
+};

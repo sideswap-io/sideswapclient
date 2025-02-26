@@ -42,7 +42,8 @@ class PinTextFieldState extends State<PinTextField> {
   Widget build(BuildContext context) {
     controller.text = widget.pin;
     controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: controller.text.length));
+      TextPosition(offset: controller.text.length),
+    );
     return SizedBox(
       height: widget.error && widget.errorMessage.isNotEmpty ? 83 : 61,
       child: Column(
@@ -77,12 +78,13 @@ class PinTextFieldState extends State<PinTextField> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,
                       ),
-                      focusedBorder: widget.error
-                          ? OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red),
-                            )
-                          : null,
+                      focusedBorder:
+                          widget.error
+                              ? OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.red),
+                              )
+                              : null,
                     ),
                   ),
                 ),

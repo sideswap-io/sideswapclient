@@ -17,9 +17,8 @@ class AppReleasesDesktop with _$AppReleasesDesktop {
 
 @freezed
 class AppReleasesModel with _$AppReleasesModel {
-  const factory AppReleasesModel({
-    AppReleasesDesktop? desktop,
-  }) = _AppReleasesModel;
+  const factory AppReleasesModel({AppReleasesDesktop? desktop}) =
+      _AppReleasesModel;
 
   factory AppReleasesModel.fromJson(Map<String, dynamic> json) =>
       _$AppReleasesModelFromJson(json);

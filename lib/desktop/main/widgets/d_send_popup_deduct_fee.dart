@@ -10,14 +10,12 @@ import 'package:sideswap/desktop/common/button/d_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/payjoin_providers.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DSendPopupDeductFee extends HookConsumerWidget {
-  const DSendPopupDeductFee({
-    super.key,
-  });
+  const DSendPopupDeductFee({super.key});
 
   Future<Asset?> showAssetMenu(
     BuildContext context,
@@ -63,37 +61,37 @@ class DSendPopupDeductFee extends HookConsumerWidget {
                   height: 32,
                   width: 70,
                   child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Consumer(
-                        builder: (context, ref, child) {
-                          final payjoinFeeAssetIcon = ref
-                              .watch(assetImageProvider)
-                              .getVerySmallImage(
-                                  payjoinFeeAssets[index].assetId);
+                    alignment: Alignment.centerLeft,
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final payjoinFeeAssetIcon = ref
+                            .watch(assetImageRepositoryProvider)
+                            .getVerySmallImage(payjoinFeeAssets[index].assetId);
 
-                          return Row(
-                            children: [
-                              payjoinFeeAssetIcon,
-                              const SizedBox(width: 8),
-                              Text(
-                                payjoinFeeAssets[index].ticker,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelMedium
-                                    ?.copyWith(
-                                      fontSize: 13,
-                                      color: asset.ticker ==
-                                              payjoinFeeAssets[index].ticker
-                                          ? SideSwapColors.airSuperiorityBlue
-                                          : over.value
-                                              ? SideSwapColors.brightTurquoise
-                                              : Colors.white,
-                                    ),
+                        return Row(
+                          children: [
+                            payjoinFeeAssetIcon,
+                            const SizedBox(width: 8),
+                            Text(
+                              payjoinFeeAssets[index].ticker,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.labelMedium?.copyWith(
+                                fontSize: 13,
+                                color:
+                                    asset.ticker ==
+                                            payjoinFeeAssets[index].ticker
+                                        ? SideSwapColors.airSuperiorityBlue
+                                        : over.value
+                                        ? SideSwapColors.brightTurquoise
+                                        : Colors.white,
                               ),
-                            ],
-                          );
-                        },
-                      )),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
               );
             },
@@ -117,10 +115,11 @@ class DSendPopupDeductFee extends HookConsumerWidget {
     final payjoinFeeAssets = ref.watch(payjoinFeeAssetsProvider);
     final payjoinFeeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
     final deductFeeFromOutput = ref.watch(deductFeeFromOutputNotifierProvider);
-    final isDeductFeeEnabled =
-        ref.watch(deductFeeFromOutputEnabledNotifierProvider);
+    final isDeductFeeEnabled = ref.watch(
+      deductFeeFromOutputEnabledNotifierProvider,
+    );
     final payjoinFeeAssetIcon = ref
-        .watch(assetImageProvider)
+        .watch(assetImageRepositoryProvider)
         .getVerySmallImage(payjoinFeeAsset?.assetId);
 
     return SizedBox(
@@ -145,9 +144,10 @@ class DSendPopupDeductFee extends HookConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
-                    color: isDeductFeeEnabled
-                        ? Colors.white
-                        : SideSwapColors.airSuperiorityBlue,
+                    color:
+                        isDeductFeeEnabled
+                            ? Colors.white
+                            : SideSwapColors.airSuperiorityBlue,
                   ),
                 ),
               ),
@@ -159,18 +159,24 @@ class DSendPopupDeductFee extends HookConsumerWidget {
             height: 48,
             radius: 8,
             title: 'Fee asset'.tr(),
-            textStyle:
-                Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
+            textStyle: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 14),
             strokeWidth: 2,
             left: 10,
             color: SideSwapColors.jellyBean,
             child: DButton(
               key: buttonKey,
-              style: clicked.value
-                  ? buttonStyle?.merge(DButtonStyle(
-                      backgroundColor:
-                          ButtonState.all(SideSwapColors.prussianBlue)))
-                  : buttonStyle,
+              style:
+                  clicked.value
+                      ? buttonStyle?.merge(
+                        DButtonStyle(
+                          backgroundColor: ButtonState.all(
+                            SideSwapColors.prussianBlue,
+                          ),
+                        ),
+                      )
+                      : buttonStyle,
               onPressed: () async {
                 if (payjoinFeeAsset == null) {
                   return;
@@ -178,7 +184,11 @@ class DSendPopupDeductFee extends HookConsumerWidget {
 
                 clicked.value = true;
                 final result = await showAssetMenu(
-                    context, buttonKey, payjoinFeeAssets, payjoinFeeAsset);
+                  context,
+                  buttonKey,
+                  payjoinFeeAssets,
+                  payjoinFeeAsset,
+                );
                 (switch (result) {
                   final result? => ref
                       .read(payjoinFeeAssetNotifierProvider.notifier)
@@ -197,14 +207,15 @@ class DSendPopupDeductFee extends HookConsumerWidget {
                     const SizedBox(width: 8),
                     Text(
                       payjoinFeeAsset?.ticker ?? '',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelMedium
-                          ?.copyWith(fontSize: 13),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelMedium?.copyWith(fontSize: 13),
                     ),
                     const Spacer(),
                     AnimatedDropdownArrow(
-                        target: clicked.value ? 0 : 1, initFrom: 1),
+                      target: clicked.value ? 0 : 1,
+                      initFrom: 1,
+                    ),
                   ],
                 ),
               ),

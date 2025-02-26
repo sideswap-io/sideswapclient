@@ -9,10 +9,7 @@ class PreloadBackgroundPainter extends CustomPainter {
     paint.shader = const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [
-        Color(0xFF005474),
-        Color(0xFF00203F),
-      ],
+      colors: [Color(0xFF005474), Color(0xFF00203F)],
       stops: [0.0, 1.0],
     ).createShader(rect);
 

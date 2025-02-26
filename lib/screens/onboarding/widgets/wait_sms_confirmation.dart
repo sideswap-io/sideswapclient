@@ -24,15 +24,21 @@ class WaitSmsConfirmationState
 
   @override
   void forEachTween(visitor) {
-    _intTween = visitor(_intTween, widget.counter,
-        (dynamic value) => IntTween(begin: widget.counter)) as IntTween;
+    _intTween =
+        visitor(
+              _intTween,
+              widget.counter,
+              (dynamic value) => IntTween(begin: widget.counter),
+            )
+            as IntTween;
   }
 
   @override
   Widget build(BuildContext context) {
-    final seconds = _intTween == null
-        ? widget.counter
-        : widget.counter - _intTween!.evaluate(animation);
+    final seconds =
+        _intTween == null
+            ? widget.counter
+            : widget.counter - _intTween!.evaluate(animation);
     final duration = Duration(seconds: seconds);
     final percent = widget.counter == 0 ? 0 : seconds * 100 ~/ widget.counter;
     return SizedBox(
@@ -50,10 +56,12 @@ class WaitSmsConfirmationState
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                'WAIT_FOR_SMS_CONFIRMATION'.tr(args: [
-                  '${duration.inMinutes}',
-                  ((duration.inSeconds % 60).toString().padLeft(2, '0'))
-                ]),
+                'WAIT_FOR_SMS_CONFIRMATION'.tr(
+                  args: [
+                    '${duration.inMinutes}',
+                    ((duration.inSeconds % 60).toString().padLeft(2, '0')),
+                  ],
+                ),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,

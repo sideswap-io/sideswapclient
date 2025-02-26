@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -11,7 +12,6 @@ import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
@@ -31,7 +31,7 @@ class SendPopupAmountNotifier extends _$SendPopupAmountNotifier {
 }
 
 @riverpod
-Decimal sendPopupDecimalAmount(SendPopupDecimalAmountRef ref) {
+Decimal sendPopupDecimalAmount(Ref ref) {
   final amount = ref.watch(sendPopupAmountNotifierProvider);
   if (amount.isEmpty) {
     return Decimal.zero;
@@ -71,11 +71,16 @@ class SendPopupReceiveConversionNotifier
     extends _$SendPopupReceiveConversionNotifier {
   @override
   String build() {
-    final selectedAccountAsset =
-        ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
+    final selectedAccountAsset = ref.watch(
+      sendPopupSelectedAccountAssetNotifierProvider,
+    );
     final amount = ref.watch(sendPopupAmountNotifierProvider);
-    final conversion = ref.watch(defaultCurrencyConversionFromStringProvider(
-        selectedAccountAsset.assetId, amount));
+    final conversion = ref.watch(
+      defaultCurrencyConversionFromStringProvider(
+        selectedAccountAsset.assetId,
+        amount,
+      ),
+    );
     return conversion;
   }
 
@@ -95,21 +100,20 @@ class SendPopupValidDataInserted extends _$SendPopupValidDataInserted {
     return switch (parseAddressResult) {
       Left(value: final _) => future,
       Right(value: final r) => () {
-          final amount = double.tryParse(amountString) ?? 0.0;
-          final balance = double.tryParse(balanceString) ?? 0.0;
+        final amount = double.tryParse(amountString) ?? 0.0;
+        final balance = double.tryParse(balanceString) ?? 0.0;
 
-          final properNetwork = switch (r.addressType) {
-            BIP21AddressTypeEnum.elements ||
-            BIP21AddressTypeEnum.liquidnetwork =>
-              true,
-            _ => false,
-          };
-          final enabled = properNetwork && amount > 0 && amount <= balance;
-          return switch (enabled) {
-            true => Future<bool>.value(enabled),
-            _ => future,
-          };
-        }(),
+        final properNetwork = switch (r.addressType) {
+          BIP21AddressTypeEnum.elements ||
+          BIP21AddressTypeEnum.liquidnetwork => true,
+          _ => false,
+        };
+        final enabled = properNetwork && amount > 0 && amount <= balance;
+        return switch (enabled) {
+          true => Future<bool>.value(enabled),
+          _ => future,
+        };
+      }(),
     };
   }
 }
@@ -139,8 +143,9 @@ class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
     }
 
     final outputsData = ref.watch(outputsReaderNotifierProvider);
-    final sendPopupFuture =
-        ref.watch(sendPopupValidDataInsertedProvider.future);
+    final sendPopupFuture = ref.watch(
+      sendPopupValidDataInsertedProvider.future,
+    );
 
     return switch (outputsData) {
       Right(value: _) => Future<bool>.value(true),
@@ -150,7 +155,7 @@ class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
 }
 
 @riverpod
-bool sendPopupShowInsufficientFunds(SendPopupShowInsufficientFundsRef ref) {
+bool sendPopupShowInsufficientFunds(Ref ref) {
   final amountString = ref.watch(sendPopupAmountNotifierProvider);
   final balanceString = ref.watch(balanceStringWithInputsProvider);
 
@@ -161,12 +166,13 @@ bool sendPopupShowInsufficientFunds(SendPopupShowInsufficientFundsRef ref) {
 }
 
 @riverpod
-String? sendPopupDefaultCurrencyConversion(
-    SendPopupDefaultCurrencyConversionRef ref) {
-  final receiveConversion =
-      ref.watch(sendPopupReceiveConversionNotifierProvider);
-  final showInsufficientFunds =
-      ref.watch(sendPopupShowInsufficientFundsProvider);
+String? sendPopupDefaultCurrencyConversion(Ref ref) {
+  final receiveConversion = ref.watch(
+    sendPopupReceiveConversionNotifierProvider,
+  );
+  final showInsufficientFunds = ref.watch(
+    sendPopupShowInsufficientFundsProvider,
+  );
 
   return showInsufficientFunds ? null : receiveConversion;
 }
@@ -203,8 +209,12 @@ class SendPopupAddressResult {
     return 'SendPopupAddressResult(address: $address, addressType: $addressType, amount: $amount, assetId: $assetId)';
   }
 
-  (String, BIP21AddressTypeEnum, double, String) _equality() =>
-      (address, addressType, amount, assetId);
+  (String, BIP21AddressTypeEnum, double, String) _equality() => (
+    address,
+    addressType,
+    amount,
+    assetId,
+  );
 
   @override
   bool operator ==(covariant SendPopupAddressResult other) {
@@ -218,8 +228,7 @@ class SendPopupAddressResult {
 }
 
 @riverpod
-Either<Exception, SendPopupAddressResult> sendPopupParseAddress(
-    SendPopupParseAddressRef ref) {
+Either<Exception, SendPopupAddressResult> sendPopupParseAddress(Ref ref) {
   final address = ref.watch(sendPopupAddressNotifierProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
@@ -250,8 +259,9 @@ Either<Exception, SendPopupAddressResult> sendPopupParseAddress(
     final url = Uri.parse(address);
 
     if (url.scheme == 'bitcoin') {
-      final result =
-          ref.watch(parseBIP21Provider(address, BIP21AddressTypeEnum.bitcoin));
+      final result = ref.watch(
+        parseBIP21Provider(address, BIP21AddressTypeEnum.bitcoin),
+      );
 
       return result.match(
         (l) => Left(l),
@@ -268,7 +278,8 @@ Either<Exception, SendPopupAddressResult> sendPopupParseAddress(
 
     if (url.scheme == 'liquidnetwork') {
       final result = ref.watch(
-          parseBIP21Provider(address, BIP21AddressTypeEnum.liquidnetwork));
+        parseBIP21Provider(address, BIP21AddressTypeEnum.liquidnetwork),
+      );
 
       return result.match(
         (l) => Left(l),

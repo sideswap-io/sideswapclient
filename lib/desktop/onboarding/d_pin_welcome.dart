@@ -13,11 +13,7 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DPinWelcome extends HookConsumerWidget {
-  const DPinWelcome({
-    super.key,
-    this.onYesPressed,
-    this.onNoPressed,
-  });
+  const DPinWelcome({super.key, this.onYesPressed, this.onNoPressed});
 
   final void Function()? onYesPressed;
   final void Function()? onNoPressed;
@@ -74,7 +70,8 @@ class DPinWelcome extends HookConsumerWidget {
                   width: 266,
                   height: 49,
                   focusNode: yesFocusNode,
-                  onPressed: onYesPressed ??
+                  onPressed:
+                      onYesPressed ??
                       () {
                         ref.read(pinHelperProvider).initPinSetupPinWelcome();
                       },
@@ -86,7 +83,8 @@ class DPinWelcome extends HookConsumerWidget {
                 child: DCustomTextBigButton(
                   width: 266,
                   height: 49,
-                  onPressed: onNoPressed ??
+                  onPressed:
+                      onNoPressed ??
                       () async {
                         await ref
                             .read(walletProvider)
@@ -114,11 +112,7 @@ class DPinWelcomeLogo extends StatelessWidget {
       child: Stack(
         alignment: Alignment.topCenter,
         children: [
-          SvgPicture.asset(
-            'assets/locker2.svg',
-            width: 156,
-            height: 202,
-          ),
+          SvgPicture.asset('assets/locker2.svg', width: 156, height: 202),
         ],
       ),
     );

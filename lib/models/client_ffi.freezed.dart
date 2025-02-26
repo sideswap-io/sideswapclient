@@ -12,7 +12,8 @@ part of 'client_ffi.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$LibClientState {
@@ -20,47 +21,42 @@ mixin _$LibClientState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? initialized,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LibClientStateEmpty value) empty,
     required TResult Function(LibClientStateInitialized value) initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LibClientStateEmpty value)? empty,
     TResult? Function(LibClientStateInitialized value)? initialized,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LibClientStateEmpty value)? empty,
     TResult Function(LibClientStateInitialized value)? initialized,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $LibClientStateCopyWith<$Res> {
   factory $LibClientStateCopyWith(
-          LibClientState value, $Res Function(LibClientState) then) =
-      _$LibClientStateCopyWithImpl<$Res, LibClientState>;
+    LibClientState value,
+    $Res Function(LibClientState) then,
+  ) = _$LibClientStateCopyWithImpl<$Res, LibClientState>;
 }
 
 /// @nodoc
@@ -72,22 +68,30 @@ class _$LibClientStateCopyWithImpl<$Res, $Val extends LibClientState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of LibClientState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$LibClientStateEmptyImplCopyWith<$Res> {
-  factory _$$LibClientStateEmptyImplCopyWith(_$LibClientStateEmptyImpl value,
-          $Res Function(_$LibClientStateEmptyImpl) then) =
-      __$$LibClientStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$LibClientStateEmptyImplCopyWith(
+    _$LibClientStateEmptyImpl value,
+    $Res Function(_$LibClientStateEmptyImpl) then,
+  ) = __$$LibClientStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LibClientStateEmptyImplCopyWithImpl<$Res>
     extends _$LibClientStateCopyWithImpl<$Res, _$LibClientStateEmptyImpl>
     implements _$$LibClientStateEmptyImplCopyWith<$Res> {
-  __$$LibClientStateEmptyImplCopyWithImpl(_$LibClientStateEmptyImpl _value,
-      $Res Function(_$LibClientStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$LibClientStateEmptyImplCopyWithImpl(
+    _$LibClientStateEmptyImpl _value,
+    $Res Function(_$LibClientStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LibClientState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -180,9 +184,9 @@ abstract class LibClientStateEmpty implements LibClientState {
 /// @nodoc
 abstract class _$$LibClientStateInitializedImplCopyWith<$Res> {
   factory _$$LibClientStateInitializedImplCopyWith(
-          _$LibClientStateInitializedImpl value,
-          $Res Function(_$LibClientStateInitializedImpl) then) =
-      __$$LibClientStateInitializedImplCopyWithImpl<$Res>;
+    _$LibClientStateInitializedImpl value,
+    $Res Function(_$LibClientStateInitializedImpl) then,
+  ) = __$$LibClientStateInitializedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -190,9 +194,12 @@ class __$$LibClientStateInitializedImplCopyWithImpl<$Res>
     extends _$LibClientStateCopyWithImpl<$Res, _$LibClientStateInitializedImpl>
     implements _$$LibClientStateInitializedImplCopyWith<$Res> {
   __$$LibClientStateInitializedImplCopyWithImpl(
-      _$LibClientStateInitializedImpl _value,
-      $Res Function(_$LibClientStateInitializedImpl) _then)
-      : super(_value, _then);
+    _$LibClientStateInitializedImpl _value,
+    $Res Function(_$LibClientStateInitializedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LibClientState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

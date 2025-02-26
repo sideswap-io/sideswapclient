@@ -12,7 +12,8 @@ part of 'jade_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$JadeBluetoothPermissionState {
@@ -20,55 +21,54 @@ mixin _$JadeBluetoothPermissionState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() request,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? request,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? request,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(JadeBluetoothPermissionStateEmpty value) empty,
     required TResult Function(JadeBluetoothPermissionStateRequest value)
-        request,
-  }) =>
-      throw _privateConstructorUsedError;
+    request,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(JadeBluetoothPermissionStateEmpty value)? empty,
     TResult? Function(JadeBluetoothPermissionStateRequest value)? request,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(JadeBluetoothPermissionStateEmpty value)? empty,
     TResult Function(JadeBluetoothPermissionStateRequest value)? request,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $JadeBluetoothPermissionStateCopyWith<$Res> {
   factory $JadeBluetoothPermissionStateCopyWith(
-          JadeBluetoothPermissionState value,
-          $Res Function(JadeBluetoothPermissionState) then) =
-      _$JadeBluetoothPermissionStateCopyWithImpl<$Res,
-          JadeBluetoothPermissionState>;
+    JadeBluetoothPermissionState value,
+    $Res Function(JadeBluetoothPermissionState) then,
+  ) =
+      _$JadeBluetoothPermissionStateCopyWithImpl<
+        $Res,
+        JadeBluetoothPermissionState
+      >;
 }
 
 /// @nodoc
-class _$JadeBluetoothPermissionStateCopyWithImpl<$Res,
-        $Val extends JadeBluetoothPermissionState>
+class _$JadeBluetoothPermissionStateCopyWithImpl<
+  $Res,
+  $Val extends JadeBluetoothPermissionState
+>
     implements $JadeBluetoothPermissionStateCopyWith<$Res> {
   _$JadeBluetoothPermissionStateCopyWithImpl(this._value, this._then);
 
@@ -76,25 +76,34 @@ class _$JadeBluetoothPermissionStateCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of JadeBluetoothPermissionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$JadeBluetoothPermissionStateEmptyImplCopyWith<$Res> {
   factory _$$JadeBluetoothPermissionStateEmptyImplCopyWith(
-          _$JadeBluetoothPermissionStateEmptyImpl value,
-          $Res Function(_$JadeBluetoothPermissionStateEmptyImpl) then) =
-      __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl<$Res>;
+    _$JadeBluetoothPermissionStateEmptyImpl value,
+    $Res Function(_$JadeBluetoothPermissionStateEmptyImpl) then,
+  ) = __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl<$Res>
-    extends _$JadeBluetoothPermissionStateCopyWithImpl<$Res,
-        _$JadeBluetoothPermissionStateEmptyImpl>
+    extends
+        _$JadeBluetoothPermissionStateCopyWithImpl<
+          $Res,
+          _$JadeBluetoothPermissionStateEmptyImpl
+        >
     implements _$$JadeBluetoothPermissionStateEmptyImplCopyWith<$Res> {
   __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl(
-      _$JadeBluetoothPermissionStateEmptyImpl _value,
-      $Res Function(_$JadeBluetoothPermissionStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$JadeBluetoothPermissionStateEmptyImpl _value,
+    $Res Function(_$JadeBluetoothPermissionStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeBluetoothPermissionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -154,7 +163,7 @@ class _$JadeBluetoothPermissionStateEmptyImpl
   TResult map<TResult extends Object?>({
     required TResult Function(JadeBluetoothPermissionStateEmpty value) empty,
     required TResult Function(JadeBluetoothPermissionStateRequest value)
-        request,
+    request,
   }) {
     return empty(this);
   }
@@ -191,20 +200,26 @@ abstract class JadeBluetoothPermissionStateEmpty
 /// @nodoc
 abstract class _$$JadeBluetoothPermissionStateRequestImplCopyWith<$Res> {
   factory _$$JadeBluetoothPermissionStateRequestImplCopyWith(
-          _$JadeBluetoothPermissionStateRequestImpl value,
-          $Res Function(_$JadeBluetoothPermissionStateRequestImpl) then) =
-      __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl<$Res>;
+    _$JadeBluetoothPermissionStateRequestImpl value,
+    $Res Function(_$JadeBluetoothPermissionStateRequestImpl) then,
+  ) = __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl<$Res>
-    extends _$JadeBluetoothPermissionStateCopyWithImpl<$Res,
-        _$JadeBluetoothPermissionStateRequestImpl>
+    extends
+        _$JadeBluetoothPermissionStateCopyWithImpl<
+          $Res,
+          _$JadeBluetoothPermissionStateRequestImpl
+        >
     implements _$$JadeBluetoothPermissionStateRequestImplCopyWith<$Res> {
   __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl(
-      _$JadeBluetoothPermissionStateRequestImpl _value,
-      $Res Function(_$JadeBluetoothPermissionStateRequestImpl) _then)
-      : super(_value, _then);
+    _$JadeBluetoothPermissionStateRequestImpl _value,
+    $Res Function(_$JadeBluetoothPermissionStateRequestImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JadeBluetoothPermissionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -264,7 +279,7 @@ class _$JadeBluetoothPermissionStateRequestImpl
   TResult map<TResult extends Object?>({
     required TResult Function(JadeBluetoothPermissionStateEmpty value) empty,
     required TResult Function(JadeBluetoothPermissionStateRequest value)
-        request,
+    request,
   }) {
     return request(this);
   }

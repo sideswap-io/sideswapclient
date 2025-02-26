@@ -9,10 +9,7 @@ import 'package:sideswap/screens/tx/widgets/tx_item_date.dart';
 import 'package:sideswap/screens/tx/widgets/tx_item_transaction.dart';
 
 class TxListItem extends HookConsumerWidget {
-  const TxListItem({
-    super.key,
-    required this.txItem,
-  });
+  const TxListItem({super.key, required this.txItem});
 
   final TxItem txItem;
 
@@ -25,25 +22,23 @@ class TxListItem extends HookConsumerWidget {
       children: [
         txItem.showDate
             ? Column(
-                children: [
-                  TxItemDate(
-                    createdAt: txItem.createdAt,
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              )
+              children: [
+                TxItemDate(createdAt: txItem.createdAt),
+                const SizedBox(height: 8),
+              ],
+            )
             : Container(),
         TextButton(
           style: ButtonStyle(
             padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
-                EdgeInsets.zero),
-            shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
+              EdgeInsets.zero,
             ),
-            backgroundColor:
-                const WidgetStatePropertyAll(SideSwapColors.blueSapphire),
+            shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            ),
+            backgroundColor: const WidgetStatePropertyAll(
+              SideSwapColors.blueSapphire,
+            ),
           ),
           onPressed: () {
             ref.read(walletProvider).showTxDetails(txItem.item);

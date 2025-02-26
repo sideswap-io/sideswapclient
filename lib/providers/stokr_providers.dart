@@ -1,11 +1,12 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/country_code.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/countries_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'stokr_providers.g.dart';
 part 'stokr_providers.freezed.dart';
@@ -13,9 +14,8 @@ part 'stokr_providers.freezed.dart';
 @freezed
 sealed class StokrSettingsModel with _$StokrSettingsModel {
   @JsonSerializable(explicitToJson: true, includeIfNull: false)
-  const factory StokrSettingsModel({
-    @Default(true) bool? firstRun,
-  }) = _StokrSettingsModel;
+  const factory StokrSettingsModel({@Default(true) bool? firstRun}) =
+      _StokrSettingsModel;
 
   factory StokrSettingsModel.fromJson(Map<String, dynamic> json) =>
       _$StokrSettingsModelFromJson(json);
@@ -43,56 +43,71 @@ class StokrSettingsNotifier extends _$StokrSettingsNotifier {
 class StokrBlockedCountries extends _$StokrBlockedCountries {
   @override
   FutureOr<List<CountryCode>> build() async {
-    final selectedAccountAsset =
-        ref.watch(marketSelectedAccountAssetStateProvider);
-    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    final baseAsset = ref.watch(marketSubscribedBaseAssetProvider);
+    return baseAsset.match(
+      () {
+        return future;
+      },
+      (asset) {
+        if (!asset.hasAmpAssetRestrictions()) {
+          return future;
+        }
 
-    if (asset == null || !asset.hasAmpAssetRestrictions()) {
-      return future;
-    }
+        final allowedCountries = asset.ampAssetRestrictions.allowedCountries;
+        final countries = ref.watch(countriesFutureProvider);
 
-    final allowedCountries = asset.ampAssetRestrictions.allowedCountries;
-    final countries = ref.watch(countriesFutureProvider);
-
-    return switch (countries) {
-      AsyncValue(hasValue: true, value: List<CountryCode> countryList) => () {
-          final newList = [...countryList];
-          newList.retainWhere((element) =>
-              !allowedCountries.any((allowed) => element.iso3Code == allowed));
-          newList.sort((a, b) => a.english?.compareTo(b.english ?? '') ?? 0);
-          return Future<List<CountryCode>>.value(newList);
-        }(),
-      _ => future,
-    };
+        return switch (countries) {
+          AsyncValue(hasValue: true, value: List<CountryCode> countryList) =>
+            () {
+              final newList = [...countryList];
+              newList.retainWhere(
+                (element) =>
+                    !allowedCountries.any(
+                      (allowed) => element.iso3Code == allowed,
+                    ),
+              );
+              newList.sort(
+                (a, b) => a.english?.compareTo(b.english ?? '') ?? 0,
+              );
+              return Future<List<CountryCode>>.value(newList);
+            }(),
+          _ => future,
+        };
+      },
+    );
   }
 }
 
 @riverpod
 FutureOr<List<CountryCode>> stokrCountryBlacklistSearch(
-    StokrCountryBlacklistSearchRef ref, String value) async {
+  Ref ref,
+  String value,
+) async {
   final stokrCountryBlacklist = ref.watch(stokrBlockedCountriesProvider);
 
   return switch (stokrCountryBlacklist) {
-    AsyncValue(hasValue: true, value: List<CountryCode> countries) => countries
-        .where((element) =>
-            (element.english?.toLowerCase().contains(value.toLowerCase()) ??
-                false) ||
-            (element.name?.toLowerCase().contains(value.toLowerCase()) ??
-                false))
-        .toList(),
+    AsyncValue(hasValue: true, value: List<CountryCode> countries) =>
+      countries
+          .where(
+            (element) =>
+                (element.english?.toLowerCase().contains(value.toLowerCase()) ??
+                    false) ||
+                (element.name?.toLowerCase().contains(value.toLowerCase()) ??
+                    false),
+          )
+          .toList(),
     _ => [],
   };
 }
 
 @Riverpod(keepAlive: true)
-class StokrLastSelectedAccountAssetNotifier
-    extends _$StokrLastSelectedAccountAssetNotifier {
+class StokrLastSelectedAssetNotifier extends _$StokrLastSelectedAssetNotifier {
   @override
-  AccountAsset? build() {
-    return null;
+  Option<Asset> build() {
+    return Option.none();
   }
 
-  void setLastSelectedAccountAsset(AccountAsset accountAsset) {
-    state = accountAsset;
+  void setLastSelectedAsset(Asset asset) {
+    state = Option.of(asset);
   }
 }

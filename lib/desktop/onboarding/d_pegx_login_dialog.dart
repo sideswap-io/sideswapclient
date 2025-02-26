@@ -9,11 +9,7 @@ class DPegxLoginDialog extends HookConsumerWidget {
   final Widget? content;
   final VoidCallback? onClose;
 
-  const DPegxLoginDialog({
-    super.key,
-    this.content,
-    this.onClose,
-  });
+  const DPegxLoginDialog({super.key, this.content, this.onClose});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

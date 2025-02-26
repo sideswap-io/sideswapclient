@@ -75,17 +75,18 @@ class DSettingsButton extends ConsumerWidget {
       }),
     );
 
-    final buttonStyle = forward
-        ? ref
-            .watch(desktopAppThemeNotifierProvider)
-            .buttonThemeData
-            .filledButtonStyle
-            ?.merge(settingsButtonStyle)
-        : ref
-            .watch(desktopAppThemeNotifierProvider)
-            .buttonThemeData
-            .defaultButtonStyle
-            ?.merge(settingsButtonStyle);
+    final buttonStyle =
+        forward
+            ? ref
+                .watch(desktopAppThemeNotifierProvider)
+                .buttonThemeData
+                .filledButtonStyle
+                ?.merge(settingsButtonStyle)
+            : ref
+                .watch(desktopAppThemeNotifierProvider)
+                .buttonThemeData
+                .defaultButtonStyle
+                ?.merge(settingsButtonStyle);
 
     return DCustomFilledBigButton(
       width: 344,
@@ -97,13 +98,7 @@ class DSettingsButton extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Center(
-              child: SvgPicture.asset(
-                iconValue,
-                width: 24,
-                height: 24,
-              ),
-            ),
+            Center(child: SvgPicture.asset(iconValue, width: 24, height: 24)),
             Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Text(
@@ -117,15 +112,9 @@ class DSettingsButton extends ConsumerWidget {
             ),
             const Spacer(),
             if (forward) ...[
-              const Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: Colors.white,
-              ),
+              const Icon(Icons.chevron_right, size: 20, color: Colors.white),
             ],
-            if (!forward && child != null) ...[
-              child!,
-            ]
+            if (!forward && child != null) ...[child!],
           ],
         ),
       ),

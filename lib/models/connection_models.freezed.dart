@@ -12,7 +12,8 @@ part of 'connection_models.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$ServerLoginState {
@@ -21,52 +22,54 @@ mixin _$ServerLoginState {
     required TResult Function() logout,
     required TResult Function() login,
     required TResult Function(String? message) error,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function() loginProcessing,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? logout,
     TResult? Function()? login,
     TResult? Function(String? message)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function()? loginProcessing,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? logout,
     TResult Function()? login,
     TResult Function(String? message)? error,
+    TResult Function()? loginProcessing,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ServerLoginStateLogout value) logout,
     required TResult Function(ServerLoginStateLogin value) login,
     required TResult Function(ServerLoginStateError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function(ServerLoginStateLoginProcessing value)
+    loginProcessing,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ServerLoginStateLogout value)? logout,
     TResult? Function(ServerLoginStateLogin value)? login,
     TResult? Function(ServerLoginStateError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function(ServerLoginStateLoginProcessing value)? loginProcessing,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ServerLoginStateLogout value)? logout,
     TResult Function(ServerLoginStateLogin value)? login,
     TResult Function(ServerLoginStateError value)? error,
+    TResult Function(ServerLoginStateLoginProcessing value)? loginProcessing,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ServerLoginStateCopyWith<$Res> {
   factory $ServerLoginStateCopyWith(
-          ServerLoginState value, $Res Function(ServerLoginState) then) =
-      _$ServerLoginStateCopyWithImpl<$Res, ServerLoginState>;
+    ServerLoginState value,
+    $Res Function(ServerLoginState) then,
+  ) = _$ServerLoginStateCopyWithImpl<$Res, ServerLoginState>;
 }
 
 /// @nodoc
@@ -78,14 +81,17 @@ class _$ServerLoginStateCopyWithImpl<$Res, $Val extends ServerLoginState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$ServerLoginStateLogoutImplCopyWith<$Res> {
   factory _$$ServerLoginStateLogoutImplCopyWith(
-          _$ServerLoginStateLogoutImpl value,
-          $Res Function(_$ServerLoginStateLogoutImpl) then) =
-      __$$ServerLoginStateLogoutImplCopyWithImpl<$Res>;
+    _$ServerLoginStateLogoutImpl value,
+    $Res Function(_$ServerLoginStateLogoutImpl) then,
+  ) = __$$ServerLoginStateLogoutImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -93,9 +99,12 @@ class __$$ServerLoginStateLogoutImplCopyWithImpl<$Res>
     extends _$ServerLoginStateCopyWithImpl<$Res, _$ServerLoginStateLogoutImpl>
     implements _$$ServerLoginStateLogoutImplCopyWith<$Res> {
   __$$ServerLoginStateLogoutImplCopyWithImpl(
-      _$ServerLoginStateLogoutImpl _value,
-      $Res Function(_$ServerLoginStateLogoutImpl) _then)
-      : super(_value, _then);
+    _$ServerLoginStateLogoutImpl _value,
+    $Res Function(_$ServerLoginStateLogoutImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -124,6 +133,7 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
     required TResult Function() logout,
     required TResult Function() login,
     required TResult Function(String? message) error,
+    required TResult Function() loginProcessing,
   }) {
     return logout();
   }
@@ -134,6 +144,7 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
     TResult? Function()? logout,
     TResult? Function()? login,
     TResult? Function(String? message)? error,
+    TResult? Function()? loginProcessing,
   }) {
     return logout?.call();
   }
@@ -144,6 +155,7 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
     TResult Function()? logout,
     TResult Function()? login,
     TResult Function(String? message)? error,
+    TResult Function()? loginProcessing,
     required TResult orElse(),
   }) {
     if (logout != null) {
@@ -158,6 +170,8 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
     required TResult Function(ServerLoginStateLogout value) logout,
     required TResult Function(ServerLoginStateLogin value) login,
     required TResult Function(ServerLoginStateError value) error,
+    required TResult Function(ServerLoginStateLoginProcessing value)
+    loginProcessing,
   }) {
     return logout(this);
   }
@@ -168,6 +182,7 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
     TResult? Function(ServerLoginStateLogout value)? logout,
     TResult? Function(ServerLoginStateLogin value)? login,
     TResult? Function(ServerLoginStateError value)? error,
+    TResult? Function(ServerLoginStateLoginProcessing value)? loginProcessing,
   }) {
     return logout?.call(this);
   }
@@ -178,6 +193,7 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
     TResult Function(ServerLoginStateLogout value)? logout,
     TResult Function(ServerLoginStateLogin value)? login,
     TResult Function(ServerLoginStateError value)? error,
+    TResult Function(ServerLoginStateLoginProcessing value)? loginProcessing,
     required TResult orElse(),
   }) {
     if (logout != null) {
@@ -194,18 +210,22 @@ abstract class ServerLoginStateLogout implements ServerLoginState {
 /// @nodoc
 abstract class _$$ServerLoginStateLoginImplCopyWith<$Res> {
   factory _$$ServerLoginStateLoginImplCopyWith(
-          _$ServerLoginStateLoginImpl value,
-          $Res Function(_$ServerLoginStateLoginImpl) then) =
-      __$$ServerLoginStateLoginImplCopyWithImpl<$Res>;
+    _$ServerLoginStateLoginImpl value,
+    $Res Function(_$ServerLoginStateLoginImpl) then,
+  ) = __$$ServerLoginStateLoginImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$ServerLoginStateLoginImplCopyWithImpl<$Res>
     extends _$ServerLoginStateCopyWithImpl<$Res, _$ServerLoginStateLoginImpl>
     implements _$$ServerLoginStateLoginImplCopyWith<$Res> {
-  __$$ServerLoginStateLoginImplCopyWithImpl(_$ServerLoginStateLoginImpl _value,
-      $Res Function(_$ServerLoginStateLoginImpl) _then)
-      : super(_value, _then);
+  __$$ServerLoginStateLoginImplCopyWithImpl(
+    _$ServerLoginStateLoginImpl _value,
+    $Res Function(_$ServerLoginStateLoginImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -234,6 +254,7 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
     required TResult Function() logout,
     required TResult Function() login,
     required TResult Function(String? message) error,
+    required TResult Function() loginProcessing,
   }) {
     return login();
   }
@@ -244,6 +265,7 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
     TResult? Function()? logout,
     TResult? Function()? login,
     TResult? Function(String? message)? error,
+    TResult? Function()? loginProcessing,
   }) {
     return login?.call();
   }
@@ -254,6 +276,7 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
     TResult Function()? logout,
     TResult Function()? login,
     TResult Function(String? message)? error,
+    TResult Function()? loginProcessing,
     required TResult orElse(),
   }) {
     if (login != null) {
@@ -268,6 +291,8 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
     required TResult Function(ServerLoginStateLogout value) logout,
     required TResult Function(ServerLoginStateLogin value) login,
     required TResult Function(ServerLoginStateError value) error,
+    required TResult Function(ServerLoginStateLoginProcessing value)
+    loginProcessing,
   }) {
     return login(this);
   }
@@ -278,6 +303,7 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
     TResult? Function(ServerLoginStateLogout value)? logout,
     TResult? Function(ServerLoginStateLogin value)? login,
     TResult? Function(ServerLoginStateError value)? error,
+    TResult? Function(ServerLoginStateLoginProcessing value)? loginProcessing,
   }) {
     return login?.call(this);
   }
@@ -288,6 +314,7 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
     TResult Function(ServerLoginStateLogout value)? logout,
     TResult Function(ServerLoginStateLogin value)? login,
     TResult Function(ServerLoginStateError value)? error,
+    TResult Function(ServerLoginStateLoginProcessing value)? loginProcessing,
     required TResult orElse(),
   }) {
     if (login != null) {
@@ -304,9 +331,9 @@ abstract class ServerLoginStateLogin implements ServerLoginState {
 /// @nodoc
 abstract class _$$ServerLoginStateErrorImplCopyWith<$Res> {
   factory _$$ServerLoginStateErrorImplCopyWith(
-          _$ServerLoginStateErrorImpl value,
-          $Res Function(_$ServerLoginStateErrorImpl) then) =
-      __$$ServerLoginStateErrorImplCopyWithImpl<$Res>;
+    _$ServerLoginStateErrorImpl value,
+    $Res Function(_$ServerLoginStateErrorImpl) then,
+  ) = __$$ServerLoginStateErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String? message});
 }
@@ -315,21 +342,25 @@ abstract class _$$ServerLoginStateErrorImplCopyWith<$Res> {
 class __$$ServerLoginStateErrorImplCopyWithImpl<$Res>
     extends _$ServerLoginStateCopyWithImpl<$Res, _$ServerLoginStateErrorImpl>
     implements _$$ServerLoginStateErrorImplCopyWith<$Res> {
-  __$$ServerLoginStateErrorImplCopyWithImpl(_$ServerLoginStateErrorImpl _value,
-      $Res Function(_$ServerLoginStateErrorImpl) _then)
-      : super(_value, _then);
+  __$$ServerLoginStateErrorImplCopyWithImpl(
+    _$ServerLoginStateErrorImpl _value,
+    $Res Function(_$ServerLoginStateErrorImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = freezed,
-  }) {
-    return _then(_$ServerLoginStateErrorImpl(
-      message: freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? message = freezed}) {
+    return _then(
+      _$ServerLoginStateErrorImpl(
+        message:
+            freezed == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -357,12 +388,17 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ServerLoginStateErrorImplCopyWith<_$ServerLoginStateErrorImpl>
-      get copyWith => __$$ServerLoginStateErrorImplCopyWithImpl<
-          _$ServerLoginStateErrorImpl>(this, _$identity);
+  get copyWith =>
+      __$$ServerLoginStateErrorImplCopyWithImpl<_$ServerLoginStateErrorImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -370,6 +406,7 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
     required TResult Function() logout,
     required TResult Function() login,
     required TResult Function(String? message) error,
+    required TResult Function() loginProcessing,
   }) {
     return error(message);
   }
@@ -380,6 +417,7 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
     TResult? Function()? logout,
     TResult? Function()? login,
     TResult? Function(String? message)? error,
+    TResult? Function()? loginProcessing,
   }) {
     return error?.call(message);
   }
@@ -390,6 +428,7 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
     TResult Function()? logout,
     TResult Function()? login,
     TResult Function(String? message)? error,
+    TResult Function()? loginProcessing,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -404,6 +443,8 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
     required TResult Function(ServerLoginStateLogout value) logout,
     required TResult Function(ServerLoginStateLogin value) login,
     required TResult Function(ServerLoginStateError value) error,
+    required TResult Function(ServerLoginStateLoginProcessing value)
+    loginProcessing,
   }) {
     return error(this);
   }
@@ -414,6 +455,7 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
     TResult? Function(ServerLoginStateLogout value)? logout,
     TResult? Function(ServerLoginStateLogin value)? login,
     TResult? Function(ServerLoginStateError value)? error,
+    TResult? Function(ServerLoginStateLoginProcessing value)? loginProcessing,
   }) {
     return error?.call(this);
   }
@@ -424,6 +466,7 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
     TResult Function(ServerLoginStateLogout value)? logout,
     TResult Function(ServerLoginStateLogin value)? login,
     TResult Function(ServerLoginStateError value)? error,
+    TResult Function(ServerLoginStateLoginProcessing value)? loginProcessing,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -438,7 +481,137 @@ abstract class ServerLoginStateError implements ServerLoginState {
       _$ServerLoginStateErrorImpl;
 
   String? get message;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ServerLoginStateErrorImplCopyWith<_$ServerLoginStateErrorImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ServerLoginStateLoginProcessingImplCopyWith<$Res> {
+  factory _$$ServerLoginStateLoginProcessingImplCopyWith(
+    _$ServerLoginStateLoginProcessingImpl value,
+    $Res Function(_$ServerLoginStateLoginProcessingImpl) then,
+  ) = __$$ServerLoginStateLoginProcessingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ServerLoginStateLoginProcessingImplCopyWithImpl<$Res>
+    extends
+        _$ServerLoginStateCopyWithImpl<
+          $Res,
+          _$ServerLoginStateLoginProcessingImpl
+        >
+    implements _$$ServerLoginStateLoginProcessingImplCopyWith<$Res> {
+  __$$ServerLoginStateLoginProcessingImplCopyWithImpl(
+    _$ServerLoginStateLoginProcessingImpl _value,
+    $Res Function(_$ServerLoginStateLoginProcessingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ServerLoginState
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ServerLoginStateLoginProcessingImpl
+    implements ServerLoginStateLoginProcessing {
+  const _$ServerLoginStateLoginProcessingImpl();
+
+  @override
+  String toString() {
+    return 'ServerLoginState.loginProcessing()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ServerLoginStateLoginProcessingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() logout,
+    required TResult Function() login,
+    required TResult Function(String? message) error,
+    required TResult Function() loginProcessing,
+  }) {
+    return loginProcessing();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? logout,
+    TResult? Function()? login,
+    TResult? Function(String? message)? error,
+    TResult? Function()? loginProcessing,
+  }) {
+    return loginProcessing?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? logout,
+    TResult Function()? login,
+    TResult Function(String? message)? error,
+    TResult Function()? loginProcessing,
+    required TResult orElse(),
+  }) {
+    if (loginProcessing != null) {
+      return loginProcessing();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ServerLoginStateLogout value) logout,
+    required TResult Function(ServerLoginStateLogin value) login,
+    required TResult Function(ServerLoginStateError value) error,
+    required TResult Function(ServerLoginStateLoginProcessing value)
+    loginProcessing,
+  }) {
+    return loginProcessing(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ServerLoginStateLogout value)? logout,
+    TResult? Function(ServerLoginStateLogin value)? login,
+    TResult? Function(ServerLoginStateError value)? error,
+    TResult? Function(ServerLoginStateLoginProcessing value)? loginProcessing,
+  }) {
+    return loginProcessing?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ServerLoginStateLogout value)? logout,
+    TResult Function(ServerLoginStateLogin value)? login,
+    TResult Function(ServerLoginStateError value)? error,
+    TResult Function(ServerLoginStateLoginProcessing value)? loginProcessing,
+    required TResult orElse(),
+  }) {
+    if (loginProcessing != null) {
+      return loginProcessing(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ServerLoginStateLoginProcessing implements ServerLoginState {
+  const factory ServerLoginStateLoginProcessing() =
+      _$ServerLoginStateLoginProcessingImpl;
 }

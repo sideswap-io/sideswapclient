@@ -29,17 +29,21 @@ class DFocusBorder extends ConsumerWidget {
       FlagProperty('focused', value: focused, ifFalse: 'unfocused'),
     );
     properties.add(DiagnosticsProperty<DFocusThemeData>('style', style));
-    properties.add(FlagProperty(
-      'renderOutside',
-      value: renderOutside,
-      ifFalse: 'render inside',
-    ));
-    properties.add(FlagProperty(
-      'useStackApproach',
-      value: useStackApproach,
-      defaultValue: true,
-      ifFalse: 'use border approach',
-    ));
+    properties.add(
+      FlagProperty(
+        'renderOutside',
+        value: renderOutside,
+        ifFalse: 'render inside',
+      ),
+    );
+    properties.add(
+      FlagProperty(
+        'useStackApproach',
+        value: useStackApproach,
+        defaultValue: true,
+        ifFalse: 'use border approach',
+      ),
+    );
   }
 
   static Widget buildBorder(
@@ -86,24 +90,31 @@ class DFocusBorder extends ConsumerWidget {
             right: renderOutside ? -borderWidth : 0,
             top: renderOutside ? -borderWidth : 0,
             bottom: renderOutside ? -borderWidth : 0,
-            child: buildBorder(context, style, focused, fasterAnimationDuration,
-                animationCurve),
+            child: buildBorder(
+              context,
+              style,
+              focused,
+              fasterAnimationDuration,
+              animationCurve,
+            ),
           ),
         ],
       );
     } else {
-      return buildBorder(context, style, focused, fasterAnimationDuration,
-          animationCurve, child);
+      return buildBorder(
+        context,
+        style,
+        focused,
+        fasterAnimationDuration,
+        animationCurve,
+        child,
+      );
     }
   }
 }
 
 class DFocusTheme extends InheritedWidget {
-  const DFocusTheme({
-    super.key,
-    required this.data,
-    required super.child,
-  });
+  const DFocusTheme({super.key, required this.data, required super.child});
 
   final DFocusThemeData data;
 
@@ -147,20 +158,19 @@ class DFocusThemeData with Diagnosticable {
 
   static DFocusThemeData of(BuildContext context) {
     final container = ProviderContainer();
-    final accentColor = container
-        .read(desktopAppThemeNotifierProvider)
-        .darkScheme
-        .primary
-        .toAccentColor();
+    final accentColor =
+        container
+            .read(desktopAppThemeNotifierProvider)
+            .darkScheme
+            .primary
+            .toAccentColor();
     return DFocusThemeData(
       glowColor: Colors.transparent,
       glowFactor: is10footScreen() ? 2.0 : 0.0,
       primaryBorder: BorderSide(width: 1, color: accentColor.normal),
       secondaryBorder: BorderSide.none,
       renderOutside: false,
-    ).merge(
-      _getInheritedThemeData(context),
-    );
+    ).merge(_getInheritedThemeData(context));
   }
 
   factory DFocusThemeData.standard({
@@ -179,13 +189,22 @@ class DFocusThemeData with Diagnosticable {
   }
 
   static DFocusThemeData lerp(
-      DFocusThemeData? a, DFocusThemeData? b, double t) {
+    DFocusThemeData? a,
+    DFocusThemeData? b,
+    double t,
+  ) {
     return DFocusThemeData(
       borderRadius: BorderRadius.lerp(a?.borderRadius, b?.borderRadius, t),
-      primaryBorder: BorderSide.lerp(a?.primaryBorder ?? BorderSide.none,
-          b?.primaryBorder ?? BorderSide.none, t),
-      secondaryBorder: BorderSide.lerp(a?.secondaryBorder ?? BorderSide.none,
-          b?.secondaryBorder ?? BorderSide.none, t),
+      primaryBorder: BorderSide.lerp(
+        a?.primaryBorder ?? BorderSide.none,
+        b?.primaryBorder ?? BorderSide.none,
+        t,
+      ),
+      secondaryBorder: BorderSide.lerp(
+        a?.secondaryBorder ?? BorderSide.none,
+        b?.secondaryBorder ?? BorderSide.none,
+        t,
+      ),
       glowColor: Color.lerp(a?.glowColor, b?.glowColor, t),
       glowFactor: lerpDouble(a?.glowFactor, b?.glowFactor, t),
       renderOutside: t < 0.5 ? a?.renderOutside : b?.renderOutside,
@@ -210,34 +229,35 @@ class DFocusThemeData with Diagnosticable {
       border: Border.fromBorderSide(
         !focused ? BorderSide.none : primaryBorder ?? BorderSide.none,
       ),
-      boxShadow: focused && glowFactor != 0 && glowColor != null
-          ? [
-              BoxShadow(
-                offset: const Offset(1, 1),
-                color: glowColor!,
-                spreadRadius: glowFactor!,
-                blurRadius: glowFactor! * 2.5,
-              ),
-              BoxShadow(
-                offset: const Offset(-1, -1),
-                color: glowColor!,
-                spreadRadius: glowFactor!,
-                blurRadius: glowFactor! * 2.5,
-              ),
-              BoxShadow(
-                offset: const Offset(-1, 1),
-                color: glowColor!,
-                spreadRadius: glowFactor!,
-                blurRadius: glowFactor! * 2.5,
-              ),
-              BoxShadow(
-                offset: const Offset(1, -1),
-                color: glowColor!,
-                spreadRadius: glowFactor!,
-                blurRadius: glowFactor! * 2.5,
-              ),
-            ]
-          : null,
+      boxShadow:
+          focused && glowFactor != 0 && glowColor != null
+              ? [
+                BoxShadow(
+                  offset: const Offset(1, 1),
+                  color: glowColor!,
+                  spreadRadius: glowFactor!,
+                  blurRadius: glowFactor! * 2.5,
+                ),
+                BoxShadow(
+                  offset: const Offset(-1, -1),
+                  color: glowColor!,
+                  spreadRadius: glowFactor!,
+                  blurRadius: glowFactor! * 2.5,
+                ),
+                BoxShadow(
+                  offset: const Offset(-1, 1),
+                  color: glowColor!,
+                  spreadRadius: glowFactor!,
+                  blurRadius: glowFactor! * 2.5,
+                ),
+                BoxShadow(
+                  offset: const Offset(1, -1),
+                  color: glowColor!,
+                  spreadRadius: glowFactor!,
+                  blurRadius: glowFactor! * 2.5,
+                ),
+              ]
+              : null,
     );
   }
 
@@ -253,32 +273,38 @@ class DFocusThemeData with Diagnosticable {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<BorderSide>(
-      'primaryBorder',
-      primaryBorder,
-      ifNull: 'No primary border',
-    ));
-    properties.add(DiagnosticsProperty<BorderSide>(
-      'secondaryBorder',
-      secondaryBorder,
-      ifNull: 'No secondary border',
-    ));
-    properties.add(DiagnosticsProperty<BorderRadius>(
-      'borderRadius',
-      borderRadius,
-      defaultValue: BorderRadius.zero,
-    ));
+    properties.add(
+      DiagnosticsProperty<BorderSide>(
+        'primaryBorder',
+        primaryBorder,
+        ifNull: 'No primary border',
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<BorderSide>(
+        'secondaryBorder',
+        secondaryBorder,
+        ifNull: 'No secondary border',
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<BorderRadius>(
+        'borderRadius',
+        borderRadius,
+        defaultValue: BorderRadius.zero,
+      ),
+    );
     properties.add(DoubleProperty('glowFactor', glowFactor, defaultValue: 0.0));
-    properties.add(ColorProperty(
-      'glowColor',
-      glowColor,
-      defaultValue: Colors.transparent,
-    ));
-    properties.add(FlagProperty(
-      'renderOutside',
-      value: renderOutside,
-      defaultValue: true,
-      ifFalse: 'renderInside',
-    ));
+    properties.add(
+      ColorProperty('glowColor', glowColor, defaultValue: Colors.transparent),
+    );
+    properties.add(
+      FlagProperty(
+        'renderOutside',
+        value: renderOutside,
+        defaultValue: true,
+        ifFalse: 'renderInside',
+      ),
+    );
   }
 }

@@ -37,12 +37,8 @@ enum FCMTxType {
 
 @freezed
 class FCMPayload with _$FCMPayload {
-  // ignore: unused_element
   const FCMPayload._();
-  const factory FCMPayload({
-    FCMPayloadType? type,
-    String? txid,
-  }) = _FCMPayload;
+  const factory FCMPayload({FCMPayloadType? type, String? txid}) = _FCMPayload;
 
   factory FCMPayload.fromJson(Map<String, dynamic> json) =>
       _$FCMPayloadFromJson(json);
@@ -55,10 +51,8 @@ class FCMPayload with _$FCMPayload {
 
 @freezed
 class FCMNotification with _$FCMNotification {
-  const factory FCMNotification({
-    String? title,
-    String? body,
-  }) = _FCMNotification;
+  const factory FCMNotification({String? title, String? body}) =
+      _FCMNotification;
 
   factory FCMNotification.fromJson(Map<String, dynamic> json) =>
       _$FCMNotificationFromJson(json);
@@ -66,9 +60,7 @@ class FCMNotification with _$FCMNotification {
 
 @freezed
 class FCMData with _$FCMData {
-  const factory FCMData({
-    FCMDetails? details,
-  }) = _FCMData;
+  const factory FCMData({FCMDetails? details}) = _FCMData;
 
   factory FCMData.fromJson(Map<String, dynamic> json) =>
       FCMData.createFromJson(json);
@@ -135,10 +127,8 @@ class FCMOrderCancelled with _$FCMOrderCancelled {
 
 @freezed
 class FCMMessage with _$FCMMessage {
-  const factory FCMMessage({
-    FCMNotification? notification,
-    FCMData? data,
-  }) = _FCMMessage;
+  const factory FCMMessage({FCMNotification? notification, FCMData? data}) =
+      _FCMMessage;
 
   factory FCMMessage.fromJson(Map<String, dynamic> json) =>
       _$FCMMessageFromJson(json);

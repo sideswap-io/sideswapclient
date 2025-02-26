@@ -15,9 +15,7 @@ import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/success_icon.dart';
 
 class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
-  const DPegxSubmitAmpDialogBody({
-    super.key,
-  });
+  const DPegxSubmitAmpDialogBody({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,8 +36,11 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                 .setStatus(Status.pegxSubmitFinish);
           },
           gaidError: () {
-            ref.read(pegxWebsocketClientProvider).errorAndGoBack(
-                'Adding AMP ID failed or cancelled by the user'.tr());
+            ref
+                .read(pegxWebsocketClientProvider)
+                .errorAndGoBack(
+                  'Adding AMP ID failed or cancelled by the user'.tr(),
+                );
           },
           orElse: () {},
         ),
@@ -67,17 +68,18 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                   height: 36,
                   ampId: ampId,
                   backgroundColor: SideSwapColors.chathamsBlue,
-                  prefixTextStyle: textTheme.titleSmall?.merge(const TextStyle(
+                  prefixTextStyle: textTheme.titleSmall?.merge(
+                    const TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: SideSwapColors.brightTurquoise)),
+                      color: SideSwapColors.brightTurquoise,
+                    ),
+                  ),
                   icon: const Padding(
                     padding: EdgeInsets.only(left: 10, right: 8),
                     child: SuccessIcon(
                       width: 20,
                       height: 20,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle),
                       icon: Icon(
                         Icons.add,
                         color: SideSwapColors.brightTurquoise,
@@ -92,8 +94,9 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Text(
-                      'The request has been sent. Please open your Authenticate eID app and sign to add your AMP ID.'
-                          .tr()),
+                    'The request has been sent. Please open your Authenticate eID app and sign to add your AMP ID.'
+                        .tr(),
+                  ),
                 ),
               ),
               const Spacer(),
@@ -110,27 +113,22 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                             .read(pageStatusNotifierProvider.notifier)
                             .setStatus(Status.ampRegister);
                       },
-                      child: Text(
-                        'CANCEL'.tr(),
-                      ),
+                      child: Text('CANCEL'.tr()),
                     ),
-                    const SizedBox(
-                      width: 10,
-                    ),
+                    const SizedBox(width: 10),
                     DCustomFilledBigButton(
                       width: 245,
                       height: 49,
-                      onPressed: gaidWaiting.value
-                          ? null
-                          : () {
-                              ref.read(pegxWebsocketClientProvider).addGaid();
-                            },
+                      onPressed:
+                          gaidWaiting.value
+                              ? null
+                              : () {
+                                ref.read(pegxWebsocketClientProvider).addGaid();
+                              },
                       child: Row(
                         children: [
                           const Spacer(),
-                          Text(
-                            'YES'.tr(),
-                          ),
+                          Text('YES'.tr()),
                           Expanded(
                             child: Row(
                               children: [
@@ -159,7 +157,7 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
               url: 'https://pegx.io',
               urlText: 'pegx.io',
             ),
-          )
+          ),
         ],
       ),
     );

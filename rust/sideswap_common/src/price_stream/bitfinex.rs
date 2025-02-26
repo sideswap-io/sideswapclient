@@ -9,9 +9,9 @@ pub async fn get_price(client: &HttpClient, market: &Market) -> Result<PricePair
     let exchange_pair = market.exchange_pair();
 
     let symbol = match (exchange_pair.base, exchange_pair.quote) {
-        (DealerTicker::LBTC, DealerTicker::USDt) => "tBTCUST",
-        (DealerTicker::LBTC, DealerTicker::EURx) => "tBTCEUR",
-        (DealerTicker::EURx, DealerTicker::USDt) => "tEURUST",
+        (DealerTicker::LBTC, DealerTicker::USDT) => "tBTCUST",
+        (DealerTicker::LBTC, DealerTicker::EURX) => "tBTCEUR",
+        (DealerTicker::EURX, DealerTicker::USDT) => "tEURUST",
         _ => panic!("unsupported exchange_pair: {exchange_pair:?}"),
     };
 

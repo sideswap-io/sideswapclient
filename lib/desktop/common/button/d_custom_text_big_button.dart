@@ -32,10 +32,11 @@ class DCustomTextBigButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        final defaultButtonStyle = ref
-            .watch(desktopAppThemeNotifierProvider)
-            .buttonThemeData
-            .defaultButtonStyle;
+        final defaultButtonStyle =
+            ref
+                .watch(desktopAppThemeNotifierProvider)
+                .buttonThemeData
+                .defaultButtonStyle;
         return DButton(
           onPressed: enabled ? onPressed : null,
           focusNode: focusNode,

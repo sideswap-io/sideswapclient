@@ -39,11 +39,12 @@ sealed class PinDataState with _$PinDataState {
   const factory PinDataState.empty() = PinDataStateEmpty;
   const factory PinDataState.error({required String message}) =
       PinDataStateError;
-  const factory PinDataState.data(
-      {required String salt,
-      required String encryptedData,
-      required String pinIdentifier,
-      required String hmac}) = PinDataStateData;
+  const factory PinDataState.data({
+    required String salt,
+    required String encryptedData,
+    required String pinIdentifier,
+    required String hmac,
+  }) = PinDataStateData;
 
   factory PinDataState.fromJson(Map<String, dynamic> json) =>
       _$PinDataStateFromJson(json);

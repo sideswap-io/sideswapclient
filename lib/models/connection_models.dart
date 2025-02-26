@@ -8,4 +8,6 @@ class ServerLoginState with _$ServerLoginState {
   const factory ServerLoginState.login() = ServerLoginStateLogin;
   const factory ServerLoginState.error({String? message}) =
       ServerLoginStateError;
+  const factory ServerLoginState.loginProcessing() =
+      ServerLoginStateLoginProcessing;
 }

@@ -12,7 +12,8 @@ part of 'qrcode_models.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$QrCodeResultModel {
@@ -20,47 +21,42 @@ mixin _$QrCodeResultModel {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(QrCodeResult? result) data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(QrCodeResult? result)? data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(QrCodeResult? result)? data,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(QrCodeResultModelEmpty value) empty,
     required TResult Function(QrCodeResultModelData value) data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(QrCodeResultModelEmpty value)? empty,
     TResult? Function(QrCodeResultModelData value)? data,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(QrCodeResultModelEmpty value)? empty,
     TResult Function(QrCodeResultModelData value)? data,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $QrCodeResultModelCopyWith<$Res> {
   factory $QrCodeResultModelCopyWith(
-          QrCodeResultModel value, $Res Function(QrCodeResultModel) then) =
-      _$QrCodeResultModelCopyWithImpl<$Res, QrCodeResultModel>;
+    QrCodeResultModel value,
+    $Res Function(QrCodeResultModel) then,
+  ) = _$QrCodeResultModelCopyWithImpl<$Res, QrCodeResultModel>;
 }
 
 /// @nodoc
@@ -72,14 +68,17 @@ class _$QrCodeResultModelCopyWithImpl<$Res, $Val extends QrCodeResultModel>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of QrCodeResultModel
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$QrCodeResultModelEmptyImplCopyWith<$Res> {
   factory _$$QrCodeResultModelEmptyImplCopyWith(
-          _$QrCodeResultModelEmptyImpl value,
-          $Res Function(_$QrCodeResultModelEmptyImpl) then) =
-      __$$QrCodeResultModelEmptyImplCopyWithImpl<$Res>;
+    _$QrCodeResultModelEmptyImpl value,
+    $Res Function(_$QrCodeResultModelEmptyImpl) then,
+  ) = __$$QrCodeResultModelEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -87,9 +86,12 @@ class __$$QrCodeResultModelEmptyImplCopyWithImpl<$Res>
     extends _$QrCodeResultModelCopyWithImpl<$Res, _$QrCodeResultModelEmptyImpl>
     implements _$$QrCodeResultModelEmptyImplCopyWith<$Res> {
   __$$QrCodeResultModelEmptyImplCopyWithImpl(
-      _$QrCodeResultModelEmptyImpl _value,
-      $Res Function(_$QrCodeResultModelEmptyImpl) _then)
-      : super(_value, _then);
+    _$QrCodeResultModelEmptyImpl _value,
+    $Res Function(_$QrCodeResultModelEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of QrCodeResultModel
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -182,9 +184,9 @@ abstract class QrCodeResultModelEmpty implements QrCodeResultModel {
 /// @nodoc
 abstract class _$$QrCodeResultModelDataImplCopyWith<$Res> {
   factory _$$QrCodeResultModelDataImplCopyWith(
-          _$QrCodeResultModelDataImpl value,
-          $Res Function(_$QrCodeResultModelDataImpl) then) =
-      __$$QrCodeResultModelDataImplCopyWithImpl<$Res>;
+    _$QrCodeResultModelDataImpl value,
+    $Res Function(_$QrCodeResultModelDataImpl) then,
+  ) = __$$QrCodeResultModelDataImplCopyWithImpl<$Res>;
   @useResult
   $Res call({QrCodeResult? result});
 }
@@ -193,21 +195,25 @@ abstract class _$$QrCodeResultModelDataImplCopyWith<$Res> {
 class __$$QrCodeResultModelDataImplCopyWithImpl<$Res>
     extends _$QrCodeResultModelCopyWithImpl<$Res, _$QrCodeResultModelDataImpl>
     implements _$$QrCodeResultModelDataImplCopyWith<$Res> {
-  __$$QrCodeResultModelDataImplCopyWithImpl(_$QrCodeResultModelDataImpl _value,
-      $Res Function(_$QrCodeResultModelDataImpl) _then)
-      : super(_value, _then);
+  __$$QrCodeResultModelDataImplCopyWithImpl(
+    _$QrCodeResultModelDataImpl _value,
+    $Res Function(_$QrCodeResultModelDataImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of QrCodeResultModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? result = freezed,
-  }) {
-    return _then(_$QrCodeResultModelDataImpl(
-      result: freezed == result
-          ? _value.result
-          : result // ignore: cast_nullable_to_non_nullable
-              as QrCodeResult?,
-    ));
+  $Res call({Object? result = freezed}) {
+    return _then(
+      _$QrCodeResultModelDataImpl(
+        result:
+            freezed == result
+                ? _value.result
+                : result // ignore: cast_nullable_to_non_nullable
+                    as QrCodeResult?,
+      ),
+    );
   }
 }
 
@@ -235,12 +241,17 @@ class _$QrCodeResultModelDataImpl implements QrCodeResultModelData {
   @override
   int get hashCode => Object.hash(runtimeType, result);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of QrCodeResultModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$QrCodeResultModelDataImplCopyWith<_$QrCodeResultModelDataImpl>
-      get copyWith => __$$QrCodeResultModelDataImplCopyWithImpl<
-          _$QrCodeResultModelDataImpl>(this, _$identity);
+  get copyWith =>
+      __$$QrCodeResultModelDataImplCopyWithImpl<_$QrCodeResultModelDataImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -310,7 +321,10 @@ abstract class QrCodeResultModelData implements QrCodeResultModel {
       _$QrCodeResultModelDataImpl;
 
   QrCodeResult? get result;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of QrCodeResultModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$QrCodeResultModelDataImplCopyWith<_$QrCodeResultModelDataImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

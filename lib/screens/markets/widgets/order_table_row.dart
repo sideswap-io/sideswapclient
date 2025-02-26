@@ -3,15 +3,13 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-enum OrderTableRowType {
-  normal,
-  small,
-}
+enum OrderTableRowType { normal, small }
 
 class OrderTableRow extends StatefulWidget {
   const OrderTableRow({
@@ -53,39 +51,50 @@ class OrderTableRow extends StatefulWidget {
     bool displayDivider = true,
     bool showCurrencyConversion = true,
   }) {
-    return Builder(builder: (context) {
-      return Consumer(
-        builder: ((context, ref, _) {
-          final icon = ref.watch(assetImageProvider).getSmallImage(assetId);
-          final asset =
-              ref.watch(assetsStateProvider.select((value) => value[assetId]));
+    return Builder(
+      builder: (context) {
+        return Consumer(
+          builder: ((context, ref, _) {
+            final icon = ref
+                .watch(assetImageRepositoryProvider)
+                .getSmallImage(assetId);
+            final asset = ref.watch(
+              assetsStateProvider.select((value) => value[assetId]),
+            );
 
-          final ticker = asset?.ticker;
-          final amountProvider = ref.watch(amountToStringProvider);
-          final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-          final amountStr = amountProvider.amountToStringNamed(
+            final ticker = asset?.ticker;
+            final amountProvider = ref.watch(amountToStringProvider);
+            final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+            final amountStr = amountProvider.amountToStringNamed(
               AmountToStringNamedParameters(
-                  amount: amount,
-                  ticker: ticker ?? '',
-                  precision: asset?.precision ?? 8));
-          final defaultCurrencyConversion = liquidAssetId == assetId &&
-                  showCurrencyConversion
-              ? ref.watch(defaultCurrencyConversionProvider(
-                  assetId, toFloat(amount, precision: asset?.precision ?? 8)))
-              : null;
+                amount: amount,
+                ticker: ticker ?? '',
+                precision: asset?.precision ?? 8,
+              ),
+            );
+            final defaultCurrencyConversion =
+                liquidAssetId == assetId && showCurrencyConversion
+                    ? ref.watch(
+                      defaultCurrencyConversionWithTickerProvider(
+                        assetId,
+                        toFloat(amount, precision: asset?.precision ?? 8),
+                      ),
+                    )
+                    : null;
 
-          return OrderTableRow(
-            description: description,
-            value: amountStr,
-            defaultCurrencyConversion: defaultCurrencyConversion,
-            icon: icon,
-            orderTableRowType: orderTableRowType,
-            displayDivider: displayDivider,
-            enabled: enabled,
-          );
-        }),
-      );
-    });
+            return OrderTableRow(
+              description: description,
+              value: amountStr,
+              defaultCurrencyConversion: defaultCurrencyConversion,
+              icon: icon,
+              orderTableRowType: orderTableRowType,
+              displayDivider: displayDivider,
+              enabled: enabled,
+            );
+          }),
+        );
+      },
+    );
   }
 }
 
@@ -100,9 +109,11 @@ class OrderTableRowState extends State<OrderTableRow> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-          top: widget.orderTableRowType == OrderTableRowType.normal
-              ? widget.topPadding ?? 15
-              : widget.topPadding ?? 12),
+        top:
+            widget.orderTableRowType == OrderTableRowType.normal
+                ? widget.topPadding ?? 15
+                : widget.topPadding ?? 12,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -125,7 +136,8 @@ class OrderTableRowState extends State<OrderTableRow> {
                     Expanded(
                       child: Container(
                         alignment: Alignment.centerRight,
-                        child: widget.customValue ??
+                        child:
+                            widget.customValue ??
                             Text(
                               widget.value ?? '',
                               style: widget.style ?? defaultFontStyle,
@@ -167,10 +179,7 @@ class OrderTableRowState extends State<OrderTableRow> {
                 ),
                 const Padding(
                   padding: EdgeInsets.only(left: 8),
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                  ),
+                  child: SizedBox(width: 24, height: 24),
                 ),
               ],
             ),
@@ -178,9 +187,11 @@ class OrderTableRowState extends State<OrderTableRow> {
           if (widget.displayDivider) ...[
             Padding(
               padding: EdgeInsets.only(
-                  top: widget.orderTableRowType == OrderTableRowType.normal
-                      ? 12
-                      : 10),
+                top:
+                    widget.orderTableRowType == OrderTableRowType.normal
+                        ? 12
+                        : 10,
+              ),
               child: const Divider(
                 height: 1,
                 thickness: 1,

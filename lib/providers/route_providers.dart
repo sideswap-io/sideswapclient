@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:secure_application/secure_gate.dart';
 import 'package:sideswap/app_main.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/d_jade_info_dialog.dart';
@@ -36,26 +35,15 @@ import 'package:sideswap/desktop/stokr/d_stokr_need_register_popup.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/prelaunch_page.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
-import 'package:sideswap/providers/order_details_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/home/wallet_locked.dart';
-import 'package:sideswap/screens/markets/create_order_success.dart';
-import 'package:sideswap/screens/markets/create_order_view.dart';
-import 'package:sideswap/screens/markets/order_entry.dart';
-import 'package:sideswap/screens/markets/order_filters.dart';
+import 'package:sideswap/screens/markets/market_limit_page.dart';
+import 'package:sideswap/screens/markets/market_swap_page.dart';
 import 'package:sideswap/screens/onboarding/amp_register.dart';
-import 'package:sideswap/screens/onboarding/associate_phone_welcome.dart';
-import 'package:sideswap/screens/onboarding/confirm_phone.dart';
-import 'package:sideswap/screens/onboarding/confirm_phone_success.dart';
 import 'package:sideswap/screens/onboarding/first_launch_page.dart';
-import 'package:sideswap/screens/onboarding/import_avatar.dart';
-import 'package:sideswap/screens/onboarding/import_avatar_success.dart';
-import 'package:sideswap/screens/onboarding/import_contacts.dart';
-import 'package:sideswap/screens/onboarding/import_contacts_success.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_error.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_success.dart';
 import 'package:sideswap/screens/onboarding/jade/jade_bluetooth_permission.dart';
@@ -78,9 +66,6 @@ import 'package:sideswap/screens/onboarding/widgets/import_wallet_biometric_prom
 import 'package:sideswap/screens/onboarding/widgets/new_wallet_biometric_prompt.dart';
 import 'package:sideswap/screens/onboarding/widgets/new_wallet_pin_welcome.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_success.dart';
-import 'package:sideswap/screens/order/order_popup.dart';
-import 'package:sideswap/screens/order/order_success.dart';
-import 'package:sideswap/screens/order/swap_prompt.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/payment_page.dart';
 import 'package:sideswap/screens/pay/payment_send_popup.dart';
@@ -93,7 +78,6 @@ import 'package:sideswap/screens/settings/settings_default_currency.dart';
 import 'package:sideswap/screens/settings/settings_logs.dart';
 import 'package:sideswap/screens/settings/settings_network.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
-import 'package:sideswap/screens/settings/settings_user_details.dart';
 import 'package:sideswap/screens/settings/settings_view_backup.dart';
 import 'package:sideswap/screens/stokr/stokr_country_restrictions_info_popup.dart';
 import 'package:sideswap/screens/stokr/stokr_need_register_popup.dart';
@@ -142,7 +126,7 @@ class RouteName {
 }
 
 @Riverpod(keepAlive: true)
-MobileRoutePage mobileRoutePage(MobileRoutePageRef ref) {
+MobileRoutePage mobileRoutePage(Ref ref) {
   final status = ref.watch(pageStatusNotifierProvider);
 
   return MobileRoutePage(ref: ref, status: status);
@@ -152,90 +136,61 @@ class MobileRoutePage {
   final Ref ref;
   final Status status;
 
-  MobileRoutePage({
-    required this.ref,
-    required this.status,
-  });
+  MobileRoutePage({required this.ref, required this.status});
 
   List<Page<Widget>> pages() {
     return switch (status) {
       Status.walletLoading => [
-          const MaterialPage<Widget>(child: PreLaunchPage()),
-        ],
+        const MaterialPage<Widget>(child: PreLaunchPage()),
+      ],
       Status.networkAccessOnboarding => [],
       Status.reviewLicense => [
-          const MyPopupPage<Widget>(
-            child: LicenseTerms(),
-          ),
-        ],
+        const MyPopupPage<Widget>(child: LicenseTerms()),
+      ],
       Status.noWallet || Status.jadeImport => [
-          const MaterialPage<Widget>(child: FirstLaunchPage()),
-        ],
+        const MaterialPage<Widget>(child: FirstLaunchPage()),
+      ],
       Status.selectEnv => [
-          const MaterialPage<Widget>(child: FirstLaunchPage()),
-          const MyPopupPage<Widget>(child: SelectEnv()),
-        ],
-      Status.lockedWalet => [
-          const MaterialPage<Widget>(child: WalletLocked()),
-        ],
+        const MaterialPage<Widget>(child: FirstLaunchPage()),
+        const MyPopupPage<Widget>(child: SelectEnv()),
+      ],
+      Status.lockedWalet => [const MaterialPage<Widget>(child: WalletLocked())],
       Status.importWallet => [
-          const MaterialPage<Widget>(child: FirstLaunchPage()),
-          const MaterialPage<Widget>(child: WalletImport()),
-        ],
+        const MaterialPage<Widget>(child: FirstLaunchPage()),
+        const MaterialPage<Widget>(child: WalletImport()),
+      ],
       Status.importWalletBiometricPrompt => [
-          const MaterialPage<Widget>(child: ImportWalletBiometricPrompt()),
-        ],
+        const MaterialPage<Widget>(child: ImportWalletBiometricPrompt()),
+      ],
       Status.importWalletSuccess => [
-          const MyPopupPage<Widget>(child: ImportWalletSuccess()),
-        ],
+        const MyPopupPage<Widget>(child: ImportWalletSuccess()),
+      ],
       Status.importWalletError => [
-          const MyPopupPage<Widget>(child: ImportWalletError()),
-        ],
+        const MyPopupPage<Widget>(child: ImportWalletError()),
+      ],
       Status.newWalletBackupPrompt => [
-          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-        ],
+        const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+      ],
       Status.newWalletBackupView => [
-          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          const MyPopupPage<Widget>(child: WalletBackup()),
-        ],
+        const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+        const MyPopupPage<Widget>(child: WalletBackup()),
+      ],
       Status.newWalletBackupCheck => [
-          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          const MyPopupPage<Widget>(child: WalletBackup()),
-          const MyPopupPage<Widget>(child: WalletBackupCheck()),
-        ],
+        const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+        const MyPopupPage<Widget>(child: WalletBackup()),
+        const MyPopupPage<Widget>(child: WalletBackupCheck()),
+      ],
       Status.newWalletBackupCheckFailed => [
-          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          const MyPopupPage<Widget>(child: WalletBackupCheckFailed()),
-        ],
+        const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+        const MyPopupPage<Widget>(child: WalletBackupCheckFailed()),
+      ],
       Status.newWalletBackupCheckSucceed => [
-          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          const MyPopupPage<Widget>(child: WalletBackupCheckSucceed()),
-        ],
+        const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+        const MyPopupPage<Widget>(child: WalletBackupCheckSucceed()),
+      ],
       Status.newWalletBiometricPrompt => [
-          const MaterialPage<Widget>(child: NewWalletBiometricPrompt()),
-        ],
-      Status.importAvatar => [
-          const MaterialPage<Widget>(child: ImportAvatar()),
-        ],
-      Status.importAvatarSuccess => [
-          const MaterialPage<Widget>(child: ImportAvatar()),
-          const MyPopupPage<Widget>(child: ImportAvatarSuccess()),
-        ],
-      Status.associatePhoneWelcome => [
-          const MaterialPage<Widget>(child: AssociatePhoneWelcome()),
-        ],
-      Status.confirmPhone => [
-          const MyPopupPage<Widget>(child: ConfirmPhone()),
-        ],
-      Status.confirmPhoneSuccess => [
-          const MyPopupPage<Widget>(child: ConfirmPhoneSuccess()),
-        ],
-      Status.importContacts => [
-          const MaterialPage<Widget>(child: ImportContacts()),
-        ],
-      Status.importContactsSuccess => [
-          const MyPopupPage<Widget>(child: ImportContactsSuccess()),
-        ],
+        const MaterialPage<Widget>(child: NewWalletBiometricPrompt()),
+      ],
       // WalletMain has it's own navigation system because of
       // MainBottomNavigationBar
       // Use uiStateArgsProvider for changing page
@@ -243,171 +198,109 @@ class MobileRoutePage {
       Status.assetsSelect ||
       Status.assetDetails ||
       Status.assetReceive ||
-      Status.assetReceiveFromWalletMain =>
-        [
-          const MaterialPage<Widget>(child: WalletMain()),
-        ],
+      Status.assetReceiveFromWalletMain => [
+        const MaterialPage<Widget>(child: WalletMain()),
+      ],
       Status.txDetails => [
-          const MaterialPage<Widget>(child: WalletMain()),
-          const MaterialPage<Widget>(child: TxDetailsPopup()),
-        ],
-      Status.txEditMemo => [
-          const MaterialPage<Widget>(child: WalletTxMemo()),
-        ],
+        const MaterialPage<Widget>(child: WalletMain()),
+        const MaterialPage<Widget>(child: TxDetailsPopup()),
+      ],
+      Status.txEditMemo => [const MaterialPage<Widget>(child: WalletTxMemo())],
       Status.swapWaitPegTx => [
-          const MaterialPage<Widget>(child: WalletMain()),
-          const MaterialPage<Widget>(child: PegInAddress()),
-        ],
+        const MaterialPage<Widget>(child: WalletMain()),
+        const MaterialPage<Widget>(child: PegInAddress()),
+      ],
       Status.swapTxDetails => [
-          const MyPopupPage<Widget>(child: TxDetailsPopup()),
-        ],
-      Status.settingsPage => [
-          const MaterialPage<Widget>(child: Settings()),
-        ],
+        const MyPopupPage<Widget>(child: TxDetailsPopup()),
+      ],
+      Status.settingsPage => [const MaterialPage<Widget>(child: Settings())],
       Status.settingsBackup => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(
-            child: SecureGate(
-              child: SettingsViewBackup(),
-            ),
-          ),
-        ],
-      Status.settingsUserDetails => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(child: SettingsUserDetails()),
-        ],
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: SettingsViewBackup()),
+      ],
       Status.settingsAboutUs => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(child: SettingsAboutUs()),
-        ],
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: SettingsAboutUs()),
+      ],
       Status.settingsNetwork => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(child: SettingsNetwork()),
-        ],
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: SettingsNetwork()),
+      ],
       Status.settingsSecurity => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(child: SettingsSecurity()),
-        ],
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: SettingsSecurity()),
+      ],
       Status.settingsLogs => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(child: SettingsLogs()),
-        ],
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: SettingsLogs()),
+      ],
       Status.settingsCurrency => [
-          const MaterialPage<Widget>(child: Settings()),
-          const MaterialPage<Widget>(child: SettingsDefaultCurrency()),
-        ],
-      Status.paymentPage => [
-          const MaterialPage<Widget>(child: PaymentPage()),
-        ],
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: SettingsDefaultCurrency()),
+      ],
+      Status.paymentPage => [const MaterialPage<Widget>(child: PaymentPage())],
       Status.paymentAmountPage => [
-          const MaterialPage<Widget>(child: PaymentAmountPage()),
-        ],
+        const MaterialPage<Widget>(child: PaymentAmountPage()),
+      ],
       Status.paymentSend => [
-          const MyPopupPage<Widget>(child: PaymentSendPopup()),
-        ],
-      Status.orderPopup => () {
-          final orderId = ref.read(orderDetailsDataNotifierProvider).orderId;
-          return [
-            const MaterialPage<Widget>(child: WalletMain()),
-            MaterialPage<Widget>(child: OrderPopup(key: Key(orderId))),
-          ];
-        }(),
-      Status.orderSuccess => [
-          const MyPopupPage<Widget>(child: OrderSuccess()),
-        ],
-      Status.orderResponseSuccess => [
-          const MyPopupPage<Widget>(
-            child: OrderSuccess(
-              isResponse: true,
-            ),
-          ),
-        ],
+        const MyPopupPage<Widget>(child: PaymentSendPopup()),
+      ],
       Status.newWalletPinWelcome => [
-          const MaterialPage<Widget>(child: NewWalletPinWelcome()),
-        ],
-      Status.pinWelcome => [
-          const MaterialPage<Widget>(child: PinWelcome()),
-        ],
-      Status.pinSetup => [
-          const MaterialPage<Widget>(child: PinSetup()),
-        ],
-      Status.pinSuccess => [
-          const MyPopupPage<Widget>(child: PinSuccess()),
-        ],
-      Status.createOrderEntry => [
-          const MaterialPage<Widget>(child: OrderEntry()),
-        ],
-      Status.createOrder => [
-          const MaterialPage<Widget>(child: CreateOrderView()),
-        ],
-      Status.createOrderSuccess => [
-          const MyPopupPage<Widget>(child: CreateOrderSuccess()),
-        ],
-      Status.orderRequestView => [
-          const MaterialPage<Widget>(child: WalletMain()),
-          MaterialPage<Widget>(
-              child: CreateOrderView(
-            requestOrder: ref.read(currentRequestOrderViewProvider),
-          )),
-        ],
-      Status.swapPrompt => () {
-          final orderId = ref.read(walletProvider).swapDetails?.orderId ?? '';
-          return [
-            const MaterialPage<Widget>(child: WalletMain()),
-            MaterialPage<Widget>(child: SwapPrompt(key: Key(orderId))),
-          ];
-        }(),
+        const MaterialPage<Widget>(child: NewWalletPinWelcome()),
+      ],
+      Status.pinWelcome => [const MaterialPage<Widget>(child: PinWelcome())],
+      Status.pinSetup => [const MaterialPage<Widget>(child: PinSetup())],
+      Status.pinSuccess => [const MyPopupPage<Widget>(child: PinSuccess())],
       Status.stokrLogin => [
-          const MaterialPage<Widget>(child: AmpRegister()),
-          const MyPopupPage<Widget>(child: StokrLogin()),
-        ],
+        const MaterialPage<Widget>(child: AmpRegister()),
+        const MyPopupPage<Widget>(child: StokrLogin()),
+      ],
       Status.pegxRegister => [
-          const MaterialPage<Widget>(child: AmpRegister()),
-          const MyPopupPage<Widget>(child: PegxRegister()),
-        ],
+        const MaterialPage<Widget>(child: AmpRegister()),
+        const MyPopupPage<Widget>(child: PegxRegister()),
+      ],
       Status.pegxSubmitAmp => [
-          const MaterialPage<Widget>(child: AmpRegister()),
-          const MyPopupPage<Widget>(child: PegxSubmitAmp()),
-        ],
+        const MaterialPage<Widget>(child: AmpRegister()),
+        const MyPopupPage<Widget>(child: PegxSubmitAmp()),
+      ],
       Status.ampRegister || Status.pegxSubmitFinish => [
-          const MaterialPage<Widget>(child: AmpRegister()),
-        ],
+        const MaterialPage<Widget>(child: AmpRegister()),
+      ],
       Status.generateWalletAddress => [
-          const MaterialPage<Widget>(child: GenerateAddressScreen()),
-        ],
+        const MaterialPage<Widget>(child: GenerateAddressScreen()),
+      ],
       Status.walletAddressDetail => [
-          const MaterialPage<Widget>(child: AssetReceiveScreen()),
-        ],
+        const MaterialPage<Widget>(child: AssetReceiveScreen()),
+      ],
       Status.transactions => [
-          const MaterialPage<Widget>(child: Transactions()),
-        ],
-      Status.orderFilers => [
-          const MaterialPage<Widget>(child: OrderFilters()),
-        ],
+        const MaterialPage<Widget>(child: Transactions()),
+      ],
       Status.stokrRestrictionsInfo => [
-          const MyPopupPage<Widget>(child: StokrCountryRestrictionsInfoPopup()),
-        ],
+        const MyPopupPage<Widget>(child: StokrCountryRestrictionsInfoPopup()),
+      ],
       Status.stokrNeedRegister => [
-          const MyPopupPage<Widget>(child: StokrNeedRegisterPopup()),
-        ],
+        const MyPopupPage<Widget>(child: StokrNeedRegisterPopup()),
+      ],
       Status.jadeBluetoothPermission => [
-          const MaterialPage<Widget>(child: JadeBluetoothPermission()),
-        ],
-      Status.jadeDevices => [
-          const MaterialPage<Widget>(child: JadeDevices()),
-        ],
+        const MaterialPage<Widget>(child: JadeBluetoothPermission()),
+      ],
+      Status.jadeDevices => [const MaterialPage<Widget>(child: JadeDevices())],
       Status.jadeConnecting => [
-          const MaterialPage<Widget>(child: JadeConnecting()),
-        ],
-      Status.jadeLogin => [
-          const MaterialPage<Widget>(child: JadeLogin()),
-        ],
+        const MaterialPage<Widget>(child: JadeConnecting()),
+      ],
+      Status.jadeLogin => [const MaterialPage<Widget>(child: JadeLogin())],
+      Status.marketSwap => [
+        const MaterialPage<Widget>(child: MarketSwapPage()),
+      ],
+      Status.marketLimit => [
+        const MaterialPage<Widget>(child: MarketLimitPage()),
+      ],
     };
   }
 }
 
 @Riverpod(keepAlive: true)
-DesktopRoutePage desktopRoutePage(DesktopRoutePageRef ref) {
+DesktopRoutePage desktopRoutePage(Ref ref) {
   final status = ref.watch(pageStatusNotifierProvider);
   final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
 
@@ -435,202 +328,294 @@ class DesktopRoutePage {
 
     (switch (status) {
       Status.walletLoading => await navigator.pushNamedAndRemoveUntil(
-          RouteName.first, (route) => false),
+        RouteName.first,
+        (route) => false,
+      ),
       Status.noWallet || Status.selectEnv => await navigator
           .pushNamedAndRemoveUntil(RouteName.noWallet, (route) => false),
       Status.reviewLicense => await navigator.pushNamedAndRemoveUntil(
-          RouteName.reviewLicense, (route) => false),
+        RouteName.reviewLicense,
+        (route) => false,
+      ),
       Status.importWallet => await navigator.pushNamedAndRemoveUntil(
-          RouteName.importWallet, (route) => false),
+        RouteName.importWallet,
+        (route) => false,
+      ),
       Status.importWalletError => await navigator.pushNamedAndRemoveUntil(
-          RouteName.importWalletError, (route) => false),
+        RouteName.importWalletError,
+        (route) => false,
+      ),
       Status.importWalletSuccess => () async {
-          ref.read(walletProvider).setImportWalletBiometricPrompt();
-          await navigator.pushNamedAndRemoveUntil(
-              RouteName.registered, (route) => false);
-        }(),
+        ref.read(walletProvider).setImportWalletBiometricPrompt();
+        await navigator.pushNamedAndRemoveUntil(
+          RouteName.registered,
+          (route) => false,
+        );
+      }(),
       Status.newWalletPinWelcome => await navigator.pushNamedAndRemoveUntil(
-          RouteName.newWalletPinWelcome, (route) => false),
+        RouteName.newWalletPinWelcome,
+        (route) => false,
+      ),
       Status.pinWelcome || Status.pinSetup => () async {
-          if (firstLaunchState == const FirstLaunchStateEmpty()) {
-            await navigator.pushNamedAndRemoveUntil(
-                RouteName.pinSetup, (route) => route.isFirst);
-            return;
-          }
-
+        if (firstLaunchState == const FirstLaunchStateEmpty()) {
           await navigator.pushNamedAndRemoveUntil(
-              RouteName.pinSetup, (route) => false);
-        }(),
+            RouteName.pinSetup,
+            (route) => route.isFirst,
+          );
+          return;
+        }
+
+        await navigator.pushNamedAndRemoveUntil(
+          RouteName.pinSetup,
+          (route) => false,
+        );
+      }(),
       Status.pinSuccess => () async {
-          if (firstLaunchState != const FirstLaunchStateEmpty()) {
-            await ref.read(walletProvider).walletBiometricSkip();
-            final firstLaunchState = ref.read(firstLaunchStateNotifierProvider);
+        if (firstLaunchState != const FirstLaunchStateEmpty()) {
+          await ref.read(walletProvider).walletBiometricSkip();
+          final firstLaunchState = ref.read(firstLaunchStateNotifierProvider);
 
-            return switch (firstLaunchState) {
-              FirstLaunchStateCreateWallet() =>
-                ref.read(walletProvider).newWalletBackupPrompt(),
-              _ => ref.read(walletProvider).setImportWalletBiometricPrompt(),
-            };
-          }
+          return switch (firstLaunchState) {
+            FirstLaunchStateCreateWallet() =>
+              ref.read(walletProvider).newWalletBackupPrompt(),
+            _ => ref.read(walletProvider).setImportWalletBiometricPrompt(),
+          };
+        }
 
-          await navigator.pushNamedAndRemoveUntil(
-              RouteName.pinSuccess, (route) => route.isFirst);
-        }(),
-      Status.importAvatar ||
-      Status.importAvatarSuccess ||
-      Status.associatePhoneWelcome ||
-      Status.confirmPhone ||
-      Status.confirmPhoneSuccess ||
-      Status.importContacts ||
-      Status.importContactsSuccess =>
-        await ref.read(walletProvider).newWalletBiometricPrompt(),
+        await navigator.pushNamedAndRemoveUntil(
+          RouteName.pinSuccess,
+          (route) => route.isFirst,
+        );
+      }(),
       Status.newWalletBackupPrompt => await navigator.pushNamedAndRemoveUntil(
-          RouteName.newWalletBackupPrompt, (route) => false),
+        RouteName.newWalletBackupPrompt,
+        (route) => false,
+      ),
       Status.newWalletBackupView => await navigator.pushNamedAndRemoveUntil(
-          RouteName.newWalletBackupView, (route) => false),
+        RouteName.newWalletBackupView,
+        (route) => false,
+      ),
       Status.newWalletBackupCheck => await navigator.pushNamedAndRemoveUntil(
-          RouteName.newWalletBackupCheck, (route) => false),
-      Status.newWalletBackupCheckFailed =>
-        await navigator.pushNamedAndRemoveUntil(
-            RouteName.newWalletBackupCheckFailed, (route) => false),
-      Status.newWalletBackupCheckSucceed =>
-        await navigator.pushNamedAndRemoveUntil(
-            RouteName.newWalletBackupCheckSucceed, (route) => false),
+        RouteName.newWalletBackupCheck,
+        (route) => false,
+      ),
+      Status.newWalletBackupCheckFailed => await navigator
+          .pushNamedAndRemoveUntil(
+            RouteName.newWalletBackupCheckFailed,
+            (route) => false,
+          ),
+      Status.newWalletBackupCheckSucceed => await navigator
+          .pushNamedAndRemoveUntil(
+            RouteName.newWalletBackupCheckSucceed,
+            (route) => false,
+          ),
       Status.registered => () async {
-          if (Navigator.canPop(context)) {
-            navigator.popUntil((route) => route.isFirst);
-            await navigator.pushReplacementNamed(RouteName.registered);
-          } else {
-            await navigator.pushReplacementNamed(RouteName.registered);
-          }
-        }(),
+        if (Navigator.canPop(context)) {
+          navigator.popUntil((route) => route.isFirst);
+          await navigator.pushReplacementNamed(RouteName.registered);
+        } else {
+          await navigator.pushReplacementNamed(RouteName.registered);
+        }
+      }(),
       Status.settingsPage => await navigator.pushNamedAndRemoveUntil(
-          RouteName.settingsPage, (route) => route.isFirst),
+        RouteName.settingsPage,
+        (route) => route.isFirst,
+      ),
       Status.settingsBackup => await navigator.pushNamedAndRemoveUntil(
-          RouteName.settingsBackup, (route) => route.isFirst),
+        RouteName.settingsBackup,
+        (route) => route.isFirst,
+      ),
       Status.settingsAboutUs => await navigator.pushNamedAndRemoveUntil(
-          RouteName.settingsAboutUs, (route) => route.isFirst),
+        RouteName.settingsAboutUs,
+        (route) => route.isFirst,
+      ),
       Status.settingsNetwork => await navigator.pushNamedAndRemoveUntil(
-          RouteName.settingsNetwork, (route) => route.isFirst),
+        RouteName.settingsNetwork,
+        (route) => route.isFirst,
+      ),
       Status.settingsLogs => await navigator.pushNamedAndRemoveUntil(
-          RouteName.settingsLogs, (route) => route.isFirst),
+        RouteName.settingsLogs,
+        (route) => route.isFirst,
+      ),
       Status.settingsCurrency => await navigator.pushNamedAndRemoveUntil(
-          RouteName.settingsFiat, (route) => route.isFirst),
+        RouteName.settingsFiat,
+        (route) => route.isFirst,
+      ),
       Status.ampRegister => await navigator.pushNamedAndRemoveUntil(
-          RouteName.ampRegister, (route) => route.isFirst),
+        RouteName.ampRegister,
+        (route) => route.isFirst,
+      ),
       Status.stokrLogin => await navigator.pushNamedAndRemoveUntil(
-          RouteName.stokrLogin, (route) => route.isFirst),
+        RouteName.stokrLogin,
+        (route) => route.isFirst,
+      ),
       Status.pegxRegister => await navigator.pushNamedAndRemoveUntil(
-          RouteName.pegxRegister, (route) => route.isFirst),
+        RouteName.pegxRegister,
+        (route) => route.isFirst,
+      ),
       Status.pegxSubmitAmp => await navigator.pushNamedAndRemoveUntil(
-          RouteName.pegxSubmitAmp, (route) => route.isFirst),
+        RouteName.pegxSubmitAmp,
+        (route) => route.isFirst,
+      ),
       Status.pegxSubmitFinish => await navigator.pushNamedAndRemoveUntil(
-          RouteName.pegxSubmitFinish, (route) => route.isFirst),
+        RouteName.pegxSubmitFinish,
+        (route) => route.isFirst,
+      ),
       Status.jadeImport => await navigator.pushNamedAndRemoveUntil(
-          RouteName.jadeImport, (route) => route.isFirst),
+        RouteName.jadeImport,
+        (route) => route.isFirst,
+      ),
       Status.stokrRestrictionsInfo => await navigator.pushNamedAndRemoveUntil(
-          RouteName.stokrRestrictionsInfo, (route) => route.isFirst),
+        RouteName.stokrRestrictionsInfo,
+        (route) => route.isFirst,
+      ),
       Status.stokrNeedRegister => await navigator.pushNamedAndRemoveUntil(
-          RouteName.stokrNeedRegister, (route) => route.isFirst),
+        RouteName.stokrNeedRegister,
+        (route) => route.isFirst,
+      ),
       Status.networkAccessOnboarding => await navigator.pushNamedAndRemoveUntil(
-          RouteName.networkAccessOnboarding, (route) => false),
+        RouteName.networkAccessOnboarding,
+        (route) => false,
+      ),
       _ => () {
-          logger.w('Unhandled $status');
-        }(),
+        logger.w('Unhandled $status');
+      }(),
     });
   }
 
   Route<Widget> generateRoute(RouteSettings settings) {
     return switch (settings.name) {
       RouteName.first => DesktopPageRoute<Widget>(
-          builder: (_) => const PreLaunchPage(), settings: settings),
+        builder: (_) => const PreLaunchPage(),
+        settings: settings,
+      ),
       RouteName.noWallet => DesktopPageRoute<Widget>(
-          builder: (_) => const DFirstLaunch(), settings: settings),
+        builder: (_) => const DFirstLaunch(),
+        settings: settings,
+      ),
       RouteName.reviewLicense => DesktopPageRoute<Widget>(
-          builder: (_) => const DLicense(), settings: settings),
+        builder: (_) => const DLicense(),
+        settings: settings,
+      ),
       RouteName.networkAccessOnboarding => DesktopPageRoute<Widget>(
-          builder: (_) => const DNetworkAccessOnboarding(), settings: settings),
+        builder: (_) => const DNetworkAccessOnboarding(),
+        settings: settings,
+      ),
       RouteName.importWallet => DesktopPageRoute<Widget>(
-          builder: (_) => const DWalletImport(), settings: settings),
+        builder: (_) => const DWalletImport(),
+        settings: settings,
+      ),
       RouteName.importWalletError => DesktopPageRoute<Widget>(
-          builder: (_) => const DImportWalletError(), settings: settings),
+        builder: (_) => const DImportWalletError(),
+        settings: settings,
+      ),
       RouteName.newWalletBackupPrompt => DesktopPageRoute(
-          builder: (_) => const DNewWalletBackupPrompt(), settings: settings),
+        builder: (_) => const DNewWalletBackupPrompt(),
+        settings: settings,
+      ),
       RouteName.newWalletBackupSkipPrompt => DesktopPageRoute(
-          builder: (_) => const DNewWalletBackupSkipPrompt(),
-          settings: settings),
+        builder: (_) => const DNewWalletBackupSkipPrompt(),
+        settings: settings,
+      ),
       RouteName.newWalletBackupView => DesktopPageRoute(
-          builder: (_) => const DNewWalletBackup(), settings: settings),
+        builder: (_) => const DNewWalletBackup(),
+        settings: settings,
+      ),
       RouteName.newWalletBackupCheck => DesktopPageRoute(
-          builder: (_) => const DNewWalletBackupCheck(), settings: settings),
+        builder: (_) => const DNewWalletBackupCheck(),
+        settings: settings,
+      ),
       RouteName.newWalletBackupCheckFailed => DesktopPageRoute(
-          builder: (_) => const DNewWalletBackupCheckFailed(),
-          settings: settings),
+        builder: (_) => const DNewWalletBackupCheckFailed(),
+        settings: settings,
+      ),
       RouteName.newWalletBackupCheckSucceed => DesktopPageRoute(
-          builder: (_) => const DNewWalletBackupCheckSucceed(),
-          settings: settings),
+        builder: (_) => const DNewWalletBackupCheckSucceed(),
+        settings: settings,
+      ),
       RouteName.newWalletPinWelcome => DesktopPageRoute(
-          builder: (_) => const NewWalletPinWelcome(), settings: settings),
+        builder: (_) => const NewWalletPinWelcome(),
+        settings: settings,
+      ),
       RouteName.pinSetup
           when firstLaunchState != const FirstLaunchStateEmpty() =>
         DesktopPageRoute(builder: (_) => const DPinSetup(), settings: settings),
       RouteName.pinSetup => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DPinSetup(), settings: settings),
+        pageBuilder: (_, __, ___) => const DPinSetup(),
+        settings: settings,
+      ),
       RouteName.registered => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DesktopWalletMain(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DesktopWalletMain(),
+        settings: settings,
+      ),
       RouteName.settingsPage => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettings(), settings: settings),
+        pageBuilder: (_, __, ___) => const DSettings(),
+        settings: settings,
+      ),
       RouteName.settingsBackup => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettingsViewBackup(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DSettingsViewBackup(),
+        settings: settings,
+      ),
       RouteName.settingsAboutUs => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettingsAboutUs(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DSettingsAboutUs(),
+        settings: settings,
+      ),
       RouteName.settingsLogs => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettingsLogs(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DSettingsLogs(),
+        settings: settings,
+      ),
       RouteName.pinSuccess => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettingsPinSuccess(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DSettingsPinSuccess(),
+        settings: settings,
+      ),
       RouteName.settingsNetwork => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettingsNetworkAccess(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DSettingsNetworkAccess(),
+        settings: settings,
+      ),
       RouteName.stokrLogin => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) =>
-              const DAmpLogin(ampLoginEnum: AmpLoginEnum.stokr),
-          settings: settings),
+        pageBuilder:
+            (_, __, ___) => const DAmpLogin(ampLoginEnum: AmpLoginEnum.stokr),
+        settings: settings,
+      ),
       RouteName.ampRegister => DesktopPageRoute<Widget>(
-          builder: (_) => const DAmpRegister(),
-          settings: settings,
-        ),
+        builder: (_) => const DAmpRegister(),
+        settings: settings,
+      ),
       RouteName.pegxRegister => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) =>
-              const DAmpLogin(ampLoginEnum: AmpLoginEnum.pegx),
-          settings: settings),
+        pageBuilder:
+            (_, __, ___) => const DAmpLogin(ampLoginEnum: AmpLoginEnum.pegx),
+        settings: settings,
+      ),
       RouteName.pegxSubmitAmp => RawDialogRoute(
-          pageBuilder: (_, __, ___) => const DPegxSubmitAmp(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DPegxSubmitAmp(),
+        settings: settings,
+      ),
       RouteName.pegxSubmitFinish => RawDialogRoute(
-          pageBuilder: (_, __, ___) => const DPegxSubmitFinishDialog(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DPegxSubmitFinishDialog(),
+        settings: settings,
+      ),
       RouteName.jadeImport => RawDialogRoute(
-          pageBuilder: (_, __, ___) => const DJadeImport(), settings: settings),
+        pageBuilder: (_, __, ___) => const DJadeImport(),
+        settings: settings,
+      ),
       RouteName.jadeInfoDialog => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DJadeInfoDialog(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DJadeInfoDialog(),
+        settings: settings,
+      ),
       RouteName.settingsFiat => RawDialogRoute<Widget>(
-          pageBuilder: (_, __, ___) => const DSettingsDefaultCurrency(),
-          settings: settings),
+        pageBuilder: (_, __, ___) => const DSettingsDefaultCurrency(),
+        settings: settings,
+      ),
       RouteName.stokrRestrictionsInfo => RawDialogRoute<Widget>(
-          barrierDismissible: false,
-          pageBuilder: (_, __, ___) =>
-              const DStokrCountryRestrictionsInfoPopup(),
-          settings: settings),
+        barrierDismissible: false,
+        pageBuilder: (_, __, ___) => const DStokrCountryRestrictionsInfoPopup(),
+        settings: settings,
+      ),
       RouteName.stokrNeedRegister => RawDialogRoute<Widget>(
-          barrierDismissible: false,
-          pageBuilder: (_, __, ___) => const DStokrNeedRegisterPopup(),
-          settings: settings),
+        barrierDismissible: false,
+        pageBuilder: (_, __, ___) => const DStokrNeedRegisterPopup(),
+        settings: settings,
+      ),
       _ => errorRoute(settings),
     };
   }
@@ -638,13 +623,12 @@ class DesktopRoutePage {
   Route<Widget> errorRoute(RouteSettings settings) {
     logger.e('Unhandled page status ${settings.name}');
     return DesktopPageRoute<Widget>(
-        builder: (_) {
-          return const SideSwapScaffoldPage(
-            content: Center(
-              child: Text('ERROR'),
-            ),
-          );
-        },
-        settings: settings);
+      builder: (_) {
+        return const SideSwapScaffoldPage(
+          content: Center(child: Text('ERROR')),
+        );
+      },
+      settings: settings,
+    );
   }
 }

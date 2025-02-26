@@ -8,18 +8,16 @@ import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/app_releases_provider.dart';
 
 class DownloadNewReleaseButton extends ConsumerWidget {
-  const DownloadNewReleaseButton({
-    super.key,
-    required this.yes,
-  });
+  const DownloadNewReleaseButton({super.key, required this.yes});
 
   final bool yes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .addressDetailsItemButtonStyle();
+    final buttonStyle =
+        ref
+            .watch(desktopAppThemeNotifierProvider)
+            .addressDetailsItemButtonStyle();
 
     return DButton(
       onPressed: () {
@@ -35,9 +33,7 @@ class DownloadNewReleaseButton extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 13),
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(6)),
-          border: Border.all(
-            color: SideSwapColors.brightTurquoise,
-          ),
+          border: Border.all(color: SideSwapColors.brightTurquoise),
         ),
         child: Text(
           yes ? 'Yes'.tr() : 'No'.tr(),

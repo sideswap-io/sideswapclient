@@ -4,14 +4,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 
-import 'package:sideswap/screens/wallet_main/widgets/requests_navigation_item_badge.dart';
 import 'package:sideswap/screens/wallet_main/widgets/sideswap_navigation_item.dart';
 
 class MainBottomNavigationBar extends ConsumerWidget {
-  const MainBottomNavigationBar({
-    super.key,
-    this.onTap,
-  });
+  const MainBottomNavigationBar({super.key, this.onTap});
 
   final ValueChanged<int>? onTap;
 
@@ -41,40 +37,44 @@ class MainBottomNavigationBar extends ConsumerWidget {
       items: [
         BottomNavigationBarItem(
           label: 'Home'.tr(),
-          icon: currentIndex == 0
-              ? const SideSwapNavigationItemIcon('assets/home_active.svg')
-              : const SideSwapNavigationItemIcon('assets/home.svg'),
+          icon:
+              currentIndex == 0
+                  ? const SideSwapNavigationItemIcon('assets/home_active.svg')
+                  : const SideSwapNavigationItemIcon('assets/home.svg'),
         ),
         BottomNavigationBarItem(
           label: 'Assets'.tr(),
-          icon: currentIndex == 1
-              ? const SideSwapNavigationItemIcon('assets/accounts_active.svg')
-              : const SideSwapNavigationItemIcon('assets/accounts.svg'),
+          icon:
+              currentIndex == 1
+                  ? const SideSwapNavigationItemIcon(
+                    'assets/accounts_active.svg',
+                  )
+                  : const SideSwapNavigationItemIcon('assets/accounts.svg'),
         ),
         BottomNavigationBarItem(
-            label: 'Markets'.tr(),
-            icon: currentIndex == 2
-                ? RequestsNavigationItemBadge(
-                    assetName: 'assets/requests_active.svg',
-                    backgroundColor: backgroundColor,
-                    itemColor: selectedItemColor,
+          label: 'Markets'.tr(),
+          icon:
+              currentIndex == 2
+                  ? const SideSwapNavigationItemIcon(
+                    'assets/requests_active.svg',
                   )
-                : RequestsNavigationItemBadge(
-                    assetName: 'assets/requests.svg',
-                    backgroundColor: backgroundColor,
-                    itemColor: unselectedItemColor,
-                  )),
+                  : const SideSwapNavigationItemIcon('assets/requests.svg'),
+        ),
         BottomNavigationBarItem(
           label: 'Instant Swap'.tr(),
-          icon: currentIndex == 3
-              ? const SideSwapNavigationItemIcon('assets/swap_active.svg')
-              : const SideSwapNavigationItemIcon('assets/swap.svg'),
+          icon:
+              currentIndex == 3
+                  ? const SideSwapNavigationItemIcon('assets/swap_active.svg')
+                  : const SideSwapNavigationItemIcon('assets/swap.svg'),
         ),
         BottomNavigationBarItem(
           label: 'Peg-In/Out'.tr(),
-          icon: currentIndex == 4
-              ? const SideSwapNavigationItemIcon('assets/peg-in-out_active.svg')
-              : const SideSwapNavigationItemIcon('assets/peg-in-out.svg'),
+          icon:
+              currentIndex == 4
+                  ? const SideSwapNavigationItemIcon(
+                    'assets/peg-in-out_active.svg',
+                  )
+                  : const SideSwapNavigationItemIcon('assets/peg-in-out.svg'),
         ),
       ],
       onTap: onTap,

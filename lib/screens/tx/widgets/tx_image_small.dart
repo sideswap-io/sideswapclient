@@ -10,28 +10,18 @@ String getPegImageAssetName(bool isPegIn) {
 }
 
 class TxImageSmall extends StatelessWidget {
-  const TxImageSmall({
-    super.key,
-    required this.assetName,
-  });
+  const TxImageSmall({super.key, required this.assetName});
 
   final String assetName;
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      assetName,
-      width: 24,
-      height: 24,
-    );
+    return SvgPicture.asset(assetName, width: 24, height: 24);
   }
 }
 
 class PegImageSmall extends StatelessWidget {
-  const PegImageSmall({
-    super.key,
-    required this.isPegIn,
-  });
+  const PegImageSmall({super.key, required this.isPegIn});
 
   final bool isPegIn;
 

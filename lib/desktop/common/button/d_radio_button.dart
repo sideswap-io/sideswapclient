@@ -32,11 +32,13 @@ class DRadioButton extends ConsumerWidget {
     super.debugFillProperties(properties);
     properties
       ..add(FlagProperty('checked', value: checked, ifFalse: 'unchecked'))
-      ..add(FlagProperty('disabled',
-          value: onChanged == null, ifFalse: 'enabled'))
+      ..add(
+        FlagProperty('disabled', value: onChanged == null, ifFalse: 'enabled'),
+      )
       ..add(ObjectFlagProperty.has('style', style))
       ..add(
-          FlagProperty('autofocus', value: autofocus, ifFalse: 'manual focus'))
+        FlagProperty('autofocus', value: autofocus, ifFalse: 'manual focus'),
+      )
       ..add(StringProperty('semanticLabel', semanticLabel));
   }
 
@@ -53,7 +55,8 @@ class DRadioButton extends ConsumerWidget {
       focusNode: focusNode,
       onPressed: onChanged == null ? null : () => onChanged!(!checked),
       builder: (context, state) {
-        final BoxDecoration decoration = (checked
+        final BoxDecoration decoration =
+            (checked
                 ? style.checkedDecoration?.resolve(state)
                 : style.uncheckedDecoration?.resolve(state)) ??
             const BoxDecoration(shape: BoxShape.circle);
@@ -78,11 +81,10 @@ class DRadioButton extends ConsumerWidget {
           ),
         );
         if (content != null) {
-          child = Row(mainAxisSize: MainAxisSize.min, children: [
-            child,
-            const SizedBox(width: 6.0),
-            content!,
-          ]);
+          child = Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [child, const SizedBox(width: 6.0), content!],
+          );
         }
         return Semantics(
           label: semanticLabel,
@@ -108,13 +110,15 @@ class DRadioButtonTheme extends InheritedTheme {
     required DRadioButtonThemeData data,
     required Widget child,
   }) {
-    return Builder(builder: (BuildContext context) {
-      return DRadioButtonTheme(
-        key: key,
-        data: _getInheritedThemeData(context).merge(data),
-        child: child,
-      );
-    });
+    return Builder(
+      builder: (BuildContext context) {
+        return DRadioButtonTheme(
+          key: key,
+          data: _getInheritedThemeData(context).merge(data),
+          child: child,
+        );
+      },
+    );
   }
 
   static DRadioButtonThemeData _getInheritedThemeData(BuildContext context) {
@@ -128,18 +132,18 @@ class DRadioButtonTheme extends InheritedTheme {
 
   static DRadioButtonThemeData of(BuildContext context) {
     final container = ProviderContainer();
-    final accentColor = container
-        .read(desktopAppThemeNotifierProvider)
-        .darkScheme
-        .primary
-        .toAccentColor();
+    final accentColor =
+        container
+            .read(desktopAppThemeNotifierProvider)
+            .darkScheme
+            .primary
+            .toAccentColor();
     final brightness =
         container.read(desktopAppThemeNotifierProvider).brightness;
     return DRadioButtonThemeData.standard(
-            accentColor: accentColor, brightness: brightness)
-        .merge(
-      _getInheritedThemeData(context),
-    );
+      accentColor: accentColor,
+      brightness: brightness,
+    ).merge(_getInheritedThemeData(context));
   }
 
   @override
@@ -162,14 +166,17 @@ class DRadioButtonThemeData with Diagnosticable {
     this.uncheckedDecoration,
   });
 
-  factory DRadioButtonThemeData.standard(
-      {AccentColor? accentColor, Brightness? brightness}) {
+  factory DRadioButtonThemeData.standard({
+    AccentColor? accentColor,
+    Brightness? brightness,
+  }) {
     final container = ProviderContainer();
-    final themeAccentColor = container
-        .read(desktopAppThemeNotifierProvider)
-        .darkScheme
-        .primary
-        .toAccentColor();
+    final themeAccentColor =
+        container
+            .read(desktopAppThemeNotifierProvider)
+            .darkScheme
+            .primary
+            .toAccentColor();
     final themeBrightness =
         container.read(desktopAppThemeNotifierProvider).brightness;
 
@@ -177,32 +184,36 @@ class DRadioButtonThemeData with Diagnosticable {
       checkedDecoration: ButtonState.resolveWith((states) {
         return BoxDecoration(
           border: Border.all(
-            color: !states.isDisabled
-                ? accentColor?.light ?? themeAccentColor.light
-                : brightness?.isLight ?? themeBrightness.isLight
+            color:
+                !states.isDisabled
+                    ? accentColor?.light ?? themeAccentColor.light
+                    : brightness?.isLight ?? themeBrightness.isLight
                     ? const Color.fromRGBO(0, 0, 0, 0.2169)
                     : const Color.fromRGBO(255, 255, 255, 0.1581),
-            width: !states.isDisabled
-                ? states.isHovering && !states.isPressing
-                    ? 3.4
-                    : 5.0
-                : 4.0,
+            width:
+                !states.isDisabled
+                    ? states.isHovering && !states.isPressing
+                        ? 3.4
+                        : 5.0
+                    : 4.0,
           ),
           shape: BoxShape.circle,
-          color: !states.isDisabled
-              ? brightness?.isLight ?? themeBrightness.isLight
-                  ? Colors.white
-                  : Colors.black
-              : brightness?.isLight ?? themeBrightness.isLight
+          color:
+              !states.isDisabled
+                  ? brightness?.isLight ?? themeBrightness.isLight
+                      ? Colors.white
+                      : Colors.black
+                  : brightness?.isLight ?? themeBrightness.isLight
                   ? Colors.white
                   : const Color.fromRGBO(255, 255, 255, 0.5302),
         );
       }),
       uncheckedDecoration: ButtonState.resolveWith((states) {
         final container = ProviderContainer();
-        final inactiveBackgroundColor = container
-            .read(desktopAppThemeNotifierProvider)
-            .inactiveBackgroundColor;
+        final inactiveBackgroundColor =
+            container
+                .read(desktopAppThemeNotifierProvider)
+                .inactiveBackgroundColor;
         final accentColor =
             container.read(desktopAppThemeNotifierProvider).darkScheme.primary;
         final borderInputColor =
@@ -212,18 +223,20 @@ class DRadioButtonThemeData with Diagnosticable {
 
         final backgroundColor = inactiveBackgroundColor;
         return BoxDecoration(
-          color: states.isPressing
-              ? backgroundColor
-              : states.isHovering
-                  ? backgroundColor.withOpacity(0.8)
-                  : backgroundColor.withOpacity(0.0),
+          color:
+              states.isPressing
+                  ? backgroundColor
+                  : states.isHovering
+                  ? backgroundColor.withValues(alpha: 0.8)
+                  : backgroundColor.withValues(alpha: 0.0),
           border: Border.all(
             width: states.isPressing ? 4.5 : 1,
-            color: !states.isDisabled
-                ? states.isPressing
-                    ? accentColor
-                    : borderInputColor
-                : brightness.isLight
+            color:
+                !states.isDisabled
+                    ? states.isPressing
+                        ? accentColor
+                        : borderInputColor
+                    : brightness.isLight
                     ? const Color.fromRGBO(0, 0, 0, 0.2169)
                     : const Color.fromRGBO(255, 255, 255, 0.1581),
           ),
@@ -234,12 +247,23 @@ class DRadioButtonThemeData with Diagnosticable {
   }
 
   static DRadioButtonThemeData lerp(
-      DRadioButtonThemeData? a, DRadioButtonThemeData? b, double t) {
+    DRadioButtonThemeData? a,
+    DRadioButtonThemeData? b,
+    double t,
+  ) {
     return DRadioButtonThemeData(
       checkedDecoration: ButtonState.lerp(
-          a?.checkedDecoration, b?.checkedDecoration, t, BoxDecoration.lerp),
-      uncheckedDecoration: ButtonState.lerp(a?.uncheckedDecoration,
-          b?.uncheckedDecoration, t, BoxDecoration.lerp),
+        a?.checkedDecoration,
+        b?.checkedDecoration,
+        t,
+        BoxDecoration.lerp,
+      ),
+      uncheckedDecoration: ButtonState.lerp(
+        a?.uncheckedDecoration,
+        b?.uncheckedDecoration,
+        t,
+        BoxDecoration.lerp,
+      ),
     );
   }
 
@@ -253,9 +277,17 @@ class DRadioButtonThemeData with Diagnosticable {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<ButtonState<BoxDecoration?>?>(
-        'checkedDecoration', checkedDecoration));
-    properties.add(DiagnosticsProperty<ButtonState<BoxDecoration?>?>(
-        'uncheckedDecoration', uncheckedDecoration));
+    properties.add(
+      DiagnosticsProperty<ButtonState<BoxDecoration?>?>(
+        'checkedDecoration',
+        checkedDecoration,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<ButtonState<BoxDecoration?>?>(
+        'uncheckedDecoration',
+        uncheckedDecoration,
+      ),
+    );
   }
 }

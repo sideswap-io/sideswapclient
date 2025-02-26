@@ -1,23 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 
 part 'locales_provider.g.dart';
 
 List<String> supportedLanguages() {
-  return [
-    'ar',
-    'en',
-    'es',
-    'pl',
-    'pt',
-    'ru',
-    'sv',
-    'ur',
-    'zh',
-  ];
+  return ['ar', 'en', 'es', 'pl', 'pt', 'ru', 'sv', 'ur', 'zh'];
 }
 
 String localeName(String lang) {
@@ -65,11 +56,18 @@ class LocalesNotifier extends _$LocalesNotifier {
       return;
     }
 
-    await context.setLocale(Locale(value));
+    final locale = Locale(value);
+    await context.setLocale(locale);
 
     // Workaround for https://github.com/aissat/easy_localization/issues/370
     Future.delayed(const Duration(milliseconds: 30), () {
-      state = context.locale.languageCode;
+      state = locale.languageCode;
     });
   }
 }
+
+/// Testing part
+
+class LocalesNotifierMock extends _$LocalesNotifier
+    with Mock
+    implements LocalesNotifier {}

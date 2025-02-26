@@ -12,7 +12,6 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
@@ -57,13 +56,9 @@ class PaymentPageSelectedAccountAssetNotifier
 }
 
 class PaymentAmountPageArguments {
-  PaymentAmountPageArguments({
-    this.result,
-    this.friend,
-  });
+  PaymentAmountPageArguments({this.result});
 
   QrCodeResult? result;
-  Friend? friend;
 }
 
 class PaymentAmountPage extends ConsumerWidget {
@@ -82,7 +77,7 @@ class PaymentAmountPage extends ConsumerWidget {
         },
       ),
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           ref.read(walletProvider).goBack();
         }
@@ -133,18 +128,18 @@ class PaymentAmountPageBody extends HookConsumerWidget {
     ref.listen(createTxStateNotifierProvider, (_, next) {
       (switch (next) {
         CreateTxStateCreated() => Future.microtask(() {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.paymentSend);
-          }),
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.paymentSend);
+        }),
         CreateTxStateError(errorMsg: final errorMsg) => () {
-            if (errorMsg != null) {
-              Future.microtask(() async {
-                await ref.read(utilsProvider).showErrorDialog(errorMsg);
-              });
-            }
-            return null;
-          }(),
+          if (errorMsg != null) {
+            Future.microtask(() async {
+              await ref.read(utilsProvider).showErrorDialog(errorMsg);
+            });
+          }
+          return null;
+        }(),
         _ => () {}(),
       });
     });
@@ -153,20 +148,23 @@ class PaymentAmountPageBody extends HookConsumerWidget {
     final tickerAmountController = useTextEditingController();
     final tickerAmountFocusNode = useFocusNode();
     final enabled = useState(false);
-    final friend = useState<Friend?>(null);
     final isMaxPressed = useState(false);
     final availableAssets = ref.watch(walletProvider).sendAssetsWithBalance();
-    final accountAsset =
-        ref.watch(paymentPageSelectedAccountAssetNotifierProvider);
+    final accountAsset = ref.watch(
+      paymentPageSelectedAccountAssetNotifierProvider,
+    );
 
     Future<void> validate(String value) async {
-      final accountAsset =
-          ref.read(paymentPageSelectedAccountAssetNotifierProvider);
+      final accountAsset = ref.read(
+        paymentPageSelectedAccountAssetNotifierProvider,
+      );
 
       if (value.isEmpty) {
-        Future.microtask(() => ref
-            .read(paymentInsufficientFundsNotifierProvider.notifier)
-            .setInsufficientFunds(false));
+        Future.microtask(
+          () => ref
+              .read(paymentInsufficientFundsNotifierProvider.notifier)
+              .setInsufficientFunds(false),
+        );
         enabled.value = false;
         amount.value = '0';
         return;
@@ -178,8 +176,14 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       final balance = ref.read(balancesNotifierProvider)[accountAsset];
       final newValue = value.replaceAll(' ', '');
       final newAmount = double.tryParse(newValue)?.toDouble();
-      final amountStr = ref.read(amountToStringProvider).amountToString(
-          AmountToStringParameters(amount: balance ?? 0, precision: precision));
+      final amountStr = ref
+          .read(amountToStringProvider)
+          .amountToString(
+            AmountToStringParameters(
+              amount: balance ?? 0,
+              precision: precision,
+            ),
+          );
       final realBalance = double.tryParse(amountStr);
 
       if (newAmount == null || realBalance == null) {
@@ -198,17 +202,21 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       if (newAmount <= realBalance) {
         enabled.value = true;
 
-        Future.microtask(() => ref
-            .read(paymentInsufficientFundsNotifierProvider.notifier)
-            .setInsufficientFunds(false));
+        Future.microtask(
+          () => ref
+              .read(paymentInsufficientFundsNotifierProvider.notifier)
+              .setInsufficientFunds(false),
+        );
         return;
       }
 
       enabled.value = false;
 
-      Future.microtask(() => ref
-          .read(paymentInsufficientFundsNotifierProvider.notifier)
-          .setInsufficientFunds(true));
+      Future.microtask(
+        () => ref
+            .read(paymentInsufficientFundsNotifierProvider.notifier)
+            .setInsufficientFunds(true),
+      );
     }
 
     final balances = ref.watch(balancesNotifierProvider);
@@ -228,15 +236,16 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       // https://github.com/Blockstream/green_android/issues/86
       final amountAsBtc =
           ref.read(paymentAmountPageArgumentsNotifierProvider).result?.amount ??
-              .0;
+          .0;
       final amountInSat = toIntAmount(amountAsBtc);
       final assetPrecision = ref
           .read(assetUtilsProvider)
           .getPrecisionForAssetId(assetId: accountAsset.assetId);
       final amountAsAsset = toFloat(amountInSat, precision: assetPrecision);
-      amount.value = amountAsAsset == 0
-          ? ""
-          : amountAsAsset.toStringAsFixed(assetPrecision);
+      amount.value =
+          amountAsAsset == 0
+              ? ""
+              : amountAsAsset.toStringAsFixed(assetPrecision);
 
       if (!availableAssets.contains(accountAsset)) {
         availableAssets.add(accountAsset);
@@ -247,9 +256,11 @@ class PaymentAmountPageBody extends HookConsumerWidget {
         tickerAmountController.text = amount.value;
       }
 
-      Future.microtask(() => ref
-          .read(paymentInsufficientFundsNotifierProvider.notifier)
-          .setInsufficientFunds(false));
+      Future.microtask(
+        () => ref
+            .read(paymentInsufficientFundsNotifierProvider.notifier)
+            .setInsufficientFunds(false),
+      );
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         FocusScope.of(context).requestFocus(tickerAmountFocusNode);
@@ -303,15 +314,14 @@ class PaymentAmountPageBody extends HookConsumerWidget {
             children: [
               Consumer(
                 builder: (context, watch, _) {
-                  final paymentAmountPageArguments =
-                      ref.watch(paymentAmountPageArgumentsNotifierProvider);
-                  final friend = paymentAmountPageArguments.friend;
+                  final paymentAmountPageArguments = ref.watch(
+                    paymentAmountPageArgumentsNotifierProvider,
+                  );
                   final address = paymentAmountPageArguments.result?.address;
 
                   return PaymentAmountReceiverField(
                     text: address ?? '',
                     labelStyle: labelStyle,
-                    friend: friend,
                   );
                 },
               ),
@@ -319,41 +329,47 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                 padding: const EdgeInsets.only(top: 24),
                 child: Consumer(
                   builder: (context, watch, _) {
-                    final showError =
-                        ref.watch(paymentInsufficientFundsNotifierProvider);
+                    final showError = ref.watch(
+                      paymentInsufficientFundsNotifierProvider,
+                    );
                     final newAmount = double.tryParse(amount.value) ?? 0;
                     final defaultCurrencyAmount = ref.watch(
-                        amountUsdInDefaultCurrencyProvider(
-                            accountAsset.assetId, newAmount));
-                    final defaultCurrencyTicker =
-                        ref.watch(defaultCurrencyTickerProvider);
-                    var defaultCurrencyConversion =
-                        defaultCurrencyAmount.toStringAsFixed(2);
-                    final visibleConversion = ref
-                        .watch(walletProvider)
-                        .isAmountUsdAvailable(accountAsset.assetId);
+                      amountUsdInDefaultCurrencyProvider(
+                        accountAsset.assetId,
+                        newAmount,
+                      ),
+                    );
+                    final defaultCurrencyTicker = ref.watch(
+                      defaultCurrencyTickerProvider,
+                    );
+                    var defaultCurrencyConversion = defaultCurrencyAmount
+                        .toStringAsFixed(2);
+                    final visibleConversion = ref.watch(
+                      isAmountUsdAvailableProvider(accountAsset.assetId),
+                    );
                     defaultCurrencyConversion = replaceCharacterOnPosition(
-                        input: defaultCurrencyConversion,
-                        currencyChar: defaultCurrencyTicker);
+                      input: defaultCurrencyConversion,
+                      currencyChar: defaultCurrencyTicker,
+                    );
                     final isAmp = accountAsset.account.isAmp;
                     return Column(
                       children: [
                         ...switch (showError) {
                           true => [
-                              Row(
-                                children: [
-                                  ...switch (visibleConversion) {
-                                    true => [
-                                        Text(
-                                          '≈ $defaultCurrencyConversion',
-                                          style: approximateStyle,
-                                        ),
-                                      ],
-                                    _ => [const SizedBox()],
-                                  },
-                                ],
-                              )
-                            ],
+                            Row(
+                              children: [
+                                ...switch (visibleConversion) {
+                                  true => [
+                                    Text(
+                                      '≈ $defaultCurrencyConversion',
+                                      style: approximateStyle,
+                                    ),
+                                  ],
+                                  _ => [const SizedBox()],
+                                },
+                              ],
+                            ),
+                          ],
                           _ => [const SizedBox()],
                         },
                         Row(
@@ -361,34 +377,31 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Text(
-                                  'Send'.tr(),
-                                  style: labelStyle,
-                                ),
+                                Text('Send'.tr(), style: labelStyle),
                                 const SizedBox(width: 4, height: 24),
-                                if (isAmp) const AmpFlag()
+                                if (isAmp) const AmpFlag(),
                               ],
                             ),
                             ...switch (showError) {
                               true => [
-                                  Text(
-                                    'Insufficient funds'.tr(),
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: SideSwapColors.bitterSweet,
-                                    ),
+                                Text(
+                                  'Insufficient funds'.tr(),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                    color: SideSwapColors.bitterSweet,
                                   ),
-                                ],
+                                ),
+                              ],
                               _ => [
-                                  switch (visibleConversion) {
-                                    true => Text(
-                                        '≈ $defaultCurrencyConversion',
-                                        style: approximateStyle,
-                                      ),
-                                    _ => const SizedBox(),
-                                  }
-                                ],
+                                switch (visibleConversion) {
+                                  true => Text(
+                                    '≈ $defaultCurrencyConversion',
+                                    style: approximateStyle,
+                                  ),
+                                  _ => const SizedBox(),
+                                },
+                              ],
                             },
                           ],
                         ),
@@ -410,8 +423,10 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                   },
                   onDropdownChanged: (value) {
                     ref
-                        .read(paymentPageSelectedAccountAssetNotifierProvider
-                            .notifier)
+                        .read(
+                          paymentPageSelectedAccountAssetNotifierProvider
+                              .notifier,
+                        )
                         .setSelectedAccountAsset(value);
                     tickerAmountController.text = '';
                   },
@@ -426,14 +441,18 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                       builder: (context, ref, _) {
                         final balance =
                             ref.watch(balancesNotifierProvider)[accountAsset] ??
-                                0;
+                            0;
                         final precision = ref
                             .watch(assetUtilsProvider)
                             .getPrecisionForAssetId(
-                                assetId: accountAsset.assetId);
+                              assetId: accountAsset.assetId,
+                            );
                         final balanceStr = amountProvider.amountToString(
-                            AmountToStringParameters(
-                                amount: balance, precision: precision));
+                          AmountToStringParameters(
+                            amount: balance,
+                            precision: precision,
+                          ),
+                        );
                         return Text(
                           'Balance: {}'.tr(args: [balanceStr]),
                           style: approximateStyle,
@@ -456,31 +475,37 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                           final precision = ref
                               .read(assetUtilsProvider)
                               .getPrecisionForAssetId(
-                                  assetId: accountAsset.assetId);
-                          final balance = ref.read(
-                                  balancesNotifierProvider)[accountAsset] ??
+                                assetId: accountAsset.assetId,
+                              );
+                          final balance =
+                              ref.read(
+                                balancesNotifierProvider,
+                              )[accountAsset] ??
                               0;
                           final text = amountProvider.amountToString(
-                              AmountToStringParameters(
-                                  amount: balance, precision: precision));
-
-                          tickerAmountController.value =
-                              tickerAmountController.value.copyWith(
-                            text: text,
-                            selection: TextSelection(
-                                baseOffset: text.length,
-                                extentOffset: text.length),
-                            composing: TextRange.empty,
+                            AmountToStringParameters(
+                              amount: balance,
+                              precision: precision,
+                            ),
                           );
+
+                          tickerAmountController.value = tickerAmountController
+                              .value
+                              .copyWith(
+                                text: text,
+                                selection: TextSelection(
+                                  baseOffset: text.length,
+                                  extentOffset: text.length,
+                                ),
+                                composing: TextRange.empty,
+                              );
 
                           isMaxPressed.value = true;
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(8),
-                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
                           ),
                         ),
                         child: const Text(
@@ -501,32 +526,39 @@ class PaymentAmountPageBody extends HookConsumerWidget {
         ),
         const Spacer(),
         Padding(
-          padding:
-              const EdgeInsets.only(top: 36, bottom: 24, left: 16, right: 16),
-          child: Consumer(builder: (context, ref, _) {
-            final paymentHelper = ref.watch(paymentHelperProvider);
+          padding: const EdgeInsets.only(
+            top: 36,
+            bottom: 24,
+            left: 16,
+            right: 16,
+          ),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final paymentHelper = ref.watch(paymentHelperProvider);
 
-            return CustomBigButton(
-              width: double.infinity,
-              height: 54,
-              backgroundColor: SideSwapColors.brightTurquoise,
-              text: 'CONTINUE'.tr(),
-              enabled: enabled.value,
-              onPressed: enabled.value
-                  ? () {
-                      final paymentAmountPageArguments =
-                          ref.read(paymentAmountPageArgumentsNotifierProvider);
-                      paymentHelper.selectPaymentSend(
-                        amount.value,
-                        accountAsset,
-                        address: paymentAmountPageArguments.result?.address,
-                        friend: friend.value,
-                        isGreedy: isMaxPressed.value,
-                      );
-                    }
-                  : null,
-            );
-          }),
+              return CustomBigButton(
+                width: double.infinity,
+                height: 54,
+                backgroundColor: SideSwapColors.brightTurquoise,
+                text: 'CONTINUE'.tr(),
+                enabled: enabled.value,
+                onPressed:
+                    enabled.value
+                        ? () {
+                          final paymentAmountPageArguments = ref.read(
+                            paymentAmountPageArgumentsNotifierProvider,
+                          );
+                          paymentHelper.selectPaymentSend(
+                            amount.value,
+                            accountAsset,
+                            address: paymentAmountPageArguments.result?.address,
+                            isGreedy: isMaxPressed.value,
+                          );
+                        }
+                        : null,
+              );
+            },
+          ),
         ),
       ],
     );

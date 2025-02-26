@@ -36,9 +36,7 @@ class SettingsCheckboxButtonState extends State<SettingsCheckboxButton> {
           backgroundColor: SideSwapColors.chathamsBlue,
           padding: EdgeInsets.zero,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           side: const BorderSide(
             color: SideSwapColors.chathamsBlue,

@@ -7,11 +7,12 @@ import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
-import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/satoshi_providers.dart';
 
 part 'outputs_providers.freezed.dart';
 part 'outputs_providers.g.dart';
@@ -72,37 +73,38 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
 
       return switch (json) {
         {'type': String type} when type != 'sideswap_app' => () {
-            state =
-                Left(OutputsErrorWrongTypeOfFile('Wrong type of file'.tr()));
-            return false;
-          }(),
+          state = Left(OutputsErrorWrongTypeOfFile('Wrong type of file'.tr()));
+          return false;
+        }(),
         {'version': String version} when version != '2' => () {
-            state = Left(
-                OutputsErrorWrongVersionOfFile('Wrong version of file'.tr()));
-            return false;
-          }(),
+          state = Left(
+            OutputsErrorWrongVersionOfFile('Wrong version of file'.tr()),
+          );
+          return false;
+        }(),
         {'type': 'sideswap_app', 'version': '2'} => () {
-            try {
-              final outputsData = OutputsData.fromJson(json);
-              state = Right(outputsData);
-              return true;
-            } catch (e) {
-              logger.e(e);
-              state = Left(
-                  OutputsErrorFileStructureError('File structure error'.tr()));
-            }
-            return false;
-          }(),
+          try {
+            final outputsData = OutputsData.fromJson(json);
+            state = Right(outputsData);
+            return true;
+          } catch (e) {
+            logger.e(e);
+            state = Left(
+              OutputsErrorFileStructureError('File structure error'.tr()),
+            );
+          }
+          return false;
+        }(),
         _ => () {
-            state =
-                Left(OutputsErrorWrongTypeOfFile('Wrong type of file'.tr()));
-            return false;
-          }(),
+          state = Left(OutputsErrorWrongTypeOfFile('Wrong type of file'.tr()));
+          return false;
+        }(),
       };
     } catch (e) {
       logger.e(e);
-      state =
-          Left(OutputsErrorJsonFileSyntaxError('Json file syntax error'.tr()));
+      state = Left(
+        OutputsErrorJsonFileSyntaxError('Json file syntax error'.tr()),
+      );
     }
 
     return false;
@@ -118,8 +120,9 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
       return decodeJsonString(fileString);
     } catch (e) {
       logger.e(e);
-      state =
-          Left(OutputsErrorOperationCancelled('Operation cancelled: $e'.tr()));
+      state = Left(
+        OutputsErrorOperationCancelled('Operation cancelled: $e'.tr()),
+      );
     }
 
     return false;
@@ -133,31 +136,34 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
   }) {
     if (assetId.isEmpty || address.isEmpty || satoshi == 0) {
       logger.w(
-          'Inserting invalid output receiver arguments. AssetId: $assetId, address: $address, satoshi $satoshi');
+        'Inserting invalid output receiver arguments. AssetId: $assetId, address: $address, satoshi $satoshi',
+      );
       return;
     }
 
     final currentOutputs = switch (state) {
       Left<OutputsError, OutputsData>() => OutputsData(
-          type: 'sideswap_app',
-          version: '2',
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-          receivers: [],
-        ),
+        type: 'sideswap_app',
+        version: '2',
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+        receivers: [],
+      ),
       Right<OutputsError, OutputsData>(value: final r) => r,
     };
 
-    final newOutputs = currentOutputs.copyWith(receivers: [
-      ...currentOutputs.receivers ?? [],
-      ...[
-        OutputsReceiver(
-          address: address,
-          assetId: assetId,
-          satoshi: satoshi,
-          account: account,
-        )
-      ]
-    ]);
+    final newOutputs = currentOutputs.copyWith(
+      receivers: [
+        ...currentOutputs.receivers ?? [],
+        ...[
+          OutputsReceiver(
+            address: address,
+            assetId: assetId,
+            satoshi: satoshi,
+            account: account,
+          ),
+        ],
+      ],
+    );
 
     state = Right(newOutputs);
   }
@@ -184,54 +190,59 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class OutputsCreator extends _$OutputsCreator {
   @override
   Either<OutputsError, OutputsData> build() {
-    ref.keepAlive();
-    final selectedAccountAsset =
-        ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
+    final selectedAccountAsset = ref.watch(
+      sendPopupSelectedAccountAssetNotifierProvider,
+    );
     final sendPopupAmount = ref.watch(sendPopupAmountNotifierProvider);
     final address = ref.watch(sendPopupAddressNotifierProvider);
     final outputsData = ref.watch(outputsReaderNotifierProvider);
     final assetId = selectedAccountAsset.assetId ?? '';
-    final satoshi = ref.watch(
-        satoshiForAmountProvider(amount: sendPopupAmount, assetId: assetId));
+    final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+    final satoshi = satoshiRepository.satoshiForAmount(
+      amount: sendPopupAmount,
+      assetId: assetId,
+    );
 
     return switch (outputsData) {
       Left(value: final _)
           when satoshi == 0 || assetId.isEmpty || address.isEmpty =>
         () {
           return const Left<OutputsError, OutputsData>(
-              OutputsErrorRequiredDataIsEmpty());
+            OutputsErrorRequiredDataIsEmpty(),
+          );
         }(),
       Left(value: final _) => () {
-          return Right<OutputsError, OutputsData>(OutputsData(
-              type: 'sideswap_app',
-              version: '2',
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-              receivers: [
-                OutputsReceiver(
-                  address: address,
-                  assetId: assetId,
-                  satoshi: satoshi,
-                  account: selectedAccountAsset.account.id,
-                ),
-              ]));
-        }(),
-      Right(value: final value) => () {
-          final receivers = [
-            ...value.receivers ?? <OutputsReceiver>[],
-          ];
-
-          final outputs = OutputsData(
+        return Right<OutputsError, OutputsData>(
+          OutputsData(
             type: 'sideswap_app',
             version: '2',
             timestamp: DateTime.now().millisecondsSinceEpoch,
-            receivers: receivers,
-          );
-          return Right<OutputsError, OutputsData>(outputs);
-        }(),
+            receivers: [
+              OutputsReceiver(
+                address: address,
+                assetId: assetId,
+                satoshi: satoshi,
+                account: selectedAccountAsset.account.id,
+              ),
+            ],
+          ),
+        );
+      }(),
+      Right(value: final value) => () {
+        final receivers = [...value.receivers ?? <OutputsReceiver>[]];
+
+        final outputs = OutputsData(
+          type: 'sideswap_app',
+          version: '2',
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+          receivers: receivers,
+        );
+        return Right<OutputsError, OutputsData>(outputs);
+      }(),
     };
   }
 
@@ -252,7 +263,9 @@ class OutputsCreator extends _$OutputsCreator {
 
     final directory = await getApplicationDocumentsDirectory();
     final result = await getSaveLocation(
-        suggestedName: fileName, initialDirectory: directory.path);
+      suggestedName: fileName,
+      initialDirectory: directory.path,
+    );
     if (result == null) {
       // Operation was canceled by the user.
       return false;
@@ -262,8 +275,11 @@ class OutputsCreator extends _$OutputsCreator {
 
     final Uint8List fileData = Uint8List.fromList(outputData.codeUnits);
     const String mimeType = 'text/plain';
-    final XFile textFile =
-        XFile.fromData(fileData, mimeType: mimeType, name: fileName);
+    final XFile textFile = XFile.fromData(
+      fileData,
+      mimeType: mimeType,
+      name: fileName,
+    );
     await textFile.saveTo(result.path);
     return true;
   }
@@ -288,7 +304,7 @@ sealed class OutputsError with _$OutputsError {
 }
 
 @riverpod
-int outputsDataLength(OutputsDataLengthRef ref) {
+int outputsDataLength(Ref ref) {
   final eitherOutputsData = ref.watch(outputsCreatorProvider);
   final outputsData = eitherOutputsData.toOption().toNullable();
   return outputsData?.receivers?.length ?? 0;

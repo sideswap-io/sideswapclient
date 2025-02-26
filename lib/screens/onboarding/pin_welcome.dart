@@ -9,11 +9,7 @@ import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class PinWelcome extends StatelessWidget {
-  const PinWelcome({
-    super.key,
-    this.onYesPressed,
-    this.onNoPressed,
-  });
+  const PinWelcome({super.key, this.onYesPressed, this.onNoPressed});
 
   final VoidCallback? onYesPressed;
   final VoidCallback? onNoPressed;
@@ -46,11 +42,7 @@ class PinWelcome extends StatelessWidget {
 }
 
 class PinWelcomeBody extends ConsumerWidget {
-  const PinWelcomeBody({
-    super.key,
-    this.onYesPressed,
-    this.onNoPressed,
-  });
+  const PinWelcomeBody({super.key, this.onYesPressed, this.onNoPressed});
 
   final VoidCallback? onYesPressed;
   final VoidCallback? onNoPressed;
@@ -100,7 +92,8 @@ class PinWelcomeBody extends ConsumerWidget {
               height: 54,
               backgroundColor: SideSwapColors.brightTurquoise,
               text: 'YES'.tr(),
-              onPressed: onYesPressed ??
+              onPressed:
+                  onYesPressed ??
                   () {
                     ref.read(pinHelperProvider).initPinSetupPinWelcome();
                   },
@@ -113,7 +106,8 @@ class PinWelcomeBody extends ConsumerWidget {
                 backgroundColor: Colors.transparent,
                 text: 'NOT NOW'.tr(),
                 textColor: SideSwapColors.brightTurquoise,
-                onPressed: onNoPressed ??
+                onPressed:
+                    onNoPressed ??
                     () async {
                       await ref
                           .read(walletProvider)

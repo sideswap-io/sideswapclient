@@ -73,35 +73,6 @@
   },
   {
     "always_show": true,
-    "asset_id": "f159c35d9bfe57ea6b9829cb84744d1e5f470417ec03fb26a75f714b36e196ad",
-    "contract": {
-      "entity": {
-        "domain": "testnet.pegx.io"
-      },
-      "issuer_pubkey": "0231dccbb40cc56deed701c7513df66e3de81ddaa96dd2f6f81708ef76530bd987",
-      "name": "Yuso BV",
-      "precision": 0,
-      "ticker": "YUSO",
-      "version": 0
-    },
-    "domain": "testnet.pegx.io",
-    "domain_agent": "testnet.pegx.io",
-    "domain_agent_link": "https://testnet.pegx.io",
-    "icon": null,
-    "icon_url": "https://api-testnet.sideswap.io/assets/icons/f159c35d9bfe57ea6b9829cb84744d1e5f470417ec03fb26a75f714b36e196ad.png",
-    "instant_swaps": false,
-    "issuance_prevout": {
-      "txid": "ed18d476ba63f9a75872522ac762557efacf4ae947244a15369aa7d470eb3d71",
-      "vout": 0
-    },
-    "issuer_pubkey": "0231dccbb40cc56deed701c7513df66e3de81ddaa96dd2f6f81708ef76530bd987",
-    "market_type": "Amp",
-    "name": "Yuso BV",
-    "precision": 0,
-    "ticker": "YUSO"
-  },
-  {
-    "always_show": true,
     "asset_id": "1f9f9319beeded3aa3751190ec9b2d77df570c3b9e6e84a4aa321c11331e0118",
     "contract": {
       "entity": {

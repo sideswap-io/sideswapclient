@@ -6,9 +6,7 @@ import 'package:sideswap/desktop/onboarding/widgets/d_amp_login_dialog_bottom_pa
 import 'package:sideswap/screens/onboarding/widgets/stokr_login_panels.dart';
 
 class DStokrLoginDialogBody extends StatelessWidget {
-  const DStokrLoginDialogBody({
-    super.key,
-  });
+  const DStokrLoginDialogBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +28,7 @@ class DStokrLoginDialogBody extends StatelessWidget {
                     onPressed: () {
                       openUrl('https://stokr.io/signup');
                     },
-                    child: Text(
-                      'OPEN IN BROWSER'.tr(),
-                    ),
+                    child: Text('OPEN IN BROWSER'.tr()),
                   ),
                 ),
               ],
@@ -44,7 +40,7 @@ class DStokrLoginDialogBody extends StatelessWidget {
               url: 'https://stokr.io',
               urlText: 'stokr.io',
             ),
-          )
+          ),
         ],
       ),
     );

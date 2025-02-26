@@ -29,20 +29,20 @@ class SettingsLicenses extends HookConsumerWidget {
         for (var license in value) {
           var tempSubWidget = <Widget>[];
 
-          if (newLicenseContent
-              .containsKey(license.licenseEntry.packages.join(', '))) {
+          if (newLicenseContent.containsKey(
+            license.licenseEntry.packages.join(', '),
+          )) {
             tempSubWidget =
                 newLicenseContent[license.licenseEntry.packages.join(', ')] ??
-                    [];
+                [];
           }
 
-          tempSubWidget.add(const Padding(
-            padding: EdgeInsets.symmetric(vertical: 18.0),
-            child: Text(
-              '\u2618',
-              textAlign: TextAlign.center,
+          tempSubWidget.add(
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18.0),
+              child: Text('\u2618', textAlign: TextAlign.center),
             ),
-          ));
+          );
 
           for (var paragraph in license.paragraphs) {
             if (paragraph.indent == LicenseParagraph.centeredIndent) {
@@ -63,10 +63,10 @@ class SettingsLicenses extends HookConsumerWidget {
               tempSubWidget.add(
                 Padding(
                   padding: EdgeInsetsDirectional.only(
-                      top: 8.0, start: 16.0 * paragraph.indent),
-                  child: Text(
-                    paragraph.text,
+                    top: 8.0,
+                    start: 16.0 * paragraph.indent,
                   ),
+                  child: Text(paragraph.text),
                 ),
               );
             }
@@ -90,29 +90,19 @@ class SettingsLicenses extends HookConsumerWidget {
           }
 
           final widget = Theme(
-            data: ThemeData().copyWith(
-              dividerColor: Colors.transparent,
-            ),
+            data: ThemeData().copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               collapsedIconColor: Colors.white,
               childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
               title: Text(
                 packageName,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
                 'licenses'.plural(count),
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
-              children: value != null
-                  ? <Widget>[
-                      ...value,
-                    ]
-                  : [],
+              children: value != null ? <Widget>[...value] : [],
             ),
           );
 
@@ -132,7 +122,7 @@ class SettingsLicenses extends HookConsumerWidget {
 
     return SideSwapScaffold(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           Navigator.of(context).pop();
         }
@@ -144,90 +134,91 @@ class SettingsLicenses extends HookConsumerWidget {
       ),
       body: SafeArea(
         child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: constraints.maxWidth,
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
-                child: Center(
-                  child: Column(
-                    children: [
-                      const Text(
-                        'SideSwap',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          'VERSION: {}'.tr(args: [appVersion]),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white,
+          builder:
+              (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: constraints.maxWidth,
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Text(
+                            'SideSwap',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          'Copyright © 2021 SideSwap',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white.withOpacity(0.6),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              'VERSION: {}'.tr(args: [appVersion]),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(
-                          height: 100,
-                          child: ValueListenableBuilder(
-                            valueListenable: licenses,
-                            builder: (context, value, child) {
-                              if (value.isEmpty) {
-                                return const Padding(
-                                  padding: EdgeInsets.only(top: 16),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 32),
-                                      child: SpinKitThreeBounce(
-                                        color: Colors.white,
-                                        size: 24,
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              'Copyright © 2021 SideSwap',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: SizedBox(
+                              height: 100,
+                              child: ValueListenableBuilder(
+                                valueListenable: licenses,
+                                builder: (context, value, child) {
+                                  if (value.isEmpty) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 16),
+                                      child: Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(top: 32),
+                                          child: SpinKitThreeBounce(
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                );
-                              }
+                                    );
+                                  }
 
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: ListView.separated(
-                                  itemCount: value.length,
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(
-                                    color: SideSwapColors.chathamsBlue,
-                                  ),
-                                  itemBuilder: (context, index) {
-                                    return value.elementAt(index);
-                                  },
-                                ),
-                              );
-                            },
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 16),
+                                    child: ListView.separated(
+                                      itemCount: value.length,
+                                      separatorBuilder:
+                                          (context, index) => const Divider(
+                                            color: SideSwapColors.chathamsBlue,
+                                          ),
+                                      itemBuilder: (context, index) {
+                                        return value.elementAt(index);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
         ),
       ),
     );

@@ -5,6 +5,7 @@ use elements::pset::PartiallySignedTransaction;
 use sideswap_api::mkt::AssetPair;
 use sideswap_api::{AssetBlindingFactor, ValueBlindingFactor};
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
+use sideswap_common::dealer_ticker::{TickerLoader, WhitelistedAssets};
 use sideswap_dealer::{market, price_stream};
 
 #[derive(Debug, serde::Deserialize)]
@@ -17,6 +18,7 @@ struct Settings {
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
     price_stream: sideswap_common::price_stream::Markets,
+    whitelisted_assets: Option<WhitelistedAssets>,
 }
 
 struct Data {
@@ -24,6 +26,7 @@ struct Data {
     market_command_sender: UncheckedUnboundedSender<market::Command>,
     sync_utxos: bool,
     price_stream: price_stream::Data,
+    ticker_loader: Arc<TickerLoader>,
 }
 
 async fn sign_swap(
@@ -144,7 +147,7 @@ async fn sync_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
 async fn process_timer(data: &mut Data) {
     data.market_command_sender
         .send(market::Command::AutomaticOrders {
-            orders: data.price_stream.market_prices(),
+            orders: data.price_stream.market_prices(&data.ticker_loader),
         });
 
     if data.sync_utxos {
@@ -182,6 +185,16 @@ async fn main() {
 
     sideswap_common::panic_handler::install_panic_handler();
 
+    let ticker_loader = Arc::new(
+        TickerLoader::load(
+            &settings.work_dir,
+            settings.whitelisted_assets.as_ref(),
+            settings.env.d().network,
+        )
+        .await
+        .expect("must not fail"),
+    );
+
     let network = settings.env.d().network;
 
     let (wallet, mut wallet_events) = sideswap_amp::Wallet::new(settings.mnemonic.clone(), network);
@@ -193,16 +206,22 @@ async fn main() {
         work_dir: settings.work_dir.clone(),
         web_server: settings.web_server.clone(),
         ws_server: settings.ws_server.clone(),
+        ticker_loader: Arc::clone(&ticker_loader),
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
-    let price_stream = price_stream::Data::new(settings.env, settings.price_stream.clone());
+    let price_stream = price_stream::Data::new(
+        settings.env,
+        settings.price_stream.clone(),
+        Arc::clone(&ticker_loader),
+    );
 
     let mut data = Data {
         wallet: Arc::new(wallet),
         market_command_sender: market_command_sender.into(),
         sync_utxos: false,
         price_stream,
+        ticker_loader,
     };
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));

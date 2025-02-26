@@ -22,7 +22,7 @@ enum PinKeyEnum {
 }
 
 @riverpod
-PinKeyboardHelper pinKeyboardHelper(PinKeyboardHelperRef ref) {
+PinKeyboardHelper pinKeyboardHelper(Ref ref) {
   return PinKeyboardHelper(ref: ref);
 }
 

@@ -45,9 +45,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
               border: ButtonState.all(BorderSide.none),
               shape: ButtonState.all(
                 const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(8),
-                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
                 ),
               ),
               backgroundColor: ButtonState.resolveWith((states) {
@@ -74,9 +72,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
               width: 44,
               height: 44,
             ),
-            const SizedBox(
-              height: 8,
-            ),
+            const SizedBox(height: 8),
             Text(
               title,
               textAlign: TextAlign.center,
@@ -86,9 +82,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(
-              height: 2,
-            ),
+            const SizedBox(height: 2),
             Text(
               subTitle,
               textAlign: TextAlign.center,
@@ -98,9 +92,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            const SizedBox(
-              height: 8,
-            ),
+            const SizedBox(height: 8),
             const Spacer(),
             Text(
               message,

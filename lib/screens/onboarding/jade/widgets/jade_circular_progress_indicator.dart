@@ -3,10 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 class JadeCircularProgressIndicator extends StatelessWidget {
-  const JadeCircularProgressIndicator({
-    super.key,
-    this.showLogo = false,
-  });
+  const JadeCircularProgressIndicator({super.key, this.showLogo = false});
 
   final bool showLogo;
 
@@ -28,16 +25,16 @@ class JadeCircularProgressIndicator extends StatelessWidget {
           ),
           ...switch (showLogo) {
             true => [
-                Center(
-                  child: SvgPicture.asset(
-                    'assets/jade.svg',
-                    width: 24,
-                    height: 24,
-                  ),
-                )
-              ],
+              Center(
+                child: SvgPicture.asset(
+                  'assets/jade.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ],
             _ => [const SizedBox()],
-          }
+          },
         ],
       ),
     );

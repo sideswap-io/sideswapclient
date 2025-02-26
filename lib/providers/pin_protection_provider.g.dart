@@ -7,20 +7,23 @@ part of 'pin_protection_provider.dart';
 // **************************************************************************
 
 String _$pinProtectionHelperHash() =>
-    r'bbb5f4c6c3f6c61c23c78832c6673dad6461492f';
+    r'2ce9946d7c3d0596d73d0e410b1c8cefc12f4866';
 
 /// See also [pinProtectionHelper].
 @ProviderFor(pinProtectionHelper)
 final pinProtectionHelperProvider = Provider<PinProtectionHelper>.internal(
   pinProtectionHelper,
   name: r'pinProtectionHelperProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$pinProtectionHelperHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinProtectionHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef PinProtectionHelperRef = ProviderRef<PinProtectionHelper>;
 String _$pinProtectionStateNotifierHash() =>
     r'42824a0ae9414439d969186c6a26d38d1fdcfc72';
@@ -28,12 +31,15 @@ String _$pinProtectionStateNotifierHash() =>
 /// See also [PinProtectionStateNotifier].
 @ProviderFor(PinProtectionStateNotifier)
 final pinProtectionStateNotifierProvider = AutoDisposeNotifierProvider<
-    PinProtectionStateNotifier, PinProtectionState>.internal(
+  PinProtectionStateNotifier,
+  PinProtectionState
+>.internal(
   PinProtectionStateNotifier.new,
   name: r'pinProtectionStateNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$pinProtectionStateNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinProtectionStateNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -46,14 +52,15 @@ String _$pinCodeProtectionNotifierHash() =>
 @ProviderFor(PinCodeProtectionNotifier)
 final pinCodeProtectionNotifierProvider =
     AutoDisposeNotifierProvider<PinCodeProtectionNotifier, String>.internal(
-  PinCodeProtectionNotifier.new,
-  name: r'pinCodeProtectionNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$pinCodeProtectionNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      PinCodeProtectionNotifier.new,
+      name: r'pinCodeProtectionNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$pinCodeProtectionNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PinCodeProtectionNotifier = AutoDisposeNotifier<String>;
 String _$pinDecryptedDataNotifierHash() =>
@@ -63,14 +70,15 @@ String _$pinDecryptedDataNotifierHash() =>
 @ProviderFor(PinDecryptedDataNotifier)
 final pinDecryptedDataNotifierProvider =
     NotifierProvider<PinDecryptedDataNotifier, PinDecryptedData>.internal(
-  PinDecryptedDataNotifier.new,
-  name: r'pinDecryptedDataNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$pinDecryptedDataNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      PinDecryptedDataNotifier.new,
+      name: r'pinDecryptedDataNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$pinDecryptedDataNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PinDecryptedDataNotifier = Notifier<PinDecryptedData>;
 String _$pinUnlockStateNotifierHash() =>
@@ -79,16 +87,19 @@ String _$pinUnlockStateNotifierHash() =>
 /// See also [PinUnlockStateNotifier].
 @ProviderFor(PinUnlockStateNotifier)
 final pinUnlockStateNotifierProvider = AutoDisposeNotifierProvider<
-    PinUnlockStateNotifier, PinUnlockState>.internal(
+  PinUnlockStateNotifier,
+  PinUnlockState
+>.internal(
   PinUnlockStateNotifier.new,
   name: r'pinUnlockStateNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$pinUnlockStateNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinUnlockStateNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$PinUnlockStateNotifier = AutoDisposeNotifier<PinUnlockState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

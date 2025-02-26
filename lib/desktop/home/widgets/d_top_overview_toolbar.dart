@@ -10,19 +10,13 @@ import 'package:sideswap/providers/csv_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DTopOverviewToolbar extends ConsumerWidget {
-  const DTopOverviewToolbar({
-    super.key,
-  });
+  const DTopOverviewToolbar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
-        SvgPicture.asset(
-          'assets/liquid_logo.svg',
-          width: 24,
-          height: 24,
-        ),
+        SvgPicture.asset('assets/liquid_logo.svg', width: 24, height: 24),
         const SizedBox(width: 4),
         const Text(
           'Liquid',
@@ -32,32 +26,6 @@ class DTopOverviewToolbar extends ConsumerWidget {
             color: Colors.white,
           ),
         ),
-        // Address button
-        // const SizedBox(width: 16),
-        // Consumer(
-        //   builder: (context, ref, child) {
-        //     final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
-        //     final regularAccountAddressess =
-        //         ref.watch(regularAccountAddressesProvider);
-
-        //     return DPreviousAddressButton(
-        //       onButtonPressed: () {
-        //         ref.read(swapProvider).swapReset();
-        //         final newWalletMainArguments =
-        //             walletMainArguments.fromIndexDesktop(5); // addresses
-        //         ref
-        //             .read(uiStateArgsNotifierProvider.notifier)
-        //             .setWalletMainArguments(newWalletMainArguments);
-        //       },
-        //       onTextPressed: () {
-        //         if (regularAccountAddressess.isNotEmpty) {
-        //           copyToClipboard(
-        //               context, regularAccountAddressess.last.recvAddress);
-        //         }
-        //       },
-        //     );
-        //   },
-        // ),
         const Spacer(),
         Consumer(
           builder: (context, ref, child) {
@@ -66,12 +34,13 @@ class DTopOverviewToolbar extends ConsumerWidget {
             if (ampId.isNotEmpty) {
               return AmpIdPanel(
                 ampId: ampId,
-                prefixTextStyle:
-                    Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
+                prefixTextStyle: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
                 onTap: () {
                   ref
                       .read(pageStatusNotifierProvider.notifier)
@@ -86,9 +55,10 @@ class DTopOverviewToolbar extends ConsumerWidget {
         const SizedBox(width: 16),
         Consumer(
           builder: (context, ref, child) {
-            final buttonStyle = ref
-                .watch(desktopAppThemeNotifierProvider)
-                .mainBottomNavigationBarButtonStyle;
+            final buttonStyle =
+                ref
+                    .watch(desktopAppThemeNotifierProvider)
+                    .mainBottomNavigationBarButtonStyle;
 
             final csvNotifier = ref.watch(csvNotifierProvider);
             final disabled = switch (csvNotifier) {
@@ -102,11 +72,12 @@ class DTopOverviewToolbar extends ConsumerWidget {
               height: 32,
               child: DButton(
                 style: buttonStyle,
-                onPressed: disabled
-                    ? null
-                    : () async {
-                        await ref.read(csvNotifierProvider.notifier).save();
-                      },
+                onPressed:
+                    disabled
+                        ? null
+                        : () async {
+                          await ref.read(csvNotifierProvider.notifier).save();
+                        },
                 child: Center(
                   child: SvgPicture.asset(
                     'assets/export.svg',

@@ -12,7 +12,8 @@ part of 'pegx_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$PegxLoginState {
@@ -25,8 +26,7 @@ mixin _$PegxLoginState {
     required TResult Function() gaidWaiting,
     required TResult Function() gaidAdded,
     required TResult Function() gaidError,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
@@ -36,8 +36,7 @@ mixin _$PegxLoginState {
     TResult? Function()? gaidWaiting,
     TResult? Function()? gaidAdded,
     TResult? Function()? gaidError,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
@@ -48,8 +47,7 @@ mixin _$PegxLoginState {
     TResult Function()? gaidAdded,
     TResult Function()? gaidError,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PegxLoginStateLoading value) loading,
@@ -59,8 +57,7 @@ mixin _$PegxLoginState {
     required TResult Function(PegxLoginStateGaidWaiting value) gaidWaiting,
     required TResult Function(PegxLoginStateGaidAdded value) gaidAdded,
     required TResult Function(PegxLoginStateGaidError value) gaidError,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PegxLoginStateLoading value)? loading,
@@ -70,8 +67,7 @@ mixin _$PegxLoginState {
     TResult? Function(PegxLoginStateGaidWaiting value)? gaidWaiting,
     TResult? Function(PegxLoginStateGaidAdded value)? gaidAdded,
     TResult? Function(PegxLoginStateGaidError value)? gaidError,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PegxLoginStateLoading value)? loading,
@@ -82,15 +78,15 @@ mixin _$PegxLoginState {
     TResult Function(PegxLoginStateGaidAdded value)? gaidAdded,
     TResult Function(PegxLoginStateGaidError value)? gaidError,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PegxLoginStateCopyWith<$Res> {
   factory $PegxLoginStateCopyWith(
-          PegxLoginState value, $Res Function(PegxLoginState) then) =
-      _$PegxLoginStateCopyWithImpl<$Res, PegxLoginState>;
+    PegxLoginState value,
+    $Res Function(PegxLoginState) then,
+  ) = _$PegxLoginStateCopyWithImpl<$Res, PegxLoginState>;
 }
 
 /// @nodoc
@@ -102,23 +98,30 @@ class _$PegxLoginStateCopyWithImpl<$Res, $Val extends PegxLoginState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PegxLoginStateLoadingImplCopyWith<$Res> {
   factory _$$PegxLoginStateLoadingImplCopyWith(
-          _$PegxLoginStateLoadingImpl value,
-          $Res Function(_$PegxLoginStateLoadingImpl) then) =
-      __$$PegxLoginStateLoadingImplCopyWithImpl<$Res>;
+    _$PegxLoginStateLoadingImpl value,
+    $Res Function(_$PegxLoginStateLoadingImpl) then,
+  ) = __$$PegxLoginStateLoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PegxLoginStateLoadingImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateLoadingImpl>
     implements _$$PegxLoginStateLoadingImplCopyWith<$Res> {
-  __$$PegxLoginStateLoadingImplCopyWithImpl(_$PegxLoginStateLoadingImpl _value,
-      $Res Function(_$PegxLoginStateLoadingImpl) _then)
-      : super(_value, _then);
+  __$$PegxLoginStateLoadingImplCopyWithImpl(
+    _$PegxLoginStateLoadingImpl _value,
+    $Res Function(_$PegxLoginStateLoadingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -241,9 +244,9 @@ abstract class PegxLoginStateLoading implements PegxLoginState {
 /// @nodoc
 abstract class _$$PegxLoginStateLoginDialogImplCopyWith<$Res> {
   factory _$$PegxLoginStateLoginDialogImplCopyWith(
-          _$PegxLoginStateLoginDialogImpl value,
-          $Res Function(_$PegxLoginStateLoginDialogImpl) then) =
-      __$$PegxLoginStateLoginDialogImplCopyWithImpl<$Res>;
+    _$PegxLoginStateLoginDialogImpl value,
+    $Res Function(_$PegxLoginStateLoginDialogImpl) then,
+  ) = __$$PegxLoginStateLoginDialogImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -251,9 +254,12 @@ class __$$PegxLoginStateLoginDialogImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateLoginDialogImpl>
     implements _$$PegxLoginStateLoginDialogImplCopyWith<$Res> {
   __$$PegxLoginStateLoginDialogImplCopyWithImpl(
-      _$PegxLoginStateLoginDialogImpl _value,
-      $Res Function(_$PegxLoginStateLoginDialogImpl) _then)
-      : super(_value, _then);
+    _$PegxLoginStateLoginDialogImpl _value,
+    $Res Function(_$PegxLoginStateLoginDialogImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -375,9 +381,10 @@ abstract class PegxLoginStateLoginDialog implements PegxLoginState {
 
 /// @nodoc
 abstract class _$$PegxLoginStateLoginImplCopyWith<$Res> {
-  factory _$$PegxLoginStateLoginImplCopyWith(_$PegxLoginStateLoginImpl value,
-          $Res Function(_$PegxLoginStateLoginImpl) then) =
-      __$$PegxLoginStateLoginImplCopyWithImpl<$Res>;
+  factory _$$PegxLoginStateLoginImplCopyWith(
+    _$PegxLoginStateLoginImpl value,
+    $Res Function(_$PegxLoginStateLoginImpl) then,
+  ) = __$$PegxLoginStateLoginImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String requestId});
 }
@@ -386,21 +393,25 @@ abstract class _$$PegxLoginStateLoginImplCopyWith<$Res> {
 class __$$PegxLoginStateLoginImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateLoginImpl>
     implements _$$PegxLoginStateLoginImplCopyWith<$Res> {
-  __$$PegxLoginStateLoginImplCopyWithImpl(_$PegxLoginStateLoginImpl _value,
-      $Res Function(_$PegxLoginStateLoginImpl) _then)
-      : super(_value, _then);
+  __$$PegxLoginStateLoginImplCopyWithImpl(
+    _$PegxLoginStateLoginImpl _value,
+    $Res Function(_$PegxLoginStateLoginImpl) _then,
+  ) : super(_value, _then);
 
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? requestId = null,
-  }) {
-    return _then(_$PegxLoginStateLoginImpl(
-      requestId: null == requestId
-          ? _value.requestId
-          : requestId // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? requestId = null}) {
+    return _then(
+      _$PegxLoginStateLoginImpl(
+        requestId:
+            null == requestId
+                ? _value.requestId
+                : requestId // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
@@ -429,12 +440,16 @@ class _$PegxLoginStateLoginImpl implements PegxLoginStateLogin {
   @override
   int get hashCode => Object.hash(runtimeType, requestId);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$PegxLoginStateLoginImplCopyWith<_$PegxLoginStateLoginImpl> get copyWith =>
       __$$PegxLoginStateLoginImplCopyWithImpl<_$PegxLoginStateLoginImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -534,25 +549,33 @@ abstract class PegxLoginStateLogin implements PegxLoginState {
       _$PegxLoginStateLoginImpl;
 
   String get requestId;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$PegxLoginStateLoginImplCopyWith<_$PegxLoginStateLoginImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$PegxLoginStateLoggedImplCopyWith<$Res> {
-  factory _$$PegxLoginStateLoggedImplCopyWith(_$PegxLoginStateLoggedImpl value,
-          $Res Function(_$PegxLoginStateLoggedImpl) then) =
-      __$$PegxLoginStateLoggedImplCopyWithImpl<$Res>;
+  factory _$$PegxLoginStateLoggedImplCopyWith(
+    _$PegxLoginStateLoggedImpl value,
+    $Res Function(_$PegxLoginStateLoggedImpl) then,
+  ) = __$$PegxLoginStateLoggedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PegxLoginStateLoggedImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateLoggedImpl>
     implements _$$PegxLoginStateLoggedImplCopyWith<$Res> {
-  __$$PegxLoginStateLoggedImplCopyWithImpl(_$PegxLoginStateLoggedImpl _value,
-      $Res Function(_$PegxLoginStateLoggedImpl) _then)
-      : super(_value, _then);
+  __$$PegxLoginStateLoggedImplCopyWithImpl(
+    _$PegxLoginStateLoggedImpl _value,
+    $Res Function(_$PegxLoginStateLoggedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -675,9 +698,9 @@ abstract class PegxLoginStateLogged implements PegxLoginState {
 /// @nodoc
 abstract class _$$PegxLoginStateGaidWaitingImplCopyWith<$Res> {
   factory _$$PegxLoginStateGaidWaitingImplCopyWith(
-          _$PegxLoginStateGaidWaitingImpl value,
-          $Res Function(_$PegxLoginStateGaidWaitingImpl) then) =
-      __$$PegxLoginStateGaidWaitingImplCopyWithImpl<$Res>;
+    _$PegxLoginStateGaidWaitingImpl value,
+    $Res Function(_$PegxLoginStateGaidWaitingImpl) then,
+  ) = __$$PegxLoginStateGaidWaitingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -685,9 +708,12 @@ class __$$PegxLoginStateGaidWaitingImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateGaidWaitingImpl>
     implements _$$PegxLoginStateGaidWaitingImplCopyWith<$Res> {
   __$$PegxLoginStateGaidWaitingImplCopyWithImpl(
-      _$PegxLoginStateGaidWaitingImpl _value,
-      $Res Function(_$PegxLoginStateGaidWaitingImpl) _then)
-      : super(_value, _then);
+    _$PegxLoginStateGaidWaitingImpl _value,
+    $Res Function(_$PegxLoginStateGaidWaitingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -810,9 +836,9 @@ abstract class PegxLoginStateGaidWaiting implements PegxLoginState {
 /// @nodoc
 abstract class _$$PegxLoginStateGaidAddedImplCopyWith<$Res> {
   factory _$$PegxLoginStateGaidAddedImplCopyWith(
-          _$PegxLoginStateGaidAddedImpl value,
-          $Res Function(_$PegxLoginStateGaidAddedImpl) then) =
-      __$$PegxLoginStateGaidAddedImplCopyWithImpl<$Res>;
+    _$PegxLoginStateGaidAddedImpl value,
+    $Res Function(_$PegxLoginStateGaidAddedImpl) then,
+  ) = __$$PegxLoginStateGaidAddedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -820,9 +846,12 @@ class __$$PegxLoginStateGaidAddedImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateGaidAddedImpl>
     implements _$$PegxLoginStateGaidAddedImplCopyWith<$Res> {
   __$$PegxLoginStateGaidAddedImplCopyWithImpl(
-      _$PegxLoginStateGaidAddedImpl _value,
-      $Res Function(_$PegxLoginStateGaidAddedImpl) _then)
-      : super(_value, _then);
+    _$PegxLoginStateGaidAddedImpl _value,
+    $Res Function(_$PegxLoginStateGaidAddedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -945,9 +974,9 @@ abstract class PegxLoginStateGaidAdded implements PegxLoginState {
 /// @nodoc
 abstract class _$$PegxLoginStateGaidErrorImplCopyWith<$Res> {
   factory _$$PegxLoginStateGaidErrorImplCopyWith(
-          _$PegxLoginStateGaidErrorImpl value,
-          $Res Function(_$PegxLoginStateGaidErrorImpl) then) =
-      __$$PegxLoginStateGaidErrorImplCopyWithImpl<$Res>;
+    _$PegxLoginStateGaidErrorImpl value,
+    $Res Function(_$PegxLoginStateGaidErrorImpl) then,
+  ) = __$$PegxLoginStateGaidErrorImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -955,9 +984,12 @@ class __$$PegxLoginStateGaidErrorImplCopyWithImpl<$Res>
     extends _$PegxLoginStateCopyWithImpl<$Res, _$PegxLoginStateGaidErrorImpl>
     implements _$$PegxLoginStateGaidErrorImplCopyWith<$Res> {
   __$$PegxLoginStateGaidErrorImplCopyWithImpl(
-      _$PegxLoginStateGaidErrorImpl _value,
-      $Res Function(_$PegxLoginStateGaidErrorImpl) _then)
-      : super(_value, _then);
+    _$PegxLoginStateGaidErrorImpl _value,
+    $Res Function(_$PegxLoginStateGaidErrorImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxLoginState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1085,16 +1117,14 @@ mixin _$PegxGaidState {
     required TResult Function() loading,
     required TResult Function() registered,
     required TResult Function() unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? loading,
     TResult? Function()? registered,
     TResult? Function()? unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
@@ -1102,24 +1132,21 @@ mixin _$PegxGaidState {
     TResult Function()? registered,
     TResult Function()? unregistered,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(PegxGaidStateEmpty value) empty,
     required TResult Function(PegxGaidStateLoading value) loading,
     required TResult Function(PegxGaidStateRegistered value) registered,
     required TResult Function(PegxGaidStateUnregistered value) unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(PegxGaidStateEmpty value)? empty,
     TResult? Function(PegxGaidStateLoading value)? loading,
     TResult? Function(PegxGaidStateRegistered value)? registered,
     TResult? Function(PegxGaidStateUnregistered value)? unregistered,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(PegxGaidStateEmpty value)? empty,
@@ -1127,15 +1154,15 @@ mixin _$PegxGaidState {
     TResult Function(PegxGaidStateRegistered value)? registered,
     TResult Function(PegxGaidStateUnregistered value)? unregistered,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $PegxGaidStateCopyWith<$Res> {
   factory $PegxGaidStateCopyWith(
-          PegxGaidState value, $Res Function(PegxGaidState) then) =
-      _$PegxGaidStateCopyWithImpl<$Res, PegxGaidState>;
+    PegxGaidState value,
+    $Res Function(PegxGaidState) then,
+  ) = _$PegxGaidStateCopyWithImpl<$Res, PegxGaidState>;
 }
 
 /// @nodoc
@@ -1147,22 +1174,30 @@ class _$PegxGaidStateCopyWithImpl<$Res, $Val extends PegxGaidState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of PegxGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$PegxGaidStateEmptyImplCopyWith<$Res> {
-  factory _$$PegxGaidStateEmptyImplCopyWith(_$PegxGaidStateEmptyImpl value,
-          $Res Function(_$PegxGaidStateEmptyImpl) then) =
-      __$$PegxGaidStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$PegxGaidStateEmptyImplCopyWith(
+    _$PegxGaidStateEmptyImpl value,
+    $Res Function(_$PegxGaidStateEmptyImpl) then,
+  ) = __$$PegxGaidStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PegxGaidStateEmptyImplCopyWithImpl<$Res>
     extends _$PegxGaidStateCopyWithImpl<$Res, _$PegxGaidStateEmptyImpl>
     implements _$$PegxGaidStateEmptyImplCopyWith<$Res> {
-  __$$PegxGaidStateEmptyImplCopyWithImpl(_$PegxGaidStateEmptyImpl _value,
-      $Res Function(_$PegxGaidStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$PegxGaidStateEmptyImplCopyWithImpl(
+    _$PegxGaidStateEmptyImpl _value,
+    $Res Function(_$PegxGaidStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1265,18 +1300,23 @@ abstract class PegxGaidStateEmpty implements PegxGaidState {
 
 /// @nodoc
 abstract class _$$PegxGaidStateLoadingImplCopyWith<$Res> {
-  factory _$$PegxGaidStateLoadingImplCopyWith(_$PegxGaidStateLoadingImpl value,
-          $Res Function(_$PegxGaidStateLoadingImpl) then) =
-      __$$PegxGaidStateLoadingImplCopyWithImpl<$Res>;
+  factory _$$PegxGaidStateLoadingImplCopyWith(
+    _$PegxGaidStateLoadingImpl value,
+    $Res Function(_$PegxGaidStateLoadingImpl) then,
+  ) = __$$PegxGaidStateLoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$PegxGaidStateLoadingImplCopyWithImpl<$Res>
     extends _$PegxGaidStateCopyWithImpl<$Res, _$PegxGaidStateLoadingImpl>
     implements _$$PegxGaidStateLoadingImplCopyWith<$Res> {
-  __$$PegxGaidStateLoadingImplCopyWithImpl(_$PegxGaidStateLoadingImpl _value,
-      $Res Function(_$PegxGaidStateLoadingImpl) _then)
-      : super(_value, _then);
+  __$$PegxGaidStateLoadingImplCopyWithImpl(
+    _$PegxGaidStateLoadingImpl _value,
+    $Res Function(_$PegxGaidStateLoadingImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1381,9 +1421,9 @@ abstract class PegxGaidStateLoading implements PegxGaidState {
 /// @nodoc
 abstract class _$$PegxGaidStateRegisteredImplCopyWith<$Res> {
   factory _$$PegxGaidStateRegisteredImplCopyWith(
-          _$PegxGaidStateRegisteredImpl value,
-          $Res Function(_$PegxGaidStateRegisteredImpl) then) =
-      __$$PegxGaidStateRegisteredImplCopyWithImpl<$Res>;
+    _$PegxGaidStateRegisteredImpl value,
+    $Res Function(_$PegxGaidStateRegisteredImpl) then,
+  ) = __$$PegxGaidStateRegisteredImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1391,9 +1431,12 @@ class __$$PegxGaidStateRegisteredImplCopyWithImpl<$Res>
     extends _$PegxGaidStateCopyWithImpl<$Res, _$PegxGaidStateRegisteredImpl>
     implements _$$PegxGaidStateRegisteredImplCopyWith<$Res> {
   __$$PegxGaidStateRegisteredImplCopyWithImpl(
-      _$PegxGaidStateRegisteredImpl _value,
-      $Res Function(_$PegxGaidStateRegisteredImpl) _then)
-      : super(_value, _then);
+    _$PegxGaidStateRegisteredImpl _value,
+    $Res Function(_$PegxGaidStateRegisteredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1498,9 +1541,9 @@ abstract class PegxGaidStateRegistered implements PegxGaidState {
 /// @nodoc
 abstract class _$$PegxGaidStateUnregisteredImplCopyWith<$Res> {
   factory _$$PegxGaidStateUnregisteredImplCopyWith(
-          _$PegxGaidStateUnregisteredImpl value,
-          $Res Function(_$PegxGaidStateUnregisteredImpl) then) =
-      __$$PegxGaidStateUnregisteredImplCopyWithImpl<$Res>;
+    _$PegxGaidStateUnregisteredImpl value,
+    $Res Function(_$PegxGaidStateUnregisteredImpl) then,
+  ) = __$$PegxGaidStateUnregisteredImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -1508,9 +1551,12 @@ class __$$PegxGaidStateUnregisteredImplCopyWithImpl<$Res>
     extends _$PegxGaidStateCopyWithImpl<$Res, _$PegxGaidStateUnregisteredImpl>
     implements _$$PegxGaidStateUnregisteredImplCopyWith<$Res> {
   __$$PegxGaidStateUnregisteredImplCopyWithImpl(
-      _$PegxGaidStateUnregisteredImpl _value,
-      $Res Function(_$PegxGaidStateUnregisteredImpl) _then)
-      : super(_value, _then);
+    _$PegxGaidStateUnregisteredImpl _value,
+    $Res Function(_$PegxGaidStateUnregisteredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PegxGaidState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

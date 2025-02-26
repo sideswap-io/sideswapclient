@@ -38,10 +38,13 @@ class PasteMnemonicAction extends Action<PasteMnemonicIntent> {
       return;
     }
 
-    final wordItems = Map<int, WordItem>.fromEntries(List.generate(
+    final wordItems = Map<int, WordItem>.fromEntries(
+      List.generate(
         words.length,
         (index) =>
-            MapEntry(index, WordItem(word: words[index], isCorrect: false))));
+            MapEntry(index, WordItem(word: words[index], isCorrect: false)),
+      ),
+    );
     ref.read(mnemonicWordItemsNotifierProvider.notifier).setItems(wordItems);
     await ref
         .read(mnemonicWordItemsNotifierProvider.notifier)
@@ -77,8 +80,12 @@ class DWalletImport extends HookConsumerWidget {
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
         if (Platform.isLinux || Platform.isFuchsia) ...{
-          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift,
-              LogicalKeyboardKey.keyV): const PasteMnemonicIntent(),
+          LogicalKeySet(
+                LogicalKeyboardKey.control,
+                LogicalKeyboardKey.shift,
+                LogicalKeyboardKey.keyV,
+              ):
+              const PasteMnemonicIntent(),
         },
         if (Platform.isWindows) ...{
           LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyV):
@@ -97,9 +104,7 @@ class DWalletImport extends HookConsumerWidget {
           onClose: () {
             ref.read(walletProvider).goBack();
           },
-          constraints: const BoxConstraints(
-            maxWidth: 628,
-          ),
+          constraints: const BoxConstraints(maxWidth: 628),
           title: Text(
             'Enter your recovery phrase'.tr(),
             style: const TextStyle(
@@ -111,135 +116,146 @@ class DWalletImport extends HookConsumerWidget {
           ),
           content: Center(
             child: SizedBox(
-                width: 460,
-                height: mnemonicCounter == 12 ? 350 : 540,
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final currentItem =
-                        ref.watch(currentMnemonicIndexNotifierProvider);
-                    return Column(
-                      children: [
-                        Container(
-                          height: 36,
-                          decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                            color: Color(0xFF062D44),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              DToggleSwitchButton(
-                                checked: mnemonicCounter == 12,
-                                checkedName: '12 words'.tr(),
-                                uncheckedName: '24 words'.tr(),
-                                onChanged: (value) {
-                                  if (value) {
-                                    ref
-                                        .read(
-                                            mnemonicWordsCounterNotifierProvider
-                                                .notifier)
-                                        .set12Words();
-                                  } else {
-                                    ref
-                                        .read(
-                                            mnemonicWordsCounterNotifierProvider
-                                                .notifier)
-                                        .set24Words();
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
+              width: 460,
+              height: mnemonicCounter == 12 ? 350 : 540,
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final currentItem = ref.watch(
+                    currentMnemonicIndexNotifierProvider,
+                  );
+                  return Column(
+                    children: [
+                      Container(
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          color: Color(0xFF062D44),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: DMnemonicTextBox(
-                            focusNode,
-                            currentIndex: currentItem,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 19),
-                          child: DMnemonicTable(
-                            itemsCount: ref
-                                .read(
-                                    mnemonicWordItemsNotifierProvider.notifier)
-                                .length(),
-                            itemSelected: currentItem,
-                            onPressed: (index) async {
-                              await ref
-                                  .read(mnemonicWordItemsNotifierProvider
-                                      .notifier)
-                                  .validateAllItems();
-                              ref
-                                  .read(currentMnemonicIndexNotifierProvider
-                                      .notifier)
-                                  .setIndex(index);
-                              focusNode.requestFocus();
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            DButton(
-                              onPressed: () {
-                                Actions.maybeInvoke<PasteMnemonicIntent>(
-                                    context, const PasteMnemonicIntent());
+                            DToggleSwitchButton(
+                              checked: mnemonicCounter == 12,
+                              checkedName: '12 words'.tr(),
+                              uncheckedName: '24 words'.tr(),
+                              onChanged: (value) {
+                                if (value) {
+                                  ref
+                                      .read(
+                                        mnemonicWordsCounterNotifierProvider
+                                            .notifier,
+                                      )
+                                      .set12Words();
+                                } else {
+                                  ref
+                                      .read(
+                                        mnemonicWordsCounterNotifierProvider
+                                            .notifier,
+                                      )
+                                      .set24Words();
+                                }
                               },
-                              child: SizedBox(
-                                height: 34,
-                                width: 200,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/paste.svg',
-                                        width: 20,
-                                        height: 20,
-                                        colorFilter: const ColorFilter.mode(
-                                            SideSwapColors.brightTurquoise,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Paste mnemonic'.tr(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
                             ),
                           ],
                         ),
-                        Expanded(
-                          child: Container(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: DMnemonicTextBox(
+                          focusNode,
+                          currentIndex: currentItem,
                         ),
-                      ],
-                    );
-                  },
-                )),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 19),
+                        child: DMnemonicTable(
+                          itemsCount:
+                              ref
+                                  .read(
+                                    mnemonicWordItemsNotifierProvider.notifier,
+                                  )
+                                  .length(),
+                          itemSelected: currentItem,
+                          onPressed: (index) async {
+                            await ref
+                                .read(
+                                  mnemonicWordItemsNotifierProvider.notifier,
+                                )
+                                .validateAllItems();
+                            ref
+                                .read(
+                                  currentMnemonicIndexNotifierProvider.notifier,
+                                )
+                                .setIndex(index);
+                            focusNode.requestFocus();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          DButton(
+                            onPressed: () {
+                              Actions.maybeInvoke<PasteMnemonicIntent>(
+                                context,
+                                const PasteMnemonicIntent(),
+                              );
+                            },
+                            child: SizedBox(
+                              height: 34,
+                              width: 200,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/paste.svg',
+                                      width: 20,
+                                      height: 20,
+                                      colorFilter: const ColorFilter.mode(
+                                        SideSwapColors.brightTurquoise,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text('Paste mnemonic'.tr()),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(child: Container()),
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
           actions: [
             Center(
               child: Consumer(
                 builder: ((context, ref, child) {
-                  final mnemonicIsValid = ref
-                      .watch(mnemonicWordItemsNotifierProvider.notifier)
-                      .mnemonicIsValid();
+                  final mnemonicIsValid =
+                      ref
+                          .watch(mnemonicWordItemsNotifierProvider.notifier)
+                          .mnemonicIsValid();
                   return DCustomFilledBigButton(
-                    onPressed: mnemonicIsValid
-                        ? () {
-                            ref
-                                .read(
-                                    mnemonicWordItemsNotifierProvider.notifier)
-                                .importMnemonic();
-                          }
-                        : null,
+                    onPressed:
+                        mnemonicIsValid
+                            ? () {
+                              ref
+                                  .read(
+                                    mnemonicWordItemsNotifierProvider.notifier,
+                                  )
+                                  .importMnemonic();
+                            }
+                            : null,
                     width: 460,
                     height: 49,
                     child: Text(
@@ -253,7 +269,7 @@ class DWalletImport extends HookConsumerWidget {
                   );
                 }),
               ),
-            )
+            ),
           ],
         ),
       ),

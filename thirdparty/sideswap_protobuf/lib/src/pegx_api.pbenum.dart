@@ -14,21 +14,24 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class AccountState extends $pb.ProtobufEnum {
-  static const AccountState DISABLED = AccountState._(1, _omitEnumNames ? '' : 'DISABLED');
-  static const AccountState VERIFICATION = AccountState._(2, _omitEnumNames ? '' : 'VERIFICATION');
-  static const AccountState ACTIVE = AccountState._(3, _omitEnumNames ? '' : 'ACTIVE');
+  static const AccountState DISABLED =
+      AccountState._(1, _omitEnumNames ? '' : 'DISABLED');
+  static const AccountState VERIFICATION =
+      AccountState._(2, _omitEnumNames ? '' : 'VERIFICATION');
+  static const AccountState ACTIVE =
+      AccountState._(3, _omitEnumNames ? '' : 'ACTIVE');
 
-  static const $core.List<AccountState> values = <AccountState> [
+  static const $core.List<AccountState> values = <AccountState>[
     DISABLED,
     VERIFICATION,
     ACTIVE,
   ];
 
-  static final $core.Map<$core.int, AccountState> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static final $core.Map<$core.int, AccountState> _byValue =
+      $pb.ProtobufEnum.initByValue(values);
   static AccountState? valueOf($core.int value) => _byValue[value];
 
   const AccountState._($core.int v, $core.String n) : super(v, n);
 }
-
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

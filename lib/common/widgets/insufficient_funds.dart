@@ -6,50 +6,50 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class InsufficientFunds extends ConsumerWidget {
-  const InsufficientFunds({
-    super.key,
-    required this.msg,
-  });
+  const InsufficientFunds({super.key, required this.msg});
 
   final From_ShowInsufficientFunds msg;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset =
-        ref.watch(assetsStateProvider.select((value) => value[msg.assetId]));
-    final icon =
-        ref.watch(assetImageProvider).getVerySmallImage(asset?.assetId);
+    final asset = ref.watch(
+      assetsStateProvider.select((value) => value[msg.assetId]),
+    );
+    final icon = ref
+        .watch(assetImageRepositoryProvider)
+        .getVerySmallImage(asset?.assetId);
     final amountProvider = ref.watch(amountToStringProvider);
     final assetPrecision = ref
         .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: asset?.assetId);
 
     final availableStr = amountProvider.amountToStringNamed(
-        AmountToStringNamedParameters(
-            amount: msg.available.toInt(),
-            ticker: asset?.ticker ?? '',
-            precision: assetPrecision));
+      AmountToStringNamedParameters(
+        amount: msg.available.toInt(),
+        ticker: asset?.ticker ?? '',
+        precision: assetPrecision,
+      ),
+    );
     final requiredStr = amountProvider.amountToStringNamed(
-        AmountToStringNamedParameters(
-            amount: msg.required.toInt(),
-            ticker: asset?.ticker ?? '',
-            precision: assetPrecision));
+      AmountToStringNamedParameters(
+        amount: msg.required.toInt(),
+        ticker: asset?.ticker ?? '',
+        precision: assetPrecision,
+      ),
+    );
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Container(
         width: 343,
         height: 378,
         decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(
-            Radius.circular(8),
-          ),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
           color: SideSwapColors.blumine,
         ),
         child: Padding(
@@ -74,7 +74,9 @@ class InsufficientFunds extends ConsumerWidget {
                     width: 23,
                     height: 23,
                     colorFilter: const ColorFilter.mode(
-                        SideSwapColors.bitterSweet, BlendMode.srcIn),
+                      SideSwapColors.bitterSweet,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
               ),
@@ -86,9 +88,7 @@ class InsufficientFunds extends ConsumerWidget {
                     children: [
                       Text(
                         'Insufficient funds'.tr(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                        ),
+                        style: const TextStyle(fontSize: 18),
                       ),
                       const SizedBox(height: 20),
                       Row(

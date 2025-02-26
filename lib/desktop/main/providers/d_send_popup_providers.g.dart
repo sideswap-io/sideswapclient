@@ -7,73 +7,85 @@ part of 'd_send_popup_providers.dart';
 // **************************************************************************
 
 String _$sendPopupDecimalAmountHash() =>
-    r'6bcc0c4e565e5e569a5284324ebdeb142a028154';
+    r'4c0abdf688f8276e4ebbfe0e261bf278bc407710';
 
 /// See also [sendPopupDecimalAmount].
 @ProviderFor(sendPopupDecimalAmount)
 final sendPopupDecimalAmountProvider = AutoDisposeProvider<Decimal>.internal(
   sendPopupDecimalAmount,
   name: r'sendPopupDecimalAmountProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupDecimalAmountHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$sendPopupDecimalAmountHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef SendPopupDecimalAmountRef = AutoDisposeProviderRef<Decimal>;
 String _$sendPopupShowInsufficientFundsHash() =>
-    r'22b391f0cefe9857553e1d8eca8e8bc1ec7d4ed0';
+    r'e1d7937a9e0f37645dc3301fed6ecb3c5ab27cdd';
 
 /// See also [sendPopupShowInsufficientFunds].
 @ProviderFor(sendPopupShowInsufficientFunds)
 final sendPopupShowInsufficientFundsProvider =
     AutoDisposeProvider<bool>.internal(
-  sendPopupShowInsufficientFunds,
-  name: r'sendPopupShowInsufficientFundsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupShowInsufficientFundsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      sendPopupShowInsufficientFunds,
+      name: r'sendPopupShowInsufficientFundsProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupShowInsufficientFundsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef SendPopupShowInsufficientFundsRef = AutoDisposeProviderRef<bool>;
 String _$sendPopupDefaultCurrencyConversionHash() =>
-    r'5440265fe94a8b80de9eb1f45134574e09be965e';
+    r'52e166d8e385a01d42ba4da86ae0c09e11834b4e';
 
 /// See also [sendPopupDefaultCurrencyConversion].
 @ProviderFor(sendPopupDefaultCurrencyConversion)
 final sendPopupDefaultCurrencyConversionProvider =
     AutoDisposeProvider<String?>.internal(
-  sendPopupDefaultCurrencyConversion,
-  name: r'sendPopupDefaultCurrencyConversionProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupDefaultCurrencyConversionHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      sendPopupDefaultCurrencyConversion,
+      name: r'sendPopupDefaultCurrencyConversionProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupDefaultCurrencyConversionHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef SendPopupDefaultCurrencyConversionRef = AutoDisposeProviderRef<String?>;
 String _$sendPopupParseAddressHash() =>
-    r'0bcd2afad3936618e44c98efbf82525df3c21a0b';
+    r'54f49c84816603f78c5d51867f3828dff5bdb4ce';
 
 /// See also [sendPopupParseAddress].
 @ProviderFor(sendPopupParseAddress)
 final sendPopupParseAddressProvider =
     AutoDisposeProvider<Either<Exception, SendPopupAddressResult>>.internal(
-  sendPopupParseAddress,
-  name: r'sendPopupParseAddressProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupParseAddressHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      sendPopupParseAddress,
+      name: r'sendPopupParseAddressProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupParseAddressHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef SendPopupParseAddressRef
-    = AutoDisposeProviderRef<Either<Exception, SendPopupAddressResult>>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SendPopupParseAddressRef =
+    AutoDisposeProviderRef<Either<Exception, SendPopupAddressResult>>;
 String _$sendPopupAmountNotifierHash() =>
     r'fc04a7624f668ec6ee35f8e2a75e6fb4095489e7';
 
@@ -81,14 +93,15 @@ String _$sendPopupAmountNotifierHash() =>
 @ProviderFor(SendPopupAmountNotifier)
 final sendPopupAmountNotifierProvider =
     NotifierProvider<SendPopupAmountNotifier, String>.internal(
-  SendPopupAmountNotifier.new,
-  name: r'sendPopupAmountNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupAmountNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      SendPopupAmountNotifier.new,
+      name: r'sendPopupAmountNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupAmountNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SendPopupAmountNotifier = Notifier<String>;
 String _$sendPopupAddressNotifierHash() =>
@@ -98,14 +111,15 @@ String _$sendPopupAddressNotifierHash() =>
 @ProviderFor(SendPopupAddressNotifier)
 final sendPopupAddressNotifierProvider =
     NotifierProvider<SendPopupAddressNotifier, String>.internal(
-  SendPopupAddressNotifier.new,
-  name: r'sendPopupAddressNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupAddressNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      SendPopupAddressNotifier.new,
+      name: r'sendPopupAddressNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupAddressNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SendPopupAddressNotifier = Notifier<String>;
 String _$sendPopupSelectedAccountAssetNotifierHash() =>
@@ -114,12 +128,15 @@ String _$sendPopupSelectedAccountAssetNotifierHash() =>
 /// See also [SendPopupSelectedAccountAssetNotifier].
 @ProviderFor(SendPopupSelectedAccountAssetNotifier)
 final sendPopupSelectedAccountAssetNotifierProvider = NotifierProvider<
-    SendPopupSelectedAccountAssetNotifier, AccountAsset>.internal(
+  SendPopupSelectedAccountAssetNotifier,
+  AccountAsset
+>.internal(
   SendPopupSelectedAccountAssetNotifier.new,
   name: r'sendPopupSelectedAccountAssetNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupSelectedAccountAssetNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$sendPopupSelectedAccountAssetNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -131,12 +148,15 @@ String _$sendPopupReceiveConversionNotifierHash() =>
 /// See also [SendPopupReceiveConversionNotifier].
 @ProviderFor(SendPopupReceiveConversionNotifier)
 final sendPopupReceiveConversionNotifierProvider = AutoDisposeNotifierProvider<
-    SendPopupReceiveConversionNotifier, String>.internal(
+  SendPopupReceiveConversionNotifier,
+  String
+>.internal(
   SendPopupReceiveConversionNotifier.new,
   name: r'sendPopupReceiveConversionNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupReceiveConversionNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$sendPopupReceiveConversionNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -149,14 +169,15 @@ String _$sendPopupValidDataInsertedHash() =>
 @ProviderFor(SendPopupValidDataInserted)
 final sendPopupValidDataInsertedProvider =
     AutoDisposeAsyncNotifierProvider<SendPopupValidDataInserted, bool>.internal(
-  SendPopupValidDataInserted.new,
-  name: r'sendPopupValidDataInsertedProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupValidDataInsertedHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      SendPopupValidDataInserted.new,
+      name: r'sendPopupValidDataInsertedProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupValidDataInsertedHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SendPopupValidDataInserted = AutoDisposeAsyncNotifier<bool>;
 String _$sendPopupAddMoreOutputsButtonEnabledHash() =>
@@ -165,16 +186,19 @@ String _$sendPopupAddMoreOutputsButtonEnabledHash() =>
 /// See also [SendPopupAddMoreOutputsButtonEnabled].
 @ProviderFor(SendPopupAddMoreOutputsButtonEnabled)
 final sendPopupAddMoreOutputsButtonEnabledProvider =
-    AutoDisposeAsyncNotifierProvider<SendPopupAddMoreOutputsButtonEnabled,
-        bool>.internal(
-  SendPopupAddMoreOutputsButtonEnabled.new,
-  name: r'sendPopupAddMoreOutputsButtonEnabledProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupAddMoreOutputsButtonEnabledHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+    AutoDisposeAsyncNotifierProvider<
+      SendPopupAddMoreOutputsButtonEnabled,
+      bool
+    >.internal(
+      SendPopupAddMoreOutputsButtonEnabled.new,
+      name: r'sendPopupAddMoreOutputsButtonEnabledProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$sendPopupAddMoreOutputsButtonEnabledHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SendPopupAddMoreOutputsButtonEnabled = AutoDisposeAsyncNotifier<bool>;
 String _$sendPopupReviewButtonEnabledHash() =>
@@ -185,16 +209,19 @@ String _$sendPopupReviewButtonEnabledHash() =>
 /// Copied from [SendPopupReviewButtonEnabled].
 @ProviderFor(SendPopupReviewButtonEnabled)
 final sendPopupReviewButtonEnabledProvider = AutoDisposeAsyncNotifierProvider<
-    SendPopupReviewButtonEnabled, bool>.internal(
+  SendPopupReviewButtonEnabled,
+  bool
+>.internal(
   SendPopupReviewButtonEnabled.new,
   name: r'sendPopupReviewButtonEnabledProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupReviewButtonEnabledHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$sendPopupReviewButtonEnabledHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$SendPopupReviewButtonEnabled = AutoDisposeAsyncNotifier<bool>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

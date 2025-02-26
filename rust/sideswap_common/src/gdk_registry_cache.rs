@@ -8,7 +8,7 @@ use std::{
 use anyhow::ensure;
 use arc_swap::ArcSwap;
 use base64::Engine;
-use elements::AssetId;
+use elements::{AssetId, ContractHash};
 use serde::{Deserialize, Serialize};
 use sideswap_types::asset_precision::AssetPrecision;
 
@@ -29,6 +29,16 @@ pub struct GdkAsset {
     pub issuance_prevout: sideswap_api::IssuancePrevout,
     pub issuer_pubkey: String,
     pub contract: serde_json::Value,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub struct GdkAssetContract {
+    pub entity: GdkAssetEntity,
+    pub issuer_pubkey: String,
+    pub name: String,
+    pub precision: AssetPrecision,
+    pub ticker: Option<sideswap_api::Ticker>,
+    pub version: u32,
 }
 
 pub struct GdkRegistryCache {
@@ -59,8 +69,8 @@ pub fn get_policy_asset_short_info(policy_asset: &AssetId) -> ShortAssetInfo {
 }
 
 impl GdkRegistryCache {
-    pub async fn new(network: Network, cache_dir: &Path) -> Self {
-        let cache_dir = cache_dir.join(network.d().name);
+    pub async fn new(network: Network, cache_dir: impl AsRef<Path>) -> Self {
+        let cache_dir = cache_dir.as_ref().join(network.d().name);
         std::fs::create_dir_all(&cache_dir).expect("can't create cache directory");
 
         let policy_asset_id = network.d().policy_asset.asset_id();
@@ -74,7 +84,7 @@ impl GdkRegistryCache {
         }
     }
 
-    // NOTE: Does not include L-BTC
+    /// NOTE: Does not include L-BTC
     pub fn get_all_assets(&self) -> AllGdkAssets {
         self.assets.data.load_full()
     }
@@ -83,26 +93,56 @@ impl GdkRegistryCache {
         self.icons.data.load_full()
     }
 
-    // NOTE: Does not include L-BTC
-    pub fn get_asset(&self, asset_id: &AssetId) -> Option<GdkAsset> {
-        self.assets.data.load().get(asset_id).cloned()
+    fn verify_asset_hash(asset_id: &AssetId, asset: &GdkAsset) {
+        assert_eq!(asset.asset_id, *asset_id);
+
+        // Verify contract hash
+        let contract = serde_json::to_string(&asset.contract).expect("must not fail");
+        let contract_hash = ContractHash::from_json_contract(&contract).expect("must not fail");
+        let prevout = elements::OutPoint {
+            txid: asset.issuance_prevout.txid,
+            vout: asset.issuance_prevout.vout,
+        };
+        let entropy = AssetId::generate_asset_entropy(prevout, contract_hash);
+        let expected_asset_id = AssetId::from_entropy(entropy);
+        assert_eq!(expected_asset_id, *asset_id);
+
+        // Verify contract content
+        let contract = serde_json::from_value::<GdkAssetContract>(asset.contract.clone())
+            .expect("must be valid");
+        assert_eq!(contract.entity.domain, asset.entity.domain);
+        assert_eq!(contract.name, asset.name);
+        assert_eq!(contract.ticker, asset.ticker);
+        assert_eq!(contract.precision, asset.precision);
+        assert_eq!(contract.issuer_pubkey, asset.issuer_pubkey);
     }
 
-    // NOTE: Does include L-BTC
+    /// NOTE: Does not include L-BTC
+    ///
+    /// Contract hash is verified
+    pub fn get_asset(&self, asset_id: &AssetId) -> Option<GdkAsset> {
+        let assets = self.assets.data.load();
+        let asset = assets.get(asset_id).cloned()?;
+        Self::verify_asset_hash(asset_id, &asset);
+        Some(asset)
+    }
+
+    /// NOTE: Does include L-BTC
+    ///
+    /// Contract hash is verified for all assets except L-BTC
     pub fn get_short_asset(&self, asset_id: &AssetId) -> Option<ShortAssetInfo> {
         if *asset_id == self.policy_asset_id {
             Some(get_policy_asset_short_info(&self.policy_asset_id))
         } else {
-            self.assets
-                .data
-                .load()
-                .get(asset_id)
-                .map(|asset| ShortAssetInfo {
-                    asset_id: *asset_id,
-                    name: asset.name.clone(),
-                    ticker: asset.ticker.clone(),
-                    precision: asset.precision,
-                })
+            let assets = self.assets.data.load();
+            let asset = assets.get(asset_id)?;
+            Self::verify_asset_hash(asset_id, asset);
+            Some(ShortAssetInfo {
+                asset_id: *asset_id,
+                name: asset.name.clone(),
+                ticker: asset.ticker.clone(),
+                precision: asset.precision,
+            })
         }
     }
 
@@ -110,7 +150,7 @@ impl GdkRegistryCache {
         self.icons.data.load().get(asset_id).cloned()
     }
 
-    // NOTE: Does not include L-BTC
+    /// NOTE: Does not include L-BTC
     pub fn has_asset(&self, asset_id: &AssetId) -> bool {
         self.assets.data.load().contains_key(asset_id)
     }
@@ -339,3 +379,6 @@ async fn run<R: Registry + 'static>(
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

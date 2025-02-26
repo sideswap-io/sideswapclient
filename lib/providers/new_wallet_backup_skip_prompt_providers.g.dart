@@ -13,15 +13,16 @@ String _$skipForNowNotifierHash() =>
 @ProviderFor(SkipForNowNotifier)
 final skipForNowNotifierProvider =
     AutoDisposeNotifierProvider<SkipForNowNotifier, SkipForNowState>.internal(
-  SkipForNowNotifier.new,
-  name: r'skipForNowNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$skipForNowNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      SkipForNowNotifier.new,
+      name: r'skipForNowNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$skipForNowNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SkipForNowNotifier = AutoDisposeNotifier<SkipForNowState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -81,36 +81,24 @@ class SideSwapInputDecoration extends InputDecoration {
   InputBorder get errorBorder =>
       super.border ??
       const OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(
-          color: SideSwapColors.bitterSweet,
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderSide: BorderSide(color: SideSwapColors.bitterSweet),
       );
 
   @override
   InputBorder get focusedErrorBorder =>
       super.border ??
       const OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(
-          color: SideSwapColors.bitterSweet,
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderSide: BorderSide(color: SideSwapColors.bitterSweet),
       );
 
   @override
   InputBorder get border =>
       super.border ??
       const OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(
-          color: Colors.transparent,
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderSide: BorderSide(color: Colors.transparent),
       );
 
   @override
@@ -118,8 +106,6 @@ class SideSwapInputDecoration extends InputDecoration {
       super.focusedBorder ??
       const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(8)),
-        borderSide: BorderSide(
-          color: Colors.transparent,
-        ),
+        borderSide: BorderSide(color: Colors.transparent),
       );
 }

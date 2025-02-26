@@ -22,10 +22,7 @@ class DNewWalletBackupCheck extends ConsumerWidget {
         ref.read(walletProvider).newWalletBackupPrompt();
       },
       backgroundContent: const DNewWalletBackupLogoBackground(),
-      constraints: const BoxConstraints(
-        maxWidth: 628,
-        maxHeight: 529,
-      ),
+      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 529),
       content: Center(
         child: SizedBox(
           width: 484,
@@ -67,8 +64,9 @@ class DNewWalletBackupCheck extends ConsumerWidget {
                   children: List.generate(4, (index) {
                     return Consumer(
                       builder: (context, ref, _) {
-                        final backupCheckAllWords = ref.watch(walletProvider
-                            .select((p) => p.backupCheckAllWords));
+                        final backupCheckAllWords = ref.watch(
+                          walletProvider.select((p) => p.backupCheckAllWords),
+                        );
                         final wordIndices = backupCheckAllWords.keys.toList();
                         final words =
                             backupCheckAllWords[wordIndices[index]] ?? [];
@@ -96,7 +94,8 @@ class DNewWalletBackupCheck extends ConsumerWidget {
         Center(
           child: Consumer(
             builder: ((context, ref, child) {
-              final canContinue = ref
+              final canContinue =
+                  ref
                       .watch(walletProvider)
                       .backupCheckSelectedWords
                       .keys
@@ -105,11 +104,12 @@ class DNewWalletBackupCheck extends ConsumerWidget {
               return DCustomFilledBigButton(
                 width: 460,
                 height: 49,
-                onPressed: canContinue
-                    ? () {
-                        ref.read(walletProvider).backupNewWalletVerify();
-                      }
-                    : null,
+                onPressed:
+                    canContinue
+                        ? () {
+                          ref.read(walletProvider).backupNewWalletVerify();
+                        }
+                        : null,
                 child: Text('CONFIRM'.tr()),
               );
             }),
@@ -162,7 +162,8 @@ class DWordLine extends ConsumerWidget {
           ...List.generate(3, (index) {
             return Consumer(
               builder: (context, ref, _) {
-                final selectedIndex = ref
+                final selectedIndex =
+                    ref
                         .watch(walletProvider)
                         .backupCheckSelectedWords[wordIndex] ??
                     -1;
@@ -209,9 +210,7 @@ class DWordRadioButton extends ConsumerWidget {
       uncheckedDecoration: ButtonState.all(
         BoxDecoration(
           color: const Color(0xFF165071),
-          border: Border.all(
-            color: const Color(0xFF23729D),
-          ),
+          border: Border.all(color: const Color(0xFF23729D)),
           borderRadius: BorderRadius.circular(8),
         ),
       ),
@@ -231,7 +230,8 @@ class DWordRadioButton extends ConsumerWidget {
     return DHoverButton(
       onPressed: onChanged == null ? null : () => onChanged!(!checked),
       builder: (context, state) {
-        final BoxDecoration decoration = (checked
+        final BoxDecoration decoration =
+            (checked
                 ? style.checkedDecoration?.resolve(state)
                 : style.uncheckedDecoration?.resolve(state)) ??
             const BoxDecoration(shape: BoxShape.rectangle);

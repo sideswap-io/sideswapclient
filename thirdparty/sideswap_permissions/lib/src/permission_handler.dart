@@ -28,10 +28,12 @@ class PermissionHandler {
     return _hasPermission(Permission.contacts);
   }
 
-  static Future<bool> requestContactPermission(
-      {Function? onPermissionDenied}) async {
-    final granted =
-        await _requestPermission(permissions: [Permission.contacts]);
+  static Future<bool> requestContactPermission({
+    Function? onPermissionDenied,
+  }) async {
+    final granted = await _requestPermission(
+      permissions: [Permission.contacts],
+    );
     if (!granted && onPermissionDenied != null) {
       onPermissionDenied();
     }
@@ -43,8 +45,9 @@ class PermissionHandler {
     return _hasPermission(Permission.camera);
   }
 
-  static Future<bool> requestCameraPermission(
-      {Function? onPermissionDenied}) async {
+  static Future<bool> requestCameraPermission({
+    Function? onPermissionDenied,
+  }) async {
     final granted = await _requestPermission(permissions: [Permission.camera]);
     if (!granted && onPermissionDenied != null) {
       onPermissionDenied();
@@ -66,12 +69,14 @@ class PermissionHandler {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       if (androidInfo.version.sdkInt <= 30) {
-        return _hasBluetoothPermissions(permissions: [
-          Permission.bluetooth,
-          Permission.location,
-          Permission.locationWhenInUse,
-          // Permission.locationAlways
-        ]);
+        return _hasBluetoothPermissions(
+          permissions: [
+            Permission.bluetooth,
+            Permission.location,
+            Permission.locationWhenInUse,
+            // Permission.locationAlways
+          ],
+        );
       }
     }
 
@@ -83,17 +88,20 @@ class PermissionHandler {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       if (androidInfo.version.sdkInt <= 30) {
-        return _requestBluetoothPermission(permissions: [
-          Permission.bluetooth,
-          Permission.location,
-          Permission.locationWhenInUse,
-          // Permission.locationAlways
-        ]);
+        return _requestBluetoothPermission(
+          permissions: [
+            Permission.bluetooth,
+            Permission.location,
+            Permission.locationWhenInUse,
+            // Permission.locationAlways
+          ],
+        );
       }
     }
 
     return _requestBluetoothPermission(
-        permissions: [Permission.bluetoothConnect]);
+      permissions: [Permission.bluetoothConnect],
+    );
   }
 
   static Future<bool> _hasBluetoothPermissions({

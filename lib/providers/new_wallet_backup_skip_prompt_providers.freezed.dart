@@ -12,7 +12,8 @@ part of 'new_wallet_backup_skip_prompt_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$SkipForNowState {
@@ -20,47 +21,42 @@ mixin _$SkipForNowState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() skipped,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? skipped,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? skipped,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(SkipForNowStateEmpty value) empty,
     required TResult Function(SkipForNowStateSkipped value) skipped,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(SkipForNowStateEmpty value)? empty,
     TResult? Function(SkipForNowStateSkipped value)? skipped,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SkipForNowStateEmpty value)? empty,
     TResult Function(SkipForNowStateSkipped value)? skipped,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $SkipForNowStateCopyWith<$Res> {
   factory $SkipForNowStateCopyWith(
-          SkipForNowState value, $Res Function(SkipForNowState) then) =
-      _$SkipForNowStateCopyWithImpl<$Res, SkipForNowState>;
+    SkipForNowState value,
+    $Res Function(SkipForNowState) then,
+  ) = _$SkipForNowStateCopyWithImpl<$Res, SkipForNowState>;
 }
 
 /// @nodoc
@@ -72,22 +68,30 @@ class _$SkipForNowStateCopyWithImpl<$Res, $Val extends SkipForNowState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of SkipForNowState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$SkipForNowStateEmptyImplCopyWith<$Res> {
-  factory _$$SkipForNowStateEmptyImplCopyWith(_$SkipForNowStateEmptyImpl value,
-          $Res Function(_$SkipForNowStateEmptyImpl) then) =
-      __$$SkipForNowStateEmptyImplCopyWithImpl<$Res>;
+  factory _$$SkipForNowStateEmptyImplCopyWith(
+    _$SkipForNowStateEmptyImpl value,
+    $Res Function(_$SkipForNowStateEmptyImpl) then,
+  ) = __$$SkipForNowStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$SkipForNowStateEmptyImplCopyWithImpl<$Res>
     extends _$SkipForNowStateCopyWithImpl<$Res, _$SkipForNowStateEmptyImpl>
     implements _$$SkipForNowStateEmptyImplCopyWith<$Res> {
-  __$$SkipForNowStateEmptyImplCopyWithImpl(_$SkipForNowStateEmptyImpl _value,
-      $Res Function(_$SkipForNowStateEmptyImpl) _then)
-      : super(_value, _then);
+  __$$SkipForNowStateEmptyImplCopyWithImpl(
+    _$SkipForNowStateEmptyImpl _value,
+    $Res Function(_$SkipForNowStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SkipForNowState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -180,9 +184,9 @@ abstract class SkipForNowStateEmpty implements SkipForNowState {
 /// @nodoc
 abstract class _$$SkipForNowStateSkippedImplCopyWith<$Res> {
   factory _$$SkipForNowStateSkippedImplCopyWith(
-          _$SkipForNowStateSkippedImpl value,
-          $Res Function(_$SkipForNowStateSkippedImpl) then) =
-      __$$SkipForNowStateSkippedImplCopyWithImpl<$Res>;
+    _$SkipForNowStateSkippedImpl value,
+    $Res Function(_$SkipForNowStateSkippedImpl) then,
+  ) = __$$SkipForNowStateSkippedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -190,9 +194,12 @@ class __$$SkipForNowStateSkippedImplCopyWithImpl<$Res>
     extends _$SkipForNowStateCopyWithImpl<$Res, _$SkipForNowStateSkippedImpl>
     implements _$$SkipForNowStateSkippedImplCopyWith<$Res> {
   __$$SkipForNowStateSkippedImplCopyWithImpl(
-      _$SkipForNowStateSkippedImpl _value,
-      $Res Function(_$SkipForNowStateSkippedImpl) _then)
-      : super(_value, _then);
+    _$SkipForNowStateSkippedImpl _value,
+    $Res Function(_$SkipForNowStateSkippedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SkipForNowState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

@@ -1,7 +1,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet},
     sync::Arc,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use anyhow::{anyhow, bail, ensure};
@@ -53,6 +53,7 @@ use crate::{
     gdk_ses::{HwData, SignWith, WalletInfo},
     gdk_ses_impl::{
         decode_pset, encode_pset, get_jade_asset_info, get_jade_network, get_redeem_script,
+        get_witness, unlock_hw,
     },
     worker::{self, coin_select, convert_to_swap_utxo, wallet},
 };
@@ -100,10 +101,14 @@ struct SwapInfo {
 }
 
 struct ReceivedQuote {
+    started_quote: Arc<StartedQuote>,
+
     base_amount: u64,
     quote_amount: u64,
     server_fee: u64,
     fixed_fee: u64,
+
+    expires_at: Instant,
 }
 
 pub struct Data {
@@ -111,7 +116,7 @@ pub struct Data {
     own_orders: BTreeMap<OrdId, OwnOrder>,
     wallet_utxos: BTreeMap<AccountId, gdk_json::UnspentOutputs>,
     server_utxos: BTreeSet<OutPoint>,
-    started_quote: Option<StartedQuote>,
+    started_quote: Option<Arc<StartedQuote>>,
     received_quotes: BTreeMap<QuoteId, ReceivedQuote>,
     subscribed_charts: Option<AssetPair>,
     xprivs: Option<Xprivs>,
@@ -246,6 +251,9 @@ impl From<&OwnOrder> for proto::OwnOrder {
             orig_amount: value.orig_amount,
             active_amount: value.active_amount,
             price: value.price.value(),
+            price_tracking: value
+                .price_tracking
+                .map(|price_tracking| price_tracking.value()),
             private_id: value.private_id.as_ref().map(|value| value.to_string()),
             ttl_seconds: value.ttl.map(|ttl| ttl.as_millis() / 1000),
             two_step: !value.online,
@@ -372,6 +380,8 @@ fn try_get_wallet_key_jade(
         .derive_pub(SECP256K1, &register_path)
         .expect("must not fail")
         .public_key;
+
+    unlock_hw(hw_data.env, &hw_data.jade)?;
 
     let _status = hw_data.jade.start_status(jade_mng::JadeStatus::SignMessage);
     let _resp = hw_data
@@ -810,10 +820,12 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
             worker.market.received_quotes.insert(
                 quote_id,
                 ReceivedQuote {
+                    started_quote: Arc::clone(&started_quote),
                     base_amount,
                     quote_amount,
                     server_fee,
                     fixed_fee,
+                    expires_at: Instant::now() + ttl.duration(),
                 },
             );
             proto::from::quote::Result::Success(proto::from::quote::Success {
@@ -849,6 +861,8 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
         order_id: started_quote.order_id,
         result: Some(res),
     }));
+
+    clean_quotes(worker);
 }
 
 fn try_sign_pset_software(
@@ -857,6 +871,7 @@ fn try_sign_pset_software(
 ) -> Result<PartiallySignedTransaction, anyhow::Error> {
     let tx = pset.extract_tx()?;
     let mut sighash_cache = elements::sighash::SighashCache::new(&tx);
+    let bytes_to_grind = 1;
 
     let xprivs = worker
         .market
@@ -892,6 +907,7 @@ fn try_sign_pset_software(
                         input_index,
                         elements::EcdsaSighashType::All,
                         &priv_key,
+                        bytes_to_grind,
                     ));
                 }
             }
@@ -926,8 +942,7 @@ fn try_sign_pset_jade(
             .jade,
     );
 
-    crate::gdk_ses_impl::unlock_hw(worker.env, &jade)
-        .map_err(|err| anyhow!("jade unlock error: {err}"))?;
+    unlock_hw(worker.env, &jade)?;
 
     let _status = jade.start_status(jade_mng::JadeStatus::SignTx(jade_mng::TxType::Swap));
 
@@ -1161,6 +1176,9 @@ fn try_sign_maker_pset(
 
         ensure!(known_order.asset_pair == first_known_order.asset_pair);
         ensure!(known_order.trade_dir == first_known_order.trade_dir);
+        if let Some(price) = known_order.price {
+            ensure!(swap.price == price);
+        }
         if let Some(min_price) = known_order.min_price {
             ensure!(swap.price >= min_price);
         }
@@ -1352,7 +1370,12 @@ fn try_online_order_submit(
     let asset_pair = AssetPair::from(&msg.asset_pair);
     let trade_dir = TradeDir::from(msg.trade_dir());
     let base_amount = msg.base_amount;
-    let price = NormalFloat::new(msg.price).expect("price must be valid");
+    let price = msg
+        .price
+        .map(|price| NormalFloat::new(price).expect("price must be valid"));
+    let price_tracking = msg.price_tracking.map(|price_tracking| {
+        NormalFloat::new(price_tracking).expect("price_tracking must be valid")
+    });
     let ttl = msg
         .ttl_seconds
         .map(Duration::from_secs)
@@ -1361,13 +1384,19 @@ fn try_online_order_submit(
     let client_order_id = None;
     let change_address = get_change_address(worker, swap_info.change_wallet)?;
 
+    // TODO: Set allowed price range for price_tracking
+    let min_price = None;
+    let max_price = None;
+
     let signature = worker.market.xprivs.as_ref().map(|xprivs| {
         xprivs.event_proofs.sign_client_event(
             mkt::ClientEvent::AddOrder {
                 asset_pair,
                 base_amount,
-                min_price: Some(price),
-                max_price: Some(price),
+                price,
+                price_tracking,
+                min_price,
+                max_price,
                 trade_dir,
                 ttl,
                 receive_address: receive_address.address.clone(),
@@ -1386,6 +1415,9 @@ fn try_online_order_submit(
             asset_pair,
             base_amount: msg.base_amount,
             price,
+            price_tracking,
+            min_price,
+            max_price,
             trade_dir,
             ttl,
             receive_address: receive_address.address,
@@ -1661,7 +1693,8 @@ fn try_offline_order_submit(
     let asset_pair = AssetPair::from(&msg.asset_pair);
 
     let base_amount = msg.base_amount;
-    let price = NormalFloat::new(msg.price).expect("price must be valid");
+    let price = msg.price.ok_or_else(|| anyhow!("price must be set"))?;
+    let price = NormalFloat::new(price)?;
     ensure!(base_amount > 0);
 
     ensure!(price.value() > 0.0);
@@ -1917,12 +1950,14 @@ fn try_offline_order_submit(
 
         let mut sighash_cache = elements::sighash::SighashCache::new(&tx);
 
+        let bytes_to_grind = 1;
         get_witness(
             &mut sighash_cache,
             &utxo,
             0,
             EcdsaSighashType::SinglePlusAnyoneCanPay,
             &priv_key,
+            bytes_to_grind,
         )
     };
 
@@ -2018,12 +2053,7 @@ fn get_change_address(
     Ok(address)
 }
 
-pub fn order_submit(worker: &mut super::Data, mut msg: proto::to::OrderSubmit) {
-    // FIXME: Remove this once UI is updated
-    if is_jade(worker) {
-        msg.two_step = true;
-    }
-
+pub fn order_submit(worker: &mut super::Data, msg: proto::to::OrderSubmit) {
     let asset_pair = AssetPair::from(&msg.asset_pair);
     let trade_dir = TradeDir::from(msg.trade_dir());
 
@@ -2079,6 +2109,10 @@ pub fn try_order_edit(
     let order_id = OrdId::from(msg.order_id);
     let base_amount = msg.base_amount;
     let price = msg.price.map(NormalFloat::new).transpose()?;
+    let price_tracking = msg.price_tracking.map(NormalFloat::new).transpose()?;
+    // TODO: Set allowed price range for price_tracking
+    let min_price = None;
+    let max_price = None;
     let receive_address = None;
     let change_address = None;
 
@@ -2087,8 +2121,10 @@ pub fn try_order_edit(
             mkt::ClientEvent::EditOrder {
                 order_id,
                 base_amount,
-                min_price: price,
-                max_price: price,
+                price,
+                price_tracking,
+                min_price,
+                max_price,
                 receive_address: receive_address.clone(),
                 change_address: change_address.clone(),
             },
@@ -2103,6 +2139,9 @@ pub fn try_order_edit(
             order_id,
             base_amount,
             price,
+            price_tracking,
+            min_price,
+            max_price,
             receive_address,
             change_address,
             signature,
@@ -2297,7 +2336,7 @@ pub fn start_quotes(
 
     match res {
         Ok(started_quote) => {
-            worker.market.started_quote = Some(started_quote);
+            worker.market.started_quote = Some(Arc::new(started_quote));
         }
         Err(err) => {
             worker.ui.send(proto::from::Msg::Quote(proto::from::Quote {
@@ -2331,27 +2370,43 @@ pub fn start_order(
         SERVER_REQUEST_TIMEOUT_LONG
     );
 
-    let error_msg = res.as_ref().err().map(|err| err.to_string());
+    match res {
+        Ok(private) => {
+            worker
+                .ui
+                .send(proto::from::Msg::StartOrder(proto::from::StartOrder {
+                    result: Some(proto::from::start_order::Result::Success(
+                        proto::from::start_order::Success {
+                            asset_pair: private.asset_pair.into(),
+                            trade_dir: proto::TradeDir::from(private.trade_dir).into(),
+                            amount: private.amount,
+                            price: private.price.value(),
+                        },
+                    )),
+                    order_id,
+                }));
 
-    worker
-        .ui
-        .send(proto::from::Msg::StartOrder(proto::GenericResponse {
-            success: error_msg.is_none(),
-            error_msg,
-        }));
+            start_quotes(
+                worker,
+                proto::to::StartQuotes {
+                    asset_pair: private.asset_pair.into(),
+                    asset_type: proto::AssetType::Base.into(),
+                    amount: u64::MAX,
+                    trade_dir: proto::TradeDir::from(private.trade_dir.inv()).into(),
+                },
+                Some(order_id),
+                private_id,
+            );
+        }
 
-    if let Ok(private) = res {
-        start_quotes(
-            worker,
-            proto::to::StartQuotes {
-                asset_pair: private.asset_pair.into(),
-                asset_type: proto::AssetType::Base.into(),
-                amount: u64::MAX,
-                trade_dir: proto::TradeDir::from(private.trade_dir.inv()).into(),
-            },
-            Some(order_id),
-            private_id,
-        );
+        Err(err) => {
+            worker
+                .ui
+                .send(proto::from::Msg::StartOrder(proto::from::StartOrder {
+                    result: Some(proto::from::start_order::Result::Error(err.to_string())),
+                    order_id,
+                }));
+        }
     }
 }
 
@@ -2365,18 +2420,17 @@ fn try_accept_quote(
     worker: &mut super::Data,
     msg: proto::to::AcceptQuote,
 ) -> Result<Txid, anyhow::Error> {
+    clean_quotes(worker);
+
     let quote_id = QuoteId::new(msg.quote_id);
 
-    let started_quote = worker
-        .market
-        .started_quote
-        .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("started_quote is None"))?;
     let received_quote = worker
         .market
         .received_quotes
         .get(&quote_id)
-        .ok_or_else(|| anyhow!("can't find quote"))?;
+        .ok_or_else(|| anyhow!("Quote expired"))?;
+
+    let started_quote = &received_quote.started_quote;
 
     let resp = send_market_request!(
         worker,
@@ -2600,38 +2654,6 @@ fn derive_priv_key(xprivs: &Xprivs, utxo: &gdk_json::UnspentOutput) -> SecretKey
     }
 }
 
-fn get_witness(
-    sighash_cache: &mut elements::sighash::SighashCache<&Transaction>,
-    utxo: &gdk_json::UnspentOutput,
-    input_index: usize,
-    sighash_type: EcdsaSighashType,
-    priv_key: &SecretKey,
-) -> Vec<Vec<u8>> {
-    let value = utxo.commitment.into_inner();
-    let sighash =
-        sighash_cache.segwitv0_sighash(input_index, &utxo.prevout_script, value, sighash_type);
-    let message =
-        elements::secp256k1_zkp::Message::from_digest_slice(&sighash[..]).expect("must not fail");
-
-    let signature = SECP256K1.sign_ecdsa_low_r(&message, &priv_key);
-    let signature = elements_miniscript::elementssig_to_rawsig(&(signature, sighash_type));
-
-    match utxo.address_type {
-        gdk_json::AddressType::P2shP2wpkh => {
-            let pub_key = priv_key.public_key(&SECP256K1);
-            vec![signature, pub_key.serialize().to_vec()]
-        }
-        gdk_json::AddressType::P2wsh => {
-            vec![
-                vec![],
-                GREEN_DUMMY_SIG.to_vec(),
-                signature,
-                utxo.prevout_script.to_bytes(),
-            ]
-        }
-    }
-}
-
 fn sync_market_list(worker: &mut super::Data) {
     if worker.market.server_markets.is_empty() {
         return;
@@ -2699,4 +2721,23 @@ fn sync_market_list(worker: &mut super::Data) {
                 markets: market_list,
             }));
     }
+}
+
+pub fn clean_quotes(worker: &mut super::Data) {
+    let now = Instant::now();
+    worker
+        .market
+        .received_quotes
+        .retain(|_quote_id, quote| quote.expires_at > now);
+
+    if worker.market.received_quotes.is_empty() {
+        worker::remove_timers(worker, worker::TimerEvent::CleanQuotes);
+        return;
+    }
+
+    worker::replace_timers(
+        worker,
+        Duration::from_secs(1),
+        worker::TimerEvent::CleanQuotes,
+    );
 }

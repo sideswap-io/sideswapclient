@@ -16,7 +16,7 @@ class SideSwapPopup extends ConsumerWidget {
     this.enableInsideHorizontalPadding = true,
     this.onClose,
     this.canPop,
-    this.onPopInvoked,
+    this.onPopInvokedWithResult,
     this.hideCloseButton = false,
     this.padding = EdgeInsets.zero,
     this.sideSwapBackground = true,
@@ -35,7 +35,7 @@ class SideSwapPopup extends ConsumerWidget {
   final EdgeInsetsGeometry padding;
   final VoidCallback? onClose;
   final bool? canPop;
-  final void Function(bool)? onPopInvoked;
+  final PopInvokedWithResultCallback<dynamic>? onPopInvokedWithResult;
   final bool hideCloseButton;
   final bool sideSwapBackground;
   final Color? backgroundCoverColor;
@@ -53,7 +53,7 @@ class SideSwapPopup extends ConsumerWidget {
       sideSwapBackground: sideSwapBackground,
       backgroundColor: backgroundCoverColor,
       canPop: canPop,
-      onPopInvoked: onPopInvoked,
+      onPopInvokedWithResult: onPopInvokedWithResult,
       appBar: appBar,
       persistentFooterButtons: persistentFooterButtons,
       bottomNavigationBar: bottomNavigationBar,
@@ -77,10 +77,12 @@ class SideSwapPopup extends ConsumerWidget {
                   children: [
                     Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: enableInsideHorizontalPadding ? 16 : 0),
+                        horizontal: enableInsideHorizontalPadding ? 16 : 0,
+                      ),
                       child: Padding(
                         padding: EdgeInsets.only(
-                            top: enableInsideTopPadding ? 28 : 0),
+                          top: enableInsideTopPadding ? 28 : 0,
+                        ),
                         child: child,
                       ),
                     ),
@@ -89,10 +91,12 @@ class SideSwapPopup extends ConsumerWidget {
                         alignment: Alignment.topRight,
                         child: Padding(
                           padding: EdgeInsets.only(
-                              top: enableInsideTopPadding ? 25 : 0, right: 22),
+                            top: enableInsideTopPadding ? 25 : 0,
+                            right: 22,
+                          ),
                           child: CustomBackButton(
-                            width: 18,
-                            height: 18,
+                            width: 42,
+                            height: 42,
                             buttonType: CustomBackButtonType.close,
                             onPressed: () {
                               if (onClose != null) {

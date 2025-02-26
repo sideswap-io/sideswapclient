@@ -28,6 +28,7 @@ class JadeStatus with _$JadeStatus {
   const factory JadeStatus.signSwap() = JadeStatusSignSwap;
   const factory JadeStatus.signSwapOutput() = JadeStatusSignSwapOutput;
   const factory JadeStatus.connecting() = JadeStatusConnecting;
+  const factory JadeStatus.signMessage() = JadeStatusSignMessage;
 
   factory JadeStatus.fromStatus(From_JadeStatus_Status status) {
     return switch (status) {
@@ -43,47 +44,61 @@ class JadeStatus with _$JadeStatus {
       From_JadeStatus_Status.SIGN_SWAP_OUTPUT =>
         const JadeStatusSignSwapOutput(),
       From_JadeStatus_Status.CONNECTING => const JadeStatusConnecting(),
+      From_JadeStatus_Status.SIGN_MESSAGE => const JadeStatusSignMessage(),
       _ => throw JadeStatusException(),
     };
   }
 
   From_JadeStatus_Status toStatus() {
-    return when(idle: () {
-      return From_JadeStatus_Status.IDLE;
-    }, readStatus: () {
-      return From_JadeStatus_Status.READ_STATUS;
-    }, authUser: () {
-      return From_JadeStatus_Status.AUTH_USER;
-    }, signTx: () {
-      return From_JadeStatus_Status.SIGN_TX;
-    }, masterBlindingKey: () {
-      return From_JadeStatus_Status.MASTER_BLINDING_KEY;
-    }, signSwap: () {
-      return From_JadeStatus_Status.SIGN_SWAP;
-    }, signSwapOutput: () {
-      return From_JadeStatus_Status.SIGN_SWAP_OUTPUT;
-    }, signOfflineSwap: () {
-      return From_JadeStatus_Status.SIGN_OFFLINE_SWAP;
-    }, connecting: () {
-      return From_JadeStatus_Status.CONNECTING;
-    });
+    return when(
+      idle: () {
+        return From_JadeStatus_Status.IDLE;
+      },
+      readStatus: () {
+        return From_JadeStatus_Status.READ_STATUS;
+      },
+      authUser: () {
+        return From_JadeStatus_Status.AUTH_USER;
+      },
+      signTx: () {
+        return From_JadeStatus_Status.SIGN_TX;
+      },
+      masterBlindingKey: () {
+        return From_JadeStatus_Status.MASTER_BLINDING_KEY;
+      },
+      signSwap: () {
+        return From_JadeStatus_Status.SIGN_SWAP;
+      },
+      signSwapOutput: () {
+        return From_JadeStatus_Status.SIGN_SWAP_OUTPUT;
+      },
+      signOfflineSwap: () {
+        return From_JadeStatus_Status.SIGN_OFFLINE_SWAP;
+      },
+      connecting: () {
+        return From_JadeStatus_Status.CONNECTING;
+      },
+      signMessage: () {
+        return From_JadeStatus_Status.SIGN_MESSAGE;
+      },
+    );
   }
 }
 
 @freezed
 class JadeDevicesState with _$JadeDevicesState {
   const factory JadeDevicesState.unavailable() = JadeDevicesStateUnavailable;
-  const factory JadeDevicesState.available(
-      {required List<From_JadePorts_Port> devices}) = JadeDevicesStateAvailable;
+  const factory JadeDevicesState.available({
+    required List<From_JadePorts_Port> devices,
+  }) = JadeDevicesStateAvailable;
 }
 
 @freezed
 class JadePort with _$JadePort {
   JadePort._();
 
-  factory JadePort({
-    required From_JadePorts_Port fromJadePortsPort,
-  }) = _JadePort;
+  factory JadePort({required From_JadePorts_Port fromJadePortsPort}) =
+      _JadePort;
 
   String get jadeId => fromJadePortsPort.jadeId;
   String get port => fromJadePortsPort.port;

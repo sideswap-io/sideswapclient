@@ -43,10 +43,11 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                         color: Colors.white,
                       ),
                       child: QrImageView(
-                        data: env == SIDESWAP_ENV_TESTNET ||
-                                env == SIDESWAP_ENV_LOCAL_TESTNET
-                            ? '$pegxStagingAuthIdUrl$requestId'
-                            : '$pegxAuthIdUrl$requestId',
+                        data:
+                            env == SIDESWAP_ENV_TESTNET ||
+                                    env == SIDESWAP_ENV_LOCAL_TESTNET
+                                ? '$pegxStagingAuthIdUrl$requestId'
+                                : '$pegxAuthIdUrl$requestId',
                         size: 150,
                         padding: const EdgeInsets.all(12),
                       ),
@@ -90,10 +91,7 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                               '1. Open the Auth eID App on your mobile phone.\n2. Tap the QR symbol on the Auth eID App.\n3. Point the camera at the QR code in this field.'
                                   .tr(),
                               style: textTheme.bodyMedium?.merge(
-                                const TextStyle(
-                                  fontSize: 15,
-                                  height: 1.22,
-                                ),
+                                const TextStyle(fontSize: 15, height: 1.22),
                               ),
                             ),
                           ],
@@ -111,7 +109,7 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
             child: DAmpLoginDialogBottomPanel(
               prefix: RichText(
                 text: TextSpan(
-                  text: 'Don\'t have the Auth eID App? '.tr(),
+                  text: "Don't have the Auth eID App? ".tr(),
                   style: textTheme.titleSmall,
                   children: <TextSpan>[
                     TextSpan(
@@ -124,8 +122,9 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                         ),
                       ),
                       mouseCursor: SystemMouseCursors.click,
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => openUrl('https://autheid.com/'),
+                      recognizer:
+                          TapGestureRecognizer()
+                            ..onTap = () => openUrl('https://autheid.com/'),
                     ),
                   ],
                 ),
@@ -133,7 +132,7 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
               url: 'https://pegx.io',
               urlText: 'pegx.io',
             ),
-          )
+          ),
         ],
       ),
     );

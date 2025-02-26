@@ -35,13 +35,13 @@ class DTextIconContainer extends StatelessWidget {
           switch (trailingIcon) {
             final trailingIcon? => trailingIcon,
             _ => DIconButton(
-                icon: const Icon(
-                  Icons.close,
-                  color: SideSwapColors.freshAir,
-                  size: 18,
-                ),
-                onPressed: onPressed,
+              icon: const Icon(
+                Icons.close,
+                color: SideSwapColors.freshAir,
+                size: 18,
               ),
+              onPressed: onPressed,
+            ),
           },
         ],
       ),

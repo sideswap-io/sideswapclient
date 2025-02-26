@@ -6,24 +6,27 @@ part of 'payment_select_asset.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$paymentAssetTypesHash() => r'4c70d27cbcb39d990e317ff27193b8c2ee07e696';
+String _$paymentAssetTypesHash() => r'10cfb25e87d48a67dccb7f8e46b0c9e640811225';
 
 /// See also [paymentAssetTypes].
 @ProviderFor(paymentAssetTypes)
 final paymentAssetTypesProvider =
     AutoDisposeProvider<List<PaymentAccountType>>.internal(
-  paymentAssetTypes,
-  name: r'paymentAssetTypesProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paymentAssetTypesHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      paymentAssetTypes,
+      name: r'paymentAssetTypesProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$paymentAssetTypesHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef PaymentAssetTypesRef = AutoDisposeProviderRef<List<PaymentAccountType>>;
 String _$paymentIsAssetDisabledHash() =>
-    r'e6ecee2082c92a6bc0fc2ca9056622b50ba92f67';
+    r'a84016c5f9cf9e64222e08acc66ed692c2d1fbd8';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -56,21 +59,15 @@ class PaymentIsAssetDisabledFamily extends Family<bool> {
   const PaymentIsAssetDisabledFamily();
 
   /// See also [paymentIsAssetDisabled].
-  PaymentIsAssetDisabledProvider call(
-    AccountAsset accountAsset,
-  ) {
-    return PaymentIsAssetDisabledProvider(
-      accountAsset,
-    );
+  PaymentIsAssetDisabledProvider call(AccountAsset accountAsset) {
+    return PaymentIsAssetDisabledProvider(accountAsset);
   }
 
   @override
   PaymentIsAssetDisabledProvider getProviderOverride(
     covariant PaymentIsAssetDisabledProvider provider,
   ) {
-    return call(
-      provider.accountAsset,
-    );
+    return call(provider.accountAsset);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -91,24 +88,23 @@ class PaymentIsAssetDisabledFamily extends Family<bool> {
 /// See also [paymentIsAssetDisabled].
 class PaymentIsAssetDisabledProvider extends AutoDisposeProvider<bool> {
   /// See also [paymentIsAssetDisabled].
-  PaymentIsAssetDisabledProvider(
-    AccountAsset accountAsset,
-  ) : this._internal(
-          (ref) => paymentIsAssetDisabled(
-            ref as PaymentIsAssetDisabledRef,
-            accountAsset,
-          ),
-          from: paymentIsAssetDisabledProvider,
-          name: r'paymentIsAssetDisabledProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$paymentIsAssetDisabledHash,
-          dependencies: PaymentIsAssetDisabledFamily._dependencies,
-          allTransitiveDependencies:
-              PaymentIsAssetDisabledFamily._allTransitiveDependencies,
-          accountAsset: accountAsset,
-        );
+  PaymentIsAssetDisabledProvider(AccountAsset accountAsset)
+    : this._internal(
+        (ref) => paymentIsAssetDisabled(
+          ref as PaymentIsAssetDisabledRef,
+          accountAsset,
+        ),
+        from: paymentIsAssetDisabledProvider,
+        name: r'paymentIsAssetDisabledProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$paymentIsAssetDisabledHash,
+        dependencies: PaymentIsAssetDisabledFamily._dependencies,
+        allTransitiveDependencies:
+            PaymentIsAssetDisabledFamily._allTransitiveDependencies,
+        accountAsset: accountAsset,
+      );
 
   PaymentIsAssetDisabledProvider._internal(
     super._createNotifier, {
@@ -160,13 +156,16 @@ class PaymentIsAssetDisabledProvider extends AutoDisposeProvider<bool> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin PaymentIsAssetDisabledRef on AutoDisposeProviderRef<bool> {
   /// The parameter `accountAsset` of this provider.
   AccountAsset get accountAsset;
 }
 
 class _PaymentIsAssetDisabledProviderElement
-    extends AutoDisposeProviderElement<bool> with PaymentIsAssetDisabledRef {
+    extends AutoDisposeProviderElement<bool>
+    with PaymentIsAssetDisabledRef {
   _PaymentIsAssetDisabledProviderElement(super.provider);
 
   @override
@@ -175,25 +174,28 @@ class _PaymentIsAssetDisabledProviderElement
 }
 
 String _$paymentAvailableAssetsWithInputsFilteredHash() =>
-    r'b3b8424688345d8dc6ea1dd291592639a5f8a4b6';
+    r'0ec7ddf5634aeca5379c2a95b0de4de8642a35a3';
 
 /// See also [paymentAvailableAssetsWithInputsFiltered].
 @ProviderFor(paymentAvailableAssetsWithInputsFiltered)
 final paymentAvailableAssetsWithInputsFilteredProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
-  paymentAvailableAssetsWithInputsFiltered,
-  name: r'paymentAvailableAssetsWithInputsFilteredProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paymentAvailableAssetsWithInputsFilteredHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      paymentAvailableAssetsWithInputsFiltered,
+      name: r'paymentAvailableAssetsWithInputsFilteredProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$paymentAvailableAssetsWithInputsFilteredHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef PaymentAvailableAssetsWithInputsFilteredRef
-    = AutoDisposeProviderRef<List<AccountAsset>>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PaymentAvailableAssetsWithInputsFilteredRef =
+    AutoDisposeProviderRef<List<AccountAsset>>;
 String _$paymentAccountAssetsByTypeHash() =>
-    r'af0b4405470e58135197cad3ea5a4d8d7598f49f';
+    r'a1fd72219e0a9e5e70af7d01d626eb7d12c18f24';
 
 /// See also [paymentAccountAssetsByType].
 @ProviderFor(paymentAccountAssetsByType)
@@ -208,18 +210,14 @@ class PaymentAccountAssetsByTypeFamily extends Family<List<AccountAsset>> {
   PaymentAccountAssetsByTypeProvider call(
     PaymentAccountType paymentAccountType,
   ) {
-    return PaymentAccountAssetsByTypeProvider(
-      paymentAccountType,
-    );
+    return PaymentAccountAssetsByTypeProvider(paymentAccountType);
   }
 
   @override
   PaymentAccountAssetsByTypeProvider getProviderOverride(
     covariant PaymentAccountAssetsByTypeProvider provider,
   ) {
-    return call(
-      provider.paymentAccountType,
-    );
+    return call(provider.paymentAccountType);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -241,24 +239,23 @@ class PaymentAccountAssetsByTypeFamily extends Family<List<AccountAsset>> {
 class PaymentAccountAssetsByTypeProvider
     extends AutoDisposeProvider<List<AccountAsset>> {
   /// See also [paymentAccountAssetsByType].
-  PaymentAccountAssetsByTypeProvider(
-    PaymentAccountType paymentAccountType,
-  ) : this._internal(
-          (ref) => paymentAccountAssetsByType(
-            ref as PaymentAccountAssetsByTypeRef,
-            paymentAccountType,
-          ),
-          from: paymentAccountAssetsByTypeProvider,
-          name: r'paymentAccountAssetsByTypeProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$paymentAccountAssetsByTypeHash,
-          dependencies: PaymentAccountAssetsByTypeFamily._dependencies,
-          allTransitiveDependencies:
-              PaymentAccountAssetsByTypeFamily._allTransitiveDependencies,
-          paymentAccountType: paymentAccountType,
-        );
+  PaymentAccountAssetsByTypeProvider(PaymentAccountType paymentAccountType)
+    : this._internal(
+        (ref) => paymentAccountAssetsByType(
+          ref as PaymentAccountAssetsByTypeRef,
+          paymentAccountType,
+        ),
+        from: paymentAccountAssetsByTypeProvider,
+        name: r'paymentAccountAssetsByTypeProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$paymentAccountAssetsByTypeHash,
+        dependencies: PaymentAccountAssetsByTypeFamily._dependencies,
+        allTransitiveDependencies:
+            PaymentAccountAssetsByTypeFamily._allTransitiveDependencies,
+        paymentAccountType: paymentAccountType,
+      );
 
   PaymentAccountAssetsByTypeProvider._internal(
     super._createNotifier, {
@@ -310,6 +307,8 @@ class PaymentAccountAssetsByTypeProvider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin PaymentAccountAssetsByTypeRef
     on AutoDisposeProviderRef<List<AccountAsset>> {
   /// The parameter `paymentAccountType` of this provider.
@@ -332,12 +331,15 @@ String _$paymentAvailableAssetsHash() =>
 /// See also [PaymentAvailableAssets].
 @ProviderFor(PaymentAvailableAssets)
 final paymentAvailableAssetsProvider = AutoDisposeNotifierProvider<
-    PaymentAvailableAssets, List<AccountAsset>>.internal(
+  PaymentAvailableAssets,
+  List<AccountAsset>
+>.internal(
   PaymentAvailableAssets.new,
   name: r'paymentAvailableAssetsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paymentAvailableAssetsHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$paymentAvailableAssetsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -349,16 +351,19 @@ String _$paymentDisabledAssetsHash() =>
 /// See also [PaymentDisabledAssets].
 @ProviderFor(PaymentDisabledAssets)
 final paymentDisabledAssetsProvider = AutoDisposeNotifierProvider<
-    PaymentDisabledAssets, List<AccountAsset>>.internal(
+  PaymentDisabledAssets,
+  List<AccountAsset>
+>.internal(
   PaymentDisabledAssets.new,
   name: r'paymentDisabledAssetsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paymentDisabledAssetsHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$paymentDisabledAssetsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 typedef _$PaymentDisabledAssets = AutoDisposeNotifier<List<AccountAsset>>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

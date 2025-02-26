@@ -3,9 +3,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/onboarding/widgets/amp_bottom_panel_body.dart';
 
 class StokrBottomPanel extends StatelessWidget {
-  const StokrBottomPanel({
-    super.key,
-  });
+  const StokrBottomPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +13,9 @@ class StokrBottomPanel extends StatelessWidget {
       child: AmpBottomPanelBody(
         url: 'https://stokr.io',
         urlText: 'stokr.io',
-        textStyle: Theme.of(context).textTheme.bodyMedium?.merge(
-              const TextStyle(
-                fontSize: 14,
-              ),
-            ),
+        textStyle: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.merge(const TextStyle(fontSize: 14)),
       ),
     );
   }

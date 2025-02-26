@@ -32,9 +32,32 @@ final $typed_data.Uint8List accountStateDescriptor = $convert.base64Decode(
 const AccountDetails$json = {
   '1': 'AccountDetails',
   '2': [
-    {'1': 'org', '3': 1, '4': 1, '5': 11, '6': '.api.proto.AccountDetails.OrgDetails', '9': 0, '10': 'org'},
-    {'1': 'individual', '3': 2, '4': 1, '5': 11, '6': '.api.proto.AccountDetails.IndividualDetails', '9': 0, '10': 'individual'},
-    {'1': 'account_state', '3': 3, '4': 2, '5': 14, '6': '.api.proto.AccountState', '10': 'accountState'},
+    {
+      '1': 'org',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.AccountDetails.OrgDetails',
+      '9': 0,
+      '10': 'org'
+    },
+    {
+      '1': 'individual',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.AccountDetails.IndividualDetails',
+      '9': 0,
+      '10': 'individual'
+    },
+    {
+      '1': 'account_state',
+      '3': 3,
+      '4': 2,
+      '5': 14,
+      '6': '.api.proto.AccountState',
+      '10': 'accountState'
+    },
   ],
   '3': [AccountDetails_OrgDetails$json, AccountDetails_IndividualDetails$json],
   '8': [
@@ -69,12 +92,36 @@ const AccountDetails_IndividualDetails$json = {
     {'1': 'date_of_birth', '3': 6, '4': 2, '5': 9, '10': 'dateOfBirth'},
     {'1': 'nationality', '3': 7, '4': 2, '5': 9, '10': 'nationality'},
     {'1': 'personal_number', '3': 8, '4': 2, '5': 9, '10': 'personalNumber'},
-    {'1': 'residency_country', '3': 9, '4': 2, '5': 9, '10': 'residencyCountry'},
+    {
+      '1': 'residency_country',
+      '3': 9,
+      '4': 2,
+      '5': 9,
+      '10': 'residencyCountry'
+    },
     {'1': 'residency_area', '3': 10, '4': 2, '5': 9, '10': 'residencyArea'},
     {'1': 'residency_city', '3': 11, '4': 2, '5': 9, '10': 'residencyCity'},
-    {'1': 'residency_postcode', '3': 12, '4': 2, '5': 9, '10': 'residencyPostcode'},
-    {'1': 'residency_address', '3': 13, '4': 2, '5': 9, '10': 'residencyAddress'},
-    {'1': 'residency_address2', '3': 14, '4': 2, '5': 9, '10': 'residencyAddress2'},
+    {
+      '1': 'residency_postcode',
+      '3': 12,
+      '4': 2,
+      '5': 9,
+      '10': 'residencyPostcode'
+    },
+    {
+      '1': 'residency_address',
+      '3': 13,
+      '4': 2,
+      '5': 9,
+      '10': 'residencyAddress'
+    },
+    {
+      '1': 'residency_address2',
+      '3': 14,
+      '4': 2,
+      '5': 9,
+      '10': 'residencyAddress2'
+    },
   ],
 };
 
@@ -127,7 +174,14 @@ const Account$json = {
   '2': [
     {'1': 'name', '3': 4, '4': 2, '5': 9, '10': 'name'},
     {'1': 'account_key', '3': 1, '4': 2, '5': 9, '10': 'accountKey'},
-    {'1': 'details', '3': 2, '4': 2, '5': 11, '6': '.api.proto.AccountDetails', '10': 'details'},
+    {
+      '1': 'details',
+      '3': 2,
+      '4': 2,
+      '5': 11,
+      '6': '.api.proto.AccountDetails',
+      '10': 'details'
+    },
     {'1': 'gaids', '3': 3, '4': 3, '5': 9, '10': 'gaids'},
   ],
 };
@@ -182,8 +236,22 @@ final $typed_data.Uint8List inOutDescriptor = $convert.base64Decode(
 const FullTransaction$json = {
   '1': 'FullTransaction',
   '2': [
-    {'1': 'inputs', '3': 1, '4': 3, '5': 11, '6': '.api.proto.InOut', '10': 'inputs'},
-    {'1': 'outputs', '3': 2, '4': 3, '5': 11, '6': '.api.proto.InOut', '10': 'outputs'},
+    {
+      '1': 'inputs',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.InOut',
+      '10': 'inputs'
+    },
+    {
+      '1': 'outputs',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.InOut',
+      '10': 'outputs'
+    },
     {'1': 'txid', '3': 3, '4': 2, '5': 9, '10': 'txid'},
     {'1': 'timestamp', '3': 4, '4': 2, '5': 3, '10': 'timestamp'},
     {'1': 'unblinded', '3': 5, '4': 2, '5': 9, '10': 'unblinded'},
@@ -219,7 +287,14 @@ final $typed_data.Uint8List ownTransactionDescriptor = $convert.base64Decode(
 const BalanceOwner$json = {
   '1': 'BalanceOwner',
   '2': [
-    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Account', '10': 'account'},
+    {
+      '1': 'account',
+      '3': 1,
+      '4': 2,
+      '5': 11,
+      '6': '.api.proto.Account',
+      '10': 'account'
+    },
     {'1': 'amount', '3': 2, '4': 2, '5': 1, '10': 'amount'},
   ],
 };
@@ -247,7 +322,14 @@ const SerieOwner$json = {
   '1': 'SerieOwner',
   '2': [
     {'1': 'account_key', '3': 1, '4': 2, '5': 9, '10': 'accountKey'},
-    {'1': 'series', '3': 2, '4': 3, '5': 11, '6': '.api.proto.Serie', '10': 'series'},
+    {
+      '1': 'series',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Serie',
+      '10': 'series'
+    },
   ],
 };
 
@@ -261,23 +343,159 @@ const Req$json = {
   '1': 'Req',
   '2': [
     {'1': 'id', '3': 1, '4': 2, '5': 3, '10': 'id'},
-    {'1': 'login_or_register', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Req.LoginOrRegister', '9': 0, '10': 'loginOrRegister'},
-    {'1': 'register_issuer', '3': 14, '4': 1, '5': 11, '6': '.api.proto.Req.RegisterIssuer', '9': 0, '10': 'registerIssuer'},
-    {'1': 'resume', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Req.Resume', '9': 0, '10': 'resume'},
-    {'1': 'logout', '3': 13, '4': 1, '5': 11, '6': '.api.proto.Req.Logout', '9': 0, '10': 'logout'},
-    {'1': 'add_gaid', '3': 20, '4': 1, '5': 11, '6': '.api.proto.Req.AddGaid', '9': 0, '10': 'addGaid'},
-    {'1': 'load_assets', '3': 21, '4': 1, '5': 11, '6': '.api.proto.Req.LoadAssets', '9': 0, '10': 'loadAssets'},
-    {'1': 'buy_shares', '3': 24, '4': 1, '5': 11, '6': '.api.proto.Req.BuyShares', '9': 0, '10': 'buyShares'},
-    {'1': 'load_countries', '3': 25, '4': 1, '5': 11, '6': '.api.proto.Req.LoadCountries', '9': 0, '10': 'loadCountries'},
-    {'1': 'load_regs', '3': 26, '4': 1, '5': 11, '6': '.api.proto.Req.LoadRegs', '9': 0, '10': 'loadRegs'},
-    {'1': 'load_file', '3': 28, '4': 1, '5': 11, '6': '.api.proto.Req.LoadFile', '9': 0, '10': 'loadFile'},
-    {'1': 'update_reg', '3': 27, '4': 1, '5': 11, '6': '.api.proto.Req.UpdateReg', '9': 0, '10': 'updateReg'},
-    {'1': 'list_all_transactions', '3': 29, '4': 1, '5': 11, '6': '.api.proto.Req.ListAllTransactions', '9': 0, '10': 'listAllTransactions'},
-    {'1': 'list_own_transactions', '3': 30, '4': 1, '5': 11, '6': '.api.proto.Req.ListOwnTransactions', '9': 0, '10': 'listOwnTransactions'},
-    {'1': 'list_all_balances', '3': 31, '4': 1, '5': 11, '6': '.api.proto.Req.ListAllBalances', '9': 0, '10': 'listAllBalances'},
-    {'1': 'list_all_series', '3': 32, '4': 1, '5': 11, '6': '.api.proto.Req.ListAllSeries', '9': 0, '10': 'listAllSeries'},
+    {
+      '1': 'login_or_register',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.LoginOrRegister',
+      '9': 0,
+      '10': 'loginOrRegister'
+    },
+    {
+      '1': 'register_issuer',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.RegisterIssuer',
+      '9': 0,
+      '10': 'registerIssuer'
+    },
+    {
+      '1': 'resume',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.Resume',
+      '9': 0,
+      '10': 'resume'
+    },
+    {
+      '1': 'logout',
+      '3': 13,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.Logout',
+      '9': 0,
+      '10': 'logout'
+    },
+    {
+      '1': 'add_gaid',
+      '3': 20,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.AddGaid',
+      '9': 0,
+      '10': 'addGaid'
+    },
+    {
+      '1': 'load_assets',
+      '3': 21,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.LoadAssets',
+      '9': 0,
+      '10': 'loadAssets'
+    },
+    {
+      '1': 'buy_shares',
+      '3': 24,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.BuyShares',
+      '9': 0,
+      '10': 'buyShares'
+    },
+    {
+      '1': 'load_countries',
+      '3': 25,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.LoadCountries',
+      '9': 0,
+      '10': 'loadCountries'
+    },
+    {
+      '1': 'load_regs',
+      '3': 26,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.LoadRegs',
+      '9': 0,
+      '10': 'loadRegs'
+    },
+    {
+      '1': 'load_file',
+      '3': 28,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.LoadFile',
+      '9': 0,
+      '10': 'loadFile'
+    },
+    {
+      '1': 'update_reg',
+      '3': 27,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.UpdateReg',
+      '9': 0,
+      '10': 'updateReg'
+    },
+    {
+      '1': 'list_all_transactions',
+      '3': 29,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.ListAllTransactions',
+      '9': 0,
+      '10': 'listAllTransactions'
+    },
+    {
+      '1': 'list_own_transactions',
+      '3': 30,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.ListOwnTransactions',
+      '9': 0,
+      '10': 'listOwnTransactions'
+    },
+    {
+      '1': 'list_all_balances',
+      '3': 31,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.ListAllBalances',
+      '9': 0,
+      '10': 'listAllBalances'
+    },
+    {
+      '1': 'list_all_series',
+      '3': 32,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.ListAllSeries',
+      '9': 0,
+      '10': 'listAllSeries'
+    },
   ],
-  '3': [Req_LoginOrRegister$json, Req_RegisterIssuer$json, Req_Resume$json, Req_Logout$json, Req_AddGaid$json, Req_LoadAssets$json, Req_BuyShares$json, Req_LoadCountries$json, Req_LoadRegs$json, Req_LoadFile$json, Req_UpdateReg$json, Req_ListAllTransactions$json, Req_ListOwnTransactions$json, Req_ListAllBalances$json, Req_ListAllSeries$json],
+  '3': [
+    Req_LoginOrRegister$json,
+    Req_RegisterIssuer$json,
+    Req_Resume$json,
+    Req_Logout$json,
+    Req_AddGaid$json,
+    Req_LoadAssets$json,
+    Req_BuyShares$json,
+    Req_LoadCountries$json,
+    Req_LoadRegs$json,
+    Req_LoadFile$json,
+    Req_UpdateReg$json,
+    Req_ListAllTransactions$json,
+    Req_ListOwnTransactions$json,
+    Req_ListAllBalances$json,
+    Req_ListAllSeries$json
+  ],
   '8': [
     {'1': 'body'},
   ],
@@ -287,7 +505,14 @@ const Req$json = {
 const Req_LoginOrRegister$json = {
   '1': 'LoginOrRegister',
   '2': [
-    {'1': 'org', '3': 1, '4': 1, '5': 11, '6': '.api.proto.Req.LoginOrRegister.Org', '10': 'org'},
+    {
+      '1': 'org',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Req.LoginOrRegister.Org',
+      '10': 'org'
+    },
   ],
   '3': [Req_LoginOrRegister_Org$json],
 };
@@ -457,23 +682,159 @@ const Resp$json = {
   '1': 'Resp',
   '2': [
     {'1': 'id', '3': 1, '4': 2, '5': 3, '10': 'id'},
-    {'1': 'login_or_register', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Resp.LoginOrRegister', '9': 0, '10': 'loginOrRegister'},
-    {'1': 'register_issuer', '3': 14, '4': 1, '5': 11, '6': '.api.proto.Resp.RegisterIssuer', '9': 0, '10': 'registerIssuer'},
-    {'1': 'resume', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Resp.Resume', '9': 0, '10': 'resume'},
-    {'1': 'logout', '3': 13, '4': 1, '5': 11, '6': '.api.proto.Resp.Logout', '9': 0, '10': 'logout'},
-    {'1': 'add_gaid', '3': 20, '4': 1, '5': 11, '6': '.api.proto.Resp.AddGaid', '9': 0, '10': 'addGaid'},
-    {'1': 'load_assets', '3': 21, '4': 1, '5': 11, '6': '.api.proto.Resp.LoadAssets', '9': 0, '10': 'loadAssets'},
-    {'1': 'buy_shares', '3': 24, '4': 1, '5': 11, '6': '.api.proto.Resp.BuyShares', '9': 0, '10': 'buyShares'},
-    {'1': 'load_countries', '3': 25, '4': 1, '5': 11, '6': '.api.proto.Resp.LoadCountries', '9': 0, '10': 'loadCountries'},
-    {'1': 'load_regs', '3': 26, '4': 1, '5': 11, '6': '.api.proto.Resp.LoadRegs', '9': 0, '10': 'loadRegs'},
-    {'1': 'load_file', '3': 28, '4': 1, '5': 11, '6': '.api.proto.Resp.LoadFile', '9': 0, '10': 'loadFile'},
-    {'1': 'update_reg', '3': 27, '4': 1, '5': 11, '6': '.api.proto.Resp.UpdateReg', '9': 0, '10': 'updateReg'},
-    {'1': 'list_all_transactions', '3': 29, '4': 1, '5': 11, '6': '.api.proto.Resp.ListAllTransactions', '9': 0, '10': 'listAllTransactions'},
-    {'1': 'list_own_transactions', '3': 30, '4': 1, '5': 11, '6': '.api.proto.Resp.ListOwnTransactions', '9': 0, '10': 'listOwnTransactions'},
-    {'1': 'list_all_balances', '3': 31, '4': 1, '5': 11, '6': '.api.proto.Resp.ListAllBalances', '9': 0, '10': 'listAllBalances'},
-    {'1': 'list_all_series', '3': 32, '4': 1, '5': 11, '6': '.api.proto.Resp.ListAllSeries', '9': 0, '10': 'listAllSeries'},
+    {
+      '1': 'login_or_register',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.LoginOrRegister',
+      '9': 0,
+      '10': 'loginOrRegister'
+    },
+    {
+      '1': 'register_issuer',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.RegisterIssuer',
+      '9': 0,
+      '10': 'registerIssuer'
+    },
+    {
+      '1': 'resume',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.Resume',
+      '9': 0,
+      '10': 'resume'
+    },
+    {
+      '1': 'logout',
+      '3': 13,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.Logout',
+      '9': 0,
+      '10': 'logout'
+    },
+    {
+      '1': 'add_gaid',
+      '3': 20,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.AddGaid',
+      '9': 0,
+      '10': 'addGaid'
+    },
+    {
+      '1': 'load_assets',
+      '3': 21,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.LoadAssets',
+      '9': 0,
+      '10': 'loadAssets'
+    },
+    {
+      '1': 'buy_shares',
+      '3': 24,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.BuyShares',
+      '9': 0,
+      '10': 'buyShares'
+    },
+    {
+      '1': 'load_countries',
+      '3': 25,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.LoadCountries',
+      '9': 0,
+      '10': 'loadCountries'
+    },
+    {
+      '1': 'load_regs',
+      '3': 26,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.LoadRegs',
+      '9': 0,
+      '10': 'loadRegs'
+    },
+    {
+      '1': 'load_file',
+      '3': 28,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.LoadFile',
+      '9': 0,
+      '10': 'loadFile'
+    },
+    {
+      '1': 'update_reg',
+      '3': 27,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.UpdateReg',
+      '9': 0,
+      '10': 'updateReg'
+    },
+    {
+      '1': 'list_all_transactions',
+      '3': 29,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.ListAllTransactions',
+      '9': 0,
+      '10': 'listAllTransactions'
+    },
+    {
+      '1': 'list_own_transactions',
+      '3': 30,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.ListOwnTransactions',
+      '9': 0,
+      '10': 'listOwnTransactions'
+    },
+    {
+      '1': 'list_all_balances',
+      '3': 31,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.ListAllBalances',
+      '9': 0,
+      '10': 'listAllBalances'
+    },
+    {
+      '1': 'list_all_series',
+      '3': 32,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp.ListAllSeries',
+      '9': 0,
+      '10': 'listAllSeries'
+    },
   ],
-  '3': [Resp_LoginOrRegister$json, Resp_RegisterIssuer$json, Resp_Resume$json, Resp_Logout$json, Resp_AddGaid$json, Resp_LoadAssets$json, Resp_BuyShares$json, Resp_LoadCountries$json, Resp_LoadRegs$json, Resp_LoadFile$json, Resp_UpdateReg$json, Resp_ListAllTransactions$json, Resp_ListOwnTransactions$json, Resp_ListAllBalances$json, Resp_ListAllSeries$json],
+  '3': [
+    Resp_LoginOrRegister$json,
+    Resp_RegisterIssuer$json,
+    Resp_Resume$json,
+    Resp_Logout$json,
+    Resp_AddGaid$json,
+    Resp_LoadAssets$json,
+    Resp_BuyShares$json,
+    Resp_LoadCountries$json,
+    Resp_LoadRegs$json,
+    Resp_LoadFile$json,
+    Resp_UpdateReg$json,
+    Resp_ListAllTransactions$json,
+    Resp_ListOwnTransactions$json,
+    Resp_ListAllBalances$json,
+    Resp_ListAllSeries$json
+  ],
   '8': [
     {'1': 'body'},
   ],
@@ -496,8 +857,22 @@ const Resp_RegisterIssuer$json = {
 const Resp_Resume$json = {
   '1': 'Resume',
   '2': [
-    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.api.proto.Account', '10': 'accounts'},
-    {'1': 'managed_assets', '3': 2, '4': 3, '5': 11, '6': '.api.proto.Asset', '10': 'managedAssets'},
+    {
+      '1': 'accounts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Account',
+      '10': 'accounts'
+    },
+    {
+      '1': 'managed_assets',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Asset',
+      '10': 'managedAssets'
+    },
     {'1': 'issuer', '3': 3, '4': 2, '5': 8, '10': 'issuer'},
   ],
 };
@@ -516,7 +891,14 @@ const Resp_AddGaid$json = {
 const Resp_LoadAssets$json = {
   '1': 'LoadAssets',
   '2': [
-    {'1': 'assets', '3': 1, '4': 3, '5': 11, '6': '.api.proto.Asset', '10': 'assets'},
+    {
+      '1': 'assets',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Asset',
+      '10': 'assets'
+    },
   ],
 };
 
@@ -543,7 +925,14 @@ const Resp_LoadCountries$json = {
 const Resp_LoadRegs$json = {
   '1': 'LoadRegs',
   '2': [
-    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.api.proto.Account', '10': 'list'},
+    {
+      '1': 'list',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Account',
+      '10': 'list'
+    },
   ],
 };
 
@@ -565,8 +954,22 @@ const Resp_UpdateReg$json = {
 const Resp_ListAllTransactions$json = {
   '1': 'ListAllTransactions',
   '2': [
-    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.api.proto.FullTransaction', '10': 'list'},
-    {'1': 'accounts', '3': 2, '4': 3, '5': 11, '6': '.api.proto.Account', '10': 'accounts'},
+    {
+      '1': 'list',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.FullTransaction',
+      '10': 'list'
+    },
+    {
+      '1': 'accounts',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Account',
+      '10': 'accounts'
+    },
   ],
 };
 
@@ -574,7 +977,14 @@ const Resp_ListAllTransactions$json = {
 const Resp_ListOwnTransactions$json = {
   '1': 'ListOwnTransactions',
   '2': [
-    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.api.proto.OwnTransaction', '10': 'list'},
+    {
+      '1': 'list',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.OwnTransaction',
+      '10': 'list'
+    },
   ],
 };
 
@@ -582,7 +992,14 @@ const Resp_ListOwnTransactions$json = {
 const Resp_ListAllBalances$json = {
   '1': 'ListAllBalances',
   '2': [
-    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.api.proto.BalanceOwner', '10': 'list'},
+    {
+      '1': 'list',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.BalanceOwner',
+      '10': 'list'
+    },
   ],
 };
 
@@ -590,7 +1007,14 @@ const Resp_ListAllBalances$json = {
 const Resp_ListAllSeries$json = {
   '1': 'ListAllSeries',
   '2': [
-    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.api.proto.SerieOwner', '10': 'list'},
+    {
+      '1': 'list',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.SerieOwner',
+      '10': 'list'
+    },
     {'1': 'csv', '3': 2, '4': 2, '5': 9, '10': 'csv'},
   ],
 };
@@ -638,17 +1062,99 @@ final $typed_data.Uint8List respDescriptor = $convert.base64Decode(
 const Notif$json = {
   '1': 'Notif',
   '2': [
-    {'1': 'login_or_register_failed', '3': 3, '4': 1, '5': 11, '6': '.api.proto.Notif.LoginOrRegisterFailed', '9': 0, '10': 'loginOrRegisterFailed'},
-    {'1': 'login_or_register_succeed', '3': 4, '4': 1, '5': 11, '6': '.api.proto.Notif.LoginOrRegisterSucceed', '9': 0, '10': 'loginOrRegisterSucceed'},
-    {'1': 'free_shares', '3': 5, '4': 1, '5': 11, '6': '.api.proto.Notif.FreeShares', '9': 0, '10': 'freeShares'},
-    {'1': 'sold_shares', '3': 7, '4': 1, '5': 11, '6': '.api.proto.Notif.SoldShares', '9': 0, '10': 'soldShares'},
-    {'1': 'user_shares', '3': 8, '4': 1, '5': 11, '6': '.api.proto.Notif.UserShares', '9': 0, '10': 'userShares'},
-    {'1': 'buy_shares', '3': 6, '4': 1, '5': 11, '6': '.api.proto.Notif.BuyShares', '9': 0, '10': 'buyShares'},
-    {'1': 'update_prices', '3': 9, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdatePrices', '9': 0, '10': 'updatePrices'},
-    {'1': 'update_market_data', '3': 10, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdateMarketData', '9': 0, '10': 'updateMarketData'},
-    {'1': 'update_balances', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdateBalances', '9': 0, '10': 'updateBalances'},
+    {
+      '1': 'login_or_register_failed',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.LoginOrRegisterFailed',
+      '9': 0,
+      '10': 'loginOrRegisterFailed'
+    },
+    {
+      '1': 'login_or_register_succeed',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.LoginOrRegisterSucceed',
+      '9': 0,
+      '10': 'loginOrRegisterSucceed'
+    },
+    {
+      '1': 'free_shares',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.FreeShares',
+      '9': 0,
+      '10': 'freeShares'
+    },
+    {
+      '1': 'sold_shares',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.SoldShares',
+      '9': 0,
+      '10': 'soldShares'
+    },
+    {
+      '1': 'user_shares',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.UserShares',
+      '9': 0,
+      '10': 'userShares'
+    },
+    {
+      '1': 'buy_shares',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.BuyShares',
+      '9': 0,
+      '10': 'buyShares'
+    },
+    {
+      '1': 'update_prices',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.UpdatePrices',
+      '9': 0,
+      '10': 'updatePrices'
+    },
+    {
+      '1': 'update_market_data',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.UpdateMarketData',
+      '9': 0,
+      '10': 'updateMarketData'
+    },
+    {
+      '1': 'update_balances',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif.UpdateBalances',
+      '9': 0,
+      '10': 'updateBalances'
+    },
   ],
-  '3': [Notif_LoginOrRegisterFailed$json, Notif_LoginOrRegisterSucceed$json, Notif_FreeShares$json, Notif_SoldShares$json, Notif_UserShares$json, Notif_BuyShares$json, Notif_UpdatePrices$json, Notif_UpdateMarketData$json, Notif_UpdateBalances$json],
+  '3': [
+    Notif_LoginOrRegisterFailed$json,
+    Notif_LoginOrRegisterSucceed$json,
+    Notif_FreeShares$json,
+    Notif_SoldShares$json,
+    Notif_UserShares$json,
+    Notif_BuyShares$json,
+    Notif_UpdatePrices$json,
+    Notif_UpdateMarketData$json,
+    Notif_UpdateBalances$json
+  ],
   '8': [
     {'1': 'body'},
   ],
@@ -674,7 +1180,14 @@ const Notif_LoginOrRegisterSucceed$json = {
 const Notif_FreeShares$json = {
   '1': 'FreeShares',
   '2': [
-    {'1': 'free_shares', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Shares', '10': 'freeShares'},
+    {
+      '1': 'free_shares',
+      '3': 1,
+      '4': 2,
+      '5': 11,
+      '6': '.api.proto.Shares',
+      '10': 'freeShares'
+    },
     {'1': 'name', '3': 2, '4': 2, '5': 9, '10': 'name'},
     {'1': 'amount', '3': 3, '4': 2, '5': 3, '10': 'amount'},
   ],
@@ -684,7 +1197,14 @@ const Notif_FreeShares$json = {
 const Notif_SoldShares$json = {
   '1': 'SoldShares',
   '2': [
-    {'1': 'sold_shares', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Shares', '10': 'soldShares'},
+    {
+      '1': 'sold_shares',
+      '3': 1,
+      '4': 2,
+      '5': 11,
+      '6': '.api.proto.Shares',
+      '10': 'soldShares'
+    },
   ],
 };
 
@@ -692,7 +1212,14 @@ const Notif_SoldShares$json = {
 const Notif_UserShares$json = {
   '1': 'UserShares',
   '2': [
-    {'1': 'bought_shares', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Shares', '10': 'boughtShares'},
+    {
+      '1': 'bought_shares',
+      '3': 1,
+      '4': 2,
+      '5': 11,
+      '6': '.api.proto.Shares',
+      '10': 'boughtShares'
+    },
   ],
 };
 
@@ -720,7 +1247,14 @@ const Notif_UpdatePrices$json = {
 const Notif_UpdateMarketData$json = {
   '1': 'UpdateMarketData',
   '2': [
-    {'1': 'data', '3': 1, '4': 3, '5': 11, '6': '.api.proto.Notif.UpdateMarketData.Data', '10': 'data'},
+    {
+      '1': 'data',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Notif.UpdateMarketData.Data',
+      '10': 'data'
+    },
   ],
   '3': [Notif_UpdateMarketData_Data$json],
 };
@@ -740,7 +1274,14 @@ const Notif_UpdateBalances$json = {
   '1': 'UpdateBalances',
   '2': [
     {'1': 'account_key', '3': 1, '4': 2, '5': 9, '10': 'accountKey'},
-    {'1': 'balances', '3': 2, '4': 3, '5': 11, '6': '.api.proto.Balance', '10': 'balances'},
+    {
+      '1': 'balances',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.api.proto.Balance',
+      '10': 'balances'
+    },
   ],
 };
 
@@ -785,16 +1326,40 @@ const Err$json = {
 };
 
 /// Descriptor for `Err`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List errDescriptor = $convert.base64Decode(
-    'CgNFcnISDgoCaWQYASABKANSAmlkEhIKBHRleHQYAiACKAlSBHRleHQ=');
+final $typed_data.Uint8List errDescriptor = $convert
+    .base64Decode('CgNFcnISDgoCaWQYASABKANSAmlkEhIKBHRleHQYAiACKAlSBHRleHQ=');
 
 @$core.Deprecated('Use resDescriptor instead')
 const Res$json = {
   '1': 'Res',
   '2': [
-    {'1': 'resp', '3': 1, '4': 1, '5': 11, '6': '.api.proto.Resp', '9': 0, '10': 'resp'},
-    {'1': 'notif', '3': 2, '4': 1, '5': 11, '6': '.api.proto.Notif', '9': 0, '10': 'notif'},
-    {'1': 'error', '3': 3, '4': 1, '5': 11, '6': '.api.proto.Err', '9': 0, '10': 'error'},
+    {
+      '1': 'resp',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Resp',
+      '9': 0,
+      '10': 'resp'
+    },
+    {
+      '1': 'notif',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Notif',
+      '9': 0,
+      '10': 'notif'
+    },
+    {
+      '1': 'error',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.api.proto.Err',
+      '9': 0,
+      '10': 'error'
+    },
   ],
   '8': [
     {'1': 'body'},
@@ -806,4 +1371,3 @@ final $typed_data.Uint8List resDescriptor = $convert.base64Decode(
     'CgNSZXMSJQoEcmVzcBgBIAEoCzIPLmFwaS5wcm90by5SZXNwSABSBHJlc3ASKAoFbm90aWYYAi'
     'ABKAsyEC5hcGkucHJvdG8uTm90aWZIAFIFbm90aWYSJgoFZXJyb3IYAyABKAsyDi5hcGkucHJv'
     'dG8uRXJySABSBWVycm9yQgYKBGJvZHk=');
-

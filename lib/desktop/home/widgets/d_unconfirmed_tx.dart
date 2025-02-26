@@ -7,7 +7,7 @@ import 'package:sideswap/desktop/widgets/d_tx_history_amount.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_date.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_header.dart';
-import 'package:sideswap/desktop/widgets/d_tx_history_link.dart';
+import 'package:sideswap/desktop/widgets/d_tx_blinded_url_icon_button.dart';
 import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_wallet.dart';
@@ -30,10 +30,9 @@ class DUnconfirmedTx extends StatelessWidget {
           height: 43,
           child: DefaultTextStyle(
             style: const TextStyle().merge(
-              Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: SideSwapColors.glacier),
+              Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: SideSwapColors.glacier),
             ),
             child: DFlexesRow(
               flexes: const [183, 97, 137, 205, 205, 125, 26],
@@ -49,11 +48,7 @@ class DUnconfirmedTx extends StatelessWidget {
             ),
           ),
         ),
-        const Divider(
-          height: 1,
-          thickness: 0,
-          color: SideSwapColors.jellyBean,
-        ),
+        const Divider(height: 1, thickness: 0, color: SideSwapColors.jellyBean),
         Consumer(
           builder: (context, ref, _) {
             final allNewTxSorted = ref.watch(allNewTxsSortedProvider);
@@ -64,113 +59,131 @@ class DUnconfirmedTx extends StatelessWidget {
 
             return switch (txList.isEmpty) {
               true => Padding(
-                  padding: const EdgeInsets.only(top: 63),
-                  child: Text(
-                    'No unconfirmed transactions'.tr(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelMedium
-                        ?.copyWith(color: SideSwapColors.glacier),
+                padding: const EdgeInsets.only(top: 63),
+                child: Text(
+                  'No unconfirmed transactions'.tr(),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: SideSwapColors.glacier,
                   ),
                 ),
+              ),
               false => Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 20),
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverList.builder(
-                          itemBuilder: (context, index) {
-                            final transItem = txList[index];
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverList.builder(
+                        itemBuilder: (context, index) {
+                          final transItem = txList[index];
 
-                            return Consumer(
-                              builder: (context, ref, child) {
-                                final transItemHelper = ref
-                                    .watch(transItemHelperProvider(transItem));
+                          return Consumer(
+                            builder: (context, ref, child) {
+                              final transItemHelper = ref.watch(
+                                transItemHelperProvider(transItem),
+                              );
 
-                                return DTransparentButton(
-                                  onPressed: () {
-                                    final allPegsById =
-                                        ref.read(allPegsByIdProvider);
-                                    ref.read(desktopDialogProvider).showTx(
+                              return DTransparentButton(
+                                onPressed: () {
+                                  final allPegsById = ref.read(
+                                    allPegsByIdProvider,
+                                  );
+                                  ref
+                                      .read(desktopDialogProvider)
+                                      .showTx(
                                         transItem,
-                                        isPeg: allPegsById
-                                            .containsKey(transItem.id));
-                                  },
-                                  child: DFlexesRow(
-                                    flexes: const [
-                                      183,
-                                      97,
-                                      137,
-                                      205,
-                                      205,
-                                      125,
-                                      26
-                                    ],
-                                    children: [
-                                      DTxHistoryDate(
-                                        dateFormatDate: dateFormatDate,
-                                        dateFormatTime: dateFormatTime,
-                                        tx: transItem,
-                                        dateTextStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                        timeTextStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall
-                                            ?.copyWith(
-                                              color: SideSwapColors
-                                                  .airSuperiorityBlue,
-                                            ),
+                                        isPeg: allPegsById.containsKey(
+                                          transItem.id,
+                                        ),
+                                      );
+                                },
+                                child: DFlexesRow(
+                                  flexes: const [
+                                    183,
+                                    97,
+                                    137,
+                                    205,
+                                    205,
+                                    125,
+                                    26,
+                                  ],
+                                  children: [
+                                    DTxHistoryDate(
+                                      dateFormatDate: dateFormatDate,
+                                      dateFormatTime: dateFormatTime,
+                                      tx: transItem,
+                                      dateTextStyle:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall,
+                                      timeTextStyle: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall?.copyWith(
+                                        color:
+                                            SideSwapColors.airSuperiorityBlue,
                                       ),
-                                      DTxHistoryWallet(
-                                        tx: transItem,
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
+                                    ),
+                                    DTxHistoryWallet(
+                                      tx: transItem,
+                                      textStyle:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall,
+                                    ),
+                                    DTxHistoryType(
+                                      transItem: transItem,
+                                      textStyle:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall,
+                                    ),
+                                    DTxHistoryAmount(
+                                      balance: transItemHelper.getSentBalance(
+                                        liquidAssetId,
+                                        bitcoinAssetId,
                                       ),
-                                      DTxHistoryType(
-                                        transItem: transItem,
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
+                                      multipleOutputs:
+                                          transItemHelper
+                                              .getSentMultipleOutputs(),
+                                      textStyle:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall,
+                                    ),
+                                    DTxHistoryAmount(
+                                      balance: transItemHelper.getRecvBalance(
+                                        liquidAssetId,
+                                        bitcoinAssetId,
                                       ),
-                                      DTxHistoryAmount(
-                                        balance: transItemHelper.getSentBalance(
-                                            liquidAssetId, bitcoinAssetId),
-                                        multipleOutputs: transItemHelper
-                                            .getSentMultipleOutputs(),
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      DTxHistoryAmount(
-                                        balance: transItemHelper.getRecvBalance(
-                                            liquidAssetId, bitcoinAssetId),
-                                        multipleOutputs: transItemHelper
-                                            .getRecvMultipleOutputs(),
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      DTxHistoryConfs(
-                                        tx: transItem,
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      DTxHistoryLink(txid: transItem.tx.txid),
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          itemCount: txList.length,
-                        ),
-                      ],
-                    ),
+                                      multipleOutputs:
+                                          transItemHelper
+                                              .getRecvMultipleOutputs(),
+                                      textStyle:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall,
+                                    ),
+                                    DTxHistoryConfs(
+                                      tx: transItem,
+                                      textStyle:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall,
+                                    ),
+                                    DTxBlindedUrlIconButton(
+                                      txid: transItem.tx.txid,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        itemCount: txList.length,
+                      ),
+                    ],
                   ),
                 ),
+              ),
             };
           },
         ),

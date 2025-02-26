@@ -3,10 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
-enum EmptyRequestLogoIcon {
-  male,
-  ok,
-}
+enum EmptyRequestLogoIcon { male, ok }
 
 class EmptyRequestsLogoIconContainer extends StatelessWidget {
   const EmptyRequestsLogoIconContainer({
@@ -31,11 +28,7 @@ class EmptyRequestsLogoIconContainer extends StatelessWidget {
         break;
       case EmptyRequestLogoIcon.ok:
         internalIcon = Center(
-          child: SvgPicture.asset(
-            'assets/success.svg',
-            width: 18,
-            height: 18,
-          ),
+          child: SvgPicture.asset('assets/success.svg', width: 18, height: 18),
         );
         break;
     }
@@ -111,7 +104,9 @@ class EmptyRequestsLogoIconContainer extends StatelessWidget {
                         height: 14,
                         color: Colors.transparent,
                         border: Border.all(
-                            color: SideSwapColors.brightTurquoise, width: 2),
+                          color: SideSwapColors.brightTurquoise,
+                          width: 2,
+                        ),
                       ),
                       const Padding(
                         padding: EdgeInsets.only(left: 4),

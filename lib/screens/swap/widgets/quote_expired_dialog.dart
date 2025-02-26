@@ -11,16 +11,12 @@ void showQuoteExpiredDialog(BuildContext context) {
     builder: (BuildContext context) {
       return Dialog(
         insetPadding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Container(
           width: 343,
           height: 417,
           decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
             color: SideSwapColors.blumine,
           ),
           child: Padding(
@@ -46,7 +42,9 @@ void showQuoteExpiredDialog(BuildContext context) {
                       width: 23,
                       height: 23,
                       colorFilter: const ColorFilter.mode(
-                          SideSwapColors.bitterSweet, BlendMode.srcIn),
+                        SideSwapColors.bitterSweet,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),

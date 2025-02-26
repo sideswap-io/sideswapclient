@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/desktop/main/d_asset_info.dart';
 import 'package:sideswap/desktop/main/d_export_tx_success.dart';
 import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
 import 'package:sideswap/desktop/main/d_open_tx_import.dart';
-import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/main/d_recv_popup.dart';
 import 'package:sideswap/desktop/main/d_select_inputs_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_view_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_wait_pegin.dart';
+import 'package:sideswap/desktop/markets/widgets/d_accept_quote_error_dialog.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -20,7 +21,7 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 part 'desktop_dialog_providers.g.dart';
 
 @riverpod
-DesktopDialog desktopDialog(DesktopDialogRef ref) {
+DesktopDialog desktopDialog(Ref ref) {
   final context = ref.read(navigatorKeyProvider).currentContext!;
   return DesktopDialog(context: context);
 }
@@ -86,9 +87,9 @@ class DesktopDialog {
     );
   }
 
-  void showTx(TransItem transItem, {required bool isPeg}) {
+  Future<void> showTx(TransItem transItem, {required bool isPeg}) async {
     closePopups();
-    showDialog<void>(
+    await showDialog<void>(
       context: _context,
       builder: (context) {
         return isPeg
@@ -99,6 +100,17 @@ class DesktopDialog {
     );
   }
 
+  Future<void> showAcceptQuoteErrorDialog() async {
+    await showDialog<void>(
+      context: _context,
+      builder: (context) {
+        return DAcceptQuoteErrorDialog();
+      },
+      routeSettings: RouteSettings(name: quoteErrorRouteName),
+      useRootNavigator: false,
+    );
+  }
+
   void waitPegin() {
     closePopups();
     showDialog<void>(
@@ -106,20 +118,6 @@ class DesktopDialog {
       builder: (context) {
         return const DWaitPegin();
       },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
-  }
-
-  void orderReview(ReviewScreen screen) {
-    closePopups();
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return DOrderReview(
-          screen: screen,
-        );
-      },
-      useRootNavigator: true,
       routeSettings: const RouteSettings(name: _popupRouteName),
     );
   }
@@ -159,11 +157,11 @@ class DesktopDialog {
     );
   }
 
-  void openAccount(AccountAsset account) {
+  void openAccount(AccountAsset accountAsset) {
     showDialog<void>(
       context: _context,
       builder: (context) {
-        return DAssetInfo(account: account);
+        return DAssetInfo(accountAsset: accountAsset);
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );

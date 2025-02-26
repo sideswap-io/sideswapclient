@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-class SwitchButton extends StatelessWidget {
+class SwitchButton extends HookConsumerWidget {
   const SwitchButton({
     super.key,
     this.backgroundColor = SideSwapColors.prussianBlue,
     this.borderRadius = 8,
-    required this.width,
-    required this.height,
+    this.buttonBorderRadius = 6,
+    this.width,
+    this.height,
     required this.value,
     this.onToggle,
     this.borderColor = SideSwapColors.prussianBlue,
@@ -23,10 +25,11 @@ class SwitchButton extends StatelessWidget {
     this.fontSize,
   });
 
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final Color backgroundColor;
   final double borderRadius;
+  final double buttonBorderRadius;
   final bool value;
   final void Function(bool)? onToggle;
   final Color borderColor;
@@ -42,7 +45,7 @@ class SwitchButton extends StatelessWidget {
   final double? fontSize;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final enabled = onToggle != null;
 
     final defaultActiveTextStyle = TextStyle(
@@ -59,17 +62,20 @@ class SwitchButton extends StatelessWidget {
       color: SideSwapColors.ceruleanFrost,
     );
 
-    final internalActiveTextStyle = (enabled
+    final internalActiveTextStyle =
+        (enabled
             ? activeTextStyle
             : activeTextStyle?.copyWith(
-                color: activeTextStyle?.color?.withOpacity(0.2))) ??
+              color: activeTextStyle?.color?.withValues(alpha: 0.2),
+            )) ??
         (enabled
             ? defaultActiveTextStyle
             : defaultActiveTextStyle.copyWith(
-                color: SideSwapColors.ceruleanFrost));
+              color: SideSwapColors.ceruleanFrost,
+            ));
 
-    final switchWidth = (width / 2) - borderWidth;
-    final switchHeight = height - borderWidth;
+    final switchWidth = width == null ? null : (width! / 2) - borderWidth;
+    final switchHeight = height == null ? null : height! - borderWidth;
 
     return GestureDetector(
       onTap: () {
@@ -84,68 +90,75 @@ class SwitchButton extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
-            border: Border.all(
-              width: borderWidth,
-              color: borderColor,
-            ),
+            border: Border.all(width: borderWidth, color: borderColor),
             borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
             color: backgroundColor,
           ),
           child: Row(
             children: [
               if (value) ...[
-                inactiveToggle ??
-                    SwithButtonInactiveToggle(
-                      switchWidth: switchWidth,
-                      switchHeight: switchHeight,
-                      inactiveToggleBackground: inactiveToggleBackground,
-                      activeText: activeText,
-                      inactiveText: inactiveText,
-                      switchValue: value,
-                      inactiveTextStyle:
-                          inactiveTextStyle ?? defaultInactiveTextStyle,
-                    ),
-                const Spacer(),
-                activeToggle ??
-                    SwitchButtonActiveToggle(
-                      switchWidth: switchWidth,
-                      switchHeight: switchHeight,
-                      borderRadius: borderRadius,
-                      borderWidth: borderWidth,
-                      enabled: enabled,
-                      activeText: activeText,
-                      inactiveText: inactiveText,
-                      switchValue: value,
-                      activeToggleBackground: activeToggleBackground,
-                      activeTextStyle: internalActiveTextStyle,
-                    ),
+                Flexible(
+                  child:
+                      inactiveToggle ??
+                      SwithButtonInactiveToggle(
+                        switchWidth: switchWidth,
+                        switchHeight: switchHeight,
+                        inactiveToggleBackground: inactiveToggleBackground,
+                        activeText: activeText,
+                        inactiveText: inactiveText,
+                        switchValue: value,
+                        inactiveTextStyle:
+                            inactiveTextStyle ?? defaultInactiveTextStyle,
+                      ),
+                ),
+                Flexible(
+                  child:
+                      activeToggle ??
+                      SwitchButtonActiveToggle(
+                        switchWidth: switchWidth,
+                        switchHeight: switchHeight,
+                        borderRadius: buttonBorderRadius,
+                        borderWidth: borderWidth,
+                        enabled: enabled,
+                        activeText: activeText,
+                        inactiveText: inactiveText,
+                        switchValue: value,
+                        activeToggleBackground: activeToggleBackground,
+                        activeTextStyle: internalActiveTextStyle,
+                      ),
+                ),
               ] else ...[
-                activeToggle ??
-                    SwitchButtonActiveToggle(
-                      switchWidth: switchWidth,
-                      switchHeight: switchHeight,
-                      borderRadius: borderRadius,
-                      borderWidth: borderWidth,
-                      enabled: enabled,
-                      activeText: activeText,
-                      inactiveText: inactiveText,
-                      switchValue: value,
-                      activeToggleBackground: activeToggleBackground,
-                      activeTextStyle: internalActiveTextStyle,
-                    ),
-                const Spacer(),
-                inactiveToggle ??
-                    SwithButtonInactiveToggle(
-                      switchWidth: switchWidth,
-                      switchHeight: switchHeight,
-                      inactiveToggleBackground: inactiveToggleBackground,
-                      activeText: activeText,
-                      inactiveText: inactiveText,
-                      switchValue: value,
-                      inactiveTextStyle:
-                          inactiveTextStyle ?? defaultInactiveTextStyle,
-                    ),
-              ]
+                Flexible(
+                  child:
+                      activeToggle ??
+                      SwitchButtonActiveToggle(
+                        switchWidth: switchWidth,
+                        switchHeight: switchHeight,
+                        borderRadius: buttonBorderRadius,
+                        borderWidth: borderWidth,
+                        enabled: enabled,
+                        activeText: activeText,
+                        inactiveText: inactiveText,
+                        switchValue: value,
+                        activeToggleBackground: activeToggleBackground,
+                        activeTextStyle: internalActiveTextStyle,
+                      ),
+                ),
+                Flexible(
+                  child:
+                      inactiveToggle ??
+                      SwithButtonInactiveToggle(
+                        switchWidth: switchWidth,
+                        switchHeight: switchHeight,
+                        inactiveToggleBackground: inactiveToggleBackground,
+                        activeText: activeText,
+                        inactiveText: inactiveText,
+                        switchValue: value,
+                        inactiveTextStyle:
+                            inactiveTextStyle ?? defaultInactiveTextStyle,
+                      ),
+                ),
+              ],
             ],
           ),
         ),
@@ -157,8 +170,8 @@ class SwitchButton extends StatelessWidget {
 class SwitchButtonActiveToggle extends StatelessWidget {
   const SwitchButtonActiveToggle({
     super.key,
-    required this.switchWidth,
-    required this.switchHeight,
+    this.switchWidth,
+    this.switchHeight,
     required this.borderRadius,
     required this.borderWidth,
     required this.enabled,
@@ -169,8 +182,8 @@ class SwitchButtonActiveToggle extends StatelessWidget {
     this.activeTextStyle,
   });
 
-  final double switchWidth;
-  final double switchHeight;
+  final double? switchWidth;
+  final double? switchHeight;
   final double borderRadius;
   final double borderWidth;
   final bool enabled;
@@ -186,11 +199,13 @@ class SwitchButtonActiveToggle extends StatelessWidget {
       width: switchWidth,
       height: switchHeight,
       decoration: BoxDecoration(
-        borderRadius:
-            BorderRadius.all(Radius.circular(borderRadius - borderWidth)),
-        color: enabled
-            ? activeToggleBackground
-            : SideSwapColors.navyBlue.withOpacity(0.2),
+        borderRadius: BorderRadius.all(
+          Radius.circular(borderRadius - borderWidth),
+        ),
+        color:
+            enabled
+                ? activeToggleBackground
+                : SideSwapColors.navyBlue.withValues(alpha: 0.2),
       ),
       child: Center(
         child: Text(
@@ -205,8 +220,8 @@ class SwitchButtonActiveToggle extends StatelessWidget {
 class SwithButtonInactiveToggle extends StatelessWidget {
   const SwithButtonInactiveToggle({
     super.key,
-    required this.switchWidth,
-    required this.switchHeight,
+    this.switchWidth,
+    this.switchHeight,
     required this.inactiveToggleBackground,
     required this.activeText,
     required this.inactiveText,
@@ -214,8 +229,8 @@ class SwithButtonInactiveToggle extends StatelessWidget {
     this.inactiveTextStyle,
   });
 
-  final double switchWidth;
-  final double switchHeight;
+  final double? switchWidth;
+  final double? switchHeight;
   final Color inactiveToggleBackground;
   final String activeText;
   final String inactiveText;

@@ -41,10 +41,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 0),
             child: Text(
               'Select address type'.tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
           ),
           const SizedBox(height: 20),
@@ -103,9 +100,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(
-            height: 40,
-          ),
+          const SizedBox(height: 40),
           DCustomButton(
             height: 44,
             isFilled: true,

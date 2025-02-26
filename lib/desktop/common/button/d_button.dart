@@ -35,32 +35,34 @@ class DButton extends DBaseButton {
         return 0.3;
       }),
       shadowColor: ButtonState.all(shadowColor),
-      padding: ButtonState.all(const EdgeInsets.only(
-        left: 11.0,
-        top: 5.0,
-        right: 11.0,
-        bottom: 6.0,
-      )),
-      shape: ButtonState.all(RoundedRectangleBorder(
-        side: BorderSide(
-          color: brightness.isLight
-              ? const Color.fromRGBO(0, 0, 0, 0.09)
-              : const Color.fromRGBO(255, 255, 255, 0.05),
-          width: 1,
+      padding: ButtonState.all(
+        const EdgeInsets.only(left: 11.0, top: 5.0, right: 11.0, bottom: 6.0),
+      ),
+      shape: ButtonState.all(
+        RoundedRectangleBorder(
+          side: BorderSide(
+            color:
+                brightness.isLight
+                    ? const Color.fromRGBO(0, 0, 0, 0.09)
+                    : const Color.fromRGBO(255, 255, 255, 0.05),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(4.0),
         ),
-        borderRadius: BorderRadius.circular(4.0),
-      )),
+      ),
       backgroundColor: ButtonState.resolveWith((states) {
         return DButtonThemeData.buttonColor(brightness, states);
       }),
       foregroundColor: ButtonState.resolveWith((states) {
         if (states.isDisabled) return disabledColor;
-        return DButtonThemeData.buttonColor(brightness, states).basedOnLuminance().toAccentColor()[
-            states.isPressing
-                ? brightness.isLight
-                    ? 'lighter'
-                    : 'dark'
-                : 'normal'];
+        return DButtonThemeData.buttonColor(
+          brightness,
+          states,
+        ).basedOnLuminance().toAccentColor()[states.isPressing
+            ? brightness.isLight
+                ? 'lighter'
+                : 'dark'
+            : 'normal'];
       }),
     );
   }

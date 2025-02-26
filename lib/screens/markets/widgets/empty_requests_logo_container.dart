@@ -84,7 +84,9 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
                         height: 14,
                         color: Colors.transparent,
                         border: Border.all(
-                            color: SideSwapColors.brightTurquoise, width: 2),
+                          color: SideSwapColors.brightTurquoise,
+                          width: 2,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       const EmptyTextContainer(

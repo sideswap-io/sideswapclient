@@ -27,11 +27,7 @@ class StokrLogin extends HookConsumerWidget {
       bottomNavigationBar: const StokrBottomPanel(),
       child: Column(
         children: [
-          SvgPicture.asset(
-            'assets/stokr_logo.svg',
-            width: 104,
-            height: 24,
-          ),
+          SvgPicture.asset('assets/stokr_logo.svg', width: 104, height: 24),
           const Padding(
             padding: EdgeInsets.only(top: 24),
             child: StokrLoginPanels(),
@@ -49,9 +45,7 @@ class StokrLogin extends HookConsumerWidget {
                   mode: LaunchMode.externalNonBrowserApplication,
                 );
               },
-              child: Text(
-                'OPEN IN BROWSER'.tr(),
-              ),
+              child: Text('OPEN IN BROWSER'.tr()),
             ),
           ),
         ],

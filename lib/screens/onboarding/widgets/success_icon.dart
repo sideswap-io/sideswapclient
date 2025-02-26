@@ -9,19 +9,22 @@ class SuccessIcon extends StatelessWidget {
     this.height = 66,
     this.decoration,
     this.icon,
+    this.iconColor = const Color(0xFFCAF3FF),
   });
 
   final double width;
   final double height;
   final Decoration? decoration;
   final Widget? icon;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: width,
       height: height,
-      decoration: decoration ??
+      decoration:
+          decoration ??
           BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
@@ -32,13 +35,13 @@ class SuccessIcon extends StatelessWidget {
             color: SideSwapColors.chathamsBlue,
           ),
       child: Center(
-        child: icon ??
+        child:
+            icon ??
             SvgPicture.asset(
               'assets/success.svg',
-              width: 28,
-              height: 20,
-              colorFilter:
-                  const ColorFilter.mode(Color(0xFFCAF3FF), BlendMode.srcIn),
+              width: height / 2.35,
+              height: width / 3.3,
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
       ),
     );

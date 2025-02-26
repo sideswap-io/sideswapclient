@@ -12,7 +12,8 @@ part of 'delete_wallet_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$LaunchPageDeleteWalletState {
@@ -20,54 +21,53 @@ mixin _$LaunchPageDeleteWalletState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() delete,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? delete,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? delete,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LaunchPageDeleteWalletStateEmpty value) empty,
     required TResult Function(LaunchPageDeleteWalletStateDelete value) delete,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LaunchPageDeleteWalletStateEmpty value)? empty,
     TResult? Function(LaunchPageDeleteWalletStateDelete value)? delete,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LaunchPageDeleteWalletStateEmpty value)? empty,
     TResult Function(LaunchPageDeleteWalletStateDelete value)? delete,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $LaunchPageDeleteWalletStateCopyWith<$Res> {
   factory $LaunchPageDeleteWalletStateCopyWith(
-          LaunchPageDeleteWalletState value,
-          $Res Function(LaunchPageDeleteWalletState) then) =
-      _$LaunchPageDeleteWalletStateCopyWithImpl<$Res,
-          LaunchPageDeleteWalletState>;
+    LaunchPageDeleteWalletState value,
+    $Res Function(LaunchPageDeleteWalletState) then,
+  ) =
+      _$LaunchPageDeleteWalletStateCopyWithImpl<
+        $Res,
+        LaunchPageDeleteWalletState
+      >;
 }
 
 /// @nodoc
-class _$LaunchPageDeleteWalletStateCopyWithImpl<$Res,
-        $Val extends LaunchPageDeleteWalletState>
+class _$LaunchPageDeleteWalletStateCopyWithImpl<
+  $Res,
+  $Val extends LaunchPageDeleteWalletState
+>
     implements $LaunchPageDeleteWalletStateCopyWith<$Res> {
   _$LaunchPageDeleteWalletStateCopyWithImpl(this._value, this._then);
 
@@ -75,25 +75,34 @@ class _$LaunchPageDeleteWalletStateCopyWithImpl<$Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of LaunchPageDeleteWalletState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 abstract class _$$LaunchPageDeleteWalletStateEmptyImplCopyWith<$Res> {
   factory _$$LaunchPageDeleteWalletStateEmptyImplCopyWith(
-          _$LaunchPageDeleteWalletStateEmptyImpl value,
-          $Res Function(_$LaunchPageDeleteWalletStateEmptyImpl) then) =
-      __$$LaunchPageDeleteWalletStateEmptyImplCopyWithImpl<$Res>;
+    _$LaunchPageDeleteWalletStateEmptyImpl value,
+    $Res Function(_$LaunchPageDeleteWalletStateEmptyImpl) then,
+  ) = __$$LaunchPageDeleteWalletStateEmptyImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LaunchPageDeleteWalletStateEmptyImplCopyWithImpl<$Res>
-    extends _$LaunchPageDeleteWalletStateCopyWithImpl<$Res,
-        _$LaunchPageDeleteWalletStateEmptyImpl>
+    extends
+        _$LaunchPageDeleteWalletStateCopyWithImpl<
+          $Res,
+          _$LaunchPageDeleteWalletStateEmptyImpl
+        >
     implements _$$LaunchPageDeleteWalletStateEmptyImplCopyWith<$Res> {
   __$$LaunchPageDeleteWalletStateEmptyImplCopyWithImpl(
-      _$LaunchPageDeleteWalletStateEmptyImpl _value,
-      $Res Function(_$LaunchPageDeleteWalletStateEmptyImpl) _then)
-      : super(_value, _then);
+    _$LaunchPageDeleteWalletStateEmptyImpl _value,
+    $Res Function(_$LaunchPageDeleteWalletStateEmptyImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LaunchPageDeleteWalletState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -189,20 +198,26 @@ abstract class LaunchPageDeleteWalletStateEmpty
 /// @nodoc
 abstract class _$$LaunchPageDeleteWalletStateDeleteImplCopyWith<$Res> {
   factory _$$LaunchPageDeleteWalletStateDeleteImplCopyWith(
-          _$LaunchPageDeleteWalletStateDeleteImpl value,
-          $Res Function(_$LaunchPageDeleteWalletStateDeleteImpl) then) =
-      __$$LaunchPageDeleteWalletStateDeleteImplCopyWithImpl<$Res>;
+    _$LaunchPageDeleteWalletStateDeleteImpl value,
+    $Res Function(_$LaunchPageDeleteWalletStateDeleteImpl) then,
+  ) = __$$LaunchPageDeleteWalletStateDeleteImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
 class __$$LaunchPageDeleteWalletStateDeleteImplCopyWithImpl<$Res>
-    extends _$LaunchPageDeleteWalletStateCopyWithImpl<$Res,
-        _$LaunchPageDeleteWalletStateDeleteImpl>
+    extends
+        _$LaunchPageDeleteWalletStateCopyWithImpl<
+          $Res,
+          _$LaunchPageDeleteWalletStateDeleteImpl
+        >
     implements _$$LaunchPageDeleteWalletStateDeleteImplCopyWith<$Res> {
   __$$LaunchPageDeleteWalletStateDeleteImplCopyWithImpl(
-      _$LaunchPageDeleteWalletStateDeleteImpl _value,
-      $Res Function(_$LaunchPageDeleteWalletStateDeleteImpl) _then)
-      : super(_value, _then);
+    _$LaunchPageDeleteWalletStateDeleteImpl _value,
+    $Res Function(_$LaunchPageDeleteWalletStateDeleteImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LaunchPageDeleteWalletState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

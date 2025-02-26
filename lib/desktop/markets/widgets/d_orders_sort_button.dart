@@ -10,6 +10,7 @@ import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/orders_panel_provider.dart';
 
+@Deprecated('Widget removed from view')
 class DOrdersSortButton extends HookConsumerWidget {
   const DOrdersSortButton({super.key});
 
@@ -73,14 +74,15 @@ class DOrdersSortButton extends HookConsumerWidget {
                     child: Text(
                       'All orders'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: requestOrderSortFlag ==
+                        fontSize: 13,
+                        color:
+                            requestOrderSortFlag ==
                                     const RequestOrderSortFlagAll()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -110,14 +112,15 @@ class DOrdersSortButton extends HookConsumerWidget {
                     child: Text(
                       'Online'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: requestOrderSortFlag ==
+                        fontSize: 13,
+                        color:
+                            requestOrderSortFlag ==
                                     const RequestOrderSortFlagOnline()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -147,14 +150,15 @@ class DOrdersSortButton extends HookConsumerWidget {
                     child: Text(
                       'Offline'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            color: requestOrderSortFlag ==
+                        fontSize: 13,
+                        color:
+                            requestOrderSortFlag ==
                                     const RequestOrderSortFlagOffline()
                                 ? SideSwapColors.airSuperiorityBlue
                                 : over.value
-                                    ? SideSwapColors.brightTurquoise
-                                    : Colors.white,
-                          ),
+                                ? SideSwapColors.brightTurquoise
+                                : Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -175,19 +179,27 @@ class DOrdersSortButton extends HookConsumerWidget {
 
     final buttonThemes =
         ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
-    final requestOrderSortFlag =
-        ref.watch(requestOrderSortFlagNotifierProvider);
+    final requestOrderSortFlag = ref.watch(
+      requestOrderSortFlagNotifierProvider,
+    );
 
     return DButton(
       key: buttonKey,
-      style: clicked.value
-          ? buttonThemes.filledButtonStyle?.merge(DButtonStyle(
-              backgroundColor: ButtonState.all(SideSwapColors.prussianBlue)))
-          : buttonThemes.defaultButtonStyle,
+      style:
+          clicked.value
+              ? buttonThemes.filledButtonStyle?.merge(
+                DButtonStyle(
+                  backgroundColor: ButtonState.all(SideSwapColors.prussianBlue),
+                ),
+              )
+              : buttonThemes.defaultButtonStyle,
       onPressed: () async {
         clicked.value = true;
-        final result =
-            await showSortMenu(context, buttonKey, requestOrderSortFlag);
+        final result = await showSortMenu(
+          context,
+          buttonKey,
+          requestOrderSortFlag,
+        );
         (switch (result) {
           RequestOrderSortFlag result => ref
               .read(requestOrderSortFlagNotifierProvider.notifier)
@@ -210,10 +222,9 @@ class DOrdersSortButton extends HookConsumerWidget {
                 RequestOrderSortFlagOffline() => 'Offline'.tr(),
                 _ => 'All orders'.tr(),
               },
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(fontSize: 13),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontSize: 13),
             ),
             const SizedBox(width: 6),
             AnimatedDropdownArrow(target: clicked.value ? 1 : 0),

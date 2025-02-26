@@ -14,9 +14,10 @@ class StokrLoginPanels extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = FlavorConfig.isDesktop
-        ? ref.watch(desktopAppThemeNotifierProvider).textTheme
-        : Theme.of(context).textTheme;
+    final textTheme =
+        FlavorConfig.isDesktop
+            ? ref.watch(desktopAppThemeNotifierProvider).textTheme
+            : Theme.of(context).textTheme;
     final ampId = ref.watch(ampIdNotifierProvider);
 
     return Column(
@@ -41,10 +42,7 @@ class StokrLoginPanels extends HookConsumerWidget {
                 Text(
                   'You must complete KYC'.tr(),
                   style: textTheme.titleSmall?.merge(
-                    const TextStyle(
-                      color: SideSwapColors.glacier,
-                      height: 1.4,
-                    ),
+                    const TextStyle(color: SideSwapColors.glacier, height: 1.4),
                   ),
                 ),
               ],
@@ -78,16 +76,17 @@ class StokrLoginPanels extends HookConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(
-          height: 1,
-        ),
+        const SizedBox(height: 1),
         TextButton(
           style: ButtonStyle(
             padding: const WidgetStatePropertyAll(EdgeInsets.zero),
             backgroundColor: WidgetStateColor.resolveWith(
-                (states) => SideSwapColors.chathamsBlue),
-            overlayColor: WidgetStateColor.resolveWith((states) =>
-                SideSwapColors.chathamsBlue.lerpWith(Colors.white, 0.2)),
+              (states) => SideSwapColors.chathamsBlue,
+            ),
+            overlayColor: WidgetStateColor.resolveWith(
+              (states) =>
+                  SideSwapColors.chathamsBlue.lerpWith(Colors.white, 0.2),
+            ),
             shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
@@ -99,11 +98,7 @@ class StokrLoginPanels extends HookConsumerWidget {
             mouseCursor: WidgetStateMouseCursor.clickable,
           ),
           onPressed: () async {
-            await copyToClipboard(
-              context,
-              ampId,
-              suffix: ampId,
-            );
+            await copyToClipboard(context, ampId, suffix: ampId);
           },
           child: SizedBox(
             width: double.infinity,
@@ -132,11 +127,7 @@ class StokrLoginPanels extends HookConsumerWidget {
                     ),
                   ),
                   const Spacer(),
-                  SvgPicture.asset(
-                    'assets/copy2.svg',
-                    width: 22,
-                    height: 22,
-                  ),
+                  SvgPicture.asset('assets/copy2.svg', width: 22, height: 22),
                 ],
               ),
             ),

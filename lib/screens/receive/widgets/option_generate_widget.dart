@@ -53,9 +53,7 @@ class OptionGenerateWidget extends StatelessWidget {
                   width: 44,
                   height: 44,
                 ),
-                const SizedBox(
-                  width: 16,
-                ),
+                const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -82,7 +80,7 @@ class OptionGenerateWidget extends StatelessWidget {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
             Text(
@@ -93,7 +91,7 @@ class OptionGenerateWidget extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
-            )
+            ),
           ],
         ),
       ),

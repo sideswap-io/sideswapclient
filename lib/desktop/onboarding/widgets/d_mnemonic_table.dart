@@ -79,18 +79,16 @@ class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                 .word(index);
 
             return DButton(
-              onPressed: widget.enabled
-                  ? () {
-                      widget.onPressed?.call(index);
-                    }
-                  : null,
+              onPressed:
+                  widget.enabled
+                      ? () {
+                        widget.onPressed?.call(index);
+                      }
+                      : null,
               style: DButtonStyle(
                 padding: ButtonState.all(EdgeInsets.zero),
                 textStyle: ButtonState.all(
-                  const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
                 backgroundColor: ButtonState.resolveWith((states) {
                   if (states.isDisabled) {
@@ -110,9 +108,7 @@ class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                 }),
                 shape: ButtonState.resolveWith((states) {
                   return const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(8),
-                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
                   );
                 }),
               ),
@@ -143,14 +139,15 @@ class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.normal,
-                            color: wordItem.isCorrect ||
-                                    widget.itemSelected == index
-                                ? Colors.white
-                                : SideSwapColors.bitterSweet,
+                            color:
+                                wordItem.isCorrect ||
+                                        widget.itemSelected == index
+                                    ? Colors.white
+                                    : SideSwapColors.bitterSweet,
                           ),
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

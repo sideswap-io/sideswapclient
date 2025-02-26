@@ -40,16 +40,17 @@ class FirstLaunchPage extends HookConsumerWidget {
 
     useEffect(() {
       if (locale == 'zh') {
-        Future.microtask(
-          () {
-            ref.read(networkSettingsNotifierProvider.notifier).setModel(
-                  const NetworkSettingsModelApply(
-                      settingsNetworkType: SettingsNetworkType.sideswapChina,
-                      env: SIDESWAP_ENV_PROD),
-                );
-            ref.read(networkSettingsNotifierProvider.notifier).save();
-          },
-        );
+        Future.microtask(() {
+          ref
+              .read(networkSettingsNotifierProvider.notifier)
+              .setModel(
+                const NetworkSettingsModelApply(
+                  settingsNetworkType: SettingsNetworkType.sideswapChina,
+                  env: SIDESWAP_ENV_PROD,
+                ),
+              );
+          ref.read(networkSettingsNotifierProvider.notifier).save();
+        });
       }
 
       return;
@@ -114,7 +115,7 @@ class FirstLaunchPage extends HookConsumerWidget {
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
-                                  ).tr(),
+                                  ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 12),
@@ -127,33 +128,30 @@ class FirstLaunchPage extends HookConsumerWidget {
                                       fontWeight: FontWeight.normal,
                                       color: Colors.white,
                                     ),
-                                  ).tr(),
+                                  ),
                                 ),
                                 ...switch (serverLoginState) {
                                   ServerLoginStateError() => [
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 48),
-                                        child: Text(
-                                          'Connection issues detected. Check your network connection and restart the app.'
-                                              .tr(),
-                                          textAlign: TextAlign.center,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium
-                                              ?.copyWith(
-                                                  color: SideSwapColors
-                                                      .bitterSweet),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 48),
+                                      child: Text(
+                                        'Connection issues detected. Check your network connection and restart the app.'
+                                            .tr(),
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium?.copyWith(
+                                          color: SideSwapColors.bitterSweet,
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  ],
                                   _ => [const SizedBox()],
                                 },
                               ],
                             ),
                           ),
-                          Expanded(
-                            child: Container(),
-                          ),
+                          Expanded(child: Container()),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 15),
                             child: CustomBigButton(
@@ -168,10 +166,12 @@ class FirstLaunchPage extends HookConsumerWidget {
                               ),
                               onPressed: () async {
                                 ref
-                                    .read(firstLaunchStateNotifierProvider
-                                        .notifier)
+                                    .read(
+                                      firstLaunchStateNotifierProvider.notifier,
+                                    )
                                     .setFirstLaunchState(
-                                        const FirstLaunchStateCreateWallet());
+                                      const FirstLaunchStateCreateWallet(),
+                                    );
 
                                 await ref
                                     .read(walletProvider)
@@ -198,10 +198,12 @@ class FirstLaunchPage extends HookConsumerWidget {
                               ),
                               onPressed: () {
                                 ref
-                                    .read(firstLaunchStateNotifierProvider
-                                        .notifier)
+                                    .read(
+                                      firstLaunchStateNotifierProvider.notifier,
+                                    )
                                     .setFirstLaunchState(
-                                        const FirstLaunchStateImportWallet());
+                                      const FirstLaunchStateImportWallet(),
+                                    );
                                 ref
                                     .read(walletProvider)
                                     .setReviewLicenseImportWallet();
@@ -225,7 +227,8 @@ class FirstLaunchPage extends HookConsumerWidget {
                                   ref
                                       .read(pageStatusNotifierProvider.notifier)
                                       .setStatus(
-                                          Status.jadeBluetoothPermission);
+                                        Status.jadeBluetoothPermission,
+                                      );
                                 },
                                 child: Row(
                                   children: [
@@ -241,9 +244,7 @@ class FirstLaunchPage extends HookConsumerWidget {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
+                                    const SizedBox(width: 10),
                                     const Text(
                                       'JADE',
                                       style: TextStyle(
@@ -276,10 +277,11 @@ class FirstLaunchNetworkSettingsButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle = ref
-        .watch(mobileAppThemeNotifierProvider)
-        .firstLaunchNetworkSettingsButtonTheme
-        .style;
+    final buttonStyle =
+        ref
+            .watch(mobileAppThemeNotifierProvider)
+            .firstLaunchNetworkSettingsButtonTheme
+            .style;
 
     return SizedBox(
       height: 39,
@@ -301,9 +303,7 @@ class FirstLaunchNetworkSettingsButton extends ConsumerWidget {
               child: SvgPicture.asset('assets/network.svg'),
             ),
             const SizedBox(width: 10),
-            Text(
-              'Network'.tr(),
-            ),
+            Text('Network'.tr()),
           ],
         ),
       ),

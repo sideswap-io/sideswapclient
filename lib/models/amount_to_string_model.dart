@@ -8,6 +8,8 @@ class AmountToStringParameters with _$AmountToStringParameters {
     required int amount,
     @Default(false) bool forceSign,
     @Default(8) int precision,
+    @Default(true) bool trailingZeroes,
+    @Default(false) bool useNumberFormatter,
   }) = _AmountToStringParameters;
 }
 
@@ -18,5 +20,7 @@ class AmountToStringNamedParameters with _$AmountToStringNamedParameters {
     required String ticker,
     @Default(false) bool forceSign,
     @Default(8) int precision,
+    @Default(true) bool trailingZeroes,
+    @Default(false) bool useNumberFormatter,
   }) = _AmountToStringNamedParameters;
 }

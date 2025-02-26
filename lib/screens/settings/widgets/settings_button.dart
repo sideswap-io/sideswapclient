@@ -42,55 +42,55 @@ class SettingsButtonState extends State<SettingsButton> {
 
     icon = switch (widget.type) {
       SettingsButtonType.recovery => SvgPicture.asset(
-          'assets/recovery.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/recovery.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.shield => SvgPicture.asset(
-          'assets/shield.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/shield.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.about => SvgPicture.asset(
-          'assets/about.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/about.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.delete => SvgPicture.asset(
-          'assets/delete.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/delete.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.userDetails => SvgPicture.asset(
-          'assets/user_details.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/user_details.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.network => SvgPicture.asset(
-          'assets/network.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/network.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.language => SvgPicture.asset(
-          'assets/language.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/language.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.logs => SvgPicture.asset(
-          'assets/logs.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/logs.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.export => SvgPicture.asset(
-          'assets/settings_export.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/settings_export.svg',
+        width: 24,
+        height: 24,
+      ),
       SettingsButtonType.currency => SvgPicture.asset(
-          'assets/currency.svg',
-          width: 24,
-          height: 24,
-        ),
+        'assets/currency.svg',
+        width: 24,
+        height: 24,
+      ),
     };
   }
 
@@ -103,13 +103,12 @@ class SettingsButtonState extends State<SettingsButton> {
         onPressed: widget.onPressed,
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: widget.transparent
-              ? Colors.transparent
-              : SideSwapColors.chathamsBlue,
+          backgroundColor:
+              widget.transparent
+                  ? Colors.transparent
+                  : SideSwapColors.chathamsBlue,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           side: const BorderSide(
             color: SideSwapColors.chathamsBlue,
@@ -121,10 +120,7 @@ class SettingsButtonState extends State<SettingsButton> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 17),
-              child: icon,
-            ),
+            Padding(padding: const EdgeInsets.only(left: 17), child: icon),
             Padding(
               padding: const EdgeInsets.only(left: 12),
               child: Text(
