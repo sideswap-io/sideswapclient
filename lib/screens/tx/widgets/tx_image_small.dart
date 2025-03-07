@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+@Deprecated('Use TxImageSmall')
 String getPegImageAssetName(bool isPegIn) {
   if (isPegIn) {
     return 'assets/tx_icons/pegin.svg';
@@ -20,6 +21,7 @@ class TxImageSmall extends StatelessWidget {
   }
 }
 
+@Deprecated('Use TxImageSmall')
 class PegImageSmall extends StatelessWidget {
   const PegImageSmall({super.key, required this.isPegIn});
 

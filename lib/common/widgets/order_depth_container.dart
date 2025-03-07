@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'order_depth_container.freezed.dart';
 
 @freezed
-sealed class OrderDepthSide {
+sealed class OrderDepthSide with _$OrderDepthSide {
   const factory OrderDepthSide.left() = OrderDepthSideLeft;
   const factory OrderDepthSide.right() = OrderDepthSideRight;
 }

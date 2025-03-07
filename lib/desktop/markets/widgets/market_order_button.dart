@@ -27,8 +27,8 @@ class MarketOrderButton extends ConsumerWidget {
     final textDescription = text ?? 'Continue'.tr().toUpperCase();
     final color =
         isSell
-            ? Theme.of(context).extension<MarketColorsTheme>()!.sellColor
-            : Theme.of(context).extension<MarketColorsTheme>()!.buyColor;
+            ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
+            : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
 
     final isMobile = !FlavorConfig.isDesktop;
 

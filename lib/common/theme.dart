@@ -4,6 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/button_styles.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
+import 'package:sideswap/common/widgets/custom_back_button.dart';
+import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
 
 part 'theme.g.dart';
 
@@ -173,32 +175,37 @@ class MobileThemeData {
   ///
   Iterable<ThemeExtension<dynamic>>? get themeExtensions {
     return [
-      orderRowElementTheme(),
-      coloredContainerTheme(),
+      orderRowElementStyle(),
+      coloredContainerStyle(),
       workingOrderItemCancelButtonStyle(),
       sideswapCancelButtonStyle(),
       sideswapOkButtonStyle(),
-      marketAssetRowTheme(),
-      marketColorsTheme(),
+      marketAssetRowStyle(),
+      marketColorsStyle(),
+      customBackButtonStyle(),
     ];
   }
 
-  OrderRowElementTheme orderRowElementTheme() {
-    return OrderRowElementTheme(
+  CustomBackButtonStyle customBackButtonStyle() {
+    return CustomBackButtonStyle.standard();
+  }
+
+  OrderRowElementStyle orderRowElementStyle() {
+    return OrderRowElementStyle(
       padding: const EdgeInsets.only(left: 12, top: 12),
       textColor: SideSwapColors.cornFlower,
     );
   }
 
-  MarketColorsTheme marketColorsTheme() {
-    return MarketColorsTheme(
+  MarketColorsStyle marketColorsStyle() {
+    return MarketColorsStyle(
       sellColor: SideSwapColors.bitterSweet,
       buyColor: SideSwapColors.turquoise,
     );
   }
 
-  ColoredContainerTheme coloredContainerTheme() {
-    return ColoredContainerTheme(
+  ColoredContainerStyle coloredContainerStyle() {
+    return ColoredContainerStyle(
       backgroundColor: SideSwapColors.navyBlue,
       borderColor: SideSwapColors.navyBlue,
       horizontalPadding: 12,
@@ -246,8 +253,8 @@ class MobileThemeData {
     );
   }
 
-  MarketAssetRowTheme marketAssetRowTheme() {
-    return MarketAssetRowTheme(
+  MarketAssetRowStyle marketAssetRowStyle() {
+    return MarketAssetRowStyle(
       labelStyle: textTheme.titleSmall?.copyWith(
         color: SideSwapColors.brightTurquoise,
       ),

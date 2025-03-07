@@ -51,14 +51,15 @@ class DAmpRegister extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () => pegxLoginState.maybeWhen(
-          loginDialog: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.pegxRegister);
-          },
-          orElse: () {},
-        ),
+        () =>
+            (switch (pegxLoginState) {
+              PegxLoginStateLoginDialog() => () {
+                ref
+                    .read(pageStatusNotifierProvider.notifier)
+                    .setStatus(Status.pegxRegister);
+              },
+              _ => () {},
+            }()),
       );
 
       return;
@@ -182,43 +183,37 @@ class DAmpRegister extends HookConsumerWidget {
                   final textTheme =
                       ref.watch(desktopAppThemeNotifierProvider).textTheme;
 
-                  return stokrGaidState.maybeWhen(
-                    registered: () {
-                      return DCustomFilledBigButton(
-                        width: 460,
-                        onPressed: () {
-                          ref
-                              .read(configurationProvider.notifier)
-                              .setShowAmpOnboarding(false);
-                          ref
-                              .read(pageStatusNotifierProvider.notifier)
-                              .setStatus(Status.registered);
-                        },
-                        child: Text(
-                          'CONTINUE'.tr(),
-                          style: textTheme.labelLarge,
+                  return switch (stokrGaidState) {
+                    StokrGaidStateRegistered() => DCustomFilledBigButton(
+                      width: 460,
+                      onPressed: () {
+                        ref
+                            .read(configurationProvider.notifier)
+                            .setShowAmpOnboarding(false);
+                        ref
+                            .read(pageStatusNotifierProvider.notifier)
+                            .setStatus(Status.registered);
+                      },
+                      child: Text('CONTINUE'.tr(), style: textTheme.labelLarge),
+                    ),
+                    _ => DCustomTextBigButton(
+                      width: 460,
+                      onPressed: () {
+                        ref
+                            .read(configurationProvider.notifier)
+                            .setShowAmpOnboarding(false);
+                        ref
+                            .read(pageStatusNotifierProvider.notifier)
+                            .setStatus(Status.registered);
+                      },
+                      child: Text(
+                        'NOT NOW'.tr(),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
                         ),
-                      );
-                    },
-                    orElse: () {
-                      return DCustomTextBigButton(
-                        width: 460,
-                        onPressed: () {
-                          ref
-                              .read(configurationProvider.notifier)
-                              .setShowAmpOnboarding(false);
-                          ref
-                              .read(pageStatusNotifierProvider.notifier)
-                              .setStatus(Status.registered);
-                        },
-                        child: Text(
-                          'NOT NOW'.tr(),
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(color: SideSwapColors.brightTurquoise),
-                        ),
-                      );
-                    },
-                  );
+                      ),
+                    ),
+                  };
                 },
               ),
               Padding(

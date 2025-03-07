@@ -24,6 +24,148 @@ final paymentHelperProvider = AutoDisposeProvider<PaymentHelper>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PaymentHelperRef = AutoDisposeProviderRef<PaymentHelper>;
+String _$createdTxHelperHash() => r'5e1957359493ac06e1d97fbf503ccab68712494f';
+
+/// Copied from Dart SDK
+class _SystemHash {
+  _SystemHash._();
+
+  static int combine(int hash, int value) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + value);
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    // ignore: parameter_assignments
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
+}
+
+/// See also [createdTxHelper].
+@ProviderFor(createdTxHelper)
+const createdTxHelperProvider = CreatedTxHelperFamily();
+
+/// See also [createdTxHelper].
+class CreatedTxHelperFamily extends Family<CreatedTxHelper> {
+  /// See also [createdTxHelper].
+  const CreatedTxHelperFamily();
+
+  /// See also [createdTxHelper].
+  CreatedTxHelperProvider call(CreatedTx? createdTx) {
+    return CreatedTxHelperProvider(createdTx);
+  }
+
+  @override
+  CreatedTxHelperProvider getProviderOverride(
+    covariant CreatedTxHelperProvider provider,
+  ) {
+    return call(provider.createdTx);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'createdTxHelperProvider';
+}
+
+/// See also [createdTxHelper].
+class CreatedTxHelperProvider extends AutoDisposeProvider<CreatedTxHelper> {
+  /// See also [createdTxHelper].
+  CreatedTxHelperProvider(CreatedTx? createdTx)
+    : this._internal(
+        (ref) => createdTxHelper(ref as CreatedTxHelperRef, createdTx),
+        from: createdTxHelperProvider,
+        name: r'createdTxHelperProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$createdTxHelperHash,
+        dependencies: CreatedTxHelperFamily._dependencies,
+        allTransitiveDependencies:
+            CreatedTxHelperFamily._allTransitiveDependencies,
+        createdTx: createdTx,
+      );
+
+  CreatedTxHelperProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.createdTx,
+  }) : super.internal();
+
+  final CreatedTx? createdTx;
+
+  @override
+  Override overrideWith(
+    CreatedTxHelper Function(CreatedTxHelperRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: CreatedTxHelperProvider._internal(
+        (ref) => create(ref as CreatedTxHelperRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        createdTx: createdTx,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<CreatedTxHelper> createElement() {
+    return _CreatedTxHelperProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CreatedTxHelperProvider && other.createdTx == createdTx;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, createdTx.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin CreatedTxHelperRef on AutoDisposeProviderRef<CreatedTxHelper> {
+  /// The parameter `createdTx` of this provider.
+  CreatedTx? get createdTx;
+}
+
+class _CreatedTxHelperProviderElement
+    extends AutoDisposeProviderElement<CreatedTxHelper>
+    with CreatedTxHelperRef {
+  _CreatedTxHelperProviderElement(super.provider);
+
+  @override
+  CreatedTx? get createdTx => (origin as CreatedTxHelperProvider).createdTx;
+}
+
 String _$createTxStateNotifierHash() =>
     r'f68ff9d72afd9357f14098b35b191bf05516def6';
 

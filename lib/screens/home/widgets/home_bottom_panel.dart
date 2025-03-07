@@ -21,10 +21,9 @@ class HomeBottomPanel extends ConsumerWidget {
     final paymentHelper = ref.watch(paymentHelperProvider);
 
     ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
-      next.when(
-        empty: () {},
-        data: (result) {
-          if (result?.outputsData != null) {
+      (switch (next) {
+        QrCodeResultModelData() => () {
+          if (next.result?.outputsData != null) {
             // go to the confirm transaction page directly
             paymentHelper.outputsPaymentSend();
             return;
@@ -34,14 +33,15 @@ class HomeBottomPanel extends ConsumerWidget {
             ref
                 .read(paymentAmountPageArgumentsNotifierProvider.notifier)
                 .setPaymentAmountPageArguments(
-                  PaymentAmountPageArguments(result: result),
+                  PaymentAmountPageArguments(result: next.result),
                 );
             ref
                 .read(pageStatusNotifierProvider.notifier)
                 .setStatus(Status.paymentAmountPage);
           });
         },
-      );
+        _ => () {},
+      });
     });
 
     return Container(

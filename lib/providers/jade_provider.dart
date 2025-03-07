@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -149,4 +151,127 @@ class JadeSelectedDevice extends _$JadeSelectedDevice {
   void setJadePortsPort(From_JadePorts_Port device) {
     state = device;
   }
+}
+
+@freezed
+sealed class JadeLockState with _$JadeLockState {
+  const factory JadeLockState.locked() = JadeLockStateLocked;
+  const factory JadeLockState.unlocked() = JadeLockStateUnlocked;
+  const factory JadeLockState.error({String? message}) = JadeLockStateError;
+}
+
+const int _oneMinute = 60;
+const int _fiveMinutes = 5 * _oneMinute;
+
+@riverpod
+class JadeLockStateTimerNotifier extends _$JadeLockStateTimerNotifier {
+  RestartableTimer? _timer;
+
+  @override
+  void build() {
+    _timer?.cancel();
+    _timer = RestartableTimer(Duration(seconds: _fiveMinutes), () {
+      ref.notifyListeners();
+      ref.invalidateSelf();
+    });
+
+    ref.onDispose(() {
+      _timer?.cancel();
+    });
+  }
+
+  void extendTimer() {
+    _timer?.reset();
+  }
+}
+
+@riverpod
+class JadeLockStateNotifier extends _$JadeLockStateNotifier {
+  @override
+  JadeLockState build() {
+    final isJadeWallet = ref.watch(isJadeWalletProvider);
+
+    if (!isJadeWallet) {
+      return JadeLockState.unlocked();
+    }
+
+    ref.listen(jadeLockStateTimerNotifierProvider, (_, _) {
+      ref.invalidateSelf();
+    });
+
+    return JadeLockState.locked();
+  }
+
+  void setState(JadeLockState lockState) {
+    state = lockState;
+  }
+}
+
+abstract class AbstractJadeLockRepository {
+  JadeLockState get lockState;
+  bool hasError();
+  bool isUnlocked();
+  Option<String> errorMsg();
+  void refreshJadeLockState();
+}
+
+class JadeLockRepository implements AbstractJadeLockRepository {
+  final Ref ref;
+  final JadeLockState _lockState;
+  final bool isJadeWallet;
+
+  JadeLockRepository({
+    required this.ref,
+    required this.isJadeWallet,
+    JadeLockState lockState = const JadeLockState.locked(),
+  }) : _lockState = lockState;
+
+  @override
+  JadeLockState get lockState => _lockState;
+
+  @override
+  bool hasError() {
+    return _lockState == JadeLockStateError();
+  }
+
+  @override
+  bool isUnlocked() {
+    return _lockState == JadeLockStateUnlocked();
+  }
+
+  @override
+  Option<String> errorMsg() {
+    return switch (_lockState) {
+      JadeLockStateError(message: String message) => Option.of(message),
+      _ => Option.none(),
+    };
+  }
+
+  @override
+  void refreshJadeLockState() {
+    if (!isJadeWallet) {
+      logger.w('Its not a jade wallet!');
+      return;
+    }
+
+    Future.microtask(() {
+      final msg = To();
+      msg.jadeUnlock = Empty();
+      ref.read(walletProvider).sendMsg(msg);
+
+      ref.read(jadeLockStateTimerNotifierProvider.notifier).extendTimer();
+    });
+  }
+}
+
+@riverpod
+AbstractJadeLockRepository jadeLockRepository(Ref ref) {
+  final lockState = ref.watch(jadeLockStateNotifierProvider);
+  final isJadeWallet = ref.watch(isJadeWalletProvider);
+
+  return JadeLockRepository(
+    ref: ref,
+    isJadeWallet: isJadeWallet,
+    lockState: lockState,
+  );
 }

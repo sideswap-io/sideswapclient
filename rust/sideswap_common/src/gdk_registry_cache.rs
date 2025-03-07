@@ -93,7 +93,7 @@ impl GdkRegistryCache {
         self.icons.data.load_full()
     }
 
-    fn verify_asset_hash(asset_id: &AssetId, asset: &GdkAsset) {
+    pub fn verify_asset_hash(asset_id: &AssetId, asset: &GdkAsset) {
         assert_eq!(asset.asset_id, *asset_id);
 
         // Verify contract hash
@@ -105,7 +105,11 @@ impl GdkRegistryCache {
         };
         let entropy = AssetId::generate_asset_entropy(prevout, contract_hash);
         let expected_asset_id = AssetId::from_entropy(entropy);
-        assert_eq!(expected_asset_id, *asset_id);
+        assert_eq!(
+            expected_asset_id, *asset_id,
+            "asset id verification failed, asset_id: {}, expected: {}, name: {}",
+            asset_id, expected_asset_id, asset.name
+        );
 
         // Verify contract content
         let contract = serde_json::from_value::<GdkAssetContract>(asset.contract.clone())

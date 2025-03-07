@@ -6,22 +6,21 @@ part of 'network_settings_providers.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$NetworkSettingsModelEmptyImpl _$$NetworkSettingsModelEmptyImplFromJson(
-  Map json,
-) => _$NetworkSettingsModelEmptyImpl(
-  settingsNetworkType: $enumDecodeNullable(
-    _$SettingsNetworkTypeEnumMap,
-    json['settingsNetworkType'],
-  ),
-  env: (json['env'] as num?)?.toInt(),
-  host: json['host'] as String?,
-  port: (json['port'] as num?)?.toInt(),
-  useTls: json['useTls'] as bool?,
-  $type: json['runtimeType'] as String?,
-);
+NetworkSettingsModelEmpty _$NetworkSettingsModelEmptyFromJson(Map json) =>
+    NetworkSettingsModelEmpty(
+      settingsNetworkType: $enumDecodeNullable(
+        _$SettingsNetworkTypeEnumMap,
+        json['settingsNetworkType'],
+      ),
+      env: (json['env'] as num?)?.toInt(),
+      host: json['host'] as String?,
+      port: (json['port'] as num?)?.toInt(),
+      useTls: json['useTls'] as bool?,
+      $type: json['runtimeType'] as String?,
+    );
 
-Map<String, dynamic> _$$NetworkSettingsModelEmptyImplToJson(
-  _$NetworkSettingsModelEmptyImpl instance,
+Map<String, dynamic> _$NetworkSettingsModelEmptyToJson(
+  NetworkSettingsModelEmpty instance,
 ) => <String, dynamic>{
   'settingsNetworkType':
       _$SettingsNetworkTypeEnumMap[instance.settingsNetworkType],
@@ -39,22 +38,21 @@ const _$SettingsNetworkTypeEnumMap = {
   SettingsNetworkType.sideswapChina: 'sideswapChina',
 };
 
-_$NetworkSettingsModelApplyImpl _$$NetworkSettingsModelApplyImplFromJson(
-  Map json,
-) => _$NetworkSettingsModelApplyImpl(
-  settingsNetworkType: $enumDecodeNullable(
-    _$SettingsNetworkTypeEnumMap,
-    json['settingsNetworkType'],
-  ),
-  env: (json['env'] as num?)?.toInt(),
-  host: json['host'] as String?,
-  port: (json['port'] as num?)?.toInt(),
-  useTls: json['useTls'] as bool?,
-  $type: json['runtimeType'] as String?,
-);
+NetworkSettingsModelApply _$NetworkSettingsModelApplyFromJson(Map json) =>
+    NetworkSettingsModelApply(
+      settingsNetworkType: $enumDecodeNullable(
+        _$SettingsNetworkTypeEnumMap,
+        json['settingsNetworkType'],
+      ),
+      env: (json['env'] as num?)?.toInt(),
+      host: json['host'] as String?,
+      port: (json['port'] as num?)?.toInt(),
+      useTls: json['useTls'] as bool?,
+      $type: json['runtimeType'] as String?,
+    );
 
-Map<String, dynamic> _$$NetworkSettingsModelApplyImplToJson(
-  _$NetworkSettingsModelApplyImpl instance,
+Map<String, dynamic> _$NetworkSettingsModelApplyToJson(
+  NetworkSettingsModelApply instance,
 ) => <String, dynamic>{
   'settingsNetworkType':
       _$SettingsNetworkTypeEnumMap[instance.settingsNetworkType],

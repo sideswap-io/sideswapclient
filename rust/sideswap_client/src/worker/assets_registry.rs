@@ -80,6 +80,9 @@ fn get_registry_config(env: Env) -> gdk_registry::Config {
         sideswap_common::network::Network::LiquidTestnet => {
             gdk_registry::ElementsNetwork::LiquidTestnet
         }
+        sideswap_common::network::Network::Regtest => {
+            gdk_registry::ElementsNetwork::ElementsRegtest
+        }
     };
     gdk_registry::Config {
         // FIXME: Use correct proxy value (socks5://{ip}:{port})

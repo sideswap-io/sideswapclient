@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class ProductColumns extends StatelessWidget {
+class ProductColumns extends HookConsumerWidget {
   const ProductColumns({super.key, this.onMarketSelected});
 
   final VoidCallback? onMarketSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scrollController = useScrollController();
+    final pageStorageKeyData = ref.watch(pageStorageKeyDataProvider);
+    final defaultStorageKey = useMemoized(
+      () => PageStorageKey(pageStorageKeyData),
+    );
+
     return CustomScrollView(
+      controller: scrollController,
+      key: defaultStorageKey,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

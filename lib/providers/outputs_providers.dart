@@ -32,7 +32,7 @@ class DoubleToDecimalConverter implements JsonConverter<Decimal?, double?> {
 }
 
 @Freezed(copyWith: true, equal: true)
-class OutputsData with _$OutputsData {
+sealed class OutputsData with _$OutputsData {
   @JsonSerializable(explicitToJson: true, includeIfNull: false)
   const factory OutputsData({
     String? type,
@@ -46,7 +46,7 @@ class OutputsData with _$OutputsData {
 }
 
 @Freezed(fromJson: true, equal: true)
-class OutputsReceiver with _$OutputsReceiver {
+sealed class OutputsReceiver with _$OutputsReceiver {
   @JsonSerializable(explicitToJson: true, includeIfNull: false)
   const factory OutputsReceiver({
     String? address,

@@ -176,28 +176,12 @@ class DPegPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
-    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-
-    final typeName = transItem.peg.isPegIn ? 'Peg-in'.tr() : 'Peg-out'.tr();
+    final typeName = transItem.peg.isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr();
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
-    final count = transItem.confs.count;
-    final total = transItem.confs.total;
-    final isPegIn = transItem.peg.isPegIn;
-    final sendAsset = isPegIn ? bitcoinAssetId : liquidAssetId;
-    final recvAsset = isPegIn ? liquidAssetId : bitcoinAssetId;
-    final confsStr = transItem.hasConfs() ? '$count/$total' : 'Complete'.tr();
-    final amountSend = transItem.peg.amountSend.toInt();
-    final amountRecv = transItem.peg.amountRecv.toInt();
-    final conversionRate =
-        (amountSend != 0 && amountRecv != 0)
-            ? amountRecv * 100 / amountSend
-            : 0;
-    final conversionRateStr = '${conversionRate.toStringAsFixed(2)}%';
 
     return DPopupWithClose(
-      width: 580,
-      height: 606,
+      width: 634,
+      height: 660,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -205,7 +189,7 @@ class DPegPopup extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              PegImageSmall(isPegIn: transItem.peg.isPegIn),
+              TxImageSmall(assetName: transItemHelper.getTxImageAssetName()),
               const SizedBox(width: 8),
               Text(typeName, style: Theme.of(context).textTheme.displaySmall),
             ],
@@ -219,48 +203,13 @@ class DPegPopup extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Asset'.tr(),
-                      style: const TextStyle(
-                        color: SideSwapColors.brightTurquoise,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      'Amount'.tr(),
-                      style: const TextStyle(
-                        color: SideSwapColors.brightTurquoise,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                DPopupBalance(
-                  assetId: sendAsset,
-                  amount: -transItem.peg.amountSend.toInt(),
-                ),
-                DPopupBalance(
-                  assetId: recvAsset,
-                  amount: transItem.peg.amountRecv.toInt(),
-                ),
-                const SizedBox(height: 10),
-                DPopupField(
-                  name: 'Conversion rate'.tr(),
-                  value: conversionRateStr,
-                ),
+                DTxDetailsPegOut(transItem: transItem),
+                const SizedBox(height: 14),
                 const DPopupSeparator(),
-                DPopupField(
-                  name: 'Number of confirmations'.tr(),
-                  value: confsStr,
-                ),
-                const DPopupSeparator(),
+                const SizedBox(height: 14),
                 DPopupField(name: 'Transaction ID'.tr(), value: ''),
                 Row(
                   children: [

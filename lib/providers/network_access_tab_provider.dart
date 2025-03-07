@@ -6,7 +6,7 @@ part 'network_access_tab_provider.freezed.dart';
 part 'network_access_tab_provider.g.dart';
 
 @freezed
-class NetworkAccessTabState {
+class NetworkAccessTabState with _$NetworkAccessTabState {
   const factory NetworkAccessTabState.server() = NetworkAccessTabStateServer;
   const factory NetworkAccessTabState.proxy() = NetworkAccessTabStateProxy;
 }

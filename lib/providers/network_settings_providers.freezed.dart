@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,709 +10,238 @@ part of 'network_settings_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+NetworkSettingsModel _$NetworkSettingsModelFromJson(
+  Map<String, dynamic> json
+) {
+        switch (json['runtimeType']) {
+                  case 'empty':
+          return NetworkSettingsModelEmpty.fromJson(
+            json
+          );
+                case 'apply':
+          return NetworkSettingsModelApply.fromJson(
+            json
+          );
+        
+          default:
+            throw CheckedFromJsonException(
+  json,
+  'runtimeType',
+  'NetworkSettingsModel',
+  'Invalid union type "${json['runtimeType']}"!'
 );
-
-NetworkSettingsModel _$NetworkSettingsModelFromJson(Map<String, dynamic> json) {
-  switch (json['runtimeType']) {
-    case 'empty':
-      return NetworkSettingsModelEmpty.fromJson(json);
-    case 'apply':
-      return NetworkSettingsModelApply.fromJson(json);
-
-    default:
-      throw CheckedFromJsonException(
-        json,
-        'runtimeType',
-        'NetworkSettingsModel',
-        'Invalid union type "${json['runtimeType']}"!',
-      );
-  }
+        }
+      
 }
 
 /// @nodoc
 mixin _$NetworkSettingsModel {
-  SettingsNetworkType? get settingsNetworkType =>
-      throw _privateConstructorUsedError;
-  int? get env => throw _privateConstructorUsedError;
-  String? get host => throw _privateConstructorUsedError;
-  int? get port => throw _privateConstructorUsedError;
-  bool? get useTls => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )
-    empty,
-    required TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )
-    apply,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    empty,
-    TResult? Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    apply,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    empty,
-    TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    apply,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(NetworkSettingsModelEmpty value) empty,
-    required TResult Function(NetworkSettingsModelApply value) apply,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(NetworkSettingsModelEmpty value)? empty,
-    TResult? Function(NetworkSettingsModelApply value)? apply,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(NetworkSettingsModelEmpty value)? empty,
-    TResult Function(NetworkSettingsModelApply value)? apply,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+ SettingsNetworkType? get settingsNetworkType; int? get env; String? get host; int? get port; bool? get useTls;
+/// Create a copy of NetworkSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$NetworkSettingsModelCopyWith<NetworkSettingsModel> get copyWith => _$NetworkSettingsModelCopyWithImpl<NetworkSettingsModel>(this as NetworkSettingsModel, _$identity);
 
   /// Serializes this NetworkSettingsModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $NetworkSettingsModelCopyWith<NetworkSettingsModel> get copyWith =>
-      throw _privateConstructorUsedError;
+
+
+
+@override
+String toString() {
+  return 'NetworkSettingsModel(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $NetworkSettingsModelCopyWith<$Res> {
-  factory $NetworkSettingsModelCopyWith(
-    NetworkSettingsModel value,
-    $Res Function(NetworkSettingsModel) then,
-  ) = _$NetworkSettingsModelCopyWithImpl<$Res, NetworkSettingsModel>;
-  @useResult
-  $Res call({
-    SettingsNetworkType? settingsNetworkType,
-    int? env,
-    String? host,
-    int? port,
-    bool? useTls,
-  });
-}
+abstract mixin class $NetworkSettingsModelCopyWith<$Res>  {
+  factory $NetworkSettingsModelCopyWith(NetworkSettingsModel value, $Res Function(NetworkSettingsModel) _then) = _$NetworkSettingsModelCopyWithImpl;
+@useResult
+$Res call({
+ SettingsNetworkType? settingsNetworkType, int? env, String? host, int? port, bool? useTls
+});
 
+
+
+
+}
 /// @nodoc
-class _$NetworkSettingsModelCopyWithImpl<
-  $Res,
-  $Val extends NetworkSettingsModel
->
+class _$NetworkSettingsModelCopyWithImpl<$Res>
     implements $NetworkSettingsModelCopyWith<$Res> {
-  _$NetworkSettingsModelCopyWithImpl(this._value, this._then);
+  _$NetworkSettingsModelCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final NetworkSettingsModel _self;
+  final $Res Function(NetworkSettingsModel) _then;
 
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? settingsNetworkType = freezed,
-    Object? env = freezed,
-    Object? host = freezed,
-    Object? port = freezed,
-    Object? useTls = freezed,
-  }) {
-    return _then(
-      _value.copyWith(
-            settingsNetworkType:
-                freezed == settingsNetworkType
-                    ? _value.settingsNetworkType
-                    : settingsNetworkType // ignore: cast_nullable_to_non_nullable
-                        as SettingsNetworkType?,
-            env:
-                freezed == env
-                    ? _value.env
-                    : env // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            host:
-                freezed == host
-                    ? _value.host
-                    : host // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            port:
-                freezed == port
-                    ? _value.port
-                    : port // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            useTls:
-                freezed == useTls
-                    ? _value.useTls
-                    : useTls // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of NetworkSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? settingsNetworkType = freezed,Object? env = freezed,Object? host = freezed,Object? port = freezed,Object? useTls = freezed,}) {
+  return _then(_self.copyWith(
+settingsNetworkType: freezed == settingsNetworkType ? _self.settingsNetworkType : settingsNetworkType // ignore: cast_nullable_to_non_nullable
+as SettingsNetworkType?,env: freezed == env ? _self.env : env // ignore: cast_nullable_to_non_nullable
+as int?,host: freezed == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String?,port: freezed == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
+as int?,useTls: freezed == useTls ? _self.useTls : useTls // ignore: cast_nullable_to_non_nullable
+as bool?,
+  ));
+}
+
+}
+
+
+/// @nodoc
+@JsonSerializable()
+
+class NetworkSettingsModelEmpty implements NetworkSettingsModel {
+  const NetworkSettingsModelEmpty({this.settingsNetworkType, this.env, this.host, this.port, this.useTls, final  String? $type}): $type = $type ?? 'empty';
+  factory NetworkSettingsModelEmpty.fromJson(Map<String, dynamic> json) => _$NetworkSettingsModelEmptyFromJson(json);
+
+@override final  SettingsNetworkType? settingsNetworkType;
+@override final  int? env;
+@override final  String? host;
+@override final  int? port;
+@override final  bool? useTls;
+
+@JsonKey(name: 'runtimeType')
+final String $type;
+
+
+/// Create a copy of NetworkSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$NetworkSettingsModelEmptyCopyWith<NetworkSettingsModelEmpty> get copyWith => _$NetworkSettingsModelEmptyCopyWithImpl<NetworkSettingsModelEmpty>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$NetworkSettingsModelEmptyToJson(this, );
+}
+
+
+
+@override
+String toString() {
+  return 'NetworkSettingsModel.empty(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$NetworkSettingsModelEmptyImplCopyWith<$Res>
-    implements $NetworkSettingsModelCopyWith<$Res> {
-  factory _$$NetworkSettingsModelEmptyImplCopyWith(
-    _$NetworkSettingsModelEmptyImpl value,
-    $Res Function(_$NetworkSettingsModelEmptyImpl) then,
-  ) = __$$NetworkSettingsModelEmptyImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    SettingsNetworkType? settingsNetworkType,
-    int? env,
-    String? host,
-    int? port,
-    bool? useTls,
-  });
+abstract mixin class $NetworkSettingsModelEmptyCopyWith<$Res> implements $NetworkSettingsModelCopyWith<$Res> {
+  factory $NetworkSettingsModelEmptyCopyWith(NetworkSettingsModelEmpty value, $Res Function(NetworkSettingsModelEmpty) _then) = _$NetworkSettingsModelEmptyCopyWithImpl;
+@override @useResult
+$Res call({
+ SettingsNetworkType? settingsNetworkType, int? env, String? host, int? port, bool? useTls
+});
+
+
+
+
+}
+/// @nodoc
+class _$NetworkSettingsModelEmptyCopyWithImpl<$Res>
+    implements $NetworkSettingsModelEmptyCopyWith<$Res> {
+  _$NetworkSettingsModelEmptyCopyWithImpl(this._self, this._then);
+
+  final NetworkSettingsModelEmpty _self;
+  final $Res Function(NetworkSettingsModelEmpty) _then;
+
+/// Create a copy of NetworkSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? settingsNetworkType = freezed,Object? env = freezed,Object? host = freezed,Object? port = freezed,Object? useTls = freezed,}) {
+  return _then(NetworkSettingsModelEmpty(
+settingsNetworkType: freezed == settingsNetworkType ? _self.settingsNetworkType : settingsNetworkType // ignore: cast_nullable_to_non_nullable
+as SettingsNetworkType?,env: freezed == env ? _self.env : env // ignore: cast_nullable_to_non_nullable
+as int?,host: freezed == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String?,port: freezed == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
+as int?,useTls: freezed == useTls ? _self.useTls : useTls // ignore: cast_nullable_to_non_nullable
+as bool?,
+  ));
 }
 
-/// @nodoc
-class __$$NetworkSettingsModelEmptyImplCopyWithImpl<$Res>
-    extends
-        _$NetworkSettingsModelCopyWithImpl<
-          $Res,
-          _$NetworkSettingsModelEmptyImpl
-        >
-    implements _$$NetworkSettingsModelEmptyImplCopyWith<$Res> {
-  __$$NetworkSettingsModelEmptyImplCopyWithImpl(
-    _$NetworkSettingsModelEmptyImpl _value,
-    $Res Function(_$NetworkSettingsModelEmptyImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? settingsNetworkType = freezed,
-    Object? env = freezed,
-    Object? host = freezed,
-    Object? port = freezed,
-    Object? useTls = freezed,
-  }) {
-    return _then(
-      _$NetworkSettingsModelEmptyImpl(
-        settingsNetworkType:
-            freezed == settingsNetworkType
-                ? _value.settingsNetworkType
-                : settingsNetworkType // ignore: cast_nullable_to_non_nullable
-                    as SettingsNetworkType?,
-        env:
-            freezed == env
-                ? _value.env
-                : env // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        host:
-            freezed == host
-                ? _value.host
-                : host // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        port:
-            freezed == port
-                ? _value.port
-                : port // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        useTls:
-            freezed == useTls
-                ? _value.useTls
-                : useTls // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-      ),
-    );
-  }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$NetworkSettingsModelEmptyImpl implements NetworkSettingsModelEmpty {
-  const _$NetworkSettingsModelEmptyImpl({
-    this.settingsNetworkType,
-    this.env,
-    this.host,
-    this.port,
-    this.useTls,
-    final String? $type,
-  }) : $type = $type ?? 'empty';
 
-  factory _$NetworkSettingsModelEmptyImpl.fromJson(Map<String, dynamic> json) =>
-      _$$NetworkSettingsModelEmptyImplFromJson(json);
+class NetworkSettingsModelApply implements NetworkSettingsModel {
+  const NetworkSettingsModelApply({this.settingsNetworkType, this.env, this.host, this.port, this.useTls, final  String? $type}): $type = $type ?? 'apply';
+  factory NetworkSettingsModelApply.fromJson(Map<String, dynamic> json) => _$NetworkSettingsModelApplyFromJson(json);
 
-  @override
-  final SettingsNetworkType? settingsNetworkType;
-  @override
-  final int? env;
-  @override
-  final String? host;
-  @override
-  final int? port;
-  @override
-  final bool? useTls;
+@override final  SettingsNetworkType? settingsNetworkType;
+@override final  int? env;
+@override final  String? host;
+@override final  int? port;
+@override final  bool? useTls;
 
-  @JsonKey(name: 'runtimeType')
-  final String $type;
+@JsonKey(name: 'runtimeType')
+final String $type;
 
-  @override
-  String toString() {
-    return 'NetworkSettingsModel.empty(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
-  }
 
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$NetworkSettingsModelEmptyImplCopyWith<_$NetworkSettingsModelEmptyImpl>
-  get copyWith => __$$NetworkSettingsModelEmptyImplCopyWithImpl<
-    _$NetworkSettingsModelEmptyImpl
-  >(this, _$identity);
+/// Create a copy of NetworkSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$NetworkSettingsModelApplyCopyWith<NetworkSettingsModelApply> get copyWith => _$NetworkSettingsModelApplyCopyWithImpl<NetworkSettingsModelApply>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )
-    empty,
-    required TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )
-    apply,
-  }) {
-    return empty(settingsNetworkType, env, host, port, useTls);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    empty,
-    TResult? Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    apply,
-  }) {
-    return empty?.call(settingsNetworkType, env, host, port, useTls);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    empty,
-    TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    apply,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty(settingsNetworkType, env, host, port, useTls);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(NetworkSettingsModelEmpty value) empty,
-    required TResult Function(NetworkSettingsModelApply value) apply,
-  }) {
-    return empty(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(NetworkSettingsModelEmpty value)? empty,
-    TResult? Function(NetworkSettingsModelApply value)? apply,
-  }) {
-    return empty?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(NetworkSettingsModelEmpty value)? empty,
-    TResult Function(NetworkSettingsModelApply value)? apply,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty(this);
-    }
-    return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$NetworkSettingsModelEmptyImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$NetworkSettingsModelApplyToJson(this, );
 }
 
-abstract class NetworkSettingsModelEmpty implements NetworkSettingsModel {
-  const factory NetworkSettingsModelEmpty({
-    final SettingsNetworkType? settingsNetworkType,
-    final int? env,
-    final String? host,
-    final int? port,
-    final bool? useTls,
-  }) = _$NetworkSettingsModelEmptyImpl;
 
-  factory NetworkSettingsModelEmpty.fromJson(Map<String, dynamic> json) =
-      _$NetworkSettingsModelEmptyImpl.fromJson;
 
-  @override
-  SettingsNetworkType? get settingsNetworkType;
-  @override
-  int? get env;
-  @override
-  String? get host;
-  @override
-  int? get port;
-  @override
-  bool? get useTls;
+@override
+String toString() {
+  return 'NetworkSettingsModel.apply(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
+}
 
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$NetworkSettingsModelEmptyImplCopyWith<_$NetworkSettingsModelEmptyImpl>
-  get copyWith => throw _privateConstructorUsedError;
+
 }
 
 /// @nodoc
-abstract class _$$NetworkSettingsModelApplyImplCopyWith<$Res>
-    implements $NetworkSettingsModelCopyWith<$Res> {
-  factory _$$NetworkSettingsModelApplyImplCopyWith(
-    _$NetworkSettingsModelApplyImpl value,
-    $Res Function(_$NetworkSettingsModelApplyImpl) then,
-  ) = __$$NetworkSettingsModelApplyImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    SettingsNetworkType? settingsNetworkType,
-    int? env,
-    String? host,
-    int? port,
-    bool? useTls,
-  });
-}
+abstract mixin class $NetworkSettingsModelApplyCopyWith<$Res> implements $NetworkSettingsModelCopyWith<$Res> {
+  factory $NetworkSettingsModelApplyCopyWith(NetworkSettingsModelApply value, $Res Function(NetworkSettingsModelApply) _then) = _$NetworkSettingsModelApplyCopyWithImpl;
+@override @useResult
+$Res call({
+ SettingsNetworkType? settingsNetworkType, int? env, String? host, int? port, bool? useTls
+});
 
+
+
+
+}
 /// @nodoc
-class __$$NetworkSettingsModelApplyImplCopyWithImpl<$Res>
-    extends
-        _$NetworkSettingsModelCopyWithImpl<
-          $Res,
-          _$NetworkSettingsModelApplyImpl
-        >
-    implements _$$NetworkSettingsModelApplyImplCopyWith<$Res> {
-  __$$NetworkSettingsModelApplyImplCopyWithImpl(
-    _$NetworkSettingsModelApplyImpl _value,
-    $Res Function(_$NetworkSettingsModelApplyImpl) _then,
-  ) : super(_value, _then);
+class _$NetworkSettingsModelApplyCopyWithImpl<$Res>
+    implements $NetworkSettingsModelApplyCopyWith<$Res> {
+  _$NetworkSettingsModelApplyCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? settingsNetworkType = freezed,
-    Object? env = freezed,
-    Object? host = freezed,
-    Object? port = freezed,
-    Object? useTls = freezed,
-  }) {
-    return _then(
-      _$NetworkSettingsModelApplyImpl(
-        settingsNetworkType:
-            freezed == settingsNetworkType
-                ? _value.settingsNetworkType
-                : settingsNetworkType // ignore: cast_nullable_to_non_nullable
-                    as SettingsNetworkType?,
-        env:
-            freezed == env
-                ? _value.env
-                : env // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        host:
-            freezed == host
-                ? _value.host
-                : host // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        port:
-            freezed == port
-                ? _value.port
-                : port // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        useTls:
-            freezed == useTls
-                ? _value.useTls
-                : useTls // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-      ),
-    );
-  }
+  final NetworkSettingsModelApply _self;
+  final $Res Function(NetworkSettingsModelApply) _then;
+
+/// Create a copy of NetworkSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? settingsNetworkType = freezed,Object? env = freezed,Object? host = freezed,Object? port = freezed,Object? useTls = freezed,}) {
+  return _then(NetworkSettingsModelApply(
+settingsNetworkType: freezed == settingsNetworkType ? _self.settingsNetworkType : settingsNetworkType // ignore: cast_nullable_to_non_nullable
+as SettingsNetworkType?,env: freezed == env ? _self.env : env // ignore: cast_nullable_to_non_nullable
+as int?,host: freezed == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
+as String?,port: freezed == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
+as int?,useTls: freezed == useTls ? _self.useTls : useTls // ignore: cast_nullable_to_non_nullable
+as bool?,
+  ));
 }
 
-/// @nodoc
-@JsonSerializable()
-class _$NetworkSettingsModelApplyImpl implements NetworkSettingsModelApply {
-  const _$NetworkSettingsModelApplyImpl({
-    this.settingsNetworkType,
-    this.env,
-    this.host,
-    this.port,
-    this.useTls,
-    final String? $type,
-  }) : $type = $type ?? 'apply';
 
-  factory _$NetworkSettingsModelApplyImpl.fromJson(Map<String, dynamic> json) =>
-      _$$NetworkSettingsModelApplyImplFromJson(json);
-
-  @override
-  final SettingsNetworkType? settingsNetworkType;
-  @override
-  final int? env;
-  @override
-  final String? host;
-  @override
-  final int? port;
-  @override
-  final bool? useTls;
-
-  @JsonKey(name: 'runtimeType')
-  final String $type;
-
-  @override
-  String toString() {
-    return 'NetworkSettingsModel.apply(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
-  }
-
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$NetworkSettingsModelApplyImplCopyWith<_$NetworkSettingsModelApplyImpl>
-  get copyWith => __$$NetworkSettingsModelApplyImplCopyWithImpl<
-    _$NetworkSettingsModelApplyImpl
-  >(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )
-    empty,
-    required TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )
-    apply,
-  }) {
-    return apply(settingsNetworkType, env, host, port, useTls);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    empty,
-    TResult? Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    apply,
-  }) {
-    return apply?.call(settingsNetworkType, env, host, port, useTls);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    empty,
-    TResult Function(
-      SettingsNetworkType? settingsNetworkType,
-      int? env,
-      String? host,
-      int? port,
-      bool? useTls,
-    )?
-    apply,
-    required TResult orElse(),
-  }) {
-    if (apply != null) {
-      return apply(settingsNetworkType, env, host, port, useTls);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(NetworkSettingsModelEmpty value) empty,
-    required TResult Function(NetworkSettingsModelApply value) apply,
-  }) {
-    return apply(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(NetworkSettingsModelEmpty value)? empty,
-    TResult? Function(NetworkSettingsModelApply value)? apply,
-  }) {
-    return apply?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(NetworkSettingsModelEmpty value)? empty,
-    TResult Function(NetworkSettingsModelApply value)? apply,
-    required TResult orElse(),
-  }) {
-    if (apply != null) {
-      return apply(this);
-    }
-    return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$NetworkSettingsModelApplyImplToJson(this);
-  }
 }
 
-abstract class NetworkSettingsModelApply implements NetworkSettingsModel {
-  const factory NetworkSettingsModelApply({
-    final SettingsNetworkType? settingsNetworkType,
-    final int? env,
-    final String? host,
-    final int? port,
-    final bool? useTls,
-  }) = _$NetworkSettingsModelApplyImpl;
-
-  factory NetworkSettingsModelApply.fromJson(Map<String, dynamic> json) =
-      _$NetworkSettingsModelApplyImpl.fromJson;
-
-  @override
-  SettingsNetworkType? get settingsNetworkType;
-  @override
-  int? get env;
-  @override
-  String? get host;
-  @override
-  int? get port;
-  @override
-  bool? get useTls;
-
-  /// Create a copy of NetworkSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$NetworkSettingsModelApplyImplCopyWith<_$NetworkSettingsModelApplyImpl>
-  get copyWith => throw _privateConstructorUsedError;
-}
+// dart format on

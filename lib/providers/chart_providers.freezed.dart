@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,305 +10,100 @@ part of 'chart_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$ChartsSubscriptionFlag {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() subscribed,
-    required TResult Function() unsubscribed,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? subscribed,
-    TResult? Function()? unsubscribed,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? subscribed,
-    TResult Function()? unsubscribed,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(ChartsSubscriptionFlagSubscribed value)
-    subscribed,
-    required TResult Function(ChartsSubscriptionFlagUnsubscribed value)
-    unsubscribed,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ChartsSubscriptionFlagSubscribed value)? subscribed,
-    TResult? Function(ChartsSubscriptionFlagUnsubscribed value)? unsubscribed,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(ChartsSubscriptionFlagSubscribed value)? subscribed,
-    TResult Function(ChartsSubscriptionFlagUnsubscribed value)? unsubscribed,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChartsSubscriptionFlag);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'ChartsSubscriptionFlag()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ChartsSubscriptionFlagCopyWith<$Res> {
-  factory $ChartsSubscriptionFlagCopyWith(
-    ChartsSubscriptionFlag value,
-    $Res Function(ChartsSubscriptionFlag) then,
-  ) = _$ChartsSubscriptionFlagCopyWithImpl<$Res, ChartsSubscriptionFlag>;
+class $ChartsSubscriptionFlagCopyWith<$Res>  {
+$ChartsSubscriptionFlagCopyWith(ChartsSubscriptionFlag _, $Res Function(ChartsSubscriptionFlag) __);
 }
 
-/// @nodoc
-class _$ChartsSubscriptionFlagCopyWithImpl<
-  $Res,
-  $Val extends ChartsSubscriptionFlag
->
-    implements $ChartsSubscriptionFlagCopyWith<$Res> {
-  _$ChartsSubscriptionFlagCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ChartsSubscriptionFlag
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$ChartsSubscriptionFlagSubscribedImplCopyWith<$Res> {
-  factory _$$ChartsSubscriptionFlagSubscribedImplCopyWith(
-    _$ChartsSubscriptionFlagSubscribedImpl value,
-    $Res Function(_$ChartsSubscriptionFlagSubscribedImpl) then,
-  ) = __$$ChartsSubscriptionFlagSubscribedImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$ChartsSubscriptionFlagSubscribedImplCopyWithImpl<$Res>
-    extends
-        _$ChartsSubscriptionFlagCopyWithImpl<
-          $Res,
-          _$ChartsSubscriptionFlagSubscribedImpl
-        >
-    implements _$$ChartsSubscriptionFlagSubscribedImplCopyWith<$Res> {
-  __$$ChartsSubscriptionFlagSubscribedImplCopyWithImpl(
-    _$ChartsSubscriptionFlagSubscribedImpl _value,
-    $Res Function(_$ChartsSubscriptionFlagSubscribedImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of ChartsSubscriptionFlag
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$ChartsSubscriptionFlagSubscribedImpl
-    implements ChartsSubscriptionFlagSubscribed {
-  const _$ChartsSubscriptionFlagSubscribedImpl();
 
-  @override
-  String toString() {
-    return 'ChartsSubscriptionFlag.subscribed()';
-  }
+class ChartsSubscriptionFlagSubscribed implements ChartsSubscriptionFlag {
+  const ChartsSubscriptionFlagSubscribed();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ChartsSubscriptionFlagSubscribedImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() subscribed,
-    required TResult Function() unsubscribed,
-  }) {
-    return subscribed();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? subscribed,
-    TResult? Function()? unsubscribed,
-  }) {
-    return subscribed?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? subscribed,
-    TResult Function()? unsubscribed,
-    required TResult orElse(),
-  }) {
-    if (subscribed != null) {
-      return subscribed();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(ChartsSubscriptionFlagSubscribed value)
-    subscribed,
-    required TResult Function(ChartsSubscriptionFlagUnsubscribed value)
-    unsubscribed,
-  }) {
-    return subscribed(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ChartsSubscriptionFlagSubscribed value)? subscribed,
-    TResult? Function(ChartsSubscriptionFlagUnsubscribed value)? unsubscribed,
-  }) {
-    return subscribed?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(ChartsSubscriptionFlagSubscribed value)? subscribed,
-    TResult Function(ChartsSubscriptionFlagUnsubscribed value)? unsubscribed,
-    required TResult orElse(),
-  }) {
-    if (subscribed != null) {
-      return subscribed(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChartsSubscriptionFlagSubscribed);
 }
 
-abstract class ChartsSubscriptionFlagSubscribed
-    implements ChartsSubscriptionFlag {
-  const factory ChartsSubscriptionFlagSubscribed() =
-      _$ChartsSubscriptionFlagSubscribedImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'ChartsSubscriptionFlag.subscribed()';
 }
 
-/// @nodoc
-abstract class _$$ChartsSubscriptionFlagUnsubscribedImplCopyWith<$Res> {
-  factory _$$ChartsSubscriptionFlagUnsubscribedImplCopyWith(
-    _$ChartsSubscriptionFlagUnsubscribedImpl value,
-    $Res Function(_$ChartsSubscriptionFlagUnsubscribedImpl) then,
-  ) = __$$ChartsSubscriptionFlagUnsubscribedImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$ChartsSubscriptionFlagUnsubscribedImplCopyWithImpl<$Res>
-    extends
-        _$ChartsSubscriptionFlagCopyWithImpl<
-          $Res,
-          _$ChartsSubscriptionFlagUnsubscribedImpl
-        >
-    implements _$$ChartsSubscriptionFlagUnsubscribedImplCopyWith<$Res> {
-  __$$ChartsSubscriptionFlagUnsubscribedImplCopyWithImpl(
-    _$ChartsSubscriptionFlagUnsubscribedImpl _value,
-    $Res Function(_$ChartsSubscriptionFlagUnsubscribedImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of ChartsSubscriptionFlag
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$ChartsSubscriptionFlagUnsubscribedImpl
-    implements ChartsSubscriptionFlagUnsubscribed {
-  const _$ChartsSubscriptionFlagUnsubscribedImpl();
 
-  @override
-  String toString() {
-    return 'ChartsSubscriptionFlag.unsubscribed()';
-  }
+class ChartsSubscriptionFlagUnsubscribed implements ChartsSubscriptionFlag {
+  const ChartsSubscriptionFlagUnsubscribed();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ChartsSubscriptionFlagUnsubscribedImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() subscribed,
-    required TResult Function() unsubscribed,
-  }) {
-    return unsubscribed();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? subscribed,
-    TResult? Function()? unsubscribed,
-  }) {
-    return unsubscribed?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? subscribed,
-    TResult Function()? unsubscribed,
-    required TResult orElse(),
-  }) {
-    if (unsubscribed != null) {
-      return unsubscribed();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(ChartsSubscriptionFlagSubscribed value)
-    subscribed,
-    required TResult Function(ChartsSubscriptionFlagUnsubscribed value)
-    unsubscribed,
-  }) {
-    return unsubscribed(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ChartsSubscriptionFlagSubscribed value)? subscribed,
-    TResult? Function(ChartsSubscriptionFlagUnsubscribed value)? unsubscribed,
-  }) {
-    return unsubscribed?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(ChartsSubscriptionFlagSubscribed value)? subscribed,
-    TResult Function(ChartsSubscriptionFlagUnsubscribed value)? unsubscribed,
-    required TResult orElse(),
-  }) {
-    if (unsubscribed != null) {
-      return unsubscribed(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChartsSubscriptionFlagUnsubscribed);
 }
 
-abstract class ChartsSubscriptionFlagUnsubscribed
-    implements ChartsSubscriptionFlag {
-  const factory ChartsSubscriptionFlagUnsubscribed() =
-      _$ChartsSubscriptionFlagUnsubscribedImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'ChartsSubscriptionFlag.unsubscribed()';
 }
+
+
+}
+
+
+
+
+// dart format on

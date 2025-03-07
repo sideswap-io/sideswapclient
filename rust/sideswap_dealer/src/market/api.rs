@@ -212,6 +212,14 @@ pub enum QuoteStatus {
 // Requests
 
 #[derive(Deserialize)]
+pub struct NewAddressReq {}
+
+#[derive(Serialize)]
+pub struct NewAddressResp {
+    pub address: elements::Address,
+}
+
+#[derive(Deserialize)]
 pub struct SubscribeReq {
     pub exchange_pair: ExchangePair,
 }
@@ -312,6 +320,7 @@ pub struct QuoteNotif {
 
 #[derive(Deserialize)]
 pub enum Req {
+    NewAddress(NewAddressReq),
     Subscribe(SubscribeReq),
     StartQuotes(StartQuotesReq),
     StopQuotes(StopQuotesReq),
@@ -320,6 +329,7 @@ pub enum Req {
 
 #[derive(Serialize)]
 pub enum Resp {
+    NewAddress(NewAddressResp),
     Subscribe(SubscribeResp),
     StartQuotes(StartQuotesResp),
     StopQuotes(StopQuotesResp),

@@ -2,10 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/desktop/markets/widgets/d_chart_button.dart';
 import 'package:sideswap/desktop/markets/widgets/index_price.dart';
-import 'package:sideswap/desktop/markets/widgets/order_item.dart';
+import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_title.dart';
 import 'package:sideswap/providers/orders_panel_provider.dart';
 
@@ -99,37 +98,5 @@ class OrdersScrollView extends HookConsumerWidget {
         ),
       ],
     );
-  }
-}
-
-class OrderRowElement extends ConsumerWidget {
-  const OrderRowElement({
-    required this.index,
-    required this.orders,
-    required this.text,
-    super.key,
-  });
-
-  final int index;
-  final Iterable<InternalUiOrder> orders;
-  final String text;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orderRowElementTheme =
-        Theme.of(context).extension<OrderRowElementTheme>()!;
-
-    return (index == 0 && orders.isEmpty)
-        ? Padding(
-          padding: orderRowElementTheme.padding,
-          child: Align(
-            alignment: Alignment.center,
-            child: Text(
-              'No active bids'.tr(),
-              style: TextStyle(color: orderRowElementTheme.textColor),
-            ),
-          ),
-        )
-        : OrderItem(order: orders.elementAtOrNull(index));
   }
 }

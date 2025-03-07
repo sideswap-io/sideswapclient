@@ -389,20 +389,38 @@ class TransItemHelper {
     );
   }
 
-  String txPegInBalance() {
+  ({String assetId, String ticker, String amount}) txPegInBalance() {
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
     final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final balance = getRecvBalance(liquidAssetId, bitcoinAssetId);
 
-    return assetAmountToString(balance.assetId, balance.amount);
+    final asset = ref.read(assetsStateProvider)[balance.assetId];
+    final ticker = asset?.ticker ?? '';
+    final amount = assetAmountToString(balance.assetId, balance.amount);
+
+    return (assetId: balance.assetId, ticker: ticker, amount: amount);
   }
 
-  String txPegOutBalance() {
+  String txPegInConversionRate() {
+    final amountSend = transItem.peg.amountSend.toInt();
+    final amountRecv = transItem.peg.amountRecv.toInt();
+    final conversionRate =
+        (amountSend != 0 && amountRecv != 0)
+            ? amountRecv * 100 / amountSend
+            : 0;
+    return '${conversionRate.toStringAsFixed(2)}%';
+  }
+
+  ({String assetId, String ticker, String amount}) txPegOutBalance() {
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
     final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final balance = getSentBalance(liquidAssetId, bitcoinAssetId);
 
-    return assetAmountToString(balance.assetId, -balance.amount);
+    final asset = ref.read(assetsStateProvider)[balance.assetId];
+    final ticker = asset?.ticker ?? '';
+    final amount = assetAmountToString(balance.assetId, -balance.amount);
+
+    return (assetId: balance.assetId, ticker: ticker, amount: amount);
   }
 
   String txPegInAddress() {
@@ -730,5 +748,21 @@ class TransItemHelper {
     return longFormat.format(
       DateTime.fromMillisecondsSinceEpoch(transItem.createdAt.toInt()),
     );
+  }
+
+  ({String txId, bool isLiquid, bool unblinded}) txId() {
+    return switch (txType()) {
+      TxType.pegIn => (
+        txId: transItem.peg.txidRecv,
+        isLiquid: true,
+        unblinded: true,
+      ),
+      TxType.pegOut => (
+        txId: transItem.peg.txidRecv,
+        isLiquid: false,
+        unblinded: true,
+      ),
+      _ => (txId: transItem.tx.txid, isLiquid: true, unblinded: false),
+    };
   }
 }

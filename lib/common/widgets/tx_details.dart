@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -575,6 +576,118 @@ class TxDetailsAssetListItem extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class DTxDetailsPegOut extends ConsumerWidget {
+  final TransItem transItem;
+
+  const DTxDetailsPegOut({super.key, required this.transItem});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+
+    return Column(
+      children: [
+        TxDetailsSideRow(leftText: 'Asset'.tr(), rightText: 'Amount'.tr()),
+        const SizedBox(height: 8),
+        TxDetailsAssetColoredRow(
+          leftText: transItemHelper.txPegOutBalance().ticker,
+          rightText: transItemHelper.txPegOutBalance().amount,
+        ),
+        const SizedBox(height: 8),
+        TxDetailsAssetColoredRow(
+          leftText: transItemHelper.txPegInBalance().ticker,
+          rightText: transItemHelper.txPegInBalance().amount,
+        ),
+        const SizedBox(height: 14),
+        TxDetailsRow(
+          description: 'Conversion rate'.tr(),
+          details: transItemHelper.txPegInConversionRate(),
+        ),
+        const SizedBox(height: 14),
+        TxDetailsRow(
+          description: 'Status'.tr(),
+          details: transItemHelper.txStatus(),
+        ),
+      ],
+    );
+  }
+}
+
+class TxDetailsAssetColoredRow extends ConsumerWidget {
+  final Color backgroundColor;
+  final Widget? image;
+  final String leftText;
+  final String rightText;
+  final Color? rightTextColor;
+  final EdgeInsetsGeometry padding;
+
+  const TxDetailsAssetColoredRow({
+    this.backgroundColor = SideSwapColors.prussianBlue,
+    this.image,
+    this.leftText = '',
+    this.rightText = '',
+    this.padding = const EdgeInsets.symmetric(horizontal: 12),
+    this.rightTextColor,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final amountColor =
+        rightTextColor ??
+        (rightText.contains('+')
+            ? SideSwapColors.menthol
+            : SideSwapColors.bitterSweet);
+
+    return Container(
+      constraints: const BoxConstraints(minHeight: 44, maxHeight: 132),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      child: Padding(
+        padding: padding,
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  ...switch (image) {
+                    Widget _ => [
+                      Row(
+                        children: [
+                          SizedBox(width: 20, height: 20, child: image),
+                          const SizedBox(width: 4),
+                        ],
+                      ),
+                    ],
+                    _ => [const SizedBox()],
+                  },
+                  Text(
+                    leftText,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                  ),
+                ],
+              ),
+              Text(
+                rightText,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  color: amountColor,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

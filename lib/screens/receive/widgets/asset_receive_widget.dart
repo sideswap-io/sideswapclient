@@ -10,8 +10,8 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/use_timeout_fn.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
+import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
@@ -48,19 +48,16 @@ class AssetReceiveWidget extends HookConsumerWidget {
     final swapRecvAddr = ref.watch(swapRecvAddressExternalNotifierProvider);
 
     final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
-    final serverFeePercentPegIn = ref.watch(
-      walletProvider.select((p) => p.serverStatus?.serverFeePercentPegIn),
-    );
-    final serverFeePercentPegOut = ref.watch(
-      walletProvider.select((p) => p.serverStatus?.serverFeePercentPegOut),
-    );
+    final pegOutServerFeePercent = ref.watch(pegOutServerFeePercentProvider);
+    final pegInServerFeePercent = ref.watch(pegInServerFeePercentProvider);
+
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     var percentConversion =
-        (serverFeePercentPegIn == null || serverFeePercentPegOut == null)
+        (pegInServerFeePercent == 0 || pegInServerFeePercent == 0)
             ? 0
             : swapDeliverAsset.asset.assetId == liquidAssetId
-            ? 100 - serverFeePercentPegOut
-            : 100 - serverFeePercentPegIn;
+            ? 100 - pegOutServerFeePercent
+            : 100 - pegInServerFeePercent;
 
     final conversionStr = percentConversion.toStringAsFixed(2);
 
@@ -188,16 +185,13 @@ class AssetReceiveWidget extends HookConsumerWidget {
                 );
                 showCopyInfo();
               },
-              child: SizedBox(
-                height: 50,
-                child: Text(
-                  recvAddress,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
+              child: Text(
+                recvAddress,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
             ),

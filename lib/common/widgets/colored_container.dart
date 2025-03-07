@@ -14,13 +14,13 @@ class ColoredContainer extends StatelessWidget {
   final Widget? child;
   final double? width;
   final double? height;
-  final ColoredContainerTheme? theme;
+  final ColoredContainerStyle? theme;
 
   @override
   Widget build(BuildContext context) {
     final containerTheme =
-        theme ?? Theme.of(context).extension<ColoredContainerTheme>()!;
-    final defaultTheme = ColoredContainerTheme(
+        theme ?? Theme.of(context).extension<ColoredContainerStyle>()!;
+    final defaultTheme = ColoredContainerStyle(
       backgroundColor: SideSwapColors.navyBlue,
       borderColor: SideSwapColors.navyBlue,
       horizontalPadding: 12,

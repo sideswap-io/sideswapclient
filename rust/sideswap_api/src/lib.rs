@@ -363,7 +363,7 @@ pub struct TxStatus {
     pub total_confs: Option<i32>,
     pub created_at: Timestamp,
     // Must be set if tx_state is PegTxState::Done
-    pub payout_txid: Option<String>,
+    pub payout_txid: Option<Hash32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

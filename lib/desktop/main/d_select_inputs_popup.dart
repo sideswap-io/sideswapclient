@@ -204,7 +204,7 @@ class DInputsDetails extends StatelessWidget {
           const Spacer(),
           ColoredContainer(
             height: 224,
-            theme: ColoredContainerTheme(
+            theme: ColoredContainerStyle(
               backgroundColor: SideSwapColors.chathamsBlue,
               borderColor: SideSwapColors.chathamsBlue,
             ),
@@ -251,7 +251,7 @@ class DInputsDetails extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 ColoredContainer(
-                  theme: ColoredContainerTheme(
+                  theme: ColoredContainerStyle(
                     backgroundColor: SideSwapColors.chathamsBlue.lerpWith(
                       Colors.black,
                       0.1,

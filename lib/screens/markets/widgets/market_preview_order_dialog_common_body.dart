@@ -54,6 +54,17 @@ class MarketPreviewOrderDialogCommonBody extends ConsumerWidget {
                       receiveAmount: quoteSuccess.receiveAmount,
                       showConversion: true,
                     ),
+                    SizedBox(height: 8),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                    ),
+                    SizedBox(height: 8),
+                    MarketPriceRow(
+                      asset: quoteSuccess.priceAsset,
+                      amount: quoteSuccess.priceString,
+                    ),
                   ],
                 ),
               ),

@@ -7,7 +7,7 @@ part of 'subscribe_price_providers.dart';
 // **************************************************************************
 
 String _$subscribePriceStreamNotifierHash() =>
-    r'7af1dda189430f28adf88b438655c964ea9ed19f';
+    r'6f5297d8f88c8e706eab912e48bdaeedfdb22908';
 
 /// See also [SubscribePriceStreamNotifier].
 @ProviderFor(SubscribePriceStreamNotifier)

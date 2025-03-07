@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -16,6 +17,7 @@ import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
+import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
@@ -312,62 +314,51 @@ class SwapPriceSubscribeNotifier extends _$SwapPriceSubscribeNotifier {
 @riverpod
 class BitcoinCurrentFeeRateNotifier extends _$BitcoinCurrentFeeRateNotifier {
   @override
-  SwapCurrentFeeRate build() {
-    ref.listen(bitcoinFeeRatesProvider, (_, next) {
-      updateFeeRate(next);
+  Option<FeeRate> build() {
+    ref.onAddListener(() {
+      final feeRates = ref.read(bitcoinFeeRatesProvider);
+
+      Future.microtask(() => _updateFeeRate(feeRates));
     });
 
-    final feeRates = ref.watch(walletProvider).serverStatus?.bitcoinFeeRates;
-    if (feeRates != null && feeRates.isNotEmpty) {
-      return SwapCurrentFeeRate.data(feeRate: feeRates.first);
-    }
-    return SwapCurrentFeeRate.empty();
+    ref.listen(bitcoinFeeRatesProvider, (_, next) {
+      if (next.isEmpty) {
+        return;
+      }
+
+      Future.microtask(() => _updateFeeRate(next));
+    });
+
+    return Option.none();
   }
 
-  void updateFeeRate(List<FeeRate> feeRates) {
+  void _updateFeeRate(List<FeeRate> feeRates) {
     if (feeRates.isEmpty) {
       return;
     }
 
-    state.when(
-      empty: () {
-        state = SwapCurrentFeeRate.data(feeRate: feeRates.first);
+    state.match(
+      () {
+        state = Option.of(feeRates.first);
       },
-      data: (feeRate) {
-        final updatedFeeRate = feeRates.firstWhere(
-          (e) => e.blocks == feeRate.blocks,
-        );
-        state = SwapCurrentFeeRate.data(feeRate: updatedFeeRate);
+      (feeRate) {
+        final index = feeRates.indexWhere((e) => e.blocks == feeRate.blocks);
+        if (index == -1) {
+          state = Option.of(feeRates.first);
+          return;
+        }
+
+        state = Option.of(feeRates[index]);
       },
     );
   }
 
   void setFeeRate(FeeRate feeRate) {
-    state = SwapCurrentFeeRate.data(feeRate: feeRate);
+    state = Option.of(feeRate);
     ref
         .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
-
-  void setEmpty() {
-    state = const SwapCurrentFeeRate.empty();
-  }
-}
-
-@riverpod
-List<FeeRate> bitcoinFeeRates(Ref ref) {
-  final swapType = ref.watch(swapTypeProvider);
-  final swapRecvWallet = ref.watch(swapRecvWalletProvider);
-  final serverStatus = ref.watch(walletProvider.select((p) => p.serverStatus));
-
-  final feeRates =
-      (swapType == const SwapType.pegOut() &&
-              swapRecvWallet == const SwapWallet.extern() &&
-              serverStatus != null)
-          ? serverStatus.bitcoinFeeRates
-          : <FeeRate>[];
-
-  return feeRates;
 }
 
 @riverpod
@@ -614,10 +605,10 @@ class SwapPriceStateNotifier extends _$SwapPriceStateNotifier {
 }
 
 @riverpod
-String? swapPriceText(Ref ref) {
+Option<String> swapPriceText(Ref ref) {
   final swapPrice = ref.watch(swapPriceStateNotifierProvider);
   if (swapPrice == null) {
-    return null;
+    return Option.none();
   }
 
   final swapType = ref.watch(swapTypeProvider);
@@ -636,22 +627,25 @@ String? swapPriceText(Ref ref) {
         .tickerForAssetId(asset.asset.assetId);
     assetTicker = assetTicker.isEmpty ? kUnknownTicker : assetTicker;
     final swapText = '1 $kLiquidBitcoinTicker = $priceString $assetTicker';
-    return swapText;
+    return Option.of(swapText);
   }
 
-  final serverStatus = ref.watch(walletProvider).serverStatus;
-  if (serverStatus == null) {
-    return null;
-  }
+  final pegInServerFeePercent = ref.watch(pegInServerFeePercentProvider);
+  final pegOutServerFeePercent = ref.watch(pegOutServerFeePercentProvider);
 
   final serverPercent =
       swapType == const SwapType.pegIn()
-          ? serverStatus.serverFeePercentPegIn
-          : serverStatus.serverFeePercentPegOut;
+          ? pegInServerFeePercent
+          : pegOutServerFeePercent;
+
+  if (serverPercent == 0) {
+    return Option.none();
+  }
+
   final percentConversion = 100 - serverPercent;
   final conversionStr = percentConversion.toStringAsFixed(2);
   final conversionText = 'Conversion rate $conversionStr%';
-  return conversionText;
+  return Option.of(conversionText);
 }
 
 @riverpod
@@ -1015,28 +1009,31 @@ class SwapHelper {
     }
 
     if (swapType == const SwapType.pegOut()) {
-      final feeRate =
-          ref.read(bitcoinCurrentFeeRateNotifierProvider)
-              as SwapCurrentFeeRateData;
-      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
-      final swapRecvAddressExternal = ref.read(
-        swapRecvAddressExternalNotifierProvider,
+      final optionCurrentFeeRate = ref.read(
+        bitcoinCurrentFeeRateNotifierProvider,
       );
 
-      final msg = To();
-      msg.pegOutRequest = To_PegOutRequest();
-      msg.pegOutRequest.sendAmount = Int64(sendAmount);
-      msg.pegOutRequest.recvAmount = Int64(recvAmount);
-      msg.pegOutRequest.isSendEntered =
-          subscribe == const SwapPriceSubscribeState.send();
-      msg.pegOutRequest.recvAddr = swapRecvAddressExternal;
-      msg.pegOutRequest.blocks = feeRate.feeRate.blocks;
-      msg.pegOutRequest.feeRate = feeRate.feeRate.value;
-      msg.pegOutRequest.account = getAccount(swapDeliverAsset.asset.account);
-      ref.read(walletProvider).sendMsg(msg);
-      ref
-          .read(swapStateNotifierProvider.notifier)
-          .setState(const SwapState.sent());
+      optionCurrentFeeRate.match(() {}, (feeRate) {
+        final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
+        final swapRecvAddressExternal = ref.read(
+          swapRecvAddressExternalNotifierProvider,
+        );
+
+        final msg = To();
+        msg.pegOutRequest = To_PegOutRequest();
+        msg.pegOutRequest.sendAmount = Int64(sendAmount);
+        msg.pegOutRequest.recvAmount = Int64(recvAmount);
+        msg.pegOutRequest.isSendEntered =
+            subscribe == const SwapPriceSubscribeState.send();
+        msg.pegOutRequest.recvAddr = swapRecvAddressExternal;
+        msg.pegOutRequest.blocks = feeRate.blocks;
+        msg.pegOutRequest.feeRate = feeRate.value;
+        msg.pegOutRequest.account = getAccount(swapDeliverAsset.asset.account);
+        ref.read(walletProvider).sendMsg(msg);
+        ref
+            .read(swapStateNotifierProvider.notifier)
+            .setState(const SwapState.sent());
+      });
     }
 
     if (swapType == const SwapType.atomic()) {

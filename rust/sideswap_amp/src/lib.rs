@@ -201,6 +201,7 @@ impl Wallet {
         let bitcoin_network = match network {
             Network::Liquid => bitcoin::Network::Bitcoin,
             Network::LiquidTestnet => bitcoin::Network::Testnet,
+            Network::Regtest => todo!(),
         };
 
         let seed = mnemonic.to_seed("");
@@ -1428,6 +1429,7 @@ async fn connect_ws(network: Network) -> Result<Connection, Error> {
     let url = match network {
         Network::Liquid => "wss://green-liquid-mainnet.blockstream.com/v2/ws",
         Network::LiquidTestnet => "wss://green-liquid-testnet.blockstream.com/v2/ws",
+        Network::Regtest => todo!(),
     };
     let url: url::Url = url.parse().expect("must be valid");
     let host = url.host().expect("must be set").to_string();

@@ -62,7 +62,7 @@ fn run(
 ) {
     let is_mainnet = match network {
         Network::Liquid => true,
-        Network::LiquidTestnet => false,
+        Network::LiquidTestnet | Network::Regtest => false,
     };
 
     let seed = mnemonic.to_seed("");
@@ -87,6 +87,7 @@ fn run(
     let lwk_network = match network {
         Network::Liquid => ElementsNetwork::Liquid,
         Network::LiquidTestnet => ElementsNetwork::LiquidTestnet,
+        Network::Regtest => todo!(),
     };
 
     let mut wallet = lwk_wollet::Wollet::without_persist(lwk_network, descriptor.clone())
@@ -98,6 +99,7 @@ fn run(
     let electrum_url = match network {
         Network::Liquid => "electrs.sideswap.io:12001",
         Network::LiquidTestnet => "electrs.sideswap.io:12002",
+        Network::Regtest => todo!(),
     };
     let electrum_url =
         lwk_wollet::ElectrumUrl::new(electrum_url, true, true).expect("must not fail");

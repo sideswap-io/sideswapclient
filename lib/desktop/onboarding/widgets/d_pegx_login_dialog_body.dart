@@ -8,6 +8,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_amp_login_dialog_bottom_panel.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -33,41 +34,35 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                 'Scan QR code in Auth eID App to login'.tr(),
                 style: textTheme.bodyMedium,
               ),
-              pegxLoginState.maybeWhen(
-                login: (requestId) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        color: Colors.white,
-                      ),
-                      child: QrImageView(
-                        data:
-                            env == SIDESWAP_ENV_TESTNET ||
-                                    env == SIDESWAP_ENV_LOCAL_TESTNET
-                                ? '$pegxStagingAuthIdUrl$requestId'
-                                : '$pegxAuthIdUrl$requestId',
-                        size: 150,
-                        padding: const EdgeInsets.all(12),
-                      ),
+              switch (pegxLoginState) {
+                PegxLoginStateLogin(requestId: String requestId) => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      color: Colors.white,
                     ),
-                  );
-                },
-                loginDialog: () {
-                  return const Padding(
-                    padding: EdgeInsets.only(top: 16),
-                    child: SizedBox(
-                      width: 150,
-                      height: 150,
-                      child: Center(child: CircularProgressIndicator()),
+                    child: QrImageView(
+                      data:
+                          env == SIDESWAP_ENV_TESTNET ||
+                                  env == SIDESWAP_ENV_LOCAL_TESTNET
+                              ? '$pegxStagingAuthIdUrl$requestId'
+                              : '$pegxAuthIdUrl$requestId',
+                      size: 150,
+                      padding: const EdgeInsets.all(12),
                     ),
-                  );
-                },
-                orElse: () {
-                  return const SizedBox();
-                },
-              ),
+                  ),
+                ),
+                PegxLoginStateLoginDialog() => const Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+                _ => const SizedBox(),
+              },
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(bottom: 50),

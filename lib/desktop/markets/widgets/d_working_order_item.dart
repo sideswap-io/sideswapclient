@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fpdart/fpdart.dart';
@@ -36,8 +35,8 @@ class DWorkingOrderItem extends HookConsumerWidget {
     final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
     final dirColor =
         isSell
-            ? Theme.of(context).extension<MarketColorsTheme>()!.sellColor
-            : Theme.of(context).extension<MarketColorsTheme>()!.buyColor;
+            ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
+            : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
 
     final showCancelDialogCallback = useCallback(() {
       return showDialog<bool>(
@@ -127,7 +126,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
           Text(order.offlineSwapTypeDescription),
           Row(
             children: [
-              Icon(Symbols.schedule, size: 18),
+              Icon(Icons.schedule, size: 18),
               const SizedBox(width: 6),
               Consumer(
                 builder: (context, ref, child) {
@@ -140,7 +139,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
               const Spacer(),
               if (order.orderType == OrderType.private()) ...[
                 DWorkingOrderButton(
-                  icon: Icon(Symbols.content_copy_rounded, size: 20),
+                  icon: Icon(Icons.content_copy_rounded, size: 20),
                   onPressed: () {
                     final shareUrl = ref.read(
                       addressToShareByOrderProvider(order),
@@ -151,7 +150,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
               ],
               if (order.offlineSwapType != OfflineSwapType.twoStep()) ...[
                 DWorkingOrderButton(
-                  icon: Icon(Symbols.edit_square_rounded, size: 20),
+                  icon: Icon(Icons.edit, size: 20),
                   onPressed: () async {
                     ref
                         .read(marketEditDetailsOrderNotifierProvider.notifier)
@@ -171,7 +170,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
                 ),
               ],
               DWorkingOrderButton(
-                icon: Icon(Symbols.delete_rounded, size: 20),
+                icon: Icon(Icons.delete_forever, size: 20),
                 onPressed: () async {
                   final ret = await showCancelDialogCallback();
 

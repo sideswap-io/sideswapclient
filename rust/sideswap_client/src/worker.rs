@@ -9,8 +9,8 @@ use std::{
 use crate::ffi::{self, proto, GIT_COMMIT_HASH};
 use crate::gdk_json::{self, AddressInfo};
 use crate::gdk_ses::{self, ElectrumServer, NotifCallback, WalletInfo};
-use crate::gdk_ses_impl;
 use crate::settings;
+use crate::{gdk_ses_impl, gdk_ses_stub};
 use crate::{gdk_ses_jade, models, swaps};
 
 use anyhow::{anyhow, ensure};
@@ -27,6 +27,7 @@ use sideswap_api::mkt::AssetPair;
 use sideswap_common::env::Env;
 use sideswap_common::event_proofs::EventProofs;
 use sideswap_common::network::Network;
+use sideswap_common::retry_delay::RetryDelay;
 use sideswap_common::send_tx::coin_select::InOut;
 use sideswap_common::types::{self, peg_out_amount, select_utxo_values, Amount};
 use sideswap_common::ws::next_request_id;
@@ -157,6 +158,28 @@ enum TimerEvent {
     SyncUtxos,
     SendAck,
     CleanQuotes,
+    ReconnectRegular,
+}
+
+pub struct WalletData {
+    reconnect_delay: RetryDelay,
+}
+
+impl WalletData {
+    fn new() -> WalletData {
+        WalletData {
+            reconnect_delay: RetryDelay::default(),
+        }
+    }
+}
+
+#[derive(Clone)]
+struct LastPegOutAmount {
+    req_amount: i64,
+    send_amount: i64,
+    recv_amount: i64,
+    is_send_entered: bool,
+    fee_rate: FeeRateSats,
 }
 
 pub struct Data {
@@ -183,12 +206,13 @@ pub struct Data {
     confirmed_txids: BTreeMap<AccountId, HashSet<elements::Txid>>,
     unconfirmed_txids: BTreeMap<AccountId, HashSet<elements::Txid>>,
     wallets: BTreeMap<AccountId, Wallet>,
+    wallet_data: WalletData,
 
     active_swap: Option<ActiveSwap>,
     succeed_swap: Option<elements::Txid>,
     active_extern_peg: Option<ActivePeg>,
     sent_txhash: Option<elements::Txid>,
-    peg_out_server_amounts: Option<api::PegOutAmounts>,
+    peg_out_server_amounts: Option<LastPegOutAmount>,
     active_submits: BTreeMap<OrderId, api::LinkResponse>,
     active_sign: Option<api::SignNotification>,
 
@@ -329,7 +353,7 @@ fn get_peg_item(peg: &api::PegStatus, tx: &api::TxStatus) -> proto::TransItem {
         addr_send: peg.addr.clone(),
         addr_recv: peg.addr_recv.clone(),
         txid_send: tx.tx_hash.clone(),
-        txid_recv: tx.payout_txid.clone(),
+        txid_recv: tx.payout_txid.map(|hash| hash.to_string()),
     };
     let confs = tx.detected_confs.and_then(|count| {
         tx.total_confs.map(|total| proto::Confs {
@@ -1164,7 +1188,11 @@ impl Data {
             wait_ms: _,
         }) = &notification.network
         {
-            debug!("request wallet {} login", account_id);
+            debug!(
+                "connection connected, request login, account: {}",
+                account_id
+            );
+
             wallet::callback(
                 account_id,
                 self,
@@ -1216,10 +1244,21 @@ impl Data {
             wait_ms: _,
         }) = &notification.network
         {
-            if account_id == ACCOUNT_ID_AMP {
-                debug!("AMP disconnected");
-                self.amp_connected = false;
-                remove_timers(self, TimerEvent::AmpConnectionCheck);
+            match account_id {
+                ACCOUNT_ID_REG => {
+                    let delay = self.wallet_data.reconnect_delay.next_delay();
+                    replace_timers(self, delay, TimerEvent::ReconnectRegular);
+                }
+                ACCOUNT_ID_AMP => {
+                    debug!("AMP disconnected");
+                    self.amp_connected = false;
+                    remove_timers(self, TimerEvent::AmpConnectionCheck);
+                }
+                account_id => {
+                    log::error!(
+                        "disconnected notification from the unexpected account_id: {account_id}"
+                    );
+                }
             }
         }
     }
@@ -1237,16 +1276,13 @@ impl Data {
 
         let wallet = self.get_wallet(req.account.id)?;
         assert!(utxos.iter().all(|utxo| utxo.asset_id == self.policy_asset));
-        let balance = utxos.iter().map(|utxo| utxo.satoshi).sum::<u64>();
 
         let server_status = self
             .server_status
             .as_ref()
             .ok_or(anyhow!("server_status is not known"))?;
 
-        let deduct_fee = req.is_send_entered && balance == req.amount as u64;
-
-        let amount = if deduct_fee {
+        let amount = if req.is_send_entered {
             let coin_select = send_tx::coin_select::normal_tx::try_coin_select(
                 send_tx::coin_select::normal_tx::Args {
                     multisig_wallet: !wallet.login_info.single_sig,
@@ -1267,6 +1303,11 @@ impl Data {
                 },
             )?;
 
+            ensure!(
+                req.amount as u64 > coin_select.network_fee.value,
+                "amount is too low"
+            );
+
             req.amount as u64 - coin_select.network_fee.value
         } else {
             req.amount as u64
@@ -1283,7 +1324,8 @@ impl Data {
             peg_out_bitcoin_tx_vsize: server_status.peg_out_bitcoin_tx_vsize,
         })?;
 
-        self.peg_out_server_amounts = Some(api::PegOutAmounts {
+        self.peg_out_server_amounts = Some(LastPegOutAmount {
+            req_amount: req.amount,
             send_amount: amounts.send_amount,
             recv_amount: amounts.recv_amount,
             is_send_entered: req.is_send_entered,
@@ -1330,7 +1372,7 @@ impl Data {
 
         let peg_out_server_amounts = self
             .peg_out_server_amounts
-            .take()
+            .clone()
             .ok_or_else(|| anyhow!("peg_out_server_amounts is None"))?;
 
         let device_key = self
@@ -1349,7 +1391,12 @@ impl Data {
                 peg_in: false,
                 device_key: Some(device_key),
                 blocks: Some(req.blocks),
-                peg_out_amounts: Some(peg_out_server_amounts),
+                peg_out_amounts: Some(api::PegOutAmounts {
+                    send_amount: peg_out_server_amounts.send_amount,
+                    recv_amount: peg_out_server_amounts.recv_amount,
+                    is_send_entered: peg_out_server_amounts.is_send_entered,
+                    fee_rate: peg_out_server_amounts.fee_rate
+                }),
             },
             SERVER_REQUEST_TIMEOUT_LONG
         )?;
@@ -1357,6 +1404,8 @@ impl Data {
         self.add_peg_monitoring(resp.order_id, settings::PegDir::Out);
 
         let payment = wallet::PegoutPayment {
+            req_amount: peg_out_server_amounts.req_amount,
+            is_send_entered: peg_out_server_amounts.is_send_entered,
             policy_asset: self.policy_asset,
             send_amount: peg_out_server_amounts.send_amount,
             peg_addr: resp.peg_addr,
@@ -1695,7 +1744,11 @@ impl Data {
             proxy: self.proxy(),
         };
 
-        let mut wallet_amp = gdk_ses_impl::start_processing(info_amp, None)?;
+        let mut wallet_amp = if self.env != Env::LocalRegtest {
+            gdk_ses_impl::start_processing(info_amp, None)?
+        } else {
+            gdk_ses_stub::start_processing(info_amp)
+        };
 
         wallet_amp.register()?;
 
@@ -1834,8 +1887,10 @@ impl Data {
 
             if let Some(watch_only) = reg_info.clone().jade_watch_only {
                 gdk_ses_jade::start_processing(info_amp, self.get_notif_callback(), watch_only)
-            } else {
+            } else if self.env != Env::LocalRegtest {
                 gdk_ses_impl::start_processing(info_amp, Some(self.get_notif_callback()))
+            } else {
+                Ok(gdk_ses_stub::start_processing(info_amp))
             }
         };
 
@@ -1990,6 +2045,7 @@ impl Data {
         debug!("process logout request...");
 
         self.wallets.clear();
+        self.wallet_data = WalletData::new();
 
         // TODO: Clear other fields
         self.sync_complete = false;
@@ -3083,6 +3139,7 @@ impl Data {
             let data = match self.env.d().network {
                 Network::Liquid => include_str!("../data/assets.json"),
                 Network::LiquidTestnet => include_str!("../data/assets-testnet.json"),
+                Network::Regtest => "[]",
             };
             serde_json::from_str::<api::Assets>(data).expect("must not fail")
         });
@@ -3338,14 +3395,30 @@ fn process_timer_event(data: &mut Data, event: TimerEvent) {
         TimerEvent::AmpConnectionCheck => {
             data.check_amp_connection();
         }
+
         TimerEvent::SyncUtxos => {
             market_worker::sync_utxos(data);
         }
+
         TimerEvent::SendAck => {
             market_worker::send_ack(data);
         }
+
         TimerEvent::CleanQuotes => {
             market_worker::clean_quotes(data);
+        }
+
+        TimerEvent::ReconnectRegular => {
+            wallet::callback(
+                ACCOUNT_ID_REG,
+                data,
+                move |data| {
+                    log::debug!("request regular wallet reconnect");
+                    data.ses.connect();
+                    Ok(())
+                },
+                move |_data, _res| {},
+            );
         }
     }
 }
@@ -3513,6 +3586,7 @@ pub fn start_processing(
         network_settings: Default::default(),
         proxy_settings: Default::default(),
         wallet_event_callback,
+        wallet_data: WalletData::new(),
     };
 
     debug!("proxy: {:?}", data.proxy());

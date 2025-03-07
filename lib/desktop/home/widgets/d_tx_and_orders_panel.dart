@@ -41,7 +41,10 @@ class DTxAndOrdersPanel extends HookConsumerWidget {
       tabsLength = tabsLength + 1;
     }
 
-    final controller = useTabController(initialLength: tabsLength);
+    final controller = useTabController(
+      initialLength: tabsLength,
+      keys: [tabsLength],
+    );
 
     return Stack(
       children: [

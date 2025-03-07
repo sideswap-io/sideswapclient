@@ -234,7 +234,7 @@ class DAddressesTopPanel extends ConsumerWidget {
     return ColoredContainer(
       width: double.infinity,
       height: 72,
-      theme: ColoredContainerTheme(
+      theme: ColoredContainerStyle(
         backgroundColor: SideSwapColors.blumine,
         borderColor: SideSwapColors.blumine,
       ),
@@ -562,7 +562,7 @@ class DAddressDetailsAssets extends HookConsumerWidget {
         ),
         const SizedBox(height: 16),
         ColoredContainer(
-          theme: ColoredContainerTheme(
+          theme: ColoredContainerStyle(
             backgroundColor: SideSwapColors.chathamsBlue,
             borderColor: SideSwapColors.chathamsBlue,
           ),
@@ -714,7 +714,7 @@ class DAddressDetailsColumn extends HookConsumerWidget {
         ),
         const SizedBox(height: 16),
         ColoredContainer(
-          theme: ColoredContainerTheme(
+          theme: ColoredContainerStyle(
             backgroundColor: SideSwapColors.chathamsBlue,
             borderColor: SideSwapColors.chathamsBlue,
           ),
@@ -892,7 +892,7 @@ class DAddressesBottomPanel extends StatelessWidget {
     return ColoredContainer(
       width: double.infinity,
       height: 102,
-      theme: ColoredContainerTheme(
+      theme: ColoredContainerStyle(
         backgroundColor: SideSwapColors.blumine,
         borderColor: SideSwapColors.blumine,
       ),

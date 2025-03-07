@@ -184,7 +184,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
     setState(() {});
   }
 
-  Future<void> validateFinal(WidgetRef ref) async {
+  Future<bool> validateFinal(WidgetRef ref) async {
     var index = 0;
     for (var word in words) {
       final suggestionList = getSuggestions(word.value);
@@ -202,13 +202,15 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
 
     if (wrongIndex == -1) {
       await nextPage(ref);
-      return;
+      return true;
     }
 
     _textEditingControllerList[wrongIndex].text = '';
     _jumpTo(wrongIndex);
 
     setState(() {});
+
+    return false;
   }
 
   bool isCorrectWord(int index) {
@@ -239,7 +241,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
     wallet.importMnemonic(mnemonic);
   }
 
-  void tryJump(int index) {
+  Future<void> tryJump(int index) async {
     if (words[index].value.isEmpty) {
       return;
     }
@@ -251,7 +253,10 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
 
     if (isCorrectWord(index)) {
       if (index >= widget.wordCount - 1) {
-        validateFinal(ref);
+        final ret = await validateFinal(ref);
+        if (ret) {
+          return;
+        }
       }
 
       Future.delayed(const Duration(milliseconds: 30), () {

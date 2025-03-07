@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/fee_suggestions.dart';
@@ -39,16 +38,14 @@ class FeeRatesDropdown extends StatelessWidget {
               const SizedBox(width: 8),
               Consumer(
                 builder: ((context, ref, child) {
-                  final currentFeeRate = ref.watch(
+                  final optionCurrentFeeRate = ref.watch(
                     bitcoinCurrentFeeRateNotifierProvider,
                   );
-                  if (currentFeeRate is SwapCurrentFeeRateData) {
-                    return Text(
-                      ref.read(
-                        bitcoinFeeRateDescriptionProvider(
-                          currentFeeRate.feeRate,
-                        ),
-                      ),
+
+                  return optionCurrentFeeRate.match(
+                    () => const SizedBox(),
+                    (feeRate) => Text(
+                      ref.read(bitcoinFeeRateDescriptionProvider(feeRate)),
                       overflow: TextOverflow.clip,
                       maxLines: 1,
                       style: const TextStyle(
@@ -56,9 +53,8 @@ class FeeRatesDropdown extends StatelessWidget {
                         fontWeight: FontWeight.normal,
                         color: Colors.white,
                       ),
-                    );
-                  }
-                  return const SizedBox();
+                    ),
+                  );
                 }),
               ),
               const Icon(Icons.keyboard_arrow_down, size: 16),

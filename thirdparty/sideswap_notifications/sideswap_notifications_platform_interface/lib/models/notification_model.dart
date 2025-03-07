@@ -36,9 +36,9 @@ enum FCMTxType {
 }
 
 @freezed
-class FCMPayload with _$FCMPayload {
-  const FCMPayload._();
-  const factory FCMPayload({FCMPayloadType? type, String? txid}) = _FCMPayload;
+sealed class FCMPayload with _$FCMPayload {
+  FCMPayload._();
+  factory FCMPayload({FCMPayloadType? type, String? txid}) = _FCMPayload;
 
   factory FCMPayload.fromJson(Map<String, dynamic> json) =>
       _$FCMPayloadFromJson(json);
@@ -50,7 +50,7 @@ class FCMPayload with _$FCMPayload {
 }
 
 @freezed
-class FCMNotification with _$FCMNotification {
+sealed class FCMNotification with _$FCMNotification {
   const factory FCMNotification({String? title, String? body}) =
       _FCMNotification;
 
@@ -59,7 +59,7 @@ class FCMNotification with _$FCMNotification {
 }
 
 @freezed
-class FCMData with _$FCMData {
+sealed class FCMData with _$FCMData {
   const factory FCMData({FCMDetails? details}) = _FCMData;
 
   factory FCMData.fromJson(Map<String, dynamic> json) =>
@@ -78,7 +78,7 @@ class FCMData with _$FCMData {
 }
 
 @freezed
-class FCMDetails with _$FCMDetails {
+sealed class FCMDetails with _$FCMDetails {
   const factory FCMDetails({
     FCMTx? tx,
     @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
@@ -91,7 +91,7 @@ class FCMDetails with _$FCMDetails {
 }
 
 @freezed
-class FCMTx with _$FCMTx {
+sealed class FCMTx with _$FCMTx {
   const factory FCMTx({
     @JsonKey(name: 'tx_type') FCMTxType? txType,
     @JsonKey(name: 'txid') String? txId,
@@ -101,7 +101,7 @@ class FCMTx with _$FCMTx {
 }
 
 @freezed
-class FCMPeg with _$FCMPeg {
+sealed class FCMPeg with _$FCMPeg {
   const factory FCMPeg({
     @JsonKey(name: 'order_id') String? orderId,
     @JsonKey(name: 'peg_in') bool? pegIn,
@@ -116,7 +116,7 @@ class FCMPeg with _$FCMPeg {
 }
 
 @freezed
-class FCMOrderCancelled with _$FCMOrderCancelled {
+sealed class FCMOrderCancelled with _$FCMOrderCancelled {
   const factory FCMOrderCancelled({
     @JsonKey(name: 'order_id') String? orderId,
   }) = _FCMOrderCancelled;
@@ -126,7 +126,7 @@ class FCMOrderCancelled with _$FCMOrderCancelled {
 }
 
 @freezed
-class FCMMessage with _$FCMMessage {
+sealed class FCMMessage with _$FCMMessage {
   const factory FCMMessage({FCMNotification? notification, FCMData? data}) =
       _FCMMessage;
 

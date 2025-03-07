@@ -206,24 +206,6 @@ final swapPriceStringProvider = AutoDisposeProvider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SwapPriceStringRef = AutoDisposeProviderRef<String>;
-String _$bitcoinFeeRatesHash() => r'a0d3cfe16c32ac4385d257d68282c6ac6ac0e191';
-
-/// See also [bitcoinFeeRates].
-@ProviderFor(bitcoinFeeRates)
-final bitcoinFeeRatesProvider = AutoDisposeProvider<List<FeeRate>>.internal(
-  bitcoinFeeRates,
-  name: r'bitcoinFeeRatesProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$bitcoinFeeRatesHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BitcoinFeeRatesRef = AutoDisposeProviderRef<List<FeeRate>>;
 String _$bitcoinFeeRateDescriptionHash() =>
     r'1d5256279d5fb555726d57966ffd45242643f3d5';
 
@@ -470,11 +452,11 @@ final sendAmountPriceStreamWatcherProvider =
 // ignore: unused_element
 typedef SendAmountPriceStreamWatcherRef =
     AutoDisposeProviderRef<SwapSendAmountPriceStream>;
-String _$swapPriceTextHash() => r'0e6d2562630c9b032c00a5bfabf334a378e3e75b';
+String _$swapPriceTextHash() => r'40d7ebc2d07fb9f2fb95d5771ed92be44d075c56';
 
 /// See also [swapPriceText].
 @ProviderFor(swapPriceText)
-final swapPriceTextProvider = AutoDisposeProvider<String?>.internal(
+final swapPriceTextProvider = AutoDisposeProvider<Option<String>>.internal(
   swapPriceText,
   name: r'swapPriceTextProvider',
   debugGetCreateSourceHash:
@@ -487,7 +469,7 @@ final swapPriceTextProvider = AutoDisposeProvider<String?>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SwapPriceTextRef = AutoDisposeProviderRef<String?>;
+typedef SwapPriceTextRef = AutoDisposeProviderRef<Option<String>>;
 String _$swapAddressErrorHash() => r'4065a91910abc6d0868d642eb392e0bcb56beff2';
 
 /// See also [swapAddressError].
@@ -671,13 +653,13 @@ final swapPriceSubscribeNotifierProvider = AutoDisposeNotifierProvider<
 typedef _$SwapPriceSubscribeNotifier =
     AutoDisposeNotifier<SwapPriceSubscribeState>;
 String _$bitcoinCurrentFeeRateNotifierHash() =>
-    r'523dbca79a71897c804baf3c66c5439b13f4472d';
+    r'8ba2e3e34880ce5f0332367e26806f2319bf09fc';
 
 /// See also [BitcoinCurrentFeeRateNotifier].
 @ProviderFor(BitcoinCurrentFeeRateNotifier)
 final bitcoinCurrentFeeRateNotifierProvider = AutoDisposeNotifierProvider<
   BitcoinCurrentFeeRateNotifier,
-  SwapCurrentFeeRate
+  Option<FeeRate>
 >.internal(
   BitcoinCurrentFeeRateNotifier.new,
   name: r'bitcoinCurrentFeeRateNotifierProvider',
@@ -689,8 +671,7 @@ final bitcoinCurrentFeeRateNotifierProvider = AutoDisposeNotifierProvider<
   allTransitiveDependencies: null,
 );
 
-typedef _$BitcoinCurrentFeeRateNotifier =
-    AutoDisposeNotifier<SwapCurrentFeeRate>;
+typedef _$BitcoinCurrentFeeRateNotifier = AutoDisposeNotifier<Option<FeeRate>>;
 String _$swapSendTextAmountNotifierHash() =>
     r'dc601c3bdf1b81b556cba0360e026e3eb34a207e';
 

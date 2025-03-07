@@ -166,7 +166,7 @@ class DStartOrderLowBalanceErrorDialog extends ConsumerWidget {
 
     final rowTheme = Theme.of(
       context,
-    ).extension<MarketAssetRowTheme>()!.copyWith(
+    ).extension<MarketAssetRowStyle>()!.copyWith(
       errorLabelStyle: Theme.of(context).textTheme.titleSmall!,
       errorAmountStyle: Theme.of(context).textTheme.titleSmall!,
       errorTickerStyle: Theme.of(context).textTheme.titleSmall!,

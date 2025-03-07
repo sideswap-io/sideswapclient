@@ -6,6 +6,7 @@ import 'package:sideswap/desktop/onboarding/widgets/d_amp_background_page.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_pegx_login_dialog_body.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_stokr_login_dialog.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_stokr_login_dialog_body.dart';
+import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -26,19 +27,20 @@ class DAmpLogin extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () => pegxLoginState.maybeWhen(
-          logged: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.pegxSubmitAmp);
-          },
-          gaidAdded: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.pegxSubmitFinish);
-          },
-          orElse: () {},
-        ),
+        () =>
+            (switch (pegxLoginState) {
+              PegxLoginStateLogged() => () {
+                ref
+                    .read(pageStatusNotifierProvider.notifier)
+                    .setStatus(Status.pegxSubmitAmp);
+              },
+              PegxLoginStateGaidAdded() => () {
+                ref
+                    .read(pageStatusNotifierProvider.notifier)
+                    .setStatus(Status.pegxSubmitFinish);
+              },
+              _ => () {},
+            }()),
       );
 
       return;

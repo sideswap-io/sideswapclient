@@ -3,6 +3,8 @@ use std::{
     sync::{mpsc, Arc},
 };
 
+use anyhow::ensure;
+
 use crate::{
     ffi::proto,
     gdk_ses,
@@ -112,6 +114,8 @@ where
 }
 
 pub struct PegoutPayment {
+    pub req_amount: i64,
+    pub is_send_entered: bool,
     pub policy_asset: elements::AssetId,
     pub send_amount: i64,
     pub peg_addr: String,
@@ -123,12 +127,18 @@ pub fn process_peg_out_payment(
 ) -> Result<(), anyhow::Error> {
     let mut created_tx_cache = CreatedTxCache::new();
 
+    let (send_amount, deduct_fee_output) = if payment.is_send_entered {
+        (payment.req_amount, Some(0))
+    } else {
+        (payment.send_amount, None)
+    };
+
     let created = ses.create_tx(
         &mut created_tx_cache,
         proto::CreateTx {
             addressees: vec![proto::AddressAmount {
                 address: payment.peg_addr,
-                amount: payment.send_amount,
+                amount: send_amount,
                 asset_id: payment.policy_asset.to_string(),
             }],
             account: proto::Account {
@@ -136,9 +146,13 @@ pub fn process_peg_out_payment(
             },
             utxos: Vec::new(),
             fee_asset_id: None,
-            deduct_fee_output: None,
+            deduct_fee_output,
         },
     )?;
+
+    if payment.is_send_entered {
+        ensure!(payment.req_amount - created.network_fee == payment.send_amount);
+    }
 
     ses.send_tx(&mut created_tx_cache, &created.id, &BTreeMap::new())?;
 

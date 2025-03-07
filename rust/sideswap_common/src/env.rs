@@ -6,6 +6,7 @@ pub enum Env {
     Testnet,
     LocalLiquid,
     LocalTestnet,
+    LocalRegtest,
 }
 
 pub struct EnvData {
@@ -53,6 +54,15 @@ const ENV_LOCAL_TESTNET: EnvData = EnvData {
     network: Network::LiquidTestnet,
 };
 
+const ENV_LOCAL_REGTEST: EnvData = EnvData {
+    host: "127.0.0.1",
+    port: 56705,
+    use_tls: false,
+    name: "local_regtest",
+    mainnet: false,
+    network: Network::Regtest,
+};
+
 impl Env {
     pub fn d(&self) -> &'static EnvData {
         match *self {
@@ -60,6 +70,7 @@ impl Env {
             Env::Testnet => &ENV_TESTNET,
             Env::LocalLiquid => &ENV_LOCAL_LIQUID,
             Env::LocalTestnet => &ENV_LOCAL_TESTNET,
+            Env::LocalRegtest => &ENV_LOCAL_REGTEST,
         }
     }
 

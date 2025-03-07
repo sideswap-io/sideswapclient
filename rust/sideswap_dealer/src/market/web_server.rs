@@ -1,7 +1,11 @@
 use std::net::SocketAddr;
 
 use poem::{listener::TcpListener, Route, Server};
-use poem_openapi::{param::Query, payload::Json, ApiResponse, OpenApi, OpenApiService};
+use poem_openapi::{
+    param::Query,
+    payload::{Json, PlainText},
+    ApiResponse, OpenApi, OpenApiService,
+};
 use serde::Deserialize;
 use sideswap_api::mkt::OrdId;
 use sideswap_common::{dealer_ticker::DealerTicker, exchange_pair::ExchangePair};
@@ -42,6 +46,13 @@ fn parse_normal_float(value: f64) -> Result<NormalFloat, Error> {
 
 #[OpenApi]
 impl Api {
+    /// Get a new receiving address
+    #[oai(path = "/new_address", method = "get")]
+    async fn new_address(&self) -> Result<PlainText<String>, ErrorResponse> {
+        let resp = self.controller.new_address().await?.to_string();
+        Ok(PlainText(resp))
+    }
+
     /// Metadata API call, list all available markets
     #[oai(path = "/metadata", method = "get")]
     async fn metadata(&self) -> Result<Json<api::Metadata>, ErrorResponse> {

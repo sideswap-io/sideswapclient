@@ -112,7 +112,7 @@ class WorkingOrderItem extends HookConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ColoredContainer(
-        theme: ColoredContainerTheme(
+        theme: ColoredContainerStyle(
           backgroundColor: SideSwapColors.chathamsBlue,
           borderColor: SideSwapColors.chathamsBlue,
         ),
@@ -340,7 +340,7 @@ class WorkingOrderItem extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ColoredContainer(
-                    theme: ColoredContainerTheme(
+                    theme: ColoredContainerStyle(
                       backgroundColor: SideSwapColors.blueSapphire,
                       borderColor: SideSwapColors.blueSapphire,
                     ),
@@ -353,7 +353,7 @@ class WorkingOrderItem extends HookConsumerWidget {
                   ),
                   SizedBox(width: 8),
                   ColoredContainer(
-                    theme: ColoredContainerTheme(
+                    theme: ColoredContainerStyle(
                       backgroundColor: SideSwapColors.blueSapphire,
                       borderColor: SideSwapColors.blueSapphire,
                     ),
@@ -366,7 +366,7 @@ class WorkingOrderItem extends HookConsumerWidget {
                   ),
                   Spacer(),
                   ColoredContainer(
-                    theme: ColoredContainerTheme(
+                    theme: ColoredContainerStyle(
                       backgroundColor: SideSwapColors.bitterSweet.withValues(
                         alpha: 0.14,
                       ),
@@ -384,7 +384,7 @@ class WorkingOrderItem extends HookConsumerWidget {
                   ),
                   SizedBox(width: 8),
                   ColoredContainer(
-                    theme: ColoredContainerTheme(horizontalPadding: 8),
+                    theme: ColoredContainerStyle(horizontalPadding: 8),
                     child: Row(
                       children: [
                         Padding(

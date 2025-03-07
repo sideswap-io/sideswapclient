@@ -8,8 +8,6 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/desktop/main/widgets/row_tx_detail.dart';
 import 'package:sideswap/desktop/main/widgets/row_tx_receiver.dart';
-import 'package:sideswap/models/amount_to_string_model.dart';
-import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
@@ -29,17 +27,7 @@ class PaymentSendPopup extends ConsumerWidget {
       _ => null,
     };
 
-    final feePerByteStr =
-        '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
-    final txSizeStr =
-        '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
-    final amountProvider = ref.watch(amountToStringProvider);
-    final feeStr = amountProvider.amountToStringNamed(
-      AmountToStringNamedParameters(
-        amount: createdTx?.networkFee.toInt() ?? 0,
-        ticker: 'L-BTC',
-      ),
-    );
+    final createdTxHelper = ref.watch(createdTxHelperProvider(createdTx));
 
     return SideSwapPopup(
       onClose: () {
@@ -126,16 +114,38 @@ class PaymentSendPopup extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  RowTxDetail(name: 'Fee per byte'.tr(), value: feePerByteStr),
-                  RowTxDetail(name: 'Transaction size'.tr(), value: txSizeStr),
-                  RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
+                  RowTxDetail(
+                    name: 'Fee per byte'.tr(),
+                    value: createdTxHelper.feePerByte(),
+                  ),
+                  RowTxDetail(
+                    name: 'Transaction size'.tr(),
+                    value: createdTxHelper.txSize(),
+                  ),
+                  RowTxDetail(
+                    name: 'Discount vsize'.tr(),
+                    value: createdTxHelper.vsize(),
+                  ),
+                  RowTxDetail(
+                    name: 'Network Fee'.tr(),
+                    value: createdTxHelper.networkFee(),
+                  ),
+                  ...switch (createdTxHelper.hasServerFee()) {
+                    true => [
+                      RowTxDetail(
+                        name: 'Server fee'.tr(),
+                        value: createdTxHelper.serverFee(),
+                      ),
+                    ],
+                    _ => [const SizedBox()],
+                  },
                   RowTxDetail(
                     name: 'Number of inputs'.tr(),
-                    value: createdTx?.inputCount.toString() ?? '',
+                    value: createdTxHelper.inputCount(),
                   ),
                   RowTxDetail(
                     name: 'Number of outputs'.tr(),
-                    value: createdTx?.outputCount.toString() ?? '',
+                    value: createdTxHelper.outputCount(),
                   ),
                 ],
               ),

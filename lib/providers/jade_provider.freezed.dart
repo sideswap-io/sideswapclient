@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,306 +10,260 @@ part of 'jade_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$JadeBluetoothPermissionState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() empty,
-    required TResult Function() request,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? empty,
-    TResult? Function()? request,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? request,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeBluetoothPermissionStateEmpty value) empty,
-    required TResult Function(JadeBluetoothPermissionStateRequest value)
-    request,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeBluetoothPermissionStateEmpty value)? empty,
-    TResult? Function(JadeBluetoothPermissionStateRequest value)? request,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeBluetoothPermissionStateEmpty value)? empty,
-    TResult Function(JadeBluetoothPermissionStateRequest value)? request,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeBluetoothPermissionState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeBluetoothPermissionState()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $JadeBluetoothPermissionStateCopyWith<$Res> {
-  factory $JadeBluetoothPermissionStateCopyWith(
-    JadeBluetoothPermissionState value,
-    $Res Function(JadeBluetoothPermissionState) then,
-  ) =
-      _$JadeBluetoothPermissionStateCopyWithImpl<
-        $Res,
-        JadeBluetoothPermissionState
-      >;
+class $JadeBluetoothPermissionStateCopyWith<$Res>  {
+$JadeBluetoothPermissionStateCopyWith(JadeBluetoothPermissionState _, $Res Function(JadeBluetoothPermissionState) __);
 }
 
-/// @nodoc
-class _$JadeBluetoothPermissionStateCopyWithImpl<
-  $Res,
-  $Val extends JadeBluetoothPermissionState
->
-    implements $JadeBluetoothPermissionStateCopyWith<$Res> {
-  _$JadeBluetoothPermissionStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of JadeBluetoothPermissionState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$JadeBluetoothPermissionStateEmptyImplCopyWith<$Res> {
-  factory _$$JadeBluetoothPermissionStateEmptyImplCopyWith(
-    _$JadeBluetoothPermissionStateEmptyImpl value,
-    $Res Function(_$JadeBluetoothPermissionStateEmptyImpl) then,
-  ) = __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl<$Res>
-    extends
-        _$JadeBluetoothPermissionStateCopyWithImpl<
-          $Res,
-          _$JadeBluetoothPermissionStateEmptyImpl
-        >
-    implements _$$JadeBluetoothPermissionStateEmptyImplCopyWith<$Res> {
-  __$$JadeBluetoothPermissionStateEmptyImplCopyWithImpl(
-    _$JadeBluetoothPermissionStateEmptyImpl _value,
-    $Res Function(_$JadeBluetoothPermissionStateEmptyImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of JadeBluetoothPermissionState
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$JadeBluetoothPermissionStateEmptyImpl
-    implements JadeBluetoothPermissionStateEmpty {
-  const _$JadeBluetoothPermissionStateEmptyImpl();
 
-  @override
-  String toString() {
-    return 'JadeBluetoothPermissionState.empty()';
-  }
+class JadeBluetoothPermissionStateEmpty implements JadeBluetoothPermissionState {
+  const JadeBluetoothPermissionStateEmpty();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeBluetoothPermissionStateEmptyImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() empty,
-    required TResult Function() request,
-  }) {
-    return empty();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? empty,
-    TResult? Function()? request,
-  }) {
-    return empty?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? request,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeBluetoothPermissionStateEmpty value) empty,
-    required TResult Function(JadeBluetoothPermissionStateRequest value)
-    request,
-  }) {
-    return empty(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeBluetoothPermissionStateEmpty value)? empty,
-    TResult? Function(JadeBluetoothPermissionStateRequest value)? request,
-  }) {
-    return empty?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeBluetoothPermissionStateEmpty value)? empty,
-    TResult Function(JadeBluetoothPermissionStateRequest value)? request,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeBluetoothPermissionStateEmpty);
 }
 
-abstract class JadeBluetoothPermissionStateEmpty
-    implements JadeBluetoothPermissionState {
-  const factory JadeBluetoothPermissionStateEmpty() =
-      _$JadeBluetoothPermissionStateEmptyImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeBluetoothPermissionState.empty()';
 }
 
-/// @nodoc
-abstract class _$$JadeBluetoothPermissionStateRequestImplCopyWith<$Res> {
-  factory _$$JadeBluetoothPermissionStateRequestImplCopyWith(
-    _$JadeBluetoothPermissionStateRequestImpl value,
-    $Res Function(_$JadeBluetoothPermissionStateRequestImpl) then,
-  ) = __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl<$Res>
-    extends
-        _$JadeBluetoothPermissionStateCopyWithImpl<
-          $Res,
-          _$JadeBluetoothPermissionStateRequestImpl
-        >
-    implements _$$JadeBluetoothPermissionStateRequestImplCopyWith<$Res> {
-  __$$JadeBluetoothPermissionStateRequestImplCopyWithImpl(
-    _$JadeBluetoothPermissionStateRequestImpl _value,
-    $Res Function(_$JadeBluetoothPermissionStateRequestImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeBluetoothPermissionState
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeBluetoothPermissionStateRequestImpl
-    implements JadeBluetoothPermissionStateRequest {
-  const _$JadeBluetoothPermissionStateRequestImpl();
 
-  @override
-  String toString() {
-    return 'JadeBluetoothPermissionState.request()';
-  }
+class JadeBluetoothPermissionStateRequest implements JadeBluetoothPermissionState {
+  const JadeBluetoothPermissionStateRequest();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeBluetoothPermissionStateRequestImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() empty,
-    required TResult Function() request,
-  }) {
-    return request();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? empty,
-    TResult? Function()? request,
-  }) {
-    return request?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? request,
-    required TResult orElse(),
-  }) {
-    if (request != null) {
-      return request();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeBluetoothPermissionStateEmpty value) empty,
-    required TResult Function(JadeBluetoothPermissionStateRequest value)
-    request,
-  }) {
-    return request(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeBluetoothPermissionStateEmpty value)? empty,
-    TResult? Function(JadeBluetoothPermissionStateRequest value)? request,
-  }) {
-    return request?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeBluetoothPermissionStateEmpty value)? empty,
-    TResult Function(JadeBluetoothPermissionStateRequest value)? request,
-    required TResult orElse(),
-  }) {
-    if (request != null) {
-      return request(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeBluetoothPermissionStateRequest);
 }
 
-abstract class JadeBluetoothPermissionStateRequest
-    implements JadeBluetoothPermissionState {
-  const factory JadeBluetoothPermissionStateRequest() =
-      _$JadeBluetoothPermissionStateRequestImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeBluetoothPermissionState.request()';
 }
+
+
+}
+
+
+
+
+/// @nodoc
+mixin _$JadeLockState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeLockState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeLockState()';
+}
+
+
+}
+
+/// @nodoc
+class $JadeLockStateCopyWith<$Res>  {
+$JadeLockStateCopyWith(JadeLockState _, $Res Function(JadeLockState) __);
+}
+
+
+/// @nodoc
+
+
+class JadeLockStateLocked implements JadeLockState {
+  const JadeLockStateLocked();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeLockStateLocked);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeLockState.locked()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class JadeLockStateUnlocked implements JadeLockState {
+  const JadeLockStateUnlocked();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeLockStateUnlocked);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeLockState.unlocked()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class JadeLockStateError implements JadeLockState {
+  const JadeLockStateError({this.message});
+  
+
+ final  String? message;
+
+/// Create a copy of JadeLockState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JadeLockStateErrorCopyWith<JadeLockStateError> get copyWith => _$JadeLockStateErrorCopyWithImpl<JadeLockStateError>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeLockStateError&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'JadeLockState.error(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $JadeLockStateErrorCopyWith<$Res> implements $JadeLockStateCopyWith<$Res> {
+  factory $JadeLockStateErrorCopyWith(JadeLockStateError value, $Res Function(JadeLockStateError) _then) = _$JadeLockStateErrorCopyWithImpl;
+@useResult
+$Res call({
+ String? message
+});
+
+
+
+
+}
+/// @nodoc
+class _$JadeLockStateErrorCopyWithImpl<$Res>
+    implements $JadeLockStateErrorCopyWith<$Res> {
+  _$JadeLockStateErrorCopyWithImpl(this._self, this._then);
+
+  final JadeLockStateError _self;
+  final $Res Function(JadeLockStateError) _then;
+
+/// Create a copy of JadeLockState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = freezed,}) {
+  return _then(JadeLockStateError(
+message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+// dart format on

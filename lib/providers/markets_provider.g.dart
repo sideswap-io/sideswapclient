@@ -1203,7 +1203,7 @@ final acceptQuoteErrorProvider = AutoDisposeProvider<Option<String>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AcceptQuoteErrorRef = AutoDisposeProviderRef<Option<String>>;
-String _$limitOrderAmountHash() => r'05e38c12f52c93f5bc920760ed38e29faee79144';
+String _$limitOrderAmountHash() => r'cb89eacf8042f7467f758a1f49fa1209c18177ab';
 
 /// See also [limitOrderAmount].
 @ProviderFor(limitOrderAmount)
@@ -1803,6 +1803,25 @@ final limitInsufficientPriceProvider = AutoDisposeProvider<bool>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef LimitInsufficientPriceRef = AutoDisposeProviderRef<bool>;
+String _$marketOrderButtonTextHash() =>
+    r'26dca47219a9aeebc1ee83467c0e8249c71f8884';
+
+/// See also [marketOrderButtonText].
+@ProviderFor(marketOrderButtonText)
+final marketOrderButtonTextProvider = AutoDisposeProvider<String>.internal(
+  marketOrderButtonText,
+  name: r'marketOrderButtonTextProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$marketOrderButtonTextHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MarketOrderButtonTextRef = AutoDisposeProviderRef<String>;
 String _$tradeDirStateNotifierHash() =>
     r'5a70559c300307c02ed10ff386851d086b4e93bf';
 
@@ -2191,11 +2210,9 @@ final marketEditOrderErrorNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$MarketEditOrderErrorNotifier = AutoDisposeNotifier<Option<String>>;
 String _$marketEditDetailsOrderNotifierHash() =>
-    r'a6c4ccce88be01835f2b953731a04c7ba59e473b';
+    r'08f60ebe5f52d3be9c08b20ec411c3d704d5e042';
 
-/// Edit order
-///
-/// Copied from [MarketEditDetailsOrderNotifier].
+/// See also [MarketEditDetailsOrderNotifier].
 @ProviderFor(MarketEditDetailsOrderNotifier)
 final marketEditDetailsOrderNotifierProvider = NotifierProvider<
   MarketEditDetailsOrderNotifier,

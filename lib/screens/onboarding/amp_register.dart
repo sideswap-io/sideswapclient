@@ -38,17 +38,18 @@ class AmpRegister extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () => pegxLoginState.maybeWhen(
-          loginDialog: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.pegxRegister);
-          },
-          loading: () {
-            ref.read(pegxWebsocketClientProvider).disconnect();
-          },
-          orElse: () {},
-        ),
+        () =>
+            switch (pegxLoginState) {
+              PegxLoginStateLoginDialog() => () {
+                ref
+                    .read(pageStatusNotifierProvider.notifier)
+                    .setStatus(Status.pegxRegister);
+              },
+              PegxLoginStateLoading() => () {
+                ref.read(pegxWebsocketClientProvider).disconnect();
+              },
+              _ => () {},
+            }(),
       );
 
       return;

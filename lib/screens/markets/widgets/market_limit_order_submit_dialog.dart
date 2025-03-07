@@ -246,8 +246,8 @@ class MobileOrderSubmitSuccessDialog extends HookConsumerWidget {
           final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
           final dirColor =
               isSell
-                  ? Theme.of(context).extension<MarketColorsTheme>()!.sellColor
-                  : Theme.of(context).extension<MarketColorsTheme>()!.buyColor;
+                  ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
+                  : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
 
           return Center(
             child: Padding(

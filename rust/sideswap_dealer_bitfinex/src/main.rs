@@ -91,7 +91,7 @@ impl ExchangeTicker {
     fn bfx_name(self, network: Network) -> &'static str {
         match network {
             Network::Liquid => self.bfx_name_prod(),
-            Network::LiquidTestnet => self.bfx_name_test(),
+            Network::LiquidTestnet | Network::Regtest => self.bfx_name_test(),
         }
     }
 

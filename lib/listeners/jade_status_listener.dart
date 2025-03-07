@@ -14,6 +14,7 @@ class JadeStatusListener extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final jadeLockState = ref.watch(jadeLockStateNotifierProvider);
     final jadeStatus = ref.watch(jadeStatusNotifierProvider);
     final showAmpOnboarding =
         ref.watch(configurationProvider).showAmpOnboarding;
@@ -37,6 +38,16 @@ class JadeStatusListener extends HookConsumerWidget {
         }
       }
     });
+
+    useEffect(() {
+      if (jadeLockState == JadeLockStateError()) {
+        // TODO (malcolmpl): if JadeLockStateError - show error
+        Future.microtask(() {
+          ref.invalidate(jadeLockStateNotifierProvider);
+        });
+      }
+      return;
+    }, [jadeLockState]);
 
     useEffect(() {
       if (jadeStatus == const JadeStatusIdle() &&

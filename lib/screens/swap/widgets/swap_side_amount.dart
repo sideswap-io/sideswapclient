@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:marquee_plus/marquee.dart';
@@ -125,18 +126,22 @@ class SwapSideAmount extends HookConsumerWidget {
 
     final result = ref.watch(qrCodeResultModelNotifierProvider);
 
-    result.maybeWhen(
-      data: (result) {
-        addressController?.text = result?.address ?? '';
-        Future.microtask(() {
-          onAddressChanged?.call(addressController?.text ?? '');
-          ref
-              .read(qrCodeResultModelNotifierProvider.notifier)
-              .setModel(const QrCodeResultModel.empty());
-        });
-      },
-      orElse: () {},
-    );
+    useEffect(() {
+      (switch (result) {
+        QrCodeResultModelData() => () {
+          addressController?.text = result.result?.address ?? '';
+          Future.microtask(() {
+            onAddressChanged?.call(addressController?.text ?? '');
+            ref
+                .read(qrCodeResultModelNotifierProvider.notifier)
+                .setModel(const QrCodeResultModel.empty());
+          });
+        },
+        _ => () {},
+      }());
+
+      return;
+    }, [result]);
 
     final isAmp = dropdownValue.account.isAmp;
     return Column(
@@ -427,7 +432,7 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Flexible(
+          Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: MiddleEllipsisText(
@@ -442,26 +447,9 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
               ),
             ),
           ),
-          Material(
-            color: const Color(0xFF226F99),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(21),
-              onTap: onAddressLabelClose,
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(21),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    'assets/close.svg',
-                    width: 14,
-                    height: 14,
-                  ),
-                ),
-              ),
-            ),
+          IconButton(
+            onPressed: onAddressLabelClose,
+            icon: SvgPicture.asset('assets/close.svg', width: 14, height: 14),
           ),
           const SizedBox(width: 16),
         ],

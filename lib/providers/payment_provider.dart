@@ -8,7 +8,9 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
@@ -271,4 +273,75 @@ class PaymentHelper {
 
     ref.read(walletProvider).createTx(createTx);
   }
+}
+
+class CreatedTxHelper {
+  final String? _networkFee;
+  final String? _serverFee;
+  final CreatedTx? createdTx;
+
+  CreatedTxHelper({String? networkFee, String? serverFee, this.createdTx})
+    : _networkFee = networkFee,
+      _serverFee = serverFee;
+
+  String feePerByte() {
+    return '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
+  }
+
+  String txSize() {
+    return '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
+  }
+
+  String networkFee() {
+    return _networkFee ?? '';
+  }
+
+  bool hasServerFee() {
+    return (createdTx?.serverFee.toInt() ?? 0) != 0;
+  }
+
+  String serverFee() {
+    return _serverFee ?? '';
+  }
+
+  String vsize() {
+    return '${createdTx?.discountVsize.toString() ?? ''} vB';
+  }
+
+  String inputCount() {
+    return createdTx?.inputCount.toString() ?? '';
+  }
+
+  String outputCount() {
+    return createdTx?.outputCount.toString() ?? '';
+  }
+}
+
+@riverpod
+CreatedTxHelper createdTxHelper(Ref ref, CreatedTx? createdTx) {
+  final amountProvider = ref.watch(amountToStringProvider);
+  final networkFee = amountProvider.amountToStringNamed(
+    AmountToStringNamedParameters(
+      amount: createdTx?.networkFee.toInt() ?? 0,
+      ticker: 'L-BTC',
+    ),
+  );
+
+  final feeAssetId = createdTx?.req.feeAssetId;
+  final feeAssetTicker = ref
+      .read(assetUtilsProvider)
+      .tickerForAssetId(feeAssetId);
+
+  final serverFee = amountProvider.amountToStringNamed(
+    AmountToStringNamedParameters(
+      amount: createdTx?.serverFee.toInt() ?? 0,
+      ticker: feeAssetTicker,
+    ),
+  );
+
+  return CreatedTxHelper(
+    networkFee: networkFee,
+    serverFee: serverFee,
+    createdTx: createdTx,
+  );
 }

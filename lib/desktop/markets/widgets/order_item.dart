@@ -22,8 +22,8 @@ class OrderItem extends HookConsumerWidget {
     final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
     final color =
         order?.tradeDir == TradeDir.BUY
-            ? Theme.of(context).extension<MarketColorsTheme>()!.buyColor
-            : Theme.of(context).extension<MarketColorsTheme>()!.sellColor;
+            ? Theme.of(context).extension<MarketColorsStyle>()!.buyColor
+            : Theme.of(context).extension<MarketColorsStyle>()!.sellColor;
 
     final list = [
       Text(order?.amountString ?? '', style: const TextStyle(fontSize: 13)),
@@ -66,11 +66,11 @@ class OrderItem extends HookConsumerWidget {
               depthColor:
                   order?.tradeDir == TradeDir.BUY
                       ? Theme.of(context)
-                          .extension<MarketColorsTheme>()!
+                          .extension<MarketColorsStyle>()!
                           .buyColor!
                           .withValues(alpha: 0.2)
                       : Theme.of(context)
-                          .extension<MarketColorsTheme>()!
+                          .extension<MarketColorsStyle>()!
                           .sellColor!
                           .withValues(alpha: 0.2),
               borderRadius: const BorderRadius.all(Radius.circular(4)),
@@ -81,13 +81,13 @@ class OrderItem extends HookConsumerWidget {
                             color:
                                 Theme.of(
                                   context,
-                                ).extension<MarketColorsTheme>()!.buyColor!,
+                                ).extension<MarketColorsStyle>()!.buyColor!,
                           )
                           : Border.all(
                             color:
                                 Theme.of(
                                   context,
-                                ).extension<MarketColorsTheme>()!.sellColor!,
+                                ).extension<MarketColorsStyle>()!.sellColor!,
                           )
                       : null,
               side:
@@ -116,7 +116,8 @@ class OrderItem extends HookConsumerWidget {
           );
 
           if (FlavorConfig.isDesktop) {
-            if (uiOrder != null) {
+            if (uiOrder != null &&
+                uiOrder.offlineSwapType != OfflineSwapType.twoStep()) {
               ref
                   .read(marketEditDetailsOrderNotifierProvider.notifier)
                   .setState(uiOrder);
@@ -150,6 +151,9 @@ class OrderItem extends HookConsumerWidget {
             ref
                 .read(limitOrderPriceAmountControllerNotifierProvider.notifier)
                 .setState(order!.priceString);
+            ref
+                .read(limitOrderAmountControllerNotifierProvider.notifier)
+                .setState(order!.amountString);
           }
 
           // move to mobile limit page

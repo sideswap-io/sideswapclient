@@ -10,7 +10,7 @@ part 'network_settings_providers.g.dart';
 enum SettingsNetworkType { blockstream, sideswap, personal, sideswapChina }
 
 @Freezed(equal: false)
-class NetworkSettingsModel with _$NetworkSettingsModel {
+sealed class NetworkSettingsModel with _$NetworkSettingsModel {
   const factory NetworkSettingsModel.empty({
     SettingsNetworkType? settingsNetworkType,
     int? env,

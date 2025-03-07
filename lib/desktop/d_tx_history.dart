@@ -100,6 +100,7 @@ class DTxHistoryTransaction extends HookConsumerWidget {
       itemBuilder: (BuildContext context, int index) {
         final transItem = txList[index];
         final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+        final txIds = transItemHelper.txId();
 
         return Column(
           children: [
@@ -164,7 +165,11 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                         context,
                       ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
-                    DTxBlindedUrlIconButton(txid: transItem.tx.txid),
+                    DTxBlindedUrlIconButton(
+                      txid: txIds.txId,
+                      isLiquid: txIds.isLiquid,
+                      unblinded: txIds.unblinded,
+                    ),
                   ],
                 ),
                 onPressed: () {

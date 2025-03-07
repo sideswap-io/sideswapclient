@@ -31,12 +31,12 @@ class WorkingOrderItemCancelButtonStyle
   final ButtonStyle? style;
 
   @override
-  ThemeExtension<WorkingOrderItemCancelButtonStyle> copyWith() {
+  WorkingOrderItemCancelButtonStyle copyWith() {
     return WorkingOrderItemCancelButtonStyle(style: style);
   }
 
   @override
-  ThemeExtension<WorkingOrderItemCancelButtonStyle> lerp(
+  WorkingOrderItemCancelButtonStyle lerp(
     ThemeExtension<WorkingOrderItemCancelButtonStyle> other,
     double t,
   ) {
@@ -56,12 +56,12 @@ class SideswapNoButtonStyle extends ThemeExtension<SideswapNoButtonStyle> {
   final ButtonStyle? style;
 
   @override
-  ThemeExtension<SideswapNoButtonStyle> copyWith() {
+  SideswapNoButtonStyle copyWith() {
     return SideswapNoButtonStyle(style: style);
   }
 
   @override
-  ThemeExtension<SideswapNoButtonStyle> lerp(
+  SideswapNoButtonStyle lerp(
     ThemeExtension<SideswapNoButtonStyle> other,
     double t,
   ) {
@@ -81,12 +81,12 @@ class SideswapYesButtonStyle extends ThemeExtension<SideswapYesButtonStyle> {
   final ButtonStyle? style;
 
   @override
-  ThemeExtension<SideswapYesButtonStyle> copyWith() {
+  SideswapYesButtonStyle copyWith() {
     return SideswapYesButtonStyle(style: style);
   }
 
   @override
-  ThemeExtension<SideswapYesButtonStyle> lerp(
+  SideswapYesButtonStyle lerp(
     ThemeExtension<SideswapYesButtonStyle> other,
     double t,
   ) {

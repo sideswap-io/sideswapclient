@@ -168,6 +168,8 @@ class SwapMarketAssetPairButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final pageStorageBucket = useMemoized(() => PageStorageBucket());
+
     final marketInfo = ref.watch(subscribedMarketInfoProvider);
 
     return marketInfo.match(() => SizedBox(), (marketInfo) {
@@ -179,7 +181,10 @@ class SwapMarketAssetPairButton extends HookConsumerWidget {
         Navigator.of(context, rootNavigator: true).push<void>(
           MaterialPageRoute(
             builder: (context) {
-              return MarketSelectPopup();
+              return PageStorage(
+                bucket: pageStorageBucket,
+                child: MarketSelectPopup(),
+              );
             },
           ),
         );

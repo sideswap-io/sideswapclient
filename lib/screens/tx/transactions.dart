@@ -36,7 +36,7 @@ class Transactions extends HookConsumerWidget {
             child: Row(
               children: [
                 CustomBackButton(
-                  color: SideSwapColors.freshAir,
+                  icon: Icons.arrow_back_ios,
                   onPressed: () {
                     ref.invalidate(pageStorageKeyDataProvider);
                     ref.read(walletProvider).goBack();

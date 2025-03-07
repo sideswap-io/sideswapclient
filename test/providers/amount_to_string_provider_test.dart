@@ -5,7 +5,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
-import '../create_container.dart';
+import '../utils.dart';
 
 void main() {
   group('AmountToString', () {

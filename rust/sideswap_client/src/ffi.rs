@@ -280,6 +280,7 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
     match env {
         Env::Prod | Env::LocalLiquid => addr.is_valid_for_network(bitcoin::Network::Bitcoin),
         Env::Testnet | Env::LocalTestnet => addr.is_valid_for_network(bitcoin::Network::Testnet),
+        Env::LocalRegtest => addr.is_valid_for_network(bitcoin::Network::Regtest),
     }
 }
 
@@ -287,6 +288,7 @@ fn elements_params(env: sideswap_common::env::Env) -> &'static elements::Address
     match env {
         Env::Prod | Env::LocalLiquid => &elements::address::AddressParams::LIQUID,
         Env::Testnet | Env::LocalTestnet => &elements::address::AddressParams::LIQUID_TESTNET,
+        Env::LocalRegtest => &elements::address::AddressParams::ELEMENTS,
     }
 }
 

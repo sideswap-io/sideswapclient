@@ -95,9 +95,6 @@ class SideSwapPopup extends ConsumerWidget {
                             right: 22,
                           ),
                           child: CustomBackButton(
-                            width: 42,
-                            height: 42,
-                            buttonType: CustomBackButtonType.close,
                             onPressed: () {
                               if (onClose != null) {
                                 onClose!();

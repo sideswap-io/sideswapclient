@@ -4,6 +4,17 @@ use crate::const_asset_id::ConstAssetId as C;
 pub enum Network {
     Liquid,
     LiquidTestnet,
+    Regtest,
+}
+
+impl Network {
+    pub fn bitcoin(self) -> bitcoin::Network {
+        match self {
+            Network::Liquid => bitcoin::Network::Bitcoin,
+            Network::LiquidTestnet => bitcoin::Network::Testnet,
+            Network::Regtest => bitcoin::Network::Regtest,
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -95,11 +106,37 @@ pub const NETWORK_LIQUID_TESTNET: NetworkData = NetworkData {
     },
 };
 
+pub const NETWORK_LIQUID_REGTEST: NetworkData = NetworkData {
+    name: "LiquidRegtest",
+    elements_params: &elements::address::AddressParams::ELEMENTS,
+    bitcoin_network: bitcoin::Network::Regtest,
+    single_sig_account_path: [0x80000031, 0x80000001, 0x80000000],
+    electrum_url: "127.0.0.1:56705",
+    electrum_tls: true,
+    asset_registry_url: "fixme",
+    tx_explorer_url: "fixme",
+    address_explorer_url: "fixme",
+    policy_asset: C::new("5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"),
+
+    service_chain_code: "fixme",
+    service_pubkey: "fixme",
+
+    known_assets: KnownAssetIds {
+        USDt: C::new("38c973963a28f52653a4ca3ad987baa7dc957bf0bdce291be3c390d6859c8de1"),
+        EURx: C::new("ae6d34eab54e70ddee51f6f550f376a235b0f95c9e1fea30f4ec65dc0943893d"),
+        MEX: C::new("e0c73b7b1cb903be92a5dfbe5af8556f05db0c0fcc7dc17695c0e41cb47b828f"),
+        DePix: C::new("37d5d7543d425b72bd954f44cd1cc21bee3bb9e8594b2431ea738828d51aaf6a"),
+
+        SSWP: C::new("adeb7b98709c254b3fc559f51daf53a22a1781bcf07c0b38559ad5cac1eb2066"),
+    },
+};
+
 impl Network {
     pub fn d(&self) -> &'static NetworkData {
         match *self {
             Network::Liquid => &NETWORK_LIQUID,
             Network::LiquidTestnet => &NETWORK_LIQUID_TESTNET,
+            Network::Regtest => &NETWORK_LIQUID_REGTEST,
         }
     }
 }

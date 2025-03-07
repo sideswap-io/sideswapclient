@@ -6,31 +6,28 @@ part of 'app_releases.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AppReleasesDesktopImpl _$$AppReleasesDesktopImplFromJson(Map json) =>
-    _$AppReleasesDesktopImpl(
+_AppReleasesDesktop _$AppReleasesDesktopFromJson(Map json) =>
+    _AppReleasesDesktop(
       version: json['version'] as String?,
       build: (json['build'] as num?)?.toInt(),
       changes: json['changes'] as String?,
     );
 
-Map<String, dynamic> _$$AppReleasesDesktopImplToJson(
-  _$AppReleasesDesktopImpl instance,
-) => <String, dynamic>{
-  'version': instance.version,
-  'build': instance.build,
-  'changes': instance.changes,
-};
+Map<String, dynamic> _$AppReleasesDesktopToJson(_AppReleasesDesktop instance) =>
+    <String, dynamic>{
+      'version': instance.version,
+      'build': instance.build,
+      'changes': instance.changes,
+    };
 
-_$AppReleasesModelImpl _$$AppReleasesModelImplFromJson(Map json) =>
-    _$AppReleasesModelImpl(
-      desktop:
-          json['desktop'] == null
-              ? null
-              : AppReleasesDesktop.fromJson(
-                Map<String, dynamic>.from(json['desktop'] as Map),
-              ),
-    );
+_AppReleasesModel _$AppReleasesModelFromJson(Map json) => _AppReleasesModel(
+  desktop:
+      json['desktop'] == null
+          ? null
+          : AppReleasesDesktop.fromJson(
+            Map<String, dynamic>.from(json['desktop'] as Map),
+          ),
+);
 
-Map<String, dynamic> _$$AppReleasesModelImplToJson(
-  _$AppReleasesModelImpl instance,
-) => <String, dynamic>{'desktop': instance.desktop};
+Map<String, dynamic> _$AppReleasesModelToJson(_AppReleasesModel instance) =>
+    <String, dynamic>{'desktop': instance.desktop};

@@ -253,16 +253,24 @@ class DPinSetupContent extends HookConsumerWidget {
                     firstLaunchStateNotifierProvider,
                   );
 
-                  return DPinKeyboard(
-                    acceptType:
-                        (firstLaunchState != const FirstLaunchStateEmpty())
-                            ? pinFieldState == const PinFieldState.second()
-                                ? PinKeyboardAcceptType.save
-                                : PinKeyboardAcceptType.icon
-                            : isPinEnabled
-                            ? PinKeyboardAcceptType.disable
-                            : PinKeyboardAcceptType.enable,
-                  );
+                  final acceptType = switch (firstLaunchState) {
+                    FirstLaunchStateEmpty() => switch (isPinEnabled) {
+                      true => switch (pinFieldState) {
+                        PinFieldStateSecond() => PinKeyboardAcceptType.disable,
+                        _ => PinKeyboardAcceptType.icon,
+                      },
+                      _ => switch (pinFieldState) {
+                        PinFieldStateSecond() => PinKeyboardAcceptType.enable,
+                        _ => PinKeyboardAcceptType.icon,
+                      },
+                    },
+                    _ => switch (pinFieldState) {
+                      PinFieldStateSecond() => PinKeyboardAcceptType.save,
+                      _ => PinKeyboardAcceptType.icon,
+                    },
+                  };
+
+                  return DPinKeyboard(acceptType: acceptType);
                 },
               ),
             ),

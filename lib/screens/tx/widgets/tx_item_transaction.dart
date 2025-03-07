@@ -370,7 +370,7 @@ class TxItemPegOutBalance extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
-    final balanceStr = transItemHelper.txPegOutBalance();
+    final balanceStr = transItemHelper.txPegOutBalance().amount;
     final balanceColor =
         balanceStr.contains('+') ? SideSwapColors.menthol : Colors.white;
 
@@ -430,7 +430,7 @@ class TxItemPegInBalance extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
-    final balanceStr = transItemHelper.txPegInBalance();
+    final balanceStr = transItemHelper.txPegInBalance().amount;
     final balanceColor =
         balanceStr.contains('+') ? SideSwapColors.menthol : Colors.white;
 

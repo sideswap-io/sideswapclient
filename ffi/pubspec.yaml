@@ -1,15 +1,15 @@
 name: side_swap_ffi
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ^3.7.0
 
 dependencies:
   protobuf: ^3.1.0
-  fixnum: ^1.1.0
+  fixnum: ^1.1.1
 
 dev_dependencies:
-  ffigen: ^12.0.0
-  flutter_lints: ^4.0.0
+  ffigen: ^17.0.0
+  flutter_lints: ^5.0.0
 
 ffigen:
   name: NativeLibrary

@@ -6,7 +6,8 @@ use crate::{
 };
 use anyhow::{anyhow, bail, ensure};
 use elements::{
-    hashes::Hash, pset::PartiallySignedTransaction, secp256k1_zkp::global::SECP256K1, TxOutSecrets,
+    hashes::Hash, pset::PartiallySignedTransaction, secp256k1_zkp::global::SECP256K1, Transaction,
+    TxOutSecrets,
 };
 use elements::{AssetId, EcdsaSighashType};
 use gdk_ses::HwData;
@@ -83,6 +84,12 @@ pub fn decode_pset(pset: &str) -> Result<PartiallySignedTransaction, anyhow::Err
     let pset = b64::decode(pset)?;
     let pset = elements::encode::deserialize(&pset)?;
     Ok(pset)
+}
+
+pub fn decode_tx(tx: &str) -> Result<Transaction, anyhow::Error> {
+    let tx = hex::decode(tx)?;
+    let tx = elements::encode::deserialize(&tx)?;
+    Ok(tx)
 }
 
 impl gdk_ses::GdkSes for GdkSesImpl {
@@ -420,6 +427,7 @@ pub fn get_jade_network(env: Env) -> JadeNetwork {
     match env.d().network {
         Network::Liquid => JadeNetwork::Liquid,
         Network::LiquidTestnet => JadeNetwork::TestnetLiquid,
+        Network::Regtest => todo!(),
     }
 }
 
@@ -907,6 +915,10 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
         }
         bail!("unknown auth handler error");
     }
+
+    ensure!(result.status != gdk_json::Status::RequestCode,
+        "2FA is enabled but not supported. Please disable it with Green and try again. You may need to restart the application.");
+
     ensure!(
         result.status == gdk_json::Status::Done,
         "unexpected auth handler status: {:?}",
@@ -1733,7 +1745,7 @@ unsafe fn sign_pset(
         last_gdk_error_details().unwrap_or_default()
     );
 
-    let signed_pset = run_auth_handler::<gdk_json::SignPsetResult>(
+    let resp = run_auth_handler::<gdk_json::SignPsetResult>(
         data.hw_data.as_ref(),
         call,
         HandlerParams::new()
@@ -1742,7 +1754,18 @@ unsafe fn sign_pset(
     )
     .map_err(|e| anyhow!("signing pset failed: {}", e))?;
 
-    Ok(signed_pset.psbt)
+    let tx = decode_tx(&resp.transaction)?;
+    let mut pset = decode_pset(&resp.psbt)?;
+
+    // For some reason the witness is not copied to PSET by GDK, so we do it manually
+    for (pset_input, tx_input) in pset.inputs_mut().iter_mut().zip(tx.input.iter()) {
+        pset_input.final_script_sig = Some(tx_input.script_sig.clone());
+        pset_input.final_script_witness = Some(tx_input.witness.script_witness.clone());
+    }
+
+    let pset = encode_pset(&pset);
+
+    Ok(pset)
 }
 
 unsafe fn get_balances(data: &GdkSesImpl) -> Result<gdk_json::BalanceList, anyhow::Error> {
@@ -2073,6 +2096,8 @@ pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {
         (Network::LiquidTestnet, false) => "testnet-liquid",
         (Network::Liquid, true) => "electrum-liquid",
         (Network::LiquidTestnet, true) => "electrum-testnet-liquid",
+        (Network::Regtest, false) => "localtest-liquid",
+        (Network::Regtest, true) => "electrum-localtest-liquid",
     };
 
     let custom_electrum = match &info.electrum_server {
@@ -2080,10 +2105,12 @@ pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {
         ElectrumServer::SideSwap => match info.env {
             Env::Prod | Env::LocalLiquid => Some(("electrs.sideswap.io", 12001, true)),
             Env::Testnet | Env::LocalTestnet => Some(("electrs.sideswap.io", 12002, true)),
+            Env::LocalRegtest => None,
         },
         ElectrumServer::SideSwapCn => match info.env {
             Env::Prod | Env::LocalLiquid => Some(("cn.sideswap.io", 12001, true)),
             Env::Testnet | Env::LocalTestnet => None,
+            Env::LocalRegtest => None,
         },
         ElectrumServer::Custom {
             host,
@@ -2132,12 +2159,15 @@ pub unsafe fn start_processing_impl(
 ) -> Result<Box<dyn gdk_ses::GdkSes + Send>, anyhow::Error> {
     debug!("start processing, single_sig: {}", info.single_sig);
     let datadir = info.cache_dir.to_owned();
+
+    let log_level = if info.env != Env::LocalRegtest {
+        None
+    } else {
+        Some("trace".to_owned())
+    };
+
     GDK_INITIALIZED.call_once(move || {
-        let config = gdk_json::InitConfig {
-            datadir,
-            // log_level: Some("trace".to_owned()),
-            log_level: None,
-        };
+        let config = gdk_json::InitConfig { datadir, log_level };
         let rc = gdk::GA_init(GdkJson::new(&config).as_ptr());
         assert!(rc == 0);
     });
@@ -2163,12 +2193,17 @@ pub unsafe fn start_processing_impl(
 
     let network = select_network(&info);
     let policy_asset = info.env.nd().policy_asset.asset_id();
+
+    debug!(
+        "GA_connect start (single_sig: {}, network: {}) ...",
+        info.single_sig, network,
+    );
+
     let connect_config = gdk_json::ConnectConfig {
         name: network,
         proxy: info.proxy.clone(),
         use_tor: Some(info.proxy.is_some()),
     };
-    debug!("GA_connect start...");
     let rc = gdk::GA_connect(session, GdkJson::new(&connect_config).as_ptr());
     ensure!(
         rc == 0,

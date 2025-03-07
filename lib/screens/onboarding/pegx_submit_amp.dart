@@ -23,31 +23,28 @@ class PegxSubmitAmp extends HookConsumerWidget {
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
     final gaidWaiting = useState(false);
 
-    var registered = pegxLoginState.maybeWhen<bool>(
-      gaidAdded: () {
-        return true;
-      },
-      orElse: () {
-        return false;
-      },
-    );
+    var registered = switch (pegxLoginState) {
+      PegxLoginStateGaidAdded() => true,
+      _ => false,
+    };
 
     useEffect(() {
       Future.microtask(
-        () => pegxLoginState.maybeWhen(
-          gaidWaiting: () {
-            gaidWaiting.value = true;
-          },
-          gaidError: () {
-            ref
-                .read(pegxLoginStateNotifierProvider.notifier)
-                .setState(const PegxLoginStateLoading());
-            ref
-                .read(pegxWebsocketClientProvider)
-                .errorAndGoBack('Adding AMP ID failed. Try again.'.tr());
-          },
-          orElse: () {},
-        ),
+        () =>
+            (switch (pegxLoginState) {
+              PegxLoginStateGaidWaiting() => () {
+                gaidWaiting.value = true;
+              },
+              PegxLoginStateGaidError() => () {
+                ref
+                    .read(pegxLoginStateNotifierProvider.notifier)
+                    .setState(const PegxLoginStateLoading());
+                ref
+                    .read(pegxWebsocketClientProvider)
+                    .errorAndGoBack('Adding AMP ID failed. Try again.'.tr());
+              },
+              _ => () {},
+            }()),
       );
 
       return;

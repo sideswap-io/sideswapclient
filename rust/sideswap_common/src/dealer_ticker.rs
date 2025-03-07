@@ -141,6 +141,7 @@ impl TickerLoader {
                 "e7af57b566c7555b246719109a4355a614e0c1112f9706abd50dae01ecdcd3e3", // PXTR2
             ]
             .as_slice(),
+            Network::Regtest => [].as_slice(),
         };
         for asset_id in more_assets {
             let asset_id = AssetId::from_str(asset_id).expect("must not fail");

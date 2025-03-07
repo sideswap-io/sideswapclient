@@ -13,6 +13,7 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/listeners/markets_page_listener.dart';
@@ -35,6 +36,24 @@ class MarketSwapPage extends HookConsumerWidget {
     final tradeButtonEnabled = ref.watch(marketOrderTradeButtonEnabledProvider);
     final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
+    final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
+    final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
+
+    final marketOrderButtonPressedCallback = useMemoized(
+      () => switch (jadeLockRepository.isUnlocked()) {
+        true => switch (tradeButtonEnabled) {
+          true => () async {
+            await marketTradeRepository.makeSwapTrade(
+              context: context,
+              optionQuoteSuccess: optionQuoteSuccess,
+            );
+          },
+          _ => null,
+        },
+        _ => jadeLockRepository.refreshJadeLockState,
+      },
+      [jadeLockRepository.lockState, tradeButtonEnabled],
+    );
 
     return SideSwapScaffold(
       canPop: false,
@@ -54,16 +73,8 @@ class MarketSwapPage extends HookConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: MarketOrderButton(
                 isSell: tradeDirState == TradeDir.SELL,
-                onPressed:
-                    tradeButtonEnabled
-                        ? () async {
-                          await marketTradeRepository.makeSwapTrade(
-                            context: context,
-                            optionQuoteSuccess: optionQuoteSuccess,
-                          );
-                        }
-                        : null,
-                text: 'Continue'.tr().toUpperCase(),
+                onPressed: marketOrderButtonPressedCallback,
+                text: marketOrderButtonText,
               ),
             ),
             SizedBox(height: 40),

@@ -20,10 +20,17 @@ class DWorkingHistoryOrders extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loadMoreCallback = useCallback(({int skip = 0, int count = 20}) {
+      Future.microtask(() async {
+        final msg = To();
+        msg.loadHistory = To_LoadHistory(skip: skip, count: count);
+
+        ref.read(walletProvider).sendMsg(msg);
+      });
+    });
+
     useEffect(() {
-      final msg = To();
-      msg.loadHistory = To_LoadHistory(skip: 0, count: 10);
-      ref.read(walletProvider).sendMsg(msg);
+      loadMoreCallback();
 
       return;
     }, const []);
@@ -64,7 +71,9 @@ class DWorkingHistoryOrders extends HookConsumerWidget {
                 );
               }
 
-              return DWorkingHistoryOrderList();
+              return DWorkingHistoryOrderList(
+                loadMoreCallback: loadMoreCallback,
+              );
             },
           ),
         ),
@@ -90,7 +99,9 @@ class DWorkingHistoryOrderEmpty extends ConsumerWidget {
 }
 
 class DWorkingHistoryOrderList extends HookConsumerWidget {
-  const DWorkingHistoryOrderList({super.key});
+  const DWorkingHistoryOrderList({required this.loadMoreCallback, super.key});
+
+  final void Function({int count, int skip}) loadMoreCallback;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,38 +112,25 @@ class DWorkingHistoryOrderList extends HookConsumerWidget {
 
     final scrollController = useScrollController();
 
-    final loadMoreCallback = useCallback(({int skip = 0, int count = 20}) {
-      Future.microtask(() async {
-        final msg = To();
-        msg.loadHistory = To_LoadHistory(skip: skip, count: count);
-
-        ref.read(walletProvider).sendMsg(msg);
-      });
-    });
-
     useEffect(() {
       void onScroll() {
         final historyOrders = ref.read(marketHistoryOrderNotifierProvider);
         if (scrollController.position.pixels ==
                 scrollController.position.maxScrollExtent &&
-            historyOrders.length != totalHistoryOrders) {
-          loadMoreCallback(skip: historyOrders.length);
+            historyOrders.length < totalHistoryOrders) {
+          final maxItemsToRetrive = totalHistoryOrders - historyOrders.length;
+          final total = (scrollController.position.pixels / 43).toInt();
+          loadMoreCallback(
+            skip: historyOrders.length,
+            count: total > maxItemsToRetrive ? maxItemsToRetrive : total,
+          );
         }
       }
 
       scrollController.addListener(onScroll);
-      loadMoreCallback();
 
       return;
     }, const []);
-
-    useEffect(() {
-      if (uiHistoryOrders.length != totalHistoryOrders) {
-        loadMoreCallback(skip: uiHistoryOrders.length);
-      }
-
-      return;
-    }, [uiHistoryOrders]);
 
     return Scrollbar(
       thumbVisibility: true,
@@ -141,8 +139,22 @@ class DWorkingHistoryOrderList extends HookConsumerWidget {
         controller: scrollController,
         slivers: [
           SliverList.builder(
-            itemCount: uiHistoryOrders.length,
+            itemCount:
+                uiHistoryOrders.length < totalHistoryOrders
+                    ? uiHistoryOrders.length + 1
+                    : totalHistoryOrders,
             itemBuilder: (context, index) {
+              if (index == uiHistoryOrders.length) {
+                return SizedBox(
+                  height: 43,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (index > uiHistoryOrders.length) {
+                return SizedBox();
+              }
+
               return DButton(
                 style: buttonStyle?.merge(
                   DButtonStyle(

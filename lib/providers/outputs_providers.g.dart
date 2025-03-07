@@ -6,7 +6,7 @@ part of 'outputs_providers.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$OutputsDataImpl _$$OutputsDataImplFromJson(Map json) => _$OutputsDataImpl(
+_OutputsData _$OutputsDataFromJson(Map json) => _OutputsData(
   type: json['type'] as String?,
   version: json['version'] as String?,
   timestamp: (json['timestamp'] as num?)?.toInt(),
@@ -19,7 +19,7 @@ _$OutputsDataImpl _$$OutputsDataImplFromJson(Map json) => _$OutputsDataImpl(
           .toList(),
 );
 
-Map<String, dynamic> _$$OutputsDataImplToJson(_$OutputsDataImpl instance) =>
+Map<String, dynamic> _$OutputsDataToJson(_OutputsData instance) =>
     <String, dynamic>{
       if (instance.type case final value?) 'type': value,
       if (instance.version case final value?) 'version': value,
@@ -28,24 +28,22 @@ Map<String, dynamic> _$$OutputsDataImplToJson(_$OutputsDataImpl instance) =>
         'receivers': value,
     };
 
-_$OutputsReceiverImpl _$$OutputsReceiverImplFromJson(Map json) =>
-    _$OutputsReceiverImpl(
-      address: json['address'] as String?,
-      assetId: json['asset_id'] as String?,
-      satoshi: (json['satoshi'] as num?)?.toInt(),
-      comment: json['comment'] as String?,
-      account: (json['account'] as num?)?.toInt(),
-    );
+_OutputsReceiver _$OutputsReceiverFromJson(Map json) => _OutputsReceiver(
+  address: json['address'] as String?,
+  assetId: json['asset_id'] as String?,
+  satoshi: (json['satoshi'] as num?)?.toInt(),
+  comment: json['comment'] as String?,
+  account: (json['account'] as num?)?.toInt(),
+);
 
-Map<String, dynamic> _$$OutputsReceiverImplToJson(
-  _$OutputsReceiverImpl instance,
-) => <String, dynamic>{
-  if (instance.address case final value?) 'address': value,
-  if (instance.assetId case final value?) 'asset_id': value,
-  if (instance.satoshi case final value?) 'satoshi': value,
-  if (instance.comment case final value?) 'comment': value,
-  if (instance.account case final value?) 'account': value,
-};
+Map<String, dynamic> _$OutputsReceiverToJson(_OutputsReceiver instance) =>
+    <String, dynamic>{
+      if (instance.address case final value?) 'address': value,
+      if (instance.assetId case final value?) 'asset_id': value,
+      if (instance.satoshi case final value?) 'satoshi': value,
+      if (instance.comment case final value?) 'comment': value,
+      if (instance.account case final value?) 'account': value,
+    };
 
 // **************************************************************************
 // RiverpodGenerator

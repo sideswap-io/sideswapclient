@@ -1576,7 +1576,7 @@ fn try_create_funding_tx(
         gdk_json::AddressType::P2shP2wpkh => false,
         gdk_json::AddressType::P2wsh => true,
     });
-    let mut pset = if need_green_signature {
+    let pset = if need_green_signature {
         let pset = encode_pset(&pset);
         let blinding_nonces = get_blinding_nonces(&blinded_outputs);
         let pset = wallet::call(ACCOUNT_ID_AMP, worker, move |data| {
@@ -1594,46 +1594,6 @@ fn try_create_funding_tx(
     } else {
         pset
     };
-
-    for input in pset.inputs_mut() {
-        let utxo = utxos
-            .iter()
-            .find(|utxo| {
-                utxo.txhash == input.previous_txid && utxo.vout == input.previous_output_index
-            })
-            .ok_or_else(|| anyhow!("can't find expected UTXO"))?;
-        match utxo.address_type {
-            gdk_json::AddressType::P2shP2wpkh => {}
-            gdk_json::AddressType::P2wsh => {
-                ensure!(input.partial_sigs.len() == 2);
-                ensure!(input.bip32_derivation.len() == 2);
-                let final_script = input
-                    .final_script_witness
-                    .as_mut()
-                    .ok_or_else(|| anyhow!("final_script_witness is not set"))?;
-                let _own_public_key = input
-                    .bip32_derivation
-                    .iter()
-                    .find(|(_pub_key, key_source)| key_source.1.len() == 4)
-                    .ok_or_else(|| anyhow!("can't find own_public_key"))?
-                    .0;
-                let green_public_key = input
-                    .bip32_derivation
-                    .iter()
-                    .find(|(_pub_key, key_source)| key_source.1.len() != 4)
-                    .ok_or_else(|| anyhow!("can't find green_public_key"))?
-                    .0;
-                let green_signature = input
-                    .partial_sigs
-                    .get(green_public_key)
-                    .ok_or_else(|| anyhow!("can't find green_signature"))?;
-
-                ensure!(final_script.len() == 4);
-                ensure!(final_script[1] == GREEN_DUMMY_SIG);
-                final_script[1] = green_signature.clone();
-            }
-        }
-    }
 
     let tx = pset.extract_tx()?;
 

@@ -6,14 +6,13 @@ part of 'stokr_providers.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$StokrSettingsModelImpl _$$StokrSettingsModelImplFromJson(Map json) =>
-    _$StokrSettingsModelImpl(firstRun: json['firstRun'] as bool? ?? true);
+_StokrSettingsModel _$StokrSettingsModelFromJson(Map json) =>
+    _StokrSettingsModel(firstRun: json['firstRun'] as bool? ?? true);
 
-Map<String, dynamic> _$$StokrSettingsModelImplToJson(
-  _$StokrSettingsModelImpl instance,
-) => <String, dynamic>{
-  if (instance.firstRun case final value?) 'firstRun': value,
-};
+Map<String, dynamic> _$StokrSettingsModelToJson(_StokrSettingsModel instance) =>
+    <String, dynamic>{
+      if (instance.firstRun case final value?) 'firstRun': value,
+    };
 
 // **************************************************************************
 // RiverpodGenerator

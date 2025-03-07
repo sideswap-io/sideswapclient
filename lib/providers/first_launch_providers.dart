@@ -5,7 +5,7 @@ part 'first_launch_providers.g.dart';
 part 'first_launch_providers.freezed.dart';
 
 @freezed
-sealed class FirstLaunchState {
+sealed class FirstLaunchState with _$FirstLaunchState {
   const factory FirstLaunchState.empty() = FirstLaunchStateEmpty;
   const factory FirstLaunchState.createWallet() = FirstLaunchStateCreateWallet;
   const factory FirstLaunchState.importWallet() = FirstLaunchStateImportWallet;

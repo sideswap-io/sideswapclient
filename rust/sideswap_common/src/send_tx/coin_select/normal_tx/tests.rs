@@ -254,3 +254,26 @@ fn coin_selection_bug() {
         });
     }
 }
+
+#[test]
+#[ignore = "not fixed yet"]
+fn peg_out_max_amount() {
+    let network = Network::Liquid;
+    let policy_asset = network.d().policy_asset.asset_id();
+
+    let _res = try_coin_select(Args {
+        multisig_wallet: false,
+        policy_asset,
+        use_all_utxos: false,
+        wallet_utxos: vec![InOut {
+            asset_id: policy_asset,
+            value: 1000000,
+        }],
+        user_outputs: vec![InOut {
+            asset_id: policy_asset,
+            value: 999978,
+        }],
+        deduct_fee: None,
+    })
+    .unwrap();
+}

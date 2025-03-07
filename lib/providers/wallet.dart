@@ -42,6 +42,7 @@ import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
+import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -188,9 +189,6 @@ class SideswapWallet {
   final AbstractEncryptionRepository _encryption;
 
   final mnemonicRepository = MnemonicRepository();
-
-  ServerStatus? _serverStatus;
-  ServerStatus? get serverStatus => _serverStatus;
 
   Map<int, List<String>> backupCheckAllWords = {};
   Map<int, int> backupCheckSelectedWords = {};
@@ -556,14 +554,7 @@ class SideswapWallet {
         break;
 
       case From_Msg.serverStatus:
-        // TODO (malcolmpl): separate server status to providers and remove subscribeToPriceStream here. It cause resubscription.
-        _serverStatus = from.serverStatus;
-        notifyListeners();
-        // Refresh peg-out amounts
-        logger.d('Server status: $_serverStatus');
-        ref
-            .read(subscribePriceStreamNotifierProvider.notifier)
-            .subscribeToPriceStream();
+        _handleServerStatus(from.serverStatus);
         break;
 
       case From_Msg.priceUpdate:
@@ -845,9 +836,12 @@ class SideswapWallet {
       case From_Msg.subscribedValue:
         _handleSubscribedValue(from.subscribedValue);
         break;
-      case From_Msg.orderCancel:
-        // TODO: Handle this case.
+      case From_Msg.jadeUnlock:
+        _handleJadeUnlock(from.jadeUnlock);
         break;
+      // TODO: Handle this case.
+      case From_Msg.orderCancel:
+      // TODO: Handle this case.
       case From_Msg.notSet:
         throw UnimplementedError('invalid message: $from');
     }
@@ -2195,6 +2189,7 @@ class SideswapWallet {
   }
 
   void _handleLoadHistory(From_LoadHistory loadHistory) {
+    ref.read(marketHistoryTotalProvider.notifier).setState(loadHistory.total);
     ref
         .read(marketHistoryOrderNotifierProvider.notifier)
         .loadHistory(loadHistory);
@@ -2247,9 +2242,61 @@ class SideswapWallet {
   }
 
   void _handleSubscribedValue(From_SubscribedValue subscribedValue) {
-    logger.d('PEGIN TEST RECEIVED: $subscribedValue');
+    logger.d('Subscribed value: $subscribedValue');
     ref
         .read(pegSubscribedValueNotifierProvider.notifier)
         .setState(subscribedValue);
+  }
+
+  void _handleJadeUnlock(GenericResponse value) {
+    if (value.hasErrorMsg()) {
+      ref
+          .read(jadeLockStateNotifierProvider.notifier)
+          .setState(JadeLockState.error(message: value.errorMsg));
+      return;
+    }
+
+    ref
+        .read(jadeLockStateNotifierProvider.notifier)
+        .setState(
+          value.success ? JadeLockState.unlocked() : JadeLockState.locked(),
+        );
+  }
+
+  void _handleServerStatus(ServerStatus serverStatus) {
+    logger.d('Server status: $serverStatus');
+
+    if (serverStatus.hasMinPegInAmount()) {
+      ref
+          .read(pegInMinimumAmountProvider.notifier)
+          .setState(serverStatus.minPegInAmount.toInt());
+    }
+
+    if (serverStatus.hasServerFeePercentPegIn()) {
+      ref
+          .read(pegInServerFeePercentProvider.notifier)
+          .setState(serverStatus.serverFeePercentPegIn);
+    }
+
+    if (serverStatus.hasMinPegOutAmount()) {
+      ref
+          .read(pegOutMinimumAmountProvider.notifier)
+          .setState(serverStatus.minPegOutAmount.toInt());
+    }
+
+    if (serverStatus.hasServerFeePercentPegOut()) {
+      ref
+          .read(pegOutServerFeePercentProvider.notifier)
+          .setState(serverStatus.serverFeePercentPegOut);
+    }
+
+    ref
+        .read(bitcoinFeeRatesProvider.notifier)
+        .setState(serverStatus.bitcoinFeeRates);
+
+    // TODO (malcolmpl): (old comment - need to check) remove subscribeToPriceStream here. It cause resubscription.
+    ref
+        .read(subscribePriceStreamNotifierProvider.notifier)
+        .subscribeToPriceStream();
   }
 }

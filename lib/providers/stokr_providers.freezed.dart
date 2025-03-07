@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,168 +10,139 @@ part of 'stokr_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-StokrSettingsModel _$StokrSettingsModelFromJson(Map<String, dynamic> json) {
-  return _StokrSettingsModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$StokrSettingsModel {
-  bool? get firstRun => throw _privateConstructorUsedError;
+
+ bool? get firstRun;
+/// Create a copy of StokrSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$StokrSettingsModelCopyWith<StokrSettingsModel> get copyWith => _$StokrSettingsModelCopyWithImpl<StokrSettingsModel>(this as StokrSettingsModel, _$identity);
 
   /// Serializes this StokrSettingsModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of StokrSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $StokrSettingsModelCopyWith<StokrSettingsModel> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StokrSettingsModel&&(identical(other.firstRun, firstRun) || other.firstRun == firstRun));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,firstRun);
+
+@override
+String toString() {
+  return 'StokrSettingsModel(firstRun: $firstRun)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $StokrSettingsModelCopyWith<$Res> {
-  factory $StokrSettingsModelCopyWith(
-    StokrSettingsModel value,
-    $Res Function(StokrSettingsModel) then,
-  ) = _$StokrSettingsModelCopyWithImpl<$Res, StokrSettingsModel>;
-  @useResult
-  $Res call({bool? firstRun});
-}
+abstract mixin class $StokrSettingsModelCopyWith<$Res>  {
+  factory $StokrSettingsModelCopyWith(StokrSettingsModel value, $Res Function(StokrSettingsModel) _then) = _$StokrSettingsModelCopyWithImpl;
+@useResult
+$Res call({
+ bool? firstRun
+});
 
+
+
+
+}
 /// @nodoc
-class _$StokrSettingsModelCopyWithImpl<$Res, $Val extends StokrSettingsModel>
+class _$StokrSettingsModelCopyWithImpl<$Res>
     implements $StokrSettingsModelCopyWith<$Res> {
-  _$StokrSettingsModelCopyWithImpl(this._value, this._then);
+  _$StokrSettingsModelCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final StokrSettingsModel _self;
+  final $Res Function(StokrSettingsModel) _then;
 
-  /// Create a copy of StokrSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? firstRun = freezed}) {
-    return _then(
-      _value.copyWith(
-            firstRun:
-                freezed == firstRun
-                    ? _value.firstRun
-                    : firstRun // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of StokrSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? firstRun = freezed,}) {
+  return _then(_self.copyWith(
+firstRun: freezed == firstRun ? _self.firstRun : firstRun // ignore: cast_nullable_to_non_nullable
+as bool?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$StokrSettingsModelImplCopyWith<$Res>
-    implements $StokrSettingsModelCopyWith<$Res> {
-  factory _$$StokrSettingsModelImplCopyWith(
-    _$StokrSettingsModelImpl value,
-    $Res Function(_$StokrSettingsModelImpl) then,
-  ) = __$$StokrSettingsModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({bool? firstRun});
 }
 
-/// @nodoc
-class __$$StokrSettingsModelImplCopyWithImpl<$Res>
-    extends _$StokrSettingsModelCopyWithImpl<$Res, _$StokrSettingsModelImpl>
-    implements _$$StokrSettingsModelImplCopyWith<$Res> {
-  __$$StokrSettingsModelImplCopyWithImpl(
-    _$StokrSettingsModelImpl _value,
-    $Res Function(_$StokrSettingsModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of StokrSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? firstRun = freezed}) {
-    return _then(
-      _$StokrSettingsModelImpl(
-        firstRun:
-            freezed == firstRun
-                ? _value.firstRun
-                : firstRun // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-      ),
-    );
-  }
-}
 
 /// @nodoc
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
-class _$StokrSettingsModelImpl implements _StokrSettingsModel {
-  const _$StokrSettingsModelImpl({this.firstRun = true});
+class _StokrSettingsModel implements StokrSettingsModel {
+  const _StokrSettingsModel({this.firstRun = true});
+  factory _StokrSettingsModel.fromJson(Map<String, dynamic> json) => _$StokrSettingsModelFromJson(json);
 
-  factory _$StokrSettingsModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$StokrSettingsModelImplFromJson(json);
+@override@JsonKey() final  bool? firstRun;
 
-  @override
-  @JsonKey()
-  final bool? firstRun;
+/// Create a copy of StokrSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$StokrSettingsModelCopyWith<_StokrSettingsModel> get copyWith => __$StokrSettingsModelCopyWithImpl<_StokrSettingsModel>(this, _$identity);
 
-  @override
-  String toString() {
-    return 'StokrSettingsModel(firstRun: $firstRun)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$StokrSettingsModelImpl &&
-            (identical(other.firstRun, firstRun) ||
-                other.firstRun == firstRun));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, firstRun);
-
-  /// Create a copy of StokrSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$StokrSettingsModelImplCopyWith<_$StokrSettingsModelImpl> get copyWith =>
-      __$$StokrSettingsModelImplCopyWithImpl<_$StokrSettingsModelImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$StokrSettingsModelImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$StokrSettingsModelToJson(this, );
 }
 
-abstract class _StokrSettingsModel implements StokrSettingsModel {
-  const factory _StokrSettingsModel({final bool? firstRun}) =
-      _$StokrSettingsModelImpl;
-
-  factory _StokrSettingsModel.fromJson(Map<String, dynamic> json) =
-      _$StokrSettingsModelImpl.fromJson;
-
-  @override
-  bool? get firstRun;
-
-  /// Create a copy of StokrSettingsModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$StokrSettingsModelImplCopyWith<_$StokrSettingsModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StokrSettingsModel&&(identical(other.firstRun, firstRun) || other.firstRun == firstRun));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,firstRun);
+
+@override
+String toString() {
+  return 'StokrSettingsModel(firstRun: $firstRun)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$StokrSettingsModelCopyWith<$Res> implements $StokrSettingsModelCopyWith<$Res> {
+  factory _$StokrSettingsModelCopyWith(_StokrSettingsModel value, $Res Function(_StokrSettingsModel) _then) = __$StokrSettingsModelCopyWithImpl;
+@override @useResult
+$Res call({
+ bool? firstRun
+});
+
+
+
+
+}
+/// @nodoc
+class __$StokrSettingsModelCopyWithImpl<$Res>
+    implements _$StokrSettingsModelCopyWith<$Res> {
+  __$StokrSettingsModelCopyWithImpl(this._self, this._then);
+
+  final _StokrSettingsModel _self;
+  final $Res Function(_StokrSettingsModel) _then;
+
+/// Create a copy of StokrSettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? firstRun = freezed,}) {
+  return _then(_StokrSettingsModel(
+firstRun: freezed == firstRun ? _self.firstRun : firstRun // ignore: cast_nullable_to_non_nullable
+as bool?,
+  ));
+}
+
+
+}
+
+// dart format on

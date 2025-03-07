@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,2598 +10,743 @@ part of 'jade_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$JadeOnboardingRegistrationState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() processing,
-    required TResult Function() done,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? processing,
-    TResult? Function()? done,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? processing,
-    TResult Function()? done,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
-    required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-    processing,
-    required TResult Function(JadeOnboardingRegistrationStateDone value) done,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult Function(JadeOnboardingRegistrationStateDone value)? done,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeOnboardingRegistrationState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeOnboardingRegistrationState()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $JadeOnboardingRegistrationStateCopyWith<$Res> {
-  factory $JadeOnboardingRegistrationStateCopyWith(
-    JadeOnboardingRegistrationState value,
-    $Res Function(JadeOnboardingRegistrationState) then,
-  ) =
-      _$JadeOnboardingRegistrationStateCopyWithImpl<
-        $Res,
-        JadeOnboardingRegistrationState
-      >;
+class $JadeOnboardingRegistrationStateCopyWith<$Res>  {
+$JadeOnboardingRegistrationStateCopyWith(JadeOnboardingRegistrationState _, $Res Function(JadeOnboardingRegistrationState) __);
 }
 
-/// @nodoc
-class _$JadeOnboardingRegistrationStateCopyWithImpl<
-  $Res,
-  $Val extends JadeOnboardingRegistrationState
->
-    implements $JadeOnboardingRegistrationStateCopyWith<$Res> {
-  _$JadeOnboardingRegistrationStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of JadeOnboardingRegistrationState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$JadeOnboardingRegistrationStateIdleImplCopyWith<$Res> {
-  factory _$$JadeOnboardingRegistrationStateIdleImplCopyWith(
-    _$JadeOnboardingRegistrationStateIdleImpl value,
-    $Res Function(_$JadeOnboardingRegistrationStateIdleImpl) then,
-  ) = __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl<$Res>
-    extends
-        _$JadeOnboardingRegistrationStateCopyWithImpl<
-          $Res,
-          _$JadeOnboardingRegistrationStateIdleImpl
-        >
-    implements _$$JadeOnboardingRegistrationStateIdleImplCopyWith<$Res> {
-  __$$JadeOnboardingRegistrationStateIdleImplCopyWithImpl(
-    _$JadeOnboardingRegistrationStateIdleImpl _value,
-    $Res Function(_$JadeOnboardingRegistrationStateIdleImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of JadeOnboardingRegistrationState
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$JadeOnboardingRegistrationStateIdleImpl
-    implements JadeOnboardingRegistrationStateIdle {
-  const _$JadeOnboardingRegistrationStateIdleImpl();
 
-  @override
-  String toString() {
-    return 'JadeOnboardingRegistrationState.idle()';
-  }
+class JadeOnboardingRegistrationStateIdle implements JadeOnboardingRegistrationState {
+  const JadeOnboardingRegistrationStateIdle();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeOnboardingRegistrationStateIdleImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() processing,
-    required TResult Function() done,
-  }) {
-    return idle();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? processing,
-    TResult? Function()? done,
-  }) {
-    return idle?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? processing,
-    TResult Function()? done,
-    required TResult orElse(),
-  }) {
-    if (idle != null) {
-      return idle();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
-    required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-    processing,
-    required TResult Function(JadeOnboardingRegistrationStateDone value) done,
-  }) {
-    return idle(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
-  }) {
-    return idle?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult Function(JadeOnboardingRegistrationStateDone value)? done,
-    required TResult orElse(),
-  }) {
-    if (idle != null) {
-      return idle(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeOnboardingRegistrationStateIdle);
 }
 
-abstract class JadeOnboardingRegistrationStateIdle
-    implements JadeOnboardingRegistrationState {
-  const factory JadeOnboardingRegistrationStateIdle() =
-      _$JadeOnboardingRegistrationStateIdleImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeOnboardingRegistrationState.idle()';
 }
 
-/// @nodoc
-abstract class _$$JadeOnboardingRegistrationStateProcessingImplCopyWith<$Res> {
-  factory _$$JadeOnboardingRegistrationStateProcessingImplCopyWith(
-    _$JadeOnboardingRegistrationStateProcessingImpl value,
-    $Res Function(_$JadeOnboardingRegistrationStateProcessingImpl) then,
-  ) = __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl<$Res>
-    extends
-        _$JadeOnboardingRegistrationStateCopyWithImpl<
-          $Res,
-          _$JadeOnboardingRegistrationStateProcessingImpl
-        >
-    implements _$$JadeOnboardingRegistrationStateProcessingImplCopyWith<$Res> {
-  __$$JadeOnboardingRegistrationStateProcessingImplCopyWithImpl(
-    _$JadeOnboardingRegistrationStateProcessingImpl _value,
-    $Res Function(_$JadeOnboardingRegistrationStateProcessingImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeOnboardingRegistrationState
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeOnboardingRegistrationStateProcessingImpl
-    implements JadeOnboardingRegistrationStateProcessing {
-  const _$JadeOnboardingRegistrationStateProcessingImpl();
 
-  @override
-  String toString() {
-    return 'JadeOnboardingRegistrationState.processing()';
-  }
+class JadeOnboardingRegistrationStateProcessing implements JadeOnboardingRegistrationState {
+  const JadeOnboardingRegistrationStateProcessing();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeOnboardingRegistrationStateProcessingImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() processing,
-    required TResult Function() done,
-  }) {
-    return processing();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? processing,
-    TResult? Function()? done,
-  }) {
-    return processing?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? processing,
-    TResult Function()? done,
-    required TResult orElse(),
-  }) {
-    if (processing != null) {
-      return processing();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
-    required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-    processing,
-    required TResult Function(JadeOnboardingRegistrationStateDone value) done,
-  }) {
-    return processing(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
-  }) {
-    return processing?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult Function(JadeOnboardingRegistrationStateDone value)? done,
-    required TResult orElse(),
-  }) {
-    if (processing != null) {
-      return processing(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeOnboardingRegistrationStateProcessing);
 }
 
-abstract class JadeOnboardingRegistrationStateProcessing
-    implements JadeOnboardingRegistrationState {
-  const factory JadeOnboardingRegistrationStateProcessing() =
-      _$JadeOnboardingRegistrationStateProcessingImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeOnboardingRegistrationState.processing()';
 }
 
-/// @nodoc
-abstract class _$$JadeOnboardingRegistrationStateDoneImplCopyWith<$Res> {
-  factory _$$JadeOnboardingRegistrationStateDoneImplCopyWith(
-    _$JadeOnboardingRegistrationStateDoneImpl value,
-    $Res Function(_$JadeOnboardingRegistrationStateDoneImpl) then,
-  ) = __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl<$Res>
-    extends
-        _$JadeOnboardingRegistrationStateCopyWithImpl<
-          $Res,
-          _$JadeOnboardingRegistrationStateDoneImpl
-        >
-    implements _$$JadeOnboardingRegistrationStateDoneImplCopyWith<$Res> {
-  __$$JadeOnboardingRegistrationStateDoneImplCopyWithImpl(
-    _$JadeOnboardingRegistrationStateDoneImpl _value,
-    $Res Function(_$JadeOnboardingRegistrationStateDoneImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeOnboardingRegistrationState
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeOnboardingRegistrationStateDoneImpl
-    implements JadeOnboardingRegistrationStateDone {
-  const _$JadeOnboardingRegistrationStateDoneImpl();
 
-  @override
-  String toString() {
-    return 'JadeOnboardingRegistrationState.done()';
-  }
+class JadeOnboardingRegistrationStateDone implements JadeOnboardingRegistrationState {
+  const JadeOnboardingRegistrationStateDone();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeOnboardingRegistrationStateDoneImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() processing,
-    required TResult Function() done,
-  }) {
-    return done();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? processing,
-    TResult? Function()? done,
-  }) {
-    return done?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? processing,
-    TResult Function()? done,
-    required TResult orElse(),
-  }) {
-    if (done != null) {
-      return done();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeOnboardingRegistrationStateIdle value) idle,
-    required TResult Function(JadeOnboardingRegistrationStateProcessing value)
-    processing,
-    required TResult Function(JadeOnboardingRegistrationStateDone value) done,
-  }) {
-    return done(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult? Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult? Function(JadeOnboardingRegistrationStateDone value)? done,
-  }) {
-    return done?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeOnboardingRegistrationStateIdle value)? idle,
-    TResult Function(JadeOnboardingRegistrationStateProcessing value)?
-    processing,
-    TResult Function(JadeOnboardingRegistrationStateDone value)? done,
-    required TResult orElse(),
-  }) {
-    if (done != null) {
-      return done(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeOnboardingRegistrationStateDone);
 }
 
-abstract class JadeOnboardingRegistrationStateDone
-    implements JadeOnboardingRegistrationState {
-  const factory JadeOnboardingRegistrationStateDone() =
-      _$JadeOnboardingRegistrationStateDoneImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeOnboardingRegistrationState.done()';
 }
+
+
+}
+
+
+
 
 /// @nodoc
 mixin _$JadeStatus {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatus);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $JadeStatusCopyWith<$Res> {
-  factory $JadeStatusCopyWith(
-    JadeStatus value,
-    $Res Function(JadeStatus) then,
-  ) = _$JadeStatusCopyWithImpl<$Res, JadeStatus>;
+class $JadeStatusCopyWith<$Res>  {
+$JadeStatusCopyWith(JadeStatus _, $Res Function(JadeStatus) __);
 }
 
-/// @nodoc
-class _$JadeStatusCopyWithImpl<$Res, $Val extends JadeStatus>
-    implements $JadeStatusCopyWith<$Res> {
-  _$JadeStatusCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$JadeStatusIdleImplCopyWith<$Res> {
-  factory _$$JadeStatusIdleImplCopyWith(
-    _$JadeStatusIdleImpl value,
-    $Res Function(_$JadeStatusIdleImpl) then,
-  ) = __$$JadeStatusIdleImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$JadeStatusIdleImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusIdleImpl>
-    implements _$$JadeStatusIdleImplCopyWith<$Res> {
-  __$$JadeStatusIdleImplCopyWithImpl(
-    _$JadeStatusIdleImpl _value,
-    $Res Function(_$JadeStatusIdleImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$JadeStatusIdleImpl extends JadeStatusIdle {
-  const _$JadeStatusIdleImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.idle()';
-  }
+class JadeStatusIdle extends JadeStatus {
+  const JadeStatusIdle(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$JadeStatusIdleImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return idle();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return idle?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (idle != null) {
-      return idle();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return idle(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return idle?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (idle != null) {
-      return idle(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusIdle);
 }
 
-abstract class JadeStatusIdle extends JadeStatus {
-  const factory JadeStatusIdle() = _$JadeStatusIdleImpl;
-  const JadeStatusIdle._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.idle()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusReadStatusImplCopyWith<$Res> {
-  factory _$$JadeStatusReadStatusImplCopyWith(
-    _$JadeStatusReadStatusImpl value,
-    $Res Function(_$JadeStatusReadStatusImpl) then,
-  ) = __$$JadeStatusReadStatusImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusReadStatusImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusReadStatusImpl>
-    implements _$$JadeStatusReadStatusImplCopyWith<$Res> {
-  __$$JadeStatusReadStatusImplCopyWithImpl(
-    _$JadeStatusReadStatusImpl _value,
-    $Res Function(_$JadeStatusReadStatusImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
-  const _$JadeStatusReadStatusImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.readStatus()';
-  }
+class JadeStatusReadStatus extends JadeStatus {
+  const JadeStatusReadStatus(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeStatusReadStatusImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return readStatus();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return readStatus?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (readStatus != null) {
-      return readStatus();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return readStatus(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return readStatus?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (readStatus != null) {
-      return readStatus(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusReadStatus);
 }
 
-abstract class JadeStatusReadStatus extends JadeStatus {
-  const factory JadeStatusReadStatus() = _$JadeStatusReadStatusImpl;
-  const JadeStatusReadStatus._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.readStatus()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusAuthUserImplCopyWith<$Res> {
-  factory _$$JadeStatusAuthUserImplCopyWith(
-    _$JadeStatusAuthUserImpl value,
-    $Res Function(_$JadeStatusAuthUserImpl) then,
-  ) = __$$JadeStatusAuthUserImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusAuthUserImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusAuthUserImpl>
-    implements _$$JadeStatusAuthUserImplCopyWith<$Res> {
-  __$$JadeStatusAuthUserImplCopyWithImpl(
-    _$JadeStatusAuthUserImpl _value,
-    $Res Function(_$JadeStatusAuthUserImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
-  const _$JadeStatusAuthUserImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.authUser()';
-  }
+class JadeStatusAuthUser extends JadeStatus {
+  const JadeStatusAuthUser(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$JadeStatusAuthUserImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return authUser();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return authUser?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (authUser != null) {
-      return authUser();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return authUser(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return authUser?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (authUser != null) {
-      return authUser(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusAuthUser);
 }
 
-abstract class JadeStatusAuthUser extends JadeStatus {
-  const factory JadeStatusAuthUser() = _$JadeStatusAuthUserImpl;
-  const JadeStatusAuthUser._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.authUser()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusSignTxImplCopyWith<$Res> {
-  factory _$$JadeStatusSignTxImplCopyWith(
-    _$JadeStatusSignTxImpl value,
-    $Res Function(_$JadeStatusSignTxImpl) then,
-  ) = __$$JadeStatusSignTxImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusSignTxImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignTxImpl>
-    implements _$$JadeStatusSignTxImplCopyWith<$Res> {
-  __$$JadeStatusSignTxImplCopyWithImpl(
-    _$JadeStatusSignTxImpl _value,
-    $Res Function(_$JadeStatusSignTxImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
-  const _$JadeStatusSignTxImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.signTx()';
-  }
+class JadeStatusSignTx extends JadeStatus {
+  const JadeStatusSignTx(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$JadeStatusSignTxImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return signTx();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return signTx?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signTx != null) {
-      return signTx();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return signTx(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return signTx?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signTx != null) {
-      return signTx(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusSignTx);
 }
 
-abstract class JadeStatusSignTx extends JadeStatus {
-  const factory JadeStatusSignTx() = _$JadeStatusSignTxImpl;
-  const JadeStatusSignTx._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.signTx()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusMasterBlindingKeyImplCopyWith<$Res> {
-  factory _$$JadeStatusMasterBlindingKeyImplCopyWith(
-    _$JadeStatusMasterBlindingKeyImpl value,
-    $Res Function(_$JadeStatusMasterBlindingKeyImpl) then,
-  ) = __$$JadeStatusMasterBlindingKeyImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusMasterBlindingKeyImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusMasterBlindingKeyImpl>
-    implements _$$JadeStatusMasterBlindingKeyImplCopyWith<$Res> {
-  __$$JadeStatusMasterBlindingKeyImplCopyWithImpl(
-    _$JadeStatusMasterBlindingKeyImpl _value,
-    $Res Function(_$JadeStatusMasterBlindingKeyImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
-  const _$JadeStatusMasterBlindingKeyImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.masterBlindingKey()';
-  }
+class JadeStatusMasterBlindingKey extends JadeStatus {
+  const JadeStatusMasterBlindingKey(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeStatusMasterBlindingKeyImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return masterBlindingKey();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return masterBlindingKey?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (masterBlindingKey != null) {
-      return masterBlindingKey();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return masterBlindingKey(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return masterBlindingKey?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (masterBlindingKey != null) {
-      return masterBlindingKey(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusMasterBlindingKey);
 }
 
-abstract class JadeStatusMasterBlindingKey extends JadeStatus {
-  const factory JadeStatusMasterBlindingKey() =
-      _$JadeStatusMasterBlindingKeyImpl;
-  const JadeStatusMasterBlindingKey._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.masterBlindingKey()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusSignOfflineSwapImplCopyWith<$Res> {
-  factory _$$JadeStatusSignOfflineSwapImplCopyWith(
-    _$JadeStatusSignOfflineSwapImpl value,
-    $Res Function(_$JadeStatusSignOfflineSwapImpl) then,
-  ) = __$$JadeStatusSignOfflineSwapImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusSignOfflineSwapImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignOfflineSwapImpl>
-    implements _$$JadeStatusSignOfflineSwapImplCopyWith<$Res> {
-  __$$JadeStatusSignOfflineSwapImplCopyWithImpl(
-    _$JadeStatusSignOfflineSwapImpl _value,
-    $Res Function(_$JadeStatusSignOfflineSwapImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
-  const _$JadeStatusSignOfflineSwapImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.signOfflineSwap()';
-  }
+class JadeStatusSignOfflineSwap extends JadeStatus {
+  const JadeStatusSignOfflineSwap(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeStatusSignOfflineSwapImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return signOfflineSwap();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return signOfflineSwap?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signOfflineSwap != null) {
-      return signOfflineSwap();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return signOfflineSwap(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return signOfflineSwap?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signOfflineSwap != null) {
-      return signOfflineSwap(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusSignOfflineSwap);
 }
 
-abstract class JadeStatusSignOfflineSwap extends JadeStatus {
-  const factory JadeStatusSignOfflineSwap() = _$JadeStatusSignOfflineSwapImpl;
-  const JadeStatusSignOfflineSwap._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.signOfflineSwap()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusSignSwapImplCopyWith<$Res> {
-  factory _$$JadeStatusSignSwapImplCopyWith(
-    _$JadeStatusSignSwapImpl value,
-    $Res Function(_$JadeStatusSignSwapImpl) then,
-  ) = __$$JadeStatusSignSwapImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusSignSwapImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignSwapImpl>
-    implements _$$JadeStatusSignSwapImplCopyWith<$Res> {
-  __$$JadeStatusSignSwapImplCopyWithImpl(
-    _$JadeStatusSignSwapImpl _value,
-    $Res Function(_$JadeStatusSignSwapImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
-  const _$JadeStatusSignSwapImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.signSwap()';
-  }
+class JadeStatusSignSwap extends JadeStatus {
+  const JadeStatusSignSwap(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$JadeStatusSignSwapImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return signSwap();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return signSwap?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signSwap != null) {
-      return signSwap();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return signSwap(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return signSwap?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signSwap != null) {
-      return signSwap(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusSignSwap);
 }
 
-abstract class JadeStatusSignSwap extends JadeStatus {
-  const factory JadeStatusSignSwap() = _$JadeStatusSignSwapImpl;
-  const JadeStatusSignSwap._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.signSwap()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusSignSwapOutputImplCopyWith<$Res> {
-  factory _$$JadeStatusSignSwapOutputImplCopyWith(
-    _$JadeStatusSignSwapOutputImpl value,
-    $Res Function(_$JadeStatusSignSwapOutputImpl) then,
-  ) = __$$JadeStatusSignSwapOutputImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusSignSwapOutputImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignSwapOutputImpl>
-    implements _$$JadeStatusSignSwapOutputImplCopyWith<$Res> {
-  __$$JadeStatusSignSwapOutputImplCopyWithImpl(
-    _$JadeStatusSignSwapOutputImpl _value,
-    $Res Function(_$JadeStatusSignSwapOutputImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
-  const _$JadeStatusSignSwapOutputImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.signSwapOutput()';
-  }
+class JadeStatusSignSwapOutput extends JadeStatus {
+  const JadeStatusSignSwapOutput(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeStatusSignSwapOutputImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return signSwapOutput();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return signSwapOutput?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signSwapOutput != null) {
-      return signSwapOutput();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return signSwapOutput(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return signSwapOutput?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signSwapOutput != null) {
-      return signSwapOutput(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusSignSwapOutput);
 }
 
-abstract class JadeStatusSignSwapOutput extends JadeStatus {
-  const factory JadeStatusSignSwapOutput() = _$JadeStatusSignSwapOutputImpl;
-  const JadeStatusSignSwapOutput._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.signSwapOutput()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusConnectingImplCopyWith<$Res> {
-  factory _$$JadeStatusConnectingImplCopyWith(
-    _$JadeStatusConnectingImpl value,
-    $Res Function(_$JadeStatusConnectingImpl) then,
-  ) = __$$JadeStatusConnectingImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusConnectingImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusConnectingImpl>
-    implements _$$JadeStatusConnectingImplCopyWith<$Res> {
-  __$$JadeStatusConnectingImplCopyWithImpl(
-    _$JadeStatusConnectingImpl _value,
-    $Res Function(_$JadeStatusConnectingImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
-  const _$JadeStatusConnectingImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.connecting()';
-  }
+class JadeStatusConnecting extends JadeStatus {
+  const JadeStatusConnecting(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeStatusConnectingImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return connecting();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return connecting?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (connecting != null) {
-      return connecting();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return connecting(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return connecting?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (connecting != null) {
-      return connecting(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusConnecting);
 }
 
-abstract class JadeStatusConnecting extends JadeStatus {
-  const factory JadeStatusConnecting() = _$JadeStatusConnectingImpl;
-  const JadeStatusConnecting._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.connecting()';
 }
 
-/// @nodoc
-abstract class _$$JadeStatusSignMessageImplCopyWith<$Res> {
-  factory _$$JadeStatusSignMessageImplCopyWith(
-    _$JadeStatusSignMessageImpl value,
-    $Res Function(_$JadeStatusSignMessageImpl) then,
-  ) = __$$JadeStatusSignMessageImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$JadeStatusSignMessageImplCopyWithImpl<$Res>
-    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusSignMessageImpl>
-    implements _$$JadeStatusSignMessageImplCopyWith<$Res> {
-  __$$JadeStatusSignMessageImplCopyWithImpl(
-    _$JadeStatusSignMessageImpl _value,
-    $Res Function(_$JadeStatusSignMessageImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeStatus
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$JadeStatusSignMessageImpl extends JadeStatusSignMessage {
-  const _$JadeStatusSignMessageImpl() : super._();
 
-  @override
-  String toString() {
-    return 'JadeStatus.signMessage()';
-  }
+class JadeStatusSignMessage extends JadeStatus {
+  const JadeStatusSignMessage(): super._();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeStatusSignMessageImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() idle,
-    required TResult Function() readStatus,
-    required TResult Function() authUser,
-    required TResult Function() signTx,
-    required TResult Function() masterBlindingKey,
-    required TResult Function() signOfflineSwap,
-    required TResult Function() signSwap,
-    required TResult Function() signSwapOutput,
-    required TResult Function() connecting,
-    required TResult Function() signMessage,
-  }) {
-    return signMessage();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? idle,
-    TResult? Function()? readStatus,
-    TResult? Function()? authUser,
-    TResult? Function()? signTx,
-    TResult? Function()? masterBlindingKey,
-    TResult? Function()? signOfflineSwap,
-    TResult? Function()? signSwap,
-    TResult? Function()? signSwapOutput,
-    TResult? Function()? connecting,
-    TResult? Function()? signMessage,
-  }) {
-    return signMessage?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? idle,
-    TResult Function()? readStatus,
-    TResult Function()? authUser,
-    TResult Function()? signTx,
-    TResult Function()? masterBlindingKey,
-    TResult Function()? signOfflineSwap,
-    TResult Function()? signSwap,
-    TResult Function()? signSwapOutput,
-    TResult Function()? connecting,
-    TResult Function()? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signMessage != null) {
-      return signMessage();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeStatusIdle value) idle,
-    required TResult Function(JadeStatusReadStatus value) readStatus,
-    required TResult Function(JadeStatusAuthUser value) authUser,
-    required TResult Function(JadeStatusSignTx value) signTx,
-    required TResult Function(JadeStatusMasterBlindingKey value)
-    masterBlindingKey,
-    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
-    required TResult Function(JadeStatusSignSwap value) signSwap,
-    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
-    required TResult Function(JadeStatusConnecting value) connecting,
-    required TResult Function(JadeStatusSignMessage value) signMessage,
-  }) {
-    return signMessage(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeStatusIdle value)? idle,
-    TResult? Function(JadeStatusReadStatus value)? readStatus,
-    TResult? Function(JadeStatusAuthUser value)? authUser,
-    TResult? Function(JadeStatusSignTx value)? signTx,
-    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult? Function(JadeStatusSignSwap value)? signSwap,
-    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult? Function(JadeStatusConnecting value)? connecting,
-    TResult? Function(JadeStatusSignMessage value)? signMessage,
-  }) {
-    return signMessage?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeStatusIdle value)? idle,
-    TResult Function(JadeStatusReadStatus value)? readStatus,
-    TResult Function(JadeStatusAuthUser value)? authUser,
-    TResult Function(JadeStatusSignTx value)? signTx,
-    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
-    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
-    TResult Function(JadeStatusSignSwap value)? signSwap,
-    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
-    TResult Function(JadeStatusConnecting value)? connecting,
-    TResult Function(JadeStatusSignMessage value)? signMessage,
-    required TResult orElse(),
-  }) {
-    if (signMessage != null) {
-      return signMessage(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeStatusSignMessage);
 }
 
-abstract class JadeStatusSignMessage extends JadeStatus {
-  const factory JadeStatusSignMessage() = _$JadeStatusSignMessageImpl;
-  const JadeStatusSignMessage._() : super._();
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeStatus.signMessage()';
 }
+
+
+}
+
+
+
 
 /// @nodoc
 mixin _$JadeDevicesState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() unavailable,
-    required TResult Function(List<From_JadePorts_Port> devices) available,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? unavailable,
-    TResult? Function(List<From_JadePorts_Port> devices)? available,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? unavailable,
-    TResult Function(List<From_JadePorts_Port> devices)? available,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeDevicesStateUnavailable value) unavailable,
-    required TResult Function(JadeDevicesStateAvailable value) available,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeDevicesStateUnavailable value)? unavailable,
-    TResult? Function(JadeDevicesStateAvailable value)? available,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeDevicesStateUnavailable value)? unavailable,
-    TResult Function(JadeDevicesStateAvailable value)? available,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeDevicesState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeDevicesState()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $JadeDevicesStateCopyWith<$Res> {
-  factory $JadeDevicesStateCopyWith(
-    JadeDevicesState value,
-    $Res Function(JadeDevicesState) then,
-  ) = _$JadeDevicesStateCopyWithImpl<$Res, JadeDevicesState>;
+class $JadeDevicesStateCopyWith<$Res>  {
+$JadeDevicesStateCopyWith(JadeDevicesState _, $Res Function(JadeDevicesState) __);
 }
 
-/// @nodoc
-class _$JadeDevicesStateCopyWithImpl<$Res, $Val extends JadeDevicesState>
-    implements $JadeDevicesStateCopyWith<$Res> {
-  _$JadeDevicesStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of JadeDevicesState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$JadeDevicesStateUnavailableImplCopyWith<$Res> {
-  factory _$$JadeDevicesStateUnavailableImplCopyWith(
-    _$JadeDevicesStateUnavailableImpl value,
-    $Res Function(_$JadeDevicesStateUnavailableImpl) then,
-  ) = __$$JadeDevicesStateUnavailableImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$JadeDevicesStateUnavailableImplCopyWithImpl<$Res>
-    extends
-        _$JadeDevicesStateCopyWithImpl<$Res, _$JadeDevicesStateUnavailableImpl>
-    implements _$$JadeDevicesStateUnavailableImplCopyWith<$Res> {
-  __$$JadeDevicesStateUnavailableImplCopyWithImpl(
-    _$JadeDevicesStateUnavailableImpl _value,
-    $Res Function(_$JadeDevicesStateUnavailableImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of JadeDevicesState
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$JadeDevicesStateUnavailableImpl implements JadeDevicesStateUnavailable {
-  const _$JadeDevicesStateUnavailableImpl();
 
-  @override
-  String toString() {
-    return 'JadeDevicesState.unavailable()';
-  }
+class JadeDevicesStateUnavailable implements JadeDevicesState {
+  const JadeDevicesStateUnavailable();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeDevicesStateUnavailableImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() unavailable,
-    required TResult Function(List<From_JadePorts_Port> devices) available,
-  }) {
-    return unavailable();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? unavailable,
-    TResult? Function(List<From_JadePorts_Port> devices)? available,
-  }) {
-    return unavailable?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? unavailable,
-    TResult Function(List<From_JadePorts_Port> devices)? available,
-    required TResult orElse(),
-  }) {
-    if (unavailable != null) {
-      return unavailable();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeDevicesStateUnavailable value) unavailable,
-    required TResult Function(JadeDevicesStateAvailable value) available,
-  }) {
-    return unavailable(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeDevicesStateUnavailable value)? unavailable,
-    TResult? Function(JadeDevicesStateAvailable value)? available,
-  }) {
-    return unavailable?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeDevicesStateUnavailable value)? unavailable,
-    TResult Function(JadeDevicesStateAvailable value)? available,
-    required TResult orElse(),
-  }) {
-    if (unavailable != null) {
-      return unavailable(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeDevicesStateUnavailable);
 }
 
-abstract class JadeDevicesStateUnavailable implements JadeDevicesState {
-  const factory JadeDevicesStateUnavailable() =
-      _$JadeDevicesStateUnavailableImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeDevicesState.unavailable()';
 }
 
-/// @nodoc
-abstract class _$$JadeDevicesStateAvailableImplCopyWith<$Res> {
-  factory _$$JadeDevicesStateAvailableImplCopyWith(
-    _$JadeDevicesStateAvailableImpl value,
-    $Res Function(_$JadeDevicesStateAvailableImpl) then,
-  ) = __$$JadeDevicesStateAvailableImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({List<From_JadePorts_Port> devices});
+
 }
 
-/// @nodoc
-class __$$JadeDevicesStateAvailableImplCopyWithImpl<$Res>
-    extends
-        _$JadeDevicesStateCopyWithImpl<$Res, _$JadeDevicesStateAvailableImpl>
-    implements _$$JadeDevicesStateAvailableImplCopyWith<$Res> {
-  __$$JadeDevicesStateAvailableImplCopyWithImpl(
-    _$JadeDevicesStateAvailableImpl _value,
-    $Res Function(_$JadeDevicesStateAvailableImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of JadeDevicesState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? devices = null}) {
-    return _then(
-      _$JadeDevicesStateAvailableImpl(
-        devices:
-            null == devices
-                ? _value._devices
-                : devices // ignore: cast_nullable_to_non_nullable
-                    as List<From_JadePorts_Port>,
-      ),
-    );
-  }
-}
+
 
 /// @nodoc
 
-class _$JadeDevicesStateAvailableImpl implements JadeDevicesStateAvailable {
-  const _$JadeDevicesStateAvailableImpl({
-    required final List<From_JadePorts_Port> devices,
-  }) : _devices = devices;
 
-  final List<From_JadePorts_Port> _devices;
-  @override
-  List<From_JadePorts_Port> get devices {
-    if (_devices is EqualUnmodifiableListView) return _devices;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_devices);
-  }
+class JadeDevicesStateAvailable implements JadeDevicesState {
+  const JadeDevicesStateAvailable({required final  List<From_JadePorts_Port> devices}): _devices = devices;
+  
 
-  @override
-  String toString() {
-    return 'JadeDevicesState.available(devices: $devices)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadeDevicesStateAvailableImpl &&
-            const DeepCollectionEquality().equals(other._devices, _devices));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_devices));
-
-  /// Create a copy of JadeDevicesState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$JadeDevicesStateAvailableImplCopyWith<_$JadeDevicesStateAvailableImpl>
-  get copyWith => __$$JadeDevicesStateAvailableImplCopyWithImpl<
-    _$JadeDevicesStateAvailableImpl
-  >(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() unavailable,
-    required TResult Function(List<From_JadePorts_Port> devices) available,
-  }) {
-    return available(devices);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? unavailable,
-    TResult? Function(List<From_JadePorts_Port> devices)? available,
-  }) {
-    return available?.call(devices);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? unavailable,
-    TResult Function(List<From_JadePorts_Port> devices)? available,
-    required TResult orElse(),
-  }) {
-    if (available != null) {
-      return available(devices);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(JadeDevicesStateUnavailable value) unavailable,
-    required TResult Function(JadeDevicesStateAvailable value) available,
-  }) {
-    return available(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(JadeDevicesStateUnavailable value)? unavailable,
-    TResult? Function(JadeDevicesStateAvailable value)? available,
-  }) {
-    return available?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(JadeDevicesStateUnavailable value)? unavailable,
-    TResult Function(JadeDevicesStateAvailable value)? available,
-    required TResult orElse(),
-  }) {
-    if (available != null) {
-      return available(this);
-    }
-    return orElse();
-  }
+ final  List<From_JadePorts_Port> _devices;
+ List<From_JadePorts_Port> get devices {
+  if (_devices is EqualUnmodifiableListView) return _devices;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_devices);
 }
 
-abstract class JadeDevicesStateAvailable implements JadeDevicesState {
-  const factory JadeDevicesStateAvailable({
-    required final List<From_JadePorts_Port> devices,
-  }) = _$JadeDevicesStateAvailableImpl;
 
-  List<From_JadePorts_Port> get devices;
+/// Create a copy of JadeDevicesState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JadeDevicesStateAvailableCopyWith<JadeDevicesStateAvailable> get copyWith => _$JadeDevicesStateAvailableCopyWithImpl<JadeDevicesStateAvailable>(this, _$identity);
 
-  /// Create a copy of JadeDevicesState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$JadeDevicesStateAvailableImplCopyWith<_$JadeDevicesStateAvailableImpl>
-  get copyWith => throw _privateConstructorUsedError;
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeDevicesStateAvailable&&const DeepCollectionEquality().equals(other._devices, _devices));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_devices));
+
+@override
+String toString() {
+  return 'JadeDevicesState.available(devices: $devices)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $JadeDevicesStateAvailableCopyWith<$Res> implements $JadeDevicesStateCopyWith<$Res> {
+  factory $JadeDevicesStateAvailableCopyWith(JadeDevicesStateAvailable value, $Res Function(JadeDevicesStateAvailable) _then) = _$JadeDevicesStateAvailableCopyWithImpl;
+@useResult
+$Res call({
+ List<From_JadePorts_Port> devices
+});
+
+
+
+
+}
+/// @nodoc
+class _$JadeDevicesStateAvailableCopyWithImpl<$Res>
+    implements $JadeDevicesStateAvailableCopyWith<$Res> {
+  _$JadeDevicesStateAvailableCopyWithImpl(this._self, this._then);
+
+  final JadeDevicesStateAvailable _self;
+  final $Res Function(JadeDevicesStateAvailable) _then;
+
+/// Create a copy of JadeDevicesState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? devices = null,}) {
+  return _then(JadeDevicesStateAvailable(
+devices: null == devices ? _self._devices : devices // ignore: cast_nullable_to_non_nullable
+as List<From_JadePorts_Port>,
+  ));
+}
+
+
 }
 
 /// @nodoc
 mixin _$JadePort {
-  From_JadePorts_Port get fromJadePortsPort =>
-      throw _privateConstructorUsedError;
 
-  /// Create a copy of JadePort
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $JadePortCopyWith<JadePort> get copyWith =>
-      throw _privateConstructorUsedError;
+ From_JadePorts_Port get fromJadePortsPort;
+/// Create a copy of JadePort
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JadePortCopyWith<JadePort> get copyWith => _$JadePortCopyWithImpl<JadePort>(this as JadePort, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadePort&&(identical(other.fromJadePortsPort, fromJadePortsPort) || other.fromJadePortsPort == fromJadePortsPort));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,fromJadePortsPort);
+
+@override
+String toString() {
+  return 'JadePort(fromJadePortsPort: $fromJadePortsPort)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $JadePortCopyWith<$Res> {
-  factory $JadePortCopyWith(JadePort value, $Res Function(JadePort) then) =
-      _$JadePortCopyWithImpl<$Res, JadePort>;
-  @useResult
-  $Res call({From_JadePorts_Port fromJadePortsPort});
-}
+abstract mixin class $JadePortCopyWith<$Res>  {
+  factory $JadePortCopyWith(JadePort value, $Res Function(JadePort) _then) = _$JadePortCopyWithImpl;
+@useResult
+$Res call({
+ From_JadePorts_Port fromJadePortsPort
+});
 
+
+
+
+}
 /// @nodoc
-class _$JadePortCopyWithImpl<$Res, $Val extends JadePort>
+class _$JadePortCopyWithImpl<$Res>
     implements $JadePortCopyWith<$Res> {
-  _$JadePortCopyWithImpl(this._value, this._then);
+  _$JadePortCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final JadePort _self;
+  final $Res Function(JadePort) _then;
 
-  /// Create a copy of JadePort
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? fromJadePortsPort = null}) {
-    return _then(
-      _value.copyWith(
-            fromJadePortsPort:
-                null == fromJadePortsPort
-                    ? _value.fromJadePortsPort
-                    : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
-                        as From_JadePorts_Port,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of JadePort
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? fromJadePortsPort = null,}) {
+  return _then(_self.copyWith(
+fromJadePortsPort: null == fromJadePortsPort ? _self.fromJadePortsPort : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
+as From_JadePorts_Port,
+  ));
 }
 
-/// @nodoc
-abstract class _$$JadePortImplCopyWith<$Res>
-    implements $JadePortCopyWith<$Res> {
-  factory _$$JadePortImplCopyWith(
-    _$JadePortImpl value,
-    $Res Function(_$JadePortImpl) then,
-  ) = __$$JadePortImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({From_JadePorts_Port fromJadePortsPort});
 }
 
-/// @nodoc
-class __$$JadePortImplCopyWithImpl<$Res>
-    extends _$JadePortCopyWithImpl<$Res, _$JadePortImpl>
-    implements _$$JadePortImplCopyWith<$Res> {
-  __$$JadePortImplCopyWithImpl(
-    _$JadePortImpl _value,
-    $Res Function(_$JadePortImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of JadePort
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? fromJadePortsPort = null}) {
-    return _then(
-      _$JadePortImpl(
-        fromJadePortsPort:
-            null == fromJadePortsPort
-                ? _value.fromJadePortsPort
-                : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
-                    as From_JadePorts_Port,
-      ),
-    );
-  }
-}
 
 /// @nodoc
 
-class _$JadePortImpl extends _JadePort {
-  _$JadePortImpl({required this.fromJadePortsPort}) : super._();
 
-  @override
-  final From_JadePorts_Port fromJadePortsPort;
+class _JadePort extends JadePort {
+   _JadePort({required this.fromJadePortsPort}): super._();
+  
 
-  @override
-  String toString() {
-    return 'JadePort(fromJadePortsPort: $fromJadePortsPort)';
-  }
+@override final  From_JadePorts_Port fromJadePortsPort;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$JadePortImpl &&
-            (identical(other.fromJadePortsPort, fromJadePortsPort) ||
-                other.fromJadePortsPort == fromJadePortsPort));
-  }
+/// Create a copy of JadePort
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$JadePortCopyWith<_JadePort> get copyWith => __$JadePortCopyWithImpl<_JadePort>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(runtimeType, fromJadePortsPort);
 
-  /// Create a copy of JadePort
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$JadePortImplCopyWith<_$JadePortImpl> get copyWith =>
-      __$$JadePortImplCopyWithImpl<_$JadePortImpl>(this, _$identity);
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JadePort&&(identical(other.fromJadePortsPort, fromJadePortsPort) || other.fromJadePortsPort == fromJadePortsPort));
 }
 
-abstract class _JadePort extends JadePort {
-  factory _JadePort({required final From_JadePorts_Port fromJadePortsPort}) =
-      _$JadePortImpl;
-  _JadePort._() : super._();
 
-  @override
-  From_JadePorts_Port get fromJadePortsPort;
+@override
+int get hashCode => Object.hash(runtimeType,fromJadePortsPort);
 
-  /// Create a copy of JadePort
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$JadePortImplCopyWith<_$JadePortImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'JadePort(fromJadePortsPort: $fromJadePortsPort)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$JadePortCopyWith<$Res> implements $JadePortCopyWith<$Res> {
+  factory _$JadePortCopyWith(_JadePort value, $Res Function(_JadePort) _then) = __$JadePortCopyWithImpl;
+@override @useResult
+$Res call({
+ From_JadePorts_Port fromJadePortsPort
+});
+
+
+
+
+}
+/// @nodoc
+class __$JadePortCopyWithImpl<$Res>
+    implements _$JadePortCopyWith<$Res> {
+  __$JadePortCopyWithImpl(this._self, this._then);
+
+  final _JadePort _self;
+  final $Res Function(_JadePort) _then;
+
+/// Create a copy of JadePort
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? fromJadePortsPort = null,}) {
+  return _then(_JadePort(
+fromJadePortsPort: null == fromJadePortsPort ? _self.fromJadePortsPort : fromJadePortsPort // ignore: cast_nullable_to_non_nullable
+as From_JadePorts_Port,
+  ));
+}
+
+
+}
+
+// dart format on

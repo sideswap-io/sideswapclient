@@ -9,6 +9,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/markets/widgets/d_preview_order_dialog.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/ui_history_order.dart';
@@ -1061,6 +1062,49 @@ class QuoteSuccess extends ConvertAmount {
 
   String get fixedFeeString => convertAmountForAsset(fixedFee, feeAsset);
   String get serverFeeString => convertAmountForAsset(serverFee, feeAsset);
+
+  Decimal get price {
+    return quoteAsset.match(
+      () => Decimal.zero,
+      (quoteAsset) => baseAsset.match(
+        () => Decimal.zero,
+        (baseAsset) => priceAsset.match(() => Decimal.zero, (priceAsset) {
+          final quoteAmountString = super.amountToString.amountToString(
+            AmountToStringParameters(
+              amount: quoteAmount,
+              precision: quoteAsset.precision,
+            ),
+          );
+          final baseAmountString = super.amountToString.amountToString(
+            AmountToStringParameters(
+              amount: baseAmount,
+              precision: baseAsset.precision,
+            ),
+          );
+
+          final quoteDecimal =
+              Decimal.tryParse(quoteAmountString) ?? Decimal.zero;
+          final baseDecimal =
+              Decimal.tryParse(baseAmountString) ?? Decimal.zero;
+
+          final priceDecimal = (quoteDecimal / baseDecimal).toDecimal(
+            scaleOnInfinitePrecision: priceAsset.precision,
+          );
+
+          return priceDecimal;
+        }),
+      ),
+    );
+  }
+
+  String get priceString {
+    return priceAsset.match(() => '', (asset) {
+      final amount = toIntAmount(price.toDouble(), precision: asset.precision);
+      return convertAmountForAsset(amount, priceAsset);
+    });
+  }
+
+  Option<Asset> get priceAsset => feeAsset;
 }
 
 @riverpod
@@ -1335,7 +1379,6 @@ OrderAmount limitOrderAmount(Ref ref) {
     marketSubscribedAssetPairNotifierProvider,
   );
   final amountString = ref.watch(limitOrderAmountControllerNotifierProvider);
-  final marketSideState = ref.watch(marketSideStateNotifierProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return subscribedAssetPair.match(
@@ -1348,10 +1391,7 @@ OrderAmount limitOrderAmount(Ref ref) {
       );
     },
     (assetPair) => () {
-      final assetId =
-          marketSideState == MarketSideStateBase()
-              ? assetPair.base
-              : assetPair.quote;
+      final assetId = assetPair.base;
       final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: amountDecimal.toString(),
@@ -1538,6 +1578,15 @@ class MarketEditOrderErrorNotifier extends _$MarketEditOrderErrorNotifier {
 
 /// Edit order
 
+class MarketEditDetailsOfflineOrderException implements Exception {
+  final String message;
+
+  const MarketEditDetailsOfflineOrderException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 @Riverpod(keepAlive: true)
 class MarketEditDetailsOrderNotifier extends _$MarketEditDetailsOrderNotifier {
   @override
@@ -1546,6 +1595,12 @@ class MarketEditDetailsOrderNotifier extends _$MarketEditDetailsOrderNotifier {
   }
 
   void setState(UiOwnOrder uiOwnOrder) {
+    if (uiOwnOrder.offlineSwapType == OfflineSwapType.twoStep()) {
+      throw MarketEditDetailsOfflineOrderException(
+        'Offline order cant be edited',
+      );
+    }
+
     state = Option.of(uiOwnOrder);
   }
 }
@@ -2197,4 +2252,22 @@ bool limitInsufficientPrice(Ref ref) {
       );
     },
   );
+}
+
+@riverpod
+String marketOrderButtonText(Ref ref) {
+  final continueText = 'Continue'.tr().toUpperCase();
+  final unlockText = 'Unlock'.tr().toUpperCase();
+
+  final isJadeWallet = ref.watch(isJadeWalletProvider);
+
+  if (!isJadeWallet) {
+    return continueText;
+  }
+
+  final jadeLockState = ref.watch(jadeLockStateNotifierProvider);
+  return switch (jadeLockState) {
+    JadeLockStateUnlocked() => continueText,
+    _ => unlockText,
+  };
 }

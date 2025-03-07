@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'swap_models.freezed.dart';
 
@@ -8,13 +7,6 @@ class SwapPriceSubscribeState with _$SwapPriceSubscribeState {
   const factory SwapPriceSubscribeState.empty() = SwapPriceSubscribeStateEmpty;
   const factory SwapPriceSubscribeState.send() = SwapPriceSubscribeStateSend;
   const factory SwapPriceSubscribeState.recv() = SwapPriceSubscribeStateRecv;
-}
-
-@freezed
-class SwapCurrentFeeRate with _$SwapCurrentFeeRate {
-  const factory SwapCurrentFeeRate.empty() = SwapCurrentFeeRateEmpty;
-  const factory SwapCurrentFeeRate.data({required FeeRate feeRate}) =
-      SwapCurrentFeeRateData;
 }
 
 @freezed

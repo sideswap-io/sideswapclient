@@ -15,7 +15,7 @@ impl FeeRateBitcoin {
 }
 
 /// Fee rate in sat/byte
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
 pub struct FeeRateSats(f64);
 
 impl FeeRateSats {
@@ -38,6 +38,14 @@ impl FeeRateSats {
     pub fn from_fee(fee: u64, vsize: usize) -> FeeRateSats {
         assert!(vsize != 0);
         FeeRateSats(fee as f64 / vsize as f64)
+    }
+}
+
+impl Eq for FeeRateSats {}
+
+impl Ord for FeeRateSats {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
     }
 }
 

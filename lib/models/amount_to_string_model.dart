@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'amount_to_string_model.freezed.dart';
 
 @freezed
-class AmountToStringParameters with _$AmountToStringParameters {
+sealed class AmountToStringParameters with _$AmountToStringParameters {
   factory AmountToStringParameters({
     required int amount,
     @Default(false) bool forceSign,
@@ -14,7 +14,8 @@ class AmountToStringParameters with _$AmountToStringParameters {
 }
 
 @freezed
-class AmountToStringNamedParameters with _$AmountToStringNamedParameters {
+sealed class AmountToStringNamedParameters
+    with _$AmountToStringNamedParameters {
   factory AmountToStringNamedParameters({
     required int amount,
     required String ticker,

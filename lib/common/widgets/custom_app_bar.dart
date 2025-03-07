@@ -33,72 +33,34 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: backgroundColor,
       centerTitle: false,
       automaticallyImplyLeading: false,
-      flexibleSpace:
-          title != null
-              ? SafeArea(
-                child: SizedBox(
-                  height: preferredSize.height,
-                  child: Stack(
-                    children: [
-                      if (showTrailingButton) ...[
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              right: trailingWidget != null ? 10 : 22,
-                            ),
-                            child:
-                                trailingWidget != null
-                                    ? Material(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(42),
-                                      child: InkWell(
-                                        onTap: onTrailingButtonPressed,
-                                        borderRadius: BorderRadius.circular(42),
-                                        child: Container(
-                                          width: 48,
-                                          height: 48,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Center(child: trailingWidget),
-                                        ),
-                                      ),
-                                    )
-                                    : CustomBackButton(
-                                      width: 42,
-                                      height: 42,
-                                      buttonType: CustomBackButtonType.close,
-                                      color: backButtonColor ?? Colors.white,
-                                      onPressed: onTrailingButtonPressed,
-                                    ),
-                          ),
-                        ),
-                      ],
-                      SafeArea(
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            child: Text(
-                              title ?? '',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-              : null,
+      flexibleSpace: Align(
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title ?? '',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        ...switch (showTrailingButton) {
+          true => [trailingWidget ?? SizedBox()],
+          _ => [const SizedBox()],
+        },
+      ],
       leading: CustomBackButton(
+        icon: Icons.arrow_back_ios,
         onPressed: onPressed,
-        color: backButtonColor ?? Colors.white,
+        style: Theme.of(
+          context,
+        ).extension<CustomBackButtonStyle>()!.copyWith(color: backButtonColor),
       ),
     );
   }

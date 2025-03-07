@@ -6,12 +6,12 @@ part of 'notification_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$FCMPayloadImpl _$$FCMPayloadImplFromJson(Map json) => _$FCMPayloadImpl(
+_FCMPayload _$FCMPayloadFromJson(Map json) => _FCMPayload(
   type: $enumDecodeNullable(_$FCMPayloadTypeEnumMap, json['type']),
   txid: json['txid'] as String?,
 );
 
-Map<String, dynamic> _$$FCMPayloadImplToJson(_$FCMPayloadImpl instance) =>
+Map<String, dynamic> _$FCMPayloadToJson(_FCMPayload instance) =>
     <String, dynamic>{
       'type': _$FCMPayloadTypeEnumMap[instance.type],
       'txid': instance.txid,
@@ -27,17 +27,15 @@ const _$FCMPayloadTypeEnumMap = {
   FCMPayloadType.pegout: 'Peg-out',
 };
 
-_$FCMNotificationImpl _$$FCMNotificationImplFromJson(Map json) =>
-    _$FCMNotificationImpl(
-      title: json['title'] as String?,
-      body: json['body'] as String?,
-    );
+_FCMNotification _$FCMNotificationFromJson(Map json) => _FCMNotification(
+  title: json['title'] as String?,
+  body: json['body'] as String?,
+);
 
-Map<String, dynamic> _$$FCMNotificationImplToJson(
-  _$FCMNotificationImpl instance,
-) => <String, dynamic>{'title': instance.title, 'body': instance.body};
+Map<String, dynamic> _$FCMNotificationToJson(_FCMNotification instance) =>
+    <String, dynamic>{'title': instance.title, 'body': instance.body};
 
-_$FCMDataImpl _$$FCMDataImplFromJson(Map json) => _$FCMDataImpl(
+_FCMData _$FCMDataFromJson(Map json) => _FCMData(
   details:
       json['details'] == null
           ? null
@@ -46,10 +44,11 @@ _$FCMDataImpl _$$FCMDataImplFromJson(Map json) => _$FCMDataImpl(
           ),
 );
 
-Map<String, dynamic> _$$FCMDataImplToJson(_$FCMDataImpl instance) =>
-    <String, dynamic>{'details': instance.details};
+Map<String, dynamic> _$FCMDataToJson(_FCMData instance) => <String, dynamic>{
+  'details': instance.details,
+};
 
-_$FCMDetailsImpl _$$FCMDetailsImplFromJson(Map json) => _$FCMDetailsImpl(
+_FCMDetails _$FCMDetailsFromJson(Map json) => _FCMDetails(
   tx:
       json['tx'] == null
           ? null
@@ -74,7 +73,7 @@ _$FCMDetailsImpl _$$FCMDetailsImplFromJson(Map json) => _$FCMDetailsImpl(
           ),
 );
 
-Map<String, dynamic> _$$FCMDetailsImplToJson(_$FCMDetailsImpl instance) =>
+Map<String, dynamic> _$FCMDetailsToJson(_FCMDetails instance) =>
     <String, dynamic>{
       'tx': instance.tx,
       'peg_payout': instance.pegPayout,
@@ -82,16 +81,15 @@ Map<String, dynamic> _$$FCMDetailsImplToJson(_$FCMDetailsImpl instance) =>
       'order_cancelled': instance.orderCancelled,
     };
 
-_$FCMTxImpl _$$FCMTxImplFromJson(Map json) => _$FCMTxImpl(
+_FCMTx _$FCMTxFromJson(Map json) => _FCMTx(
   txType: $enumDecodeNullable(_$FCMTxTypeEnumMap, json['tx_type']),
   txId: json['txid'] as String?,
 );
 
-Map<String, dynamic> _$$FCMTxImplToJson(_$FCMTxImpl instance) =>
-    <String, dynamic>{
-      'tx_type': _$FCMTxTypeEnumMap[instance.txType],
-      'txid': instance.txId,
-    };
+Map<String, dynamic> _$FCMTxToJson(_FCMTx instance) => <String, dynamic>{
+  'tx_type': _$FCMTxTypeEnumMap[instance.txType],
+  'txid': instance.txId,
+};
 
 const _$FCMTxTypeEnumMap = {
   FCMTxType.send: 'Send',
@@ -101,7 +99,7 @@ const _$FCMTxTypeEnumMap = {
   FCMTxType.unknown: 'Unknown',
 };
 
-_$FCMPegImpl _$$FCMPegImplFromJson(Map json) => _$FCMPegImpl(
+_FCMPeg _$FCMPegFromJson(Map json) => _FCMPeg(
   orderId: json['order_id'] as String?,
   pegIn: json['peg_in'] as bool?,
   txHash: json['tx_hash'] as String?,
@@ -111,25 +109,23 @@ _$FCMPegImpl _$$FCMPegImplFromJson(Map json) => _$FCMPegImpl(
   payout: (json['payout'] as num?)?.toInt(),
 );
 
-Map<String, dynamic> _$$FCMPegImplToJson(_$FCMPegImpl instance) =>
-    <String, dynamic>{
-      'order_id': instance.orderId,
-      'peg_in': instance.pegIn,
-      'tx_hash': instance.txHash,
-      'vout': instance.vout,
-      'created_at': instance.createdAt,
-      'payout_txid': instance.payoutTxId,
-      'payout': instance.payout,
-    };
+Map<String, dynamic> _$FCMPegToJson(_FCMPeg instance) => <String, dynamic>{
+  'order_id': instance.orderId,
+  'peg_in': instance.pegIn,
+  'tx_hash': instance.txHash,
+  'vout': instance.vout,
+  'created_at': instance.createdAt,
+  'payout_txid': instance.payoutTxId,
+  'payout': instance.payout,
+};
 
-_$FCMOrderCancelledImpl _$$FCMOrderCancelledImplFromJson(Map json) =>
-    _$FCMOrderCancelledImpl(orderId: json['order_id'] as String?);
+_FCMOrderCancelled _$FCMOrderCancelledFromJson(Map json) =>
+    _FCMOrderCancelled(orderId: json['order_id'] as String?);
 
-Map<String, dynamic> _$$FCMOrderCancelledImplToJson(
-  _$FCMOrderCancelledImpl instance,
-) => <String, dynamic>{'order_id': instance.orderId};
+Map<String, dynamic> _$FCMOrderCancelledToJson(_FCMOrderCancelled instance) =>
+    <String, dynamic>{'order_id': instance.orderId};
 
-_$FCMMessageImpl _$$FCMMessageImplFromJson(Map json) => _$FCMMessageImpl(
+_FCMMessage _$FCMMessageFromJson(Map json) => _FCMMessage(
   notification:
       json['notification'] == null
           ? null
@@ -142,25 +138,23 @@ _$FCMMessageImpl _$$FCMMessageImplFromJson(Map json) => _$FCMMessageImpl(
           : FCMData.fromJson(Map<String, dynamic>.from(json['data'] as Map)),
 );
 
-Map<String, dynamic> _$$FCMMessageImplToJson(_$FCMMessageImpl instance) =>
+Map<String, dynamic> _$FCMMessageToJson(_FCMMessage instance) =>
     <String, dynamic>{
       'notification': instance.notification,
       'data': instance.data,
     };
 
-_$FCMRemoteMessageImpl _$$FCMRemoteMessageImplFromJson(Map json) =>
-    _$FCMRemoteMessageImpl(
-      details: json['details'],
-      body: json['body'] as String?,
-      title: json['title'] as String?,
-      data: (json['data'] as Map?)?.map((k, e) => MapEntry(k as String, e)),
-    );
+_FCMRemoteMessage _$FCMRemoteMessageFromJson(Map json) => _FCMRemoteMessage(
+  details: json['details'],
+  body: json['body'] as String?,
+  title: json['title'] as String?,
+  data: (json['data'] as Map?)?.map((k, e) => MapEntry(k as String, e)),
+);
 
-Map<String, dynamic> _$$FCMRemoteMessageImplToJson(
-  _$FCMRemoteMessageImpl instance,
-) => <String, dynamic>{
-  'details': instance.details,
-  'body': instance.body,
-  'title': instance.title,
-  'data': instance.data,
-};
+Map<String, dynamic> _$FCMRemoteMessageToJson(_FCMRemoteMessage instance) =>
+    <String, dynamic>{
+      'details': instance.details,
+      'body': instance.body,
+      'title': instance.title,
+      'data': instance.data,
+    };

@@ -10,3 +10,5 @@ analyzer:
   errors:
     invalid_annotation_target: ignore
     collection_methods_unrelated_type: error
+  plugins:
+    - custom_lint

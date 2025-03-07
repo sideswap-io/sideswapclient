@@ -10,6 +10,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_button.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/listeners/markets_page_listener.dart';
+import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -34,6 +35,8 @@ class MarketLimitPage extends HookConsumerWidget {
     final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
     final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
     final offlineSwapType = ref.watch(marketLimitOfflineSwapProvider);
+    final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
+    final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
 
     final tradeCallback = useCallback(
       () async {
@@ -75,6 +78,17 @@ class MarketLimitPage extends HookConsumerWidget {
       ],
     );
 
+    final marketOrderButtonPressedCallback = useMemoized(
+      () => switch (jadeLockRepository.isUnlocked()) {
+        true => switch (tradeButtonEnabled) {
+          true => tradeCallback,
+          _ => null,
+        },
+        _ => jadeLockRepository.refreshJadeLockState,
+      },
+      [jadeLockRepository.lockState, tradeButtonEnabled, tradeCallback],
+    );
+
     return SideSwapScaffold(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -93,13 +107,8 @@ class MarketLimitPage extends HookConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: MarketOrderButton(
                 isSell: tradeDirState == TradeDir.SELL,
-                onPressed:
-                    tradeButtonEnabled
-                        ? () async {
-                          await tradeCallback();
-                        }
-                        : null,
-                text: 'Continue'.tr().toUpperCase(),
+                onPressed: marketOrderButtonPressedCallback,
+                text: marketOrderButtonText,
               ),
             ),
             SizedBox(height: 40),

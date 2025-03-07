@@ -65,16 +65,15 @@ class PaymentPage extends HookConsumerWidget {
     final paymentHelper = ref.watch(paymentHelperProvider);
 
     ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
-      next.when(
-        empty: () {},
-        data: (result) {
-          if (result?.outputsData != null) {
+      (switch (next) {
+        QrCodeResultModelData() => () {
+          if (next.result?.outputsData != null) {
             // go to the confirm transaction page directly
             ref.invalidate(paymentAmountPageArgumentsNotifierProvider);
             paymentHelper.outputsPaymentSend();
             return;
           }
-          addressController.text = result?.address ?? '';
+          addressController.text = next.result?.address ?? '';
 
           final newErrorText = ref
               .read(walletProvider)
@@ -84,7 +83,7 @@ class PaymentPage extends HookConsumerWidget {
             ref
                 .read(paymentAmountPageArgumentsNotifierProvider.notifier)
                 .setPaymentAmountPageArguments(
-                  PaymentAmountPageArguments(result: result),
+                  PaymentAmountPageArguments(result: next.result),
                 );
             ref
                 .read(pageStatusNotifierProvider.notifier)
@@ -93,7 +92,8 @@ class PaymentPage extends HookConsumerWidget {
             return;
           }
         },
-      );
+        _ => () {},
+      }());
     });
 
     // go to the next page as soon as the address is correct

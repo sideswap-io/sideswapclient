@@ -121,26 +121,28 @@ class DJadeImport extends ConsumerWidget {
                 return Column(
                   children: [
                     Text(
-                      jadeDevicesState.maybeWhen(
-                        available: (devices) => 'Jade is ready to start'.tr(),
-                        orElse: () => 'Please connect your Jade device'.tr(),
-                      ),
+                      switch (jadeDevicesState) {
+                        JadeDevicesStateAvailable() =>
+                          'Jade is ready to start'.tr(),
+                        _ => 'Please connect your Jade device'.tr(),
+                      },
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    jadeDevicesState.maybeWhen(
-                      available: (devices) => SizedBox(),
-                      orElse:
-                          () => Text(
-                            'Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.'
-                                .tr(),
-                          ),
-                    ),
-                    jadeDevicesState.maybeWhen(
-                      available: (devices) {
-                        return Padding(
+                    switch (jadeDevicesState) {
+                      JadeDevicesStateAvailable() => const SizedBox(),
+                      _ => Text(
+                        'Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.'
+                            .tr(),
+                      ),
+                    },
+                    switch (jadeDevicesState) {
+                      JadeDevicesStateAvailable(
+                        devices: List<From_JadePorts_Port> devices,
+                      ) =>
+                        Padding(
                           padding: const EdgeInsets.only(top: 24),
                           child: Column(
                             children:
@@ -155,17 +157,14 @@ class DJadeImport extends ConsumerWidget {
                                     )
                                     .toList(),
                           ),
-                        );
-                      },
-                      orElse: () {
-                        return const Padding(
-                          padding: EdgeInsets.only(top: 200),
-                          child: SpinKitFadingCircle(
-                            color: SideSwapColors.brightTurquoise,
-                          ),
-                        );
-                      },
-                    ),
+                        ),
+                      _ => const Padding(
+                        padding: EdgeInsets.only(top: 200),
+                        child: SpinKitFadingCircle(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                    },
                   ],
                 );
               },

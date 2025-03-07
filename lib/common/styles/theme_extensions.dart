@@ -1,74 +1,39 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-class OrderRowElementTheme extends ThemeExtension<OrderRowElementTheme> {
-  const OrderRowElementTheme({required this.padding, required this.textColor});
-
-  final EdgeInsetsGeometry padding;
-  final Color textColor;
-
-  @override
-  OrderRowElementTheme copyWith({
-    EdgeInsetsGeometry? padding,
-    Color? textColor,
-  }) {
-    return OrderRowElementTheme(
-      padding: padding ?? this.padding,
-      textColor: textColor ?? this.textColor,
-    );
-  }
-
-  @override
-  OrderRowElementTheme lerp(
-    ThemeExtension<OrderRowElementTheme> other,
-    double t,
-  ) {
-    if (other is! OrderRowElementTheme) {
-      return this;
-    }
-
-    return OrderRowElementTheme(
-      padding:
-          EdgeInsetsGeometry.lerp(padding, other.padding, t) ?? EdgeInsets.zero,
-      textColor: Color.lerp(textColor, other.textColor, t) ?? Colors.white,
-    );
-  }
-}
-
-class MarketColorsTheme extends ThemeExtension<MarketColorsTheme> {
+class MarketColorsStyle extends ThemeExtension<MarketColorsStyle> {
   final Color? sellColor;
   final Color? buyColor;
 
-  MarketColorsTheme({this.sellColor, this.buyColor});
+  MarketColorsStyle({this.sellColor, this.buyColor});
 
   @override
-  MarketColorsTheme copyWith({Color? sellColor, Color? buyColor}) {
-    return MarketColorsTheme(
+  MarketColorsStyle copyWith({Color? sellColor, Color? buyColor}) {
+    return MarketColorsStyle(
       sellColor: sellColor ?? this.sellColor,
       buyColor: buyColor ?? this.buyColor,
     );
   }
 
   @override
-  MarketColorsTheme lerp(
-    covariant ThemeExtension<MarketColorsTheme>? other,
+  MarketColorsStyle lerp(
+    covariant ThemeExtension<MarketColorsStyle>? other,
     double t,
   ) {
-    if (other is! MarketColorsTheme) {
+    if (other is! MarketColorsStyle) {
       return this;
     }
 
-    return MarketColorsTheme(
+    return MarketColorsStyle(
       sellColor: Color.lerp(sellColor, other.sellColor, t),
       buyColor: Color.lerp(buyColor, other.buyColor, t),
     );
   }
 }
 
-class ColoredContainerTheme extends ThemeExtension<ColoredContainerTheme> {
-  ColoredContainerTheme({
+class ColoredContainerStyle extends ThemeExtension<ColoredContainerStyle> {
+  ColoredContainerStyle({
     this.backgroundColor,
     this.borderColor,
     this.horizontalPadding,
@@ -79,12 +44,12 @@ class ColoredContainerTheme extends ThemeExtension<ColoredContainerTheme> {
   final double? horizontalPadding;
 
   @override
-  ColoredContainerTheme copyWith({
+  ColoredContainerStyle copyWith({
     Color? backgroundColor,
     Color? borderColor,
     double? horizontalPadding,
   }) {
-    return ColoredContainerTheme(
+    return ColoredContainerStyle(
       backgroundColor: backgroundColor ?? this.backgroundColor,
       borderColor: borderColor ?? this.borderColor,
       horizontalPadding: horizontalPadding ?? this.horizontalPadding,
@@ -92,15 +57,15 @@ class ColoredContainerTheme extends ThemeExtension<ColoredContainerTheme> {
   }
 
   @override
-  ColoredContainerTheme lerp(
-    covariant ThemeExtension<ColoredContainerTheme>? other,
+  ColoredContainerStyle lerp(
+    covariant ThemeExtension<ColoredContainerStyle>? other,
     double t,
   ) {
-    if (other is! ColoredContainerTheme) {
+    if (other is! ColoredContainerStyle) {
       return this;
     }
 
-    return ColoredContainerTheme(
+    return ColoredContainerStyle(
       backgroundColor: Color.lerp(backgroundColor, other.backgroundColor, t),
       borderColor: Color.lerp(borderColor, other.borderColor, t),
       horizontalPadding: lerpDouble(
@@ -112,8 +77,8 @@ class ColoredContainerTheme extends ThemeExtension<ColoredContainerTheme> {
   }
 }
 
-class MarketAssetRowTheme extends ThemeExtension<MarketAssetRowTheme> {
-  MarketAssetRowTheme({
+class MarketAssetRowStyle extends ThemeExtension<MarketAssetRowStyle> {
+  MarketAssetRowStyle({
     this.labelStyle,
     this.errorLabelStyle,
     this.amountStyle,
@@ -132,7 +97,7 @@ class MarketAssetRowTheme extends ThemeExtension<MarketAssetRowTheme> {
   final TextStyle? conversionStyle;
 
   @override
-  MarketAssetRowTheme copyWith({
+  MarketAssetRowStyle copyWith({
     TextStyle? labelStyle,
     TextStyle? errorLabelStyle,
     TextStyle? amountStyle,
@@ -141,7 +106,7 @@ class MarketAssetRowTheme extends ThemeExtension<MarketAssetRowTheme> {
     TextStyle? errorTickerStyle,
     TextStyle? conversionStyle,
   }) {
-    return MarketAssetRowTheme(
+    return MarketAssetRowStyle(
       labelStyle: labelStyle ?? this.labelStyle,
       errorLabelStyle: errorLabelStyle ?? this.errorAmountStyle,
       amountStyle: amountStyle ?? this.amountStyle,
@@ -153,15 +118,15 @@ class MarketAssetRowTheme extends ThemeExtension<MarketAssetRowTheme> {
   }
 
   @override
-  MarketAssetRowTheme lerp(
-    covariant ThemeExtension<MarketAssetRowTheme>? other,
+  MarketAssetRowStyle lerp(
+    covariant ThemeExtension<MarketAssetRowStyle>? other,
     double t,
   ) {
-    if (other is! MarketAssetRowTheme) {
+    if (other is! MarketAssetRowStyle) {
       return this;
     }
 
-    return MarketAssetRowTheme(
+    return MarketAssetRowStyle(
       labelStyle: TextStyle.lerp(labelStyle, other.labelStyle, t),
       errorLabelStyle: TextStyle.lerp(
         errorLabelStyle,

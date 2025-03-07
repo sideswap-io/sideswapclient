@@ -4,7 +4,8 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 part 'jade_model.freezed.dart';
 
 @freezed
-class JadeOnboardingRegistrationState with _$JadeOnboardingRegistrationState {
+sealed class JadeOnboardingRegistrationState
+    with _$JadeOnboardingRegistrationState {
   const factory JadeOnboardingRegistrationState.idle() =
       JadeOnboardingRegistrationStateIdle;
   const factory JadeOnboardingRegistrationState.processing() =
@@ -16,7 +17,7 @@ class JadeOnboardingRegistrationState with _$JadeOnboardingRegistrationState {
 class JadeStatusException implements Exception {}
 
 @freezed
-class JadeStatus with _$JadeStatus {
+sealed class JadeStatus with _$JadeStatus {
   const JadeStatus._();
 
   const factory JadeStatus.idle() = JadeStatusIdle;
@@ -50,43 +51,24 @@ class JadeStatus with _$JadeStatus {
   }
 
   From_JadeStatus_Status toStatus() {
-    return when(
-      idle: () {
-        return From_JadeStatus_Status.IDLE;
-      },
-      readStatus: () {
-        return From_JadeStatus_Status.READ_STATUS;
-      },
-      authUser: () {
-        return From_JadeStatus_Status.AUTH_USER;
-      },
-      signTx: () {
-        return From_JadeStatus_Status.SIGN_TX;
-      },
-      masterBlindingKey: () {
-        return From_JadeStatus_Status.MASTER_BLINDING_KEY;
-      },
-      signSwap: () {
-        return From_JadeStatus_Status.SIGN_SWAP;
-      },
-      signSwapOutput: () {
-        return From_JadeStatus_Status.SIGN_SWAP_OUTPUT;
-      },
-      signOfflineSwap: () {
-        return From_JadeStatus_Status.SIGN_OFFLINE_SWAP;
-      },
-      connecting: () {
-        return From_JadeStatus_Status.CONNECTING;
-      },
-      signMessage: () {
-        return From_JadeStatus_Status.SIGN_MESSAGE;
-      },
-    );
+    return switch (this) {
+      JadeStatusIdle() => From_JadeStatus_Status.IDLE,
+      JadeStatusReadStatus() => From_JadeStatus_Status.READ_STATUS,
+      JadeStatusAuthUser() => From_JadeStatus_Status.AUTH_USER,
+      JadeStatusSignTx() => From_JadeStatus_Status.SIGN_TX,
+      JadeStatusMasterBlindingKey() =>
+        From_JadeStatus_Status.MASTER_BLINDING_KEY,
+      JadeStatusSignOfflineSwap() => From_JadeStatus_Status.SIGN_OFFLINE_SWAP,
+      JadeStatusSignSwap() => From_JadeStatus_Status.SIGN_SWAP,
+      JadeStatusSignSwapOutput() => From_JadeStatus_Status.SIGN_SWAP_OUTPUT,
+      JadeStatusConnecting() => From_JadeStatus_Status.CONNECTING,
+      JadeStatusSignMessage() => From_JadeStatus_Status.SIGN_MESSAGE,
+    };
   }
 }
 
 @freezed
-class JadeDevicesState with _$JadeDevicesState {
+sealed class JadeDevicesState with _$JadeDevicesState {
   const factory JadeDevicesState.unavailable() = JadeDevicesStateUnavailable;
   const factory JadeDevicesState.available({
     required List<From_JadePorts_Port> devices,
@@ -94,7 +76,7 @@ class JadeDevicesState with _$JadeDevicesState {
 }
 
 @freezed
-class JadePort with _$JadePort {
+sealed class JadePort with _$JadePort {
   JadePort._();
 
   factory JadePort({required From_JadePorts_Port fromJadePortsPort}) =

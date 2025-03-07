@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,294 +10,100 @@ part of 'network_access_tab_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$NetworkAccessTabState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() server,
-    required TResult Function() proxy,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? server,
-    TResult? Function()? proxy,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? server,
-    TResult Function()? proxy,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(NetworkAccessTabStateServer value) server,
-    required TResult Function(NetworkAccessTabStateProxy value) proxy,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(NetworkAccessTabStateServer value)? server,
-    TResult? Function(NetworkAccessTabStateProxy value)? proxy,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(NetworkAccessTabStateServer value)? server,
-    TResult Function(NetworkAccessTabStateProxy value)? proxy,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NetworkAccessTabState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'NetworkAccessTabState()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $NetworkAccessTabStateCopyWith<$Res> {
-  factory $NetworkAccessTabStateCopyWith(
-    NetworkAccessTabState value,
-    $Res Function(NetworkAccessTabState) then,
-  ) = _$NetworkAccessTabStateCopyWithImpl<$Res, NetworkAccessTabState>;
+class $NetworkAccessTabStateCopyWith<$Res>  {
+$NetworkAccessTabStateCopyWith(NetworkAccessTabState _, $Res Function(NetworkAccessTabState) __);
 }
 
-/// @nodoc
-class _$NetworkAccessTabStateCopyWithImpl<
-  $Res,
-  $Val extends NetworkAccessTabState
->
-    implements $NetworkAccessTabStateCopyWith<$Res> {
-  _$NetworkAccessTabStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of NetworkAccessTabState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$NetworkAccessTabStateServerImplCopyWith<$Res> {
-  factory _$$NetworkAccessTabStateServerImplCopyWith(
-    _$NetworkAccessTabStateServerImpl value,
-    $Res Function(_$NetworkAccessTabStateServerImpl) then,
-  ) = __$$NetworkAccessTabStateServerImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$NetworkAccessTabStateServerImplCopyWithImpl<$Res>
-    extends
-        _$NetworkAccessTabStateCopyWithImpl<
-          $Res,
-          _$NetworkAccessTabStateServerImpl
-        >
-    implements _$$NetworkAccessTabStateServerImplCopyWith<$Res> {
-  __$$NetworkAccessTabStateServerImplCopyWithImpl(
-    _$NetworkAccessTabStateServerImpl _value,
-    $Res Function(_$NetworkAccessTabStateServerImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of NetworkAccessTabState
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$NetworkAccessTabStateServerImpl implements NetworkAccessTabStateServer {
-  const _$NetworkAccessTabStateServerImpl();
 
-  @override
-  String toString() {
-    return 'NetworkAccessTabState.server()';
-  }
+class NetworkAccessTabStateServer implements NetworkAccessTabState {
+  const NetworkAccessTabStateServer();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$NetworkAccessTabStateServerImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() server,
-    required TResult Function() proxy,
-  }) {
-    return server();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? server,
-    TResult? Function()? proxy,
-  }) {
-    return server?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? server,
-    TResult Function()? proxy,
-    required TResult orElse(),
-  }) {
-    if (server != null) {
-      return server();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(NetworkAccessTabStateServer value) server,
-    required TResult Function(NetworkAccessTabStateProxy value) proxy,
-  }) {
-    return server(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(NetworkAccessTabStateServer value)? server,
-    TResult? Function(NetworkAccessTabStateProxy value)? proxy,
-  }) {
-    return server?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(NetworkAccessTabStateServer value)? server,
-    TResult Function(NetworkAccessTabStateProxy value)? proxy,
-    required TResult orElse(),
-  }) {
-    if (server != null) {
-      return server(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NetworkAccessTabStateServer);
 }
 
-abstract class NetworkAccessTabStateServer implements NetworkAccessTabState {
-  const factory NetworkAccessTabStateServer() =
-      _$NetworkAccessTabStateServerImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'NetworkAccessTabState.server()';
 }
 
-/// @nodoc
-abstract class _$$NetworkAccessTabStateProxyImplCopyWith<$Res> {
-  factory _$$NetworkAccessTabStateProxyImplCopyWith(
-    _$NetworkAccessTabStateProxyImpl value,
-    $Res Function(_$NetworkAccessTabStateProxyImpl) then,
-  ) = __$$NetworkAccessTabStateProxyImplCopyWithImpl<$Res>;
+
 }
 
-/// @nodoc
-class __$$NetworkAccessTabStateProxyImplCopyWithImpl<$Res>
-    extends
-        _$NetworkAccessTabStateCopyWithImpl<
-          $Res,
-          _$NetworkAccessTabStateProxyImpl
-        >
-    implements _$$NetworkAccessTabStateProxyImplCopyWith<$Res> {
-  __$$NetworkAccessTabStateProxyImplCopyWithImpl(
-    _$NetworkAccessTabStateProxyImpl _value,
-    $Res Function(_$NetworkAccessTabStateProxyImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of NetworkAccessTabState
-  /// with the given fields replaced by the non-null parameter values.
-}
+
 
 /// @nodoc
 
-class _$NetworkAccessTabStateProxyImpl implements NetworkAccessTabStateProxy {
-  const _$NetworkAccessTabStateProxyImpl();
 
-  @override
-  String toString() {
-    return 'NetworkAccessTabState.proxy()';
-  }
+class NetworkAccessTabStateProxy implements NetworkAccessTabState {
+  const NetworkAccessTabStateProxy();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$NetworkAccessTabStateProxyImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() server,
-    required TResult Function() proxy,
-  }) {
-    return proxy();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? server,
-    TResult? Function()? proxy,
-  }) {
-    return proxy?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? server,
-    TResult Function()? proxy,
-    required TResult orElse(),
-  }) {
-    if (proxy != null) {
-      return proxy();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(NetworkAccessTabStateServer value) server,
-    required TResult Function(NetworkAccessTabStateProxy value) proxy,
-  }) {
-    return proxy(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(NetworkAccessTabStateServer value)? server,
-    TResult? Function(NetworkAccessTabStateProxy value)? proxy,
-  }) {
-    return proxy?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(NetworkAccessTabStateServer value)? server,
-    TResult Function(NetworkAccessTabStateProxy value)? proxy,
-    required TResult orElse(),
-  }) {
-    if (proxy != null) {
-      return proxy(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NetworkAccessTabStateProxy);
 }
 
-abstract class NetworkAccessTabStateProxy implements NetworkAccessTabState {
-  const factory NetworkAccessTabStateProxy() = _$NetworkAccessTabStateProxyImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'NetworkAccessTabState.proxy()';
 }
+
+
+}
+
+
+
+
+// dart format on

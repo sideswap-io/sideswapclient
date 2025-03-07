@@ -93,10 +93,10 @@ class OrderSubmitSuccessDialog extends HookConsumerWidget {
                     isSell
                         ? Theme.of(
                           context,
-                        ).extension<MarketColorsTheme>()!.sellColor
+                        ).extension<MarketColorsStyle>()!.sellColor
                         : Theme.of(
                           context,
-                        ).extension<MarketColorsTheme>()!.buyColor;
+                        ).extension<MarketColorsStyle>()!.buyColor;
                 return Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(

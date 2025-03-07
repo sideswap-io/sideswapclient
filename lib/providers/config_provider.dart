@@ -24,7 +24,7 @@ SharedPreferences sharedPreferences(Ref ref) {
 }
 
 @freezed
-class SideswapSettings with _$SideswapSettings {
+sealed class SideswapSettings with _$SideswapSettings {
   factory SideswapSettings.empty({
     required Uint8List mnemonicEncrypted,
     @Default('') String jadeId,

@@ -352,6 +352,7 @@ fn validate_res(
 }
 
 pub fn try_coin_select(args: Args) -> Result<Res, anyhow::Error> {
+    log::debug!("payjoin coin select: {args:?}");
     let res = try_coin_select_impl(args.clone());
 
     if let Ok(res) = &res {

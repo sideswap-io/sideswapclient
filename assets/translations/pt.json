@@ -552,5 +552,10 @@
   "PEGIN_GREATER_AMOUNT": " {} BTC",
   "PEGIN_GREATER_END": ", it will be paid after 102 confirmations.\n",
   "PEGIN_RELEASED": "• If the bitcoin transaction is not confirmed within 6 hours, the reservation will be released.",
-  "Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.": "Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it."
+  "Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.": "Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.",
+  "We encourage placing orders online (as it is more flexible),\nbut you should know that you need to have the application open\nand your computer running at that time.": "We encourage placing orders online (as it is more flexible),\nbut you should know that you need to have the application open\nand your computer running at that time.",
+  "Discount vsize": "Discount vsize",
+  "Link to explorer\n(pay-in)": "Link to explorer\n(pay-in)",
+  "Link to explorer\n(pay-out)": "Link to explorer\n(pay-out)",
+  "Price": "Price"
 }

@@ -9,6 +9,7 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_amp_login_dialog_bottom_panel.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/amp_id_panel.dart';
+import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -26,24 +27,25 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () => pegxLoginState.maybeWhen(
-          gaidWaiting: () {
-            gaidWaiting.value = true;
-          },
-          gaidAdded: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.pegxSubmitFinish);
-          },
-          gaidError: () {
-            ref
-                .read(pegxWebsocketClientProvider)
-                .errorAndGoBack(
-                  'Adding AMP ID failed or cancelled by the user'.tr(),
-                );
-          },
-          orElse: () {},
-        ),
+        () =>
+            (switch (pegxLoginState) {
+              PegxLoginStateGaidWaiting() => () {
+                gaidWaiting.value = true;
+              },
+              PegxLoginStateGaidAdded() => () {
+                ref
+                    .read(pageStatusNotifierProvider.notifier)
+                    .setStatus(Status.pegxSubmitFinish);
+              },
+              PegxLoginStateGaidError() => () {
+                ref
+                    .read(pegxWebsocketClientProvider)
+                    .errorAndGoBack(
+                      'Adding AMP ID failed or cancelled by the user'.tr(),
+                    );
+              },
+              _ => () {},
+            }()),
       );
 
       return;

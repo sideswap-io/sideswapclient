@@ -58,6 +58,27 @@ final isJadeWalletProvider = AutoDisposeProvider<bool>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef IsJadeWalletRef = AutoDisposeProviderRef<bool>;
+String _$jadeLockRepositoryHash() =>
+    r'703508e1768f4436689ce37c26580198d326a638';
+
+/// See also [jadeLockRepository].
+@ProviderFor(jadeLockRepository)
+final jadeLockRepositoryProvider =
+    AutoDisposeProvider<AbstractJadeLockRepository>.internal(
+      jadeLockRepository,
+      name: r'jadeLockRepositoryProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$jadeLockRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef JadeLockRepositoryRef =
+    AutoDisposeProviderRef<AbstractJadeLockRepository>;
 String _$jadeBluetoothPermissionStateNotifierHash() =>
     r'98c161e160010420edc2841205786f6887807ca2';
 
@@ -175,5 +196,41 @@ final jadeSelectedDeviceProvider =
     );
 
 typedef _$JadeSelectedDevice = Notifier<From_JadePorts_Port?>;
+String _$jadeLockStateTimerNotifierHash() =>
+    r'c884c8539bf3bbe3989005ecb35924a351e2a5e9';
+
+/// See also [JadeLockStateTimerNotifier].
+@ProviderFor(JadeLockStateTimerNotifier)
+final jadeLockStateTimerNotifierProvider =
+    AutoDisposeNotifierProvider<JadeLockStateTimerNotifier, void>.internal(
+      JadeLockStateTimerNotifier.new,
+      name: r'jadeLockStateTimerNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$jadeLockStateTimerNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$JadeLockStateTimerNotifier = AutoDisposeNotifier<void>;
+String _$jadeLockStateNotifierHash() =>
+    r'd0f4d79e67a5fc5e06de6ddbde413ab273cb7ca5';
+
+/// See also [JadeLockStateNotifier].
+@ProviderFor(JadeLockStateNotifier)
+final jadeLockStateNotifierProvider =
+    AutoDisposeNotifierProvider<JadeLockStateNotifier, JadeLockState>.internal(
+      JadeLockStateNotifier.new,
+      name: r'jadeLockStateNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$jadeLockStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$JadeLockStateNotifier = AutoDisposeNotifier<JadeLockState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

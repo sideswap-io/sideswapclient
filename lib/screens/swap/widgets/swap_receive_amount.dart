@@ -6,6 +6,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -61,6 +62,13 @@ class SwapReceiveAmount extends HookConsumerWidget {
       if (swapType == SwapType.pegIn()) {
         return;
       }
+
+      if (next.isEmpty) {
+        swapAddressRecvController.clear();
+        receiveFocusNode.requestFocus();
+        return;
+      }
+
       final externalAddress = swapAddressRecvController.text;
       if (externalAddress != next) {
         final oldSelection = swapRecvAmountController.selection;
@@ -99,7 +107,7 @@ class SwapReceiveAmount extends HookConsumerWidget {
       availableAssets: swapRecvAsset.assetList,
       labelGroupValue: swapRecvWallet,
       addressErrorText: addressErrorText,
-      focusNode: receiveFocusNode,
+      receiveAddressFocusNode: receiveFocusNode,
       isAddressLabelVisible: showAddressLabel,
       swapType: swapType,
       showInsufficientFunds: false,

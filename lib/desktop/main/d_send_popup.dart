@@ -412,31 +412,8 @@ class DSendPopupReview extends ConsumerWidget {
       CreateTxStateCreated(createdTx: final createdTx) => createdTx,
       _ => null,
     };
+    final createdTxHelper = ref.watch(createdTxHelperProvider(createdTx));
     final sendTxState = ref.watch(sendTxStateNotifierProvider);
-
-    final feePerByteStr =
-        '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
-    final txSizeStr =
-        '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
-    final amountProvider = ref.watch(amountToStringProvider);
-    final feeStr = amountProvider.amountToStringNamed(
-      AmountToStringNamedParameters(
-        amount: createdTx?.networkFee.toInt() ?? 0,
-        ticker: 'L-BTC',
-      ),
-    );
-
-    final feeAssetId = createdTx?.req.feeAssetId;
-    final feeAssetTicker = ref
-        .read(assetUtilsProvider)
-        .tickerForAssetId(feeAssetId);
-    final serverFee = amountProvider.amountToStringNamed(
-      AmountToStringNamedParameters(
-        amount: createdTx?.serverFee.toInt() ?? 0,
-        ticker: feeAssetTicker,
-      ),
-    );
-    final showServerFee = (createdTx?.serverFee.toInt() ?? 0) != 0;
 
     const headerStyle = TextStyle(
       fontSize: 13,
@@ -535,22 +512,38 @@ class DSendPopupReview extends ConsumerWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  RowTxDetail(name: 'Fee per byte'.tr(), value: feePerByteStr),
-                  RowTxDetail(name: 'Transaction size'.tr(), value: txSizeStr),
-                  RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
-                  ...switch (showServerFee) {
+                  RowTxDetail(
+                    name: 'Fee per byte'.tr(),
+                    value: createdTxHelper.feePerByte(),
+                  ),
+                  RowTxDetail(
+                    name: 'Transaction size'.tr(),
+                    value: createdTxHelper.txSize(),
+                  ),
+                  RowTxDetail(
+                    name: 'Discount vsize'.tr(),
+                    value: createdTxHelper.vsize(),
+                  ),
+                  RowTxDetail(
+                    name: 'Network Fee'.tr(),
+                    value: createdTxHelper.networkFee(),
+                  ),
+                  ...switch (createdTxHelper.hasServerFee()) {
                     true => [
-                      RowTxDetail(name: 'Server fee'.tr(), value: serverFee),
+                      RowTxDetail(
+                        name: 'Server fee'.tr(),
+                        value: createdTxHelper.serverFee(),
+                      ),
                     ],
                     _ => [const SizedBox()],
                   },
                   RowTxDetail(
                     name: 'Number of inputs'.tr(),
-                    value: createdTx?.inputCount.toString() ?? '',
+                    value: createdTxHelper.inputCount(),
                   ),
                   RowTxDetail(
                     name: 'Number of outputs'.tr(),
-                    value: createdTx?.outputCount.toString() ?? '',
+                    value: createdTxHelper.outputCount(),
                   ),
                   const SizedBox(height: 18),
                   Row(
@@ -579,22 +572,25 @@ class DSendPopupReview extends ConsumerWidget {
                       DCustomButton(
                         width: 160,
                         height: 44,
-                        onPressed: () async {
-                          final result =
-                              await ref
-                                  .read(desktopDialogProvider)
-                                  .openViewTx();
-                          return switch (result) {
-                            DialogReturnValueAccepted() => () async {
-                              final navigator = Navigator.of(context);
-                              await ref
-                                  .read(desktopDialogProvider)
-                                  .openExportTxSuccess();
-                              navigator.pop();
-                            }(),
-                            _ => () {}(),
-                          };
-                        },
+                        onPressed:
+                            sendTxState == const SendTxStateEmpty()
+                                ? () async {
+                                  final result =
+                                      await ref
+                                          .read(desktopDialogProvider)
+                                          .openViewTx();
+                                  return switch (result) {
+                                    DialogReturnValueAccepted() => () async {
+                                      final navigator = Navigator.of(context);
+                                      await ref
+                                          .read(desktopDialogProvider)
+                                          .openExportTxSuccess();
+                                      navigator.pop();
+                                    }(),
+                                    _ => () {}(),
+                                  };
+                                }
+                                : null,
                         child: Text(
                           'EXPORT TX'.tr(),
                           style: const TextStyle(

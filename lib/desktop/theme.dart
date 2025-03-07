@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/button_styles.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
+import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
@@ -12,6 +13,7 @@ import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
 import 'package:sideswap/desktop/common/d_typography.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
 
 part 'theme.g.dart';
 
@@ -681,12 +683,17 @@ class DesktopAppTheme {
   ///
   Iterable<ThemeExtension<dynamic>>? get themeExtensions {
     return [
-      orderRowElementTheme(),
-      marketAssetRowTheme(),
-      marketColorsTheme(),
+      orderRowElementStyle(),
+      marketAssetRowStyle(),
+      marketColorsStyle(),
       sideswapCancelButtonStyle(),
       sideswapOkButtonStyle(),
+      customBackButtonStyle(),
     ];
+  }
+
+  CustomBackButtonStyle customBackButtonStyle() {
+    return CustomBackButtonStyle.standard();
   }
 
   SideswapNoButtonStyle sideswapCancelButtonStyle() {
@@ -717,22 +724,22 @@ class DesktopAppTheme {
     );
   }
 
-  MarketColorsTheme marketColorsTheme() {
-    return MarketColorsTheme(
+  MarketColorsStyle marketColorsStyle() {
+    return MarketColorsStyle(
       sellColor: SideSwapColors.bitterSweet,
       buyColor: SideSwapColors.turquoise,
     );
   }
 
-  OrderRowElementTheme orderRowElementTheme() {
-    return OrderRowElementTheme(
+  OrderRowElementStyle orderRowElementStyle() {
+    return OrderRowElementStyle(
       padding: const EdgeInsets.only(left: 12, top: 12),
       textColor: SideSwapColors.cornFlower,
     );
   }
 
-  MarketAssetRowTheme marketAssetRowTheme() {
-    return MarketAssetRowTheme(
+  MarketAssetRowStyle marketAssetRowStyle() {
+    return MarketAssetRowStyle(
       labelStyle: textTheme.titleSmall?.copyWith(
         color: SideSwapColors.brightTurquoise,
       ),

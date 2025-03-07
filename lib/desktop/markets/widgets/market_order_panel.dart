@@ -13,6 +13,7 @@ import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/limit_amount_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/limit_price_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
@@ -169,10 +170,10 @@ class MarketOrderPanel extends HookConsumerWidget {
                               tradeDirState == TradeDir.SELL
                                   ? Theme.of(
                                     context,
-                                  ).extension<MarketColorsTheme>()!.sellColor!
+                                  ).extension<MarketColorsStyle>()!.sellColor!
                                   : Theme.of(
                                     context,
-                                  ).extension<MarketColorsTheme>()!.buyColor!,
+                                  ).extension<MarketColorsStyle>()!.buyColor!,
                           inactiveToggleBackground: SideSwapColors.darkCerulean,
                           backgroundColor: SideSwapColors.darkCerulean,
                           borderColor: SideSwapColors.darkCerulean,
@@ -283,7 +284,7 @@ class MarketTypeSwitch extends ConsumerWidget {
         inactiveText: 'Market order'.tr(),
         value: marketTypeSwitchState == MarketTypeSwitchState.limit(),
         activeToggleBackground:
-            Theme.of(context).extension<MarketColorsTheme>()!.buyColor!,
+            Theme.of(context).extension<MarketColorsStyle>()!.buyColor!,
         inactiveToggleBackground: SideSwapColors.darkCerulean,
         backgroundColor: SideSwapColors.darkCerulean,
         borderColor: SideSwapColors.darkCerulean,
@@ -314,7 +315,7 @@ class MarketPanel extends ConsumerWidget {
     return optionMarketInfo.match(
       () => SizedBox(),
       (_) => Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(left: 8, right: 8, bottom: 6),
         child: DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
@@ -370,7 +371,7 @@ class MarketAssetSwitchButtons extends ConsumerWidget {
           inactiveText: baseAsset.ticker,
           value: marketSideState == MarketSideState.quote(),
           activeToggleBackground:
-              Theme.of(context).extension<MarketColorsTheme>()!.buyColor!,
+              Theme.of(context).extension<MarketColorsStyle>()!.buyColor!,
           inactiveToggleBackground: SideSwapColors.darkCerulean,
           backgroundColor: SideSwapColors.darkCerulean,
           borderColor: SideSwapColors.darkCerulean,
@@ -417,6 +418,7 @@ class MarketAmountPanel extends HookConsumerWidget {
     );
     final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
     final optionAcceptQuoteError = ref.watch(acceptQuoteErrorProvider);
+    final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
 
     final amountController = useTextEditingController();
 
@@ -498,17 +500,34 @@ class MarketAmountPanel extends HookConsumerWidget {
     final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: optionBaseAsset.match(
+    final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
+
+    final marketOrderButtonPressedCallback = useMemoized(
+      () => switch (jadeLockRepository.isUnlocked()) {
+        true => switch (tradeButtonEnabled) {
+          true => () async {
+            await marketTradeRepository.makeSwapTrade(
+              context: context,
+              optionQuoteSuccess: optionQuoteSuccess,
+            );
+          },
+          _ => null,
+        },
+        _ => jadeLockRepository.refreshJadeLockState,
+      },
+      [jadeLockRepository.lockState, tradeButtonEnabled],
+    );
+
+    return optionBaseAsset.match(
+      () => SizedBox(),
+      (baseAsset) => optionQuoteAsset.match(
         () => SizedBox(),
-        (baseAsset) => optionQuoteAsset.match(
-          () => SizedBox(),
-          (quoteAsset) => SizedBox(
-            height: 264,
-            width: 359,
+        (quoteAsset) => SizedBox(
+          height: 291,
+          width: 359,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 6),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 MarketAmountTextField(
                   caption: 'Amount'.tr(),
@@ -539,23 +558,30 @@ class MarketAmountPanel extends HookConsumerWidget {
                     amountSide: true,
                   ),
                 ),
-                MarketAmountError(),
-                MarketLowBalanceError(),
-                MarketQuoteSuccess(),
-                MarketUnregisteredGaidError(),
+                SizedBox(
+                  height: tradeDirState == TradeDir.BUY ? 150 : 125,
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MarketAmountError(),
+                            MarketLowBalanceError(),
+                            MarketQuoteSuccess(),
+                            MarketUnregisteredGaidError(),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Spacer(),
                 MarketOrderButton(
                   isSell: tradeDirState == TradeDir.SELL,
-                  onPressed:
-                      tradeButtonEnabled
-                          ? () async {
-                            await marketTradeRepository.makeSwapTrade(
-                              context: context,
-                              optionQuoteSuccess: optionQuoteSuccess,
-                            );
-                          }
-                          : null,
-                  text: 'Continue'.tr().toUpperCase(),
+                  onPressed: marketOrderButtonPressedCallback,
+                  text: marketOrderButtonText,
                 ),
               ],
             ),
@@ -582,7 +608,7 @@ class MarketAssetRow extends ConsumerWidget {
   final bool isError;
   final bool showConversion;
   final String label;
-  final MarketAssetRowTheme? theme;
+  final MarketAssetRowStyle? theme;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -598,7 +624,7 @@ class MarketAssetRow extends ConsumerWidget {
             : null;
 
     final defaultTheme =
-        theme ?? Theme.of(context).extension<MarketAssetRowTheme>()!;
+        theme ?? Theme.of(context).extension<MarketAssetRowStyle>()!;
 
     return Column(
       children: [
@@ -670,7 +696,7 @@ class MarketDeliverRow extends ConsumerWidget {
   final String deliverAmount;
   final bool isError;
   final bool showConversion;
-  final MarketAssetRowTheme? theme;
+  final MarketAssetRowStyle? theme;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -699,7 +725,7 @@ class MarketReceiveRow extends ConsumerWidget {
   final String receiveAmount;
   final bool isError;
   final bool showConversion;
-  final MarketAssetRowTheme? theme;
+  final MarketAssetRowStyle? theme;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -709,6 +735,32 @@ class MarketReceiveRow extends ConsumerWidget {
       isError: isError,
       showConversion: showConversion,
       label: 'Receive'.tr(),
+      theme: theme,
+    );
+  }
+}
+
+class MarketPriceRow extends ConsumerWidget {
+  const MarketPriceRow({
+    required this.asset,
+    required this.amount,
+    this.showConversion = false,
+    this.theme,
+    super.key,
+  });
+
+  final Option<Asset> asset;
+  final String amount;
+  final bool showConversion;
+  final MarketAssetRowStyle? theme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MarketAssetRow(
+      asset: asset,
+      amount: amount,
+      showConversion: showConversion,
+      label: 'Price'.tr(),
       theme: theme,
     );
   }
@@ -750,6 +802,17 @@ class MarketQuoteSuccess extends ConsumerWidget {
                   MarketReceiveRow(
                     receiveAsset: quoteSuccess.receiveAsset,
                     receiveAmount: quoteSuccess.receiveAmount,
+                  ),
+                  SizedBox(height: 4),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 4),
+                  MarketPriceRow(
+                    asset: quoteSuccess.priceAsset,
+                    amount: quoteSuccess.priceString,
                   ),
                   SizedBox(height: 10),
                 ],
@@ -958,6 +1021,8 @@ class LimitPanel extends HookConsumerWidget {
     final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
     final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
     final offlineSwapType = ref.watch(marketLimitOfflineSwapProvider);
+    final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
+    final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
 
     final tradeCallback = useCallback(
       () async {
@@ -1005,62 +1070,61 @@ class LimitPanel extends HookConsumerWidget {
       ],
     );
 
+    final marketOrderButtonPressedCallback = useMemoized(
+      () => switch (jadeLockRepository.isUnlocked()) {
+        true => switch (tradeButtonEnabled) {
+          true => tradeCallback,
+          _ => null,
+        },
+        _ => jadeLockRepository.refreshJadeLockState,
+      },
+      [jadeLockRepository.lockState, tradeButtonEnabled, tradeCallback],
+    );
+
     return optionMarketInfo.match(
       () => SizedBox(),
       (_) => optionAssetPair.match(
         () => SizedBox(),
         (assetPair) => Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.rectangle,
               border: Border.all(width: 1, color: SideSwapColors.blumine),
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
-            child: SizedBox(
-              width: 370,
-              height: 331,
-              child: CustomScrollView(
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.only(left: 8, right: 8, top: 6),
-                    sliver: SliverToBoxAdapter(
-                      child: Column(
-                        children: [
-                          LimitAmountTextField(
-                            onEditingComplete: () {
-                              tradeCallback();
-                            },
-                          ),
-                          LimitPriceTextField(
-                            onEditingComplete: () {
-                              tradeCallback();
-                            },
-                          ),
-                          LimitPanelTtl(),
-                          LimitPanelOrderType(),
-                          LimitPanelOfflineSwap(),
-                        ],
+            child: Padding(
+              padding: const EdgeInsets.all(1),
+              child: SizedBox(
+                width: 370,
+                height: 331,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8, bottom: 6),
+                  child: Column(
+                    children: [
+                      LimitAmountTextField(
+                        onEditingComplete: () {
+                          tradeCallback();
+                        },
                       ),
-                    ),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    sliver: SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: MarketOrderButton(
+                      LimitPriceTextField(
+                        onEditingComplete: () {
+                          tradeCallback();
+                        },
+                      ),
+                      Spacer(),
+                      LimitPanelTtl(),
+                      LimitPanelOrderType(),
+                      LimitPanelOfflineSwap(),
+                      SizedBox(height: 4),
+                      MarketOrderButton(
                         isSell: tradeDirState == TradeDir.SELL,
-                        onPressed:
-                            tradeButtonEnabled
-                                ? () {
-                                  tradeCallback();
-                                }
-                                : null,
-                        text: 'Continue'.tr().toUpperCase(),
+                        onPressed: marketOrderButtonPressedCallback,
+                        text: marketOrderButtonText,
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -1123,6 +1187,22 @@ class LimitPanelOfflineSwap extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          ...switch (FlavorConfig.isDesktop) {
+            true => [
+              Tooltip(
+                message:
+                    'We encourage placing orders online (as it is more flexible),\nbut you should know that you need to have the application open\nand your computer running at that time.'
+                        .tr(),
+                child: Icon(
+                  Icons.help_outlined,
+                  size: 20,
+                  color: SideSwapColors.brightTurquoise,
+                ),
+              ),
+              SizedBox(width: 6),
+            ],
+            _ => [SizedBox(width: 0)],
+          },
           SwitchButton(
             width: 142,
             height: 24,

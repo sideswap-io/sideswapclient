@@ -6,6 +6,7 @@ import 'package:sideswap/providers/chart_providers.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -22,6 +23,7 @@ class MarketsPageListener extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(limitOrderAmountControllerNotifierProvider);
     ref.watch(limitOrderPriceAmountControllerNotifierProvider);
     ref.watch(marketEditDetailsOrderNotifierProvider);
     ref.watch(marketIndexPriceProvider);
@@ -29,6 +31,7 @@ class MarketsPageListener extends HookConsumerWidget {
     ref.watch(chartsNotifierProvider);
     ref.watch(marketPublicOrdersNotifierProvider);
     ref.watch(marketOneTimeAuthorizedProvider);
+    ref.watch(pageStorageKeyDataProvider);
 
     final subscribedAssetPair = ref.watch(
       marketSubscribedAssetPairNotifierProvider,
@@ -36,6 +39,14 @@ class MarketsPageListener extends HookConsumerWidget {
     final stableMarkets = ref.watch(
       marketInfoByMarketTypeProvider(MarketType_.STABLECOIN),
     );
+
+    useEffect(() {
+      Future.microtask(() {
+        ref.invalidate(pageStorageKeyDataProvider);
+      });
+
+      return;
+    }, const []);
 
     useEffect(() {
       // set inital assetPair when data comes from BE

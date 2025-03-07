@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,373 +10,138 @@ part of 'endpoint_internal_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$EICreateTransaction {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() empty,
-    required TResult Function(
-      AccountAsset accountAsset,
-      String address,
-      String amount,
-    )
-    data,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? empty,
-    TResult? Function(AccountAsset accountAsset, String address, String amount)?
-    data,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(AccountAsset accountAsset, String address, String amount)?
-    data,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(EICreateTransactionEmpty value) empty,
-    required TResult Function(EICreateTransactionData value) data,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EICreateTransactionEmpty value)? empty,
-    TResult? Function(EICreateTransactionData value)? data,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(EICreateTransactionEmpty value)? empty,
-    TResult Function(EICreateTransactionData value)? data,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EICreateTransaction);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'EICreateTransaction()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $EICreateTransactionCopyWith<$Res> {
-  factory $EICreateTransactionCopyWith(
-    EICreateTransaction value,
-    $Res Function(EICreateTransaction) then,
-  ) = _$EICreateTransactionCopyWithImpl<$Res, EICreateTransaction>;
+class $EICreateTransactionCopyWith<$Res>  {
+$EICreateTransactionCopyWith(EICreateTransaction _, $Res Function(EICreateTransaction) __);
 }
 
-/// @nodoc
-class _$EICreateTransactionCopyWithImpl<$Res, $Val extends EICreateTransaction>
-    implements $EICreateTransactionCopyWith<$Res> {
-  _$EICreateTransactionCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of EICreateTransaction
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-abstract class _$$EICreateTransactionEmptyImplCopyWith<$Res> {
-  factory _$$EICreateTransactionEmptyImplCopyWith(
-    _$EICreateTransactionEmptyImpl value,
-    $Res Function(_$EICreateTransactionEmptyImpl) then,
-  ) = __$$EICreateTransactionEmptyImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$EICreateTransactionEmptyImplCopyWithImpl<$Res>
-    extends
-        _$EICreateTransactionCopyWithImpl<$Res, _$EICreateTransactionEmptyImpl>
-    implements _$$EICreateTransactionEmptyImplCopyWith<$Res> {
-  __$$EICreateTransactionEmptyImplCopyWithImpl(
-    _$EICreateTransactionEmptyImpl _value,
-    $Res Function(_$EICreateTransactionEmptyImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of EICreateTransaction
-  /// with the given fields replaced by the non-null parameter values.
-}
 
 /// @nodoc
 
-class _$EICreateTransactionEmptyImpl implements EICreateTransactionEmpty {
-  _$EICreateTransactionEmptyImpl();
 
-  @override
-  String toString() {
-    return 'EICreateTransaction.empty()';
-  }
+class EICreateTransactionEmpty implements EICreateTransaction {
+   EICreateTransactionEmpty();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$EICreateTransactionEmptyImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() empty,
-    required TResult Function(
-      AccountAsset accountAsset,
-      String address,
-      String amount,
-    )
-    data,
-  }) {
-    return empty();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? empty,
-    TResult? Function(AccountAsset accountAsset, String address, String amount)?
-    data,
-  }) {
-    return empty?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(AccountAsset accountAsset, String address, String amount)?
-    data,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(EICreateTransactionEmpty value) empty,
-    required TResult Function(EICreateTransactionData value) data,
-  }) {
-    return empty(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EICreateTransactionEmpty value)? empty,
-    TResult? Function(EICreateTransactionData value)? data,
-  }) {
-    return empty?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(EICreateTransactionEmpty value)? empty,
-    TResult Function(EICreateTransactionData value)? data,
-    required TResult orElse(),
-  }) {
-    if (empty != null) {
-      return empty(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EICreateTransactionEmpty);
 }
 
-abstract class EICreateTransactionEmpty implements EICreateTransaction {
-  factory EICreateTransactionEmpty() = _$EICreateTransactionEmptyImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'EICreateTransaction.empty()';
 }
 
-/// @nodoc
-abstract class _$$EICreateTransactionDataImplCopyWith<$Res> {
-  factory _$$EICreateTransactionDataImplCopyWith(
-    _$EICreateTransactionDataImpl value,
-    $Res Function(_$EICreateTransactionDataImpl) then,
-  ) = __$$EICreateTransactionDataImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({AccountAsset accountAsset, String address, String amount});
+
 }
 
-/// @nodoc
-class __$$EICreateTransactionDataImplCopyWithImpl<$Res>
-    extends
-        _$EICreateTransactionCopyWithImpl<$Res, _$EICreateTransactionDataImpl>
-    implements _$$EICreateTransactionDataImplCopyWith<$Res> {
-  __$$EICreateTransactionDataImplCopyWithImpl(
-    _$EICreateTransactionDataImpl _value,
-    $Res Function(_$EICreateTransactionDataImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of EICreateTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accountAsset = null,
-    Object? address = null,
-    Object? amount = null,
-  }) {
-    return _then(
-      _$EICreateTransactionDataImpl(
-        accountAsset:
-            null == accountAsset
-                ? _value.accountAsset
-                : accountAsset // ignore: cast_nullable_to_non_nullable
-                    as AccountAsset,
-        address:
-            null == address
-                ? _value.address
-                : address // ignore: cast_nullable_to_non_nullable
-                    as String,
-        amount:
-            null == amount
-                ? _value.amount
-                : amount // ignore: cast_nullable_to_non_nullable
-                    as String,
-      ),
-    );
-  }
-}
+
 
 /// @nodoc
 
-class _$EICreateTransactionDataImpl implements EICreateTransactionData {
-  _$EICreateTransactionDataImpl({
-    required this.accountAsset,
-    required this.address,
-    required this.amount,
-  });
 
-  @override
-  final AccountAsset accountAsset;
-  @override
-  final String address;
-  @override
-  final String amount;
+class EICreateTransactionData implements EICreateTransaction {
+   EICreateTransactionData({required this.accountAsset, required this.address, required this.amount});
+  
 
-  @override
-  String toString() {
-    return 'EICreateTransaction.data(accountAsset: $accountAsset, address: $address, amount: $amount)';
-  }
+ final  AccountAsset accountAsset;
+ final  String address;
+ final  String amount;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$EICreateTransactionDataImpl &&
-            (identical(other.accountAsset, accountAsset) ||
-                other.accountAsset == accountAsset) &&
-            (identical(other.address, address) || other.address == address) &&
-            (identical(other.amount, amount) || other.amount == amount));
-  }
+/// Create a copy of EICreateTransaction
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$EICreateTransactionDataCopyWith<EICreateTransactionData> get copyWith => _$EICreateTransactionDataCopyWithImpl<EICreateTransactionData>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(runtimeType, accountAsset, address, amount);
 
-  /// Create a copy of EICreateTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$EICreateTransactionDataImplCopyWith<_$EICreateTransactionDataImpl>
-  get copyWith => __$$EICreateTransactionDataImplCopyWithImpl<
-    _$EICreateTransactionDataImpl
-  >(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() empty,
-    required TResult Function(
-      AccountAsset accountAsset,
-      String address,
-      String amount,
-    )
-    data,
-  }) {
-    return data(accountAsset, address, amount);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? empty,
-    TResult? Function(AccountAsset accountAsset, String address, String amount)?
-    data,
-  }) {
-    return data?.call(accountAsset, address, amount);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(AccountAsset accountAsset, String address, String amount)?
-    data,
-    required TResult orElse(),
-  }) {
-    if (data != null) {
-      return data(accountAsset, address, amount);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(EICreateTransactionEmpty value) empty,
-    required TResult Function(EICreateTransactionData value) data,
-  }) {
-    return data(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EICreateTransactionEmpty value)? empty,
-    TResult? Function(EICreateTransactionData value)? data,
-  }) {
-    return data?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(EICreateTransactionEmpty value)? empty,
-    TResult Function(EICreateTransactionData value)? data,
-    required TResult orElse(),
-  }) {
-    if (data != null) {
-      return data(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EICreateTransactionData&&(identical(other.accountAsset, accountAsset) || other.accountAsset == accountAsset)&&(identical(other.address, address) || other.address == address)&&(identical(other.amount, amount) || other.amount == amount));
 }
 
-abstract class EICreateTransactionData implements EICreateTransaction {
-  factory EICreateTransactionData({
-    required final AccountAsset accountAsset,
-    required final String address,
-    required final String amount,
-  }) = _$EICreateTransactionDataImpl;
 
-  AccountAsset get accountAsset;
-  String get address;
-  String get amount;
+@override
+int get hashCode => Object.hash(runtimeType,accountAsset,address,amount);
 
-  /// Create a copy of EICreateTransaction
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EICreateTransactionDataImplCopyWith<_$EICreateTransactionDataImpl>
-  get copyWith => throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'EICreateTransaction.data(accountAsset: $accountAsset, address: $address, amount: $amount)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class $EICreateTransactionDataCopyWith<$Res> implements $EICreateTransactionCopyWith<$Res> {
+  factory $EICreateTransactionDataCopyWith(EICreateTransactionData value, $Res Function(EICreateTransactionData) _then) = _$EICreateTransactionDataCopyWithImpl;
+@useResult
+$Res call({
+ AccountAsset accountAsset, String address, String amount
+});
+
+
+
+
+}
+/// @nodoc
+class _$EICreateTransactionDataCopyWithImpl<$Res>
+    implements $EICreateTransactionDataCopyWith<$Res> {
+  _$EICreateTransactionDataCopyWithImpl(this._self, this._then);
+
+  final EICreateTransactionData _self;
+  final $Res Function(EICreateTransactionData) _then;
+
+/// Create a copy of EICreateTransaction
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? accountAsset = null,Object? address = null,Object? amount = null,}) {
+  return _then(EICreateTransactionData(
+accountAsset: null == accountAsset ? _self.accountAsset : accountAsset // ignore: cast_nullable_to_non_nullable
+as AccountAsset,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on

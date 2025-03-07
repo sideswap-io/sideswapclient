@@ -12,37 +12,38 @@ class PinListener extends ConsumerWidget {
     ref.listen(pinSetupCallerNotifierProvider, (_, __) {});
     ref.listen<PinSetupExitState>(pinSetupExitNotifierProvider, (_, next) {
       final caller = ref.read(pinSetupCallerNotifierProvider);
-      next.when(
-        empty: () {},
-        back: () {
-          caller.when(
-            empty: () {},
-            settings: () {
+
+      (switch (next) {
+        PinSetupExitStateBack() => () {
+          (switch (caller) {
+            PinSetupCallerStateSettings() => () {
               ref.read(walletProvider).settingsViewPage();
             },
-            pinWelcome: () async {
+            PinSetupCallerStatePinWelcome() => () async {
               await ref.read(walletProvider).setPinWelcome();
             },
-            newWalletPinWelcome: () {
+            PinSetupCallerStateNewWalletPinWelcome() => () {
               ref.read(walletProvider).setNewWalletPinWelcome();
             },
-          );
+            _ => () {},
+          }());
         },
-        success: () {
-          caller.when(
-            empty: () {},
-            settings: () {
+        PinSetupExitStateSuccess() => () {
+          (switch (caller) {
+            PinSetupCallerStateSettings() => () {
               ref.read(walletProvider).settingsViewPage();
             },
-            pinWelcome: () {
+            PinSetupCallerStatePinWelcome() => () {
               ref.read(walletProvider).loginAndLoadMainPage();
             },
-            newWalletPinWelcome: () {
+            PinSetupCallerStateNewWalletPinWelcome() => () {
               ref.read(walletProvider).newWalletBackupPrompt();
             },
-          );
+            _ => () {},
+          }());
         },
-      );
+        _ => () {},
+      }());
 
       ref
           .read(pinSetupCallerNotifierProvider.notifier)

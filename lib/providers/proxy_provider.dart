@@ -5,7 +5,7 @@ part 'proxy_provider.freezed.dart';
 part 'proxy_provider.g.dart';
 
 @freezed
-class ProxySettings with _$ProxySettings {
+sealed class ProxySettings with _$ProxySettings {
   factory ProxySettings({String? host, int? port}) = _ProxySettings;
 }
 

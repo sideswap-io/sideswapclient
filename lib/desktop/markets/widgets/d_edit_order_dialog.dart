@@ -3,7 +3,6 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/button_styles.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
@@ -228,7 +227,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                     style:
                         Theme.of(
                           context,
-                        ).extension<MarketAssetRowTheme>()!.labelStyle,
+                        ).extension<MarketAssetRowStyle>()!.labelStyle,
                   ),
                   Spacer(),
                   Text(
@@ -236,7 +235,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                     style:
                         Theme.of(
                           context,
-                        ).extension<MarketAssetRowTheme>()!.amountStyle,
+                        ).extension<MarketAssetRowStyle>()!.amountStyle,
                   ),
                 ],
               ),
@@ -302,7 +301,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Symbols.delete_rounded, size: 24),
+                        Icon(Icons.delete_forever, size: 24),
                         SizedBox(width: 4),
                         Text('Delete'.tr()),
                       ],

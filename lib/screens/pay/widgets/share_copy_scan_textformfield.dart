@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -14,9 +15,8 @@ import 'package:sideswap/screens/flavor_config.dart';
 
 typedef ShareTapCallback = void Function(BuildContext context);
 
-class ShareCopyScanTextFormField extends StatefulWidget {
+class ShareCopyScanTextFormField extends HookConsumerWidget {
   const ShareCopyScanTextFormField({
-    super.key,
     this.textFormKey,
     this.focusNode,
     this.controller,
@@ -34,6 +34,7 @@ class ShareCopyScanTextFormField extends StatefulWidget {
     this.onChanged,
     this.onEditingCompleted,
     this.addrType = AddrType.elements,
+    super.key,
   });
 
   final Key? textFormKey;
@@ -55,77 +56,71 @@ class ShareCopyScanTextFormField extends StatefulWidget {
   final AddrType addrType;
 
   @override
-  ShareCopyScanTextFormFieldState createState() =>
-      ShareCopyScanTextFormFieldState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final spaceBetween = 4.0;
+    final iconWidth = 24.0;
 
-class ShareCopyScanTextFormFieldState
-    extends State<ShareCopyScanTextFormField> {
-  final _spaceBetween = 4.0;
-  final _iconWidth = 24.0;
+    final emptySuffix = useState(false);
 
-  late FocusNode _focusNode;
-  bool _emptySuffix = false;
-  final TextStyle _defaultStyle = const TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.normal,
-    color: SideSwapColors.glacier,
-  );
+    final defaultStyle = useMemoized(
+      () => const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.normal,
+        color: SideSwapColors.glacier,
+      ),
+    );
 
-  @override
-  void initState() {
-    super.initState();
+    final suffixCounter = useState(0.0);
+    final gestureAreaWidth = useMemoized(() => spaceBetween * 2 + iconWidth);
+    final suffixWidth = useState(suffixCounter.value * gestureAreaWidth);
 
-    if (widget.onCopyTap == null &&
-        widget.onPasteTap == null &&
-        widget.onScanTap == null &&
-        widget.onShareTap == null) {
-      _emptySuffix = true;
-    }
+    final defaultFocusNode = focusNode ?? useFocusNode();
 
-    _focusNode = widget.focusNode ?? FocusNode();
-  }
+    final onTapSuffixCallback = useCallback(({VoidCallback? onTap}) {
+      if (onTap == null) {
+        return;
+      }
 
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
+      defaultFocusNode.unfocus();
+      defaultFocusNode.canRequestFocus = false;
+      controller?.clear();
 
-  void onTapSuffix({VoidCallback? onTap}) {
-    if (onTap == null) {
-      return;
-    }
+      onTap();
 
-    _focusNode.unfocus();
-    _focusNode.canRequestFocus = false;
-    widget.controller?.clear();
-
-    onTap();
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _focusNode.canRequestFocus = true;
+      Future.delayed(const Duration(milliseconds: 100), () {
+        defaultFocusNode.canRequestFocus = true;
+      });
     });
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    var suffixCounter = 0.0;
-    if (widget.onCopyTap != null) {
-      suffixCounter++;
-    }
-    if (widget.onShareTap != null) {
-      suffixCounter++;
-    }
-    if (widget.onScanTap != null) {
-      suffixCounter++;
-    }
-    if (widget.onPasteTap != null) {
-      suffixCounter++;
-    }
+    useEffect(() {
+      if (onCopyTap == null &&
+          onPasteTap == null &&
+          onScanTap == null &&
+          onShareTap == null) {
+        emptySuffix.value = true;
+      }
 
-    final gestureAreaWidth = _spaceBetween * 2 + _iconWidth;
-    final suffixWidth = suffixCounter * gestureAreaWidth;
+      if (onCopyTap != null) {
+        suffixCounter.value++;
+      }
+      if (onShareTap != null) {
+        suffixCounter.value++;
+      }
+      if (onScanTap != null) {
+        suffixCounter.value++;
+      }
+      if (onPasteTap != null) {
+        suffixCounter.value++;
+      }
+
+      return;
+    }, const []);
+
+    useEffect(() {
+      suffixWidth.value = suffixCounter.value * gestureAreaWidth;
+
+      return;
+    }, [suffixCounter.value]);
 
     return SizedBox(
       width: 538,
@@ -135,25 +130,26 @@ class ShareCopyScanTextFormFieldState
           final clipboardText = clipboardData.data?.text?.trim() ?? '';
           return Consumer(
             builder: (context, ref, _) {
+              final isValidAddress = ref.watch(
+                isAddrTypeValidProvider(clipboardText, addrType),
+              );
               final showPasteFromClipboard =
                   !FlavorConfig.isDesktop &&
-                  ref.read(
-                    isAddrTypeValidProvider(clipboardText, widget.addrType),
-                  ) &&
-                  widget.controller != null;
+                  isValidAddress &&
+                  controller != null;
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   TextField(
-                    key: widget.textFormKey,
-                    focusNode: _focusNode,
-                    controller: widget.controller,
+                    key: textFormKey,
+                    focusNode: defaultFocusNode,
+                    controller: controller,
                     style:
-                        widget.textStyle ??
-                        _defaultStyle.copyWith(color: Colors.black),
-                    enabled: widget.enabled,
-                    readOnly: widget.readOnly,
-                    onChanged: widget.onChanged,
+                        textStyle ?? defaultStyle.copyWith(color: Colors.black),
+                    enabled: enabled,
+                    readOnly: readOnly,
+                    onChanged: onChanged,
                     contextMenuBuilder:
                         (context, editableTextState) =>
                             AdaptiveTextSelectionToolbar.buttonItems(
@@ -161,166 +157,35 @@ class ShareCopyScanTextFormFieldState
                               buttonItems:
                                   editableTextState.contextMenuButtonItems,
                             ),
-                    onEditingComplete: widget.onEditingCompleted,
+                    onEditingComplete: onEditingCompleted,
                     inputFormatters: [
                       alphaNumFormatter,
                       TrimmingTextInputFormatter(),
                     ],
                     decoration: SideSwapInputDecoration(
-                      hintStyle: widget.hintStyle,
-                      hintText: widget.hintText,
-                      errorText: widget.errorText,
+                      hintStyle: hintStyle,
+                      hintText: hintText,
+                      errorText: errorText,
                       errorStyle: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
                         color: SideSwapColors.bitterSweet,
                       ),
-                      suffixIcon:
-                          _emptySuffix
-                              ? null
-                              : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: SizedBox(
-                                  width: suffixWidth,
-                                  height: 24,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      if (widget.onCopyTap != null) ...[
-                                        SizedBox(
-                                          width: gestureAreaWidth,
-                                          height: double.maxFinite,
-                                          child: InkWell(
-                                            onTap: () {
-                                              onTapSuffix();
-                                            },
-                                            child: Center(
-                                              child: SvgPicture.asset(
-                                                'assets/copy.svg',
-                                                width: _iconWidth,
-                                                height: _iconWidth,
-                                                colorFilter:
-                                                    const ColorFilter.mode(
-                                                      Color(0xFF00B4E9),
-                                                      BlendMode.srcIn,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      if (widget.onPasteTap != null) ...[
-                                        SizedBox(
-                                          width: gestureAreaWidth,
-                                          height: double.maxFinite,
-                                          child: InkWell(
-                                            onTap: () {
-                                              onTapSuffix(
-                                                onTap: widget.onPasteTap,
-                                              );
-                                            },
-                                            child: Center(
-                                              child: Icon(
-                                                Icons.content_paste,
-                                                size: _iconWidth,
-                                                color: const Color(0xFF00B4E9),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      if (widget.onScanTap != null) ...[
-                                        SizedBox(
-                                          width: gestureAreaWidth,
-                                          height: double.maxFinite,
-                                          child: Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
-                                              onTap: () {
-                                                if (widget.shareEnabled) {
-                                                  onTapSuffix(
-                                                    onTap: widget.onScanTap,
-                                                  );
-                                                }
-                                              },
-                                              child: Center(
-                                                child: SvgPicture.asset(
-                                                  'assets/qr_icon.svg',
-                                                  width: _iconWidth,
-                                                  height: _iconWidth,
-                                                  colorFilter:
-                                                      const ColorFilter.mode(
-                                                        Color(0xFF00B4E9),
-                                                        BlendMode.srcIn,
-                                                      ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      if (widget.onShareTap != null) ...[
-                                        SizedBox(
-                                          width: gestureAreaWidth,
-                                          height: double.maxFinite,
-                                          child: Builder(
-                                            builder:
-                                                (
-                                                  BuildContext context,
-                                                ) => InkWell(
-                                                  onTap:
-                                                      widget.onShareTap != null
-                                                          ? () {
-                                                            _focusNode
-                                                                .unfocus();
-                                                            _focusNode
-                                                                    .canRequestFocus =
-                                                                false;
-                                                            if (widget
-                                                                .shareEnabled) {
-                                                              widget
-                                                                  .onShareTap!(
-                                                                context,
-                                                              );
-                                                            }
-                                                            Future.delayed(
-                                                              const Duration(
-                                                                milliseconds:
-                                                                    100,
-                                                              ),
-                                                              () {
-                                                                _focusNode
-                                                                        .canRequestFocus =
-                                                                    true;
-                                                              },
-                                                            );
-                                                          }
-                                                          : null,
-                                                  child: Center(
-                                                    child: Icon(
-                                                      Icons.share,
-                                                      size: _iconWidth,
-                                                      color:
-                                                          widget.shareEnabled
-                                                              ? const Color(
-                                                                0xFF00B4E9,
-                                                              )
-                                                              : const Color(
-                                                                0xFFA5A9AF,
-                                                              ),
-                                                    ),
-                                                  ),
-                                                ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ),
+                      suffixIcon: switch (emptySuffix.value) {
+                        true => null,
+                        _ => ShareCopyScanSuffixIcon(
+                          suffixWidth: suffixWidth.value,
+                          onCopyTap: onCopyTap,
+                          gestureAreaWidth: gestureAreaWidth,
+                          onTapSuffixCallback: onTapSuffixCallback,
+                          iconWidth: iconWidth,
+                          onPasteTap: onPasteTap,
+                          onScanTap: onScanTap,
+                          shareEnabled: shareEnabled,
+                          onShareTap: onShareTap,
+                          defaultFocusNode: defaultFocusNode,
+                        ),
+                      },
                     ),
                   ),
                   if (showPasteFromClipboard) ...[
@@ -332,10 +197,8 @@ class ShareCopyScanTextFormFieldState
                       ),
                       child: TextButton(
                         onPressed: () {
-                          setControllerValue(widget.controller!, clipboardText);
-                          if (widget.onChanged != null) {
-                            widget.onChanged!(clipboardText);
-                          }
+                          setControllerValue(controller!, clipboardText);
+                          onChanged?.call(clipboardText);
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
@@ -381,7 +244,7 @@ class ShareCopyScanTextFormFieldState
                               const SizedBox(width: 8),
                               Icon(
                                 Icons.content_paste,
-                                size: _iconWidth,
+                                size: iconWidth,
                                 color: const Color(0xFFFFFFFF),
                               ),
                             ],
@@ -395,6 +258,157 @@ class ShareCopyScanTextFormFieldState
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class ShareCopyScanSuffixIcon extends StatelessWidget {
+  const ShareCopyScanSuffixIcon({
+    super.key,
+    required this.suffixWidth,
+    required this.onCopyTap,
+    required this.gestureAreaWidth,
+    required this.onTapSuffixCallback,
+    required this.iconWidth,
+    required this.onPasteTap,
+    required this.onScanTap,
+    required this.shareEnabled,
+    required this.onShareTap,
+    required this.defaultFocusNode,
+  });
+
+  final double suffixWidth;
+  final VoidCallback? onCopyTap;
+  final double gestureAreaWidth;
+  final Null Function({VoidCallback? onTap}) onTapSuffixCallback;
+  final double iconWidth;
+  final VoidCallback? onPasteTap;
+  final VoidCallback? onScanTap;
+  final bool shareEnabled;
+  final ShareTapCallback? onShareTap;
+  final FocusNode defaultFocusNode;
+
+  @override
+  Widget build(BuildContext context) {
+    if (suffixWidth == 0) {
+      return const SizedBox();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SizedBox(
+        width: suffixWidth,
+        height: 24,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            if (onCopyTap != null) ...[
+              SizedBox(
+                width: gestureAreaWidth,
+                height: double.maxFinite,
+                child: InkWell(
+                  onTap: () {
+                    onTapSuffixCallback();
+                  },
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/copy.svg',
+                      width: iconWidth,
+                      height: iconWidth,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF00B4E9),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (onPasteTap != null) ...[
+              SizedBox(
+                width: gestureAreaWidth,
+                height: double.maxFinite,
+                child: InkWell(
+                  onTap: () {
+                    onTapSuffixCallback(onTap: onPasteTap);
+                  },
+                  child: Center(
+                    child: Icon(
+                      Icons.content_paste,
+                      size: iconWidth,
+                      color: const Color(0xFF00B4E9),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (onScanTap != null) ...[
+              SizedBox(
+                width: gestureAreaWidth,
+                height: double.maxFinite,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      if (shareEnabled) {
+                        onTapSuffixCallback(onTap: onScanTap);
+                      }
+                    },
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/qr_icon.svg',
+                        width: iconWidth,
+                        height: iconWidth,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFF00B4E9),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (onShareTap != null) ...[
+              SizedBox(
+                width: gestureAreaWidth,
+                height: double.maxFinite,
+                child: Builder(
+                  builder:
+                      (BuildContext context) => InkWell(
+                        onTap:
+                            onShareTap != null
+                                ? () {
+                                  defaultFocusNode.unfocus();
+                                  defaultFocusNode.canRequestFocus = false;
+                                  if (shareEnabled) {
+                                    onShareTap!(context);
+                                  }
+                                  Future.delayed(
+                                    const Duration(milliseconds: 100),
+                                    () {
+                                      defaultFocusNode.canRequestFocus = true;
+                                    },
+                                  );
+                                }
+                                : null,
+                        child: Center(
+                          child: Icon(
+                            Icons.share,
+                            size: iconWidth,
+                            color:
+                                shareEnabled
+                                    ? const Color(0xFF00B4E9)
+                                    : const Color(0xFFA5A9AF),
+                          ),
+                        ),
+                      ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

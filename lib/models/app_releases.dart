@@ -4,7 +4,7 @@ part 'app_releases.g.dart';
 part 'app_releases.freezed.dart';
 
 @freezed
-class AppReleasesDesktop with _$AppReleasesDesktop {
+sealed class AppReleasesDesktop with _$AppReleasesDesktop {
   const factory AppReleasesDesktop({
     String? version,
     int? build,
@@ -16,7 +16,7 @@ class AppReleasesDesktop with _$AppReleasesDesktop {
 }
 
 @freezed
-class AppReleasesModel with _$AppReleasesModel {
+sealed class AppReleasesModel with _$AppReleasesModel {
   const factory AppReleasesModel({AppReleasesDesktop? desktop}) =
       _AppReleasesModel;
 
@@ -25,7 +25,7 @@ class AppReleasesModel with _$AppReleasesModel {
 }
 
 @freezed
-sealed class AppReleasesModelState {
+sealed class AppReleasesModelState with _$AppReleasesModelState {
   const factory AppReleasesModelState.data(AppReleasesModel model) =
       AppReleasesModelStateData;
   const factory AppReleasesModelState.empty() = AppReleasesModelStateEmpty;
