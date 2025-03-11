@@ -12,6 +12,7 @@ class DAddrTextField extends ConsumerWidget {
   final bool autofocus;
   final FocusNode? focusNode;
   final void Function()? onPressed;
+  final double? height;
 
   const DAddrTextField({
     super.key,
@@ -19,6 +20,7 @@ class DAddrTextField extends ConsumerWidget {
     this.autofocus = false,
     this.focusNode,
     this.onPressed,
+    this.height = 98,
   });
 
   @override
@@ -32,29 +34,36 @@ class DAddrTextField extends ConsumerWidget {
                 : 'Invalid address'.tr()
             : '';
 
-    if (address.isNotEmpty && errorText.isEmpty) {
-      return DTextIconContainer(
-        text: address,
-        onPressed: () {
-          controller?.text = '';
-          onPressed?.call();
-        },
-      );
-    }
-
-    return TextField(
-      focusNode: focusNode,
-      controller: controller,
-      decoration: DSideSwapPasteIconInputDecoration(
-        hintText: 'Address'.tr(),
-        errorText: errorText.isEmpty ? null : errorText,
-        onPastePressed: () async {
-          await handlePasteSingleLine(controller);
-        },
-      ),
-      autofocus: autofocus,
-      style: const TextStyle(color: Colors.black),
-      inputFormatters: [TrimmingTextInputFormatter()],
+    return SizedBox(
+      height: height,
+      child: switch (address.isNotEmpty && errorText.isEmpty) {
+        true => DTextIconContainer(
+          height: height,
+          text: address,
+          onPressed: () {
+            controller?.text = '';
+            onPressed?.call();
+          },
+        ),
+        _ => Column(
+          children: [
+            TextField(
+              focusNode: focusNode,
+              controller: controller,
+              decoration: DSideSwapPasteIconInputDecoration(
+                hintText: 'Address'.tr(),
+                errorText: errorText.isEmpty ? null : errorText,
+                onPastePressed: () async {
+                  await handlePasteSingleLine(controller);
+                },
+              ),
+              autofocus: autofocus,
+              style: const TextStyle(color: Colors.black),
+              inputFormatters: [TrimmingTextInputFormatter()],
+            ),
+          ],
+        ),
+      },
     );
   }
 }

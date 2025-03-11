@@ -182,6 +182,10 @@ class PayjoinFeeAssetNotifier extends _$PayjoinFeeAssetNotifier {
     final payjoinFeeAssets = ref.watch(payjoinFeeAssetsProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
+    if (payjoinFeeAssets.isEmpty) {
+      return null;
+    }
+
     final liquidAsset = payjoinFeeAssets.firstWhere(
       (e) => e.assetId == liquidAssetId,
     );

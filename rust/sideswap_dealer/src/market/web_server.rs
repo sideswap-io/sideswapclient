@@ -53,6 +53,27 @@ impl Api {
         Ok(PlainText(resp))
     }
 
+    /// Send asset
+    #[oai(path = "/send_asset", method = "get")]
+    async fn send_asset(
+        &self,
+        /// Address
+        address: Query<String>,
+        /// Asset ticker
+        asset: Query<String>,
+        /// Asset amount
+        amount: Query<f64>,
+    ) -> Result<Json<api::Transaction>, ErrorResponse> {
+        let ticker = parse_dealer_ticker(&self, &asset.0)?;
+        let txid = self
+            .controller
+            .send_asset(&address.0, ticker, amount.0)
+            .await?;
+        Ok(Json(api::Transaction {
+            txid: txid.to_string(),
+        }))
+    }
+
     /// Metadata API call, list all available markets
     #[oai(path = "/metadata", method = "get")]
     async fn metadata(&self) -> Result<Json<api::Metadata>, ErrorResponse> {

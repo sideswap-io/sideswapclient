@@ -209,6 +209,12 @@ pub enum QuoteStatus {
     },
 }
 
+#[derive(Debug, Object)]
+pub struct Transaction {
+    /// Transaction id
+    pub txid: String,
+}
+
 // Requests
 
 #[derive(Deserialize)]

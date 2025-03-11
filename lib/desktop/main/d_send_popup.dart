@@ -237,7 +237,7 @@ class DSendPopupCreate extends HookConsumerWidget {
 
     return DPopupWithClose(
       width: 580,
-      height: 668,
+      height: 710,
       onClose: () {
         ref
             .read(eiCreateTransactionNotifierProvider.notifier)
@@ -253,7 +253,7 @@ class DSendPopupCreate extends HookConsumerWidget {
               'Create transaction'.tr(),
               style: Theme.of(context).textTheme.displaySmall,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -265,23 +265,16 @@ class DSendPopupCreate extends HookConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 76,
-              child: Column(
-                children: [
-                  DAddrTextField(
-                    focusNode: addressFocusNode,
-                    autofocus: true,
-                    controller: addressController,
-                    onPressed: () {
-                      ref.invalidate(sendPopupAddressNotifierProvider);
-                    },
-                  ),
-                  const Spacer(),
-                ],
-              ),
+            const SizedBox(height: 8),
+            DAddrTextField(
+              focusNode: addressFocusNode,
+              autofocus: true,
+              controller: addressController,
+              onPressed: () {
+                ref.invalidate(sendPopupAddressNotifierProvider);
+              },
             ),
+            const SizedBox(height: 8),
             Consumer(
               builder: (context, ref, child) {
                 final paymentHelper = ref.watch(paymentHelperProvider);

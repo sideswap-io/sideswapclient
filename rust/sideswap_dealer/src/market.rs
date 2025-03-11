@@ -2,6 +2,7 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet},
+    path::PathBuf,
     sync::Arc,
     time::Duration,
 };
@@ -58,7 +59,7 @@ pub struct Params {
     pub env: sideswap_common::env::Env,
     pub disable_new_swaps: bool,
     pub server_url: String,
-    pub work_dir: String,
+    pub work_dir: PathBuf,
     pub web_server: Option<WebServerConfig>,
     pub ws_server: Option<WsServerConfig>,
     pub ticker_loader: Arc<TickerLoader>,
@@ -89,6 +90,16 @@ pub enum Command {
     },
 }
 
+pub struct SendAssetReq {
+    pub address: elements::Address,
+    pub asset_id: AssetId,
+    pub amount: u64,
+}
+
+pub struct SendAssetResp {
+    pub txid: elements::Txid,
+}
+
 pub enum Event {
     SignSwap {
         quote_id: QuoteId,
@@ -107,6 +118,10 @@ pub enum Event {
     },
     BroadcastTx {
         tx: String,
+    },
+    SendAsset {
+        req: SendAssetReq,
+        res_sender: UncheckedOneshotSender<Result<SendAssetResp, anyhow::Error>>,
     },
 }
 
@@ -230,6 +245,8 @@ enum Error {
     UnknownAssetId(AssetId),
     #[error("Invalid asset amount: {0} (asset_precison: {1})")]
     InvalidAssetAmount(f64, AssetPrecision),
+    #[error("Invalid address: {0}: {1}")]
+    InvalidAddress(String, anyhow::Error),
 }
 
 impl Error {
@@ -250,7 +267,8 @@ impl Error {
             | Error::UnknownOrderId
             | Error::UnknownAssetId(_)
             | Error::InvalidAssetAmount(_, _)
-            | Error::InvalidTicker(_) => api::ErrorCode::InvalidRequest,
+            | Error::InvalidTicker(_)
+            | Error::InvalidAddress(_, _) => api::ErrorCode::InvalidRequest,
         }
     }
 
@@ -267,7 +285,8 @@ impl Error {
             | Error::UnknownOrderId
             | Error::UnknownAssetId(_)
             | Error::InvalidAssetAmount(_, _)
-            | Error::InvalidTicker(_) => None,
+            | Error::InvalidTicker(_)
+            | Error::InvalidAddress(_, _) => None,
         }
     }
 }
@@ -418,6 +437,10 @@ enum ClientCommand {
         req: AcceptQuoteReq,
         res_sender: UncheckedOneshotSender<Result<AcceptQuoteResp, Error>>,
     },
+    SendAsset {
+        req: SendAssetReq,
+        res_sender: UncheckedOneshotSender<Result<SendAssetResp, anyhow::Error>>,
+    },
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -470,7 +493,7 @@ struct AcceptingQuote {
 
 struct Data {
     mode: Mode,
-    work_dir: String,
+    work_dir: PathBuf,
     state: persistent_state::Data,
     ticker_loader: Arc<TickerLoader>,
 
@@ -1657,6 +1680,10 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
         ClientCommand::WsAcceptQuote { req, res_sender } => {
             accept_quote(data, req, res_sender);
         }
+
+        ClientCommand::SendAsset { req, res_sender } => {
+            data.event_sender.send(Event::SendAsset { req, res_sender });
+        }
     }
 }
 
@@ -1942,7 +1969,11 @@ async fn run(
 
     let (client_sender, mut client_receiver) = unbounded_channel::<ClientCommand>();
 
-    let controller = Controller::new(Arc::clone(&params.ticker_loader), client_sender.clone());
+    let controller = Controller::new(
+        params.env.d().network,
+        Arc::clone(&params.ticker_loader),
+        client_sender.clone(),
+    );
 
     if let Some(config) = params.web_server.clone() {
         web_server::start(config, controller.clone());

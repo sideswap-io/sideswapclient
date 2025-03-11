@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -6,6 +7,8 @@ use sideswap_api::mkt::AssetPair;
 use sideswap_api::{AssetBlindingFactor, ValueBlindingFactor};
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
 use sideswap_common::dealer_ticker::{TickerLoader, WhitelistedAssets};
+use sideswap_common::recipient::Recipient;
+use sideswap_dealer::market::{SendAssetReq, SendAssetResp};
 use sideswap_dealer::{market, price_stream};
 
 #[derive(Debug, serde::Deserialize)]
@@ -13,7 +16,7 @@ struct Settings {
     env: sideswap_common::env::Env,
     #[serde(default)]
     disable_new_swaps: bool,
-    work_dir: String,
+    work_dir: PathBuf,
     mnemonic: bip39::Mnemonic,
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
@@ -36,6 +39,30 @@ async fn sign_swap(
     let all_utxos = wallet.unspent_outputs().await?;
     let pset = wallet.user_sign_swap_pset(pset, all_utxos)?;
     Ok(pset)
+}
+
+async fn send_asset(
+    wallet: &sideswap_amp::Wallet,
+    req: SendAssetReq,
+) -> Result<SendAssetResp, anyhow::Error> {
+    let created_tx = wallet
+        .create_tx(
+            vec![Recipient {
+                address: req.address,
+                asset_id: req.asset_id,
+                amount: req.amount,
+            }],
+            None,
+        )
+        .await?;
+    let tx = wallet
+        .sign_and_broadcast_pset(
+            created_tx.pset,
+            created_tx.blinding_nonces,
+            created_tx.used_utxos,
+        )
+        .await?;
+    Ok(SendAssetResp { txid: tx.txid() })
 }
 
 fn process_wallet_event(data: &mut Data, event: sideswap_amp::Event) {
@@ -113,6 +140,14 @@ async fn process_market_event(data: &mut Data, event: market::Event) {
                     Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
                     Err(err) => log::error!("tx broadcast failed: {err}"),
                 }
+            });
+        }
+
+        market::Event::SendAsset { req, res_sender } => {
+            let wallet = Arc::clone(&data.wallet);
+            tokio::spawn(async move {
+                let res = send_asset(&wallet, req).await;
+                res_sender.send(res);
             });
         }
     }

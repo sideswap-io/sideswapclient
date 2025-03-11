@@ -72,11 +72,15 @@ class TickerAmountTextField extends HookConsumerWidget {
       swapType == const SwapType.pegIn() && readOnly ? false : showHintText,
     );
 
+    final hasFocus = useState(false);
+
     useEffect(() {
       textfieldFocusNode.addListener(() {
         if (!context.mounted) {
           return;
         }
+
+        hasFocus.value = textfieldFocusNode.hasFocus;
 
         if (swapType == const SwapType.pegIn() && readOnly) {
           return;
@@ -131,7 +135,7 @@ class TickerAmountTextField extends HookConsumerWidget {
           bottom: BorderSide(
             color: switch (showError) {
               true when !readOnly => SideSwapColors.bitterSweet,
-              _ => switch (textfieldFocusNode.hasFocus) {
+              _ => switch (hasFocus.value) {
                 true when !readOnly => SideSwapColors.brightTurquoise,
                 _ => SideSwapColors.jellyBean,
               },

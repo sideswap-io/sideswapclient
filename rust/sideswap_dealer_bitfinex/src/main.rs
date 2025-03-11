@@ -37,6 +37,7 @@ use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_types::normal_float::NormalFloat;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
@@ -166,7 +167,7 @@ pub struct Settings {
     bitfinex_withdraw_address: elements::Address,
     bitfinex_fund_address: elements::Address,
 
-    work_dir: String,
+    work_dir: PathBuf,
     storage_path: String,
     balancing_enabled: bool,
 
@@ -1143,6 +1144,10 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                     Err(err) => log::error!("tx broadcast failed: {err}"),
                 }
             });
+        }
+
+        market::Event::SendAsset { req: _, res_sender } => {
+            res_sender.send(Err(anyhow::anyhow!("SendAsset is not implemented")));
         }
     }
 }

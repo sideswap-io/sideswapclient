@@ -8,15 +8,18 @@ class DTextIconContainer extends StatelessWidget {
     this.text,
     this.onPressed,
     this.trailingIcon,
+    this.height = 98,
   });
 
   final String? text;
   final VoidCallback? onPressed;
   final Widget? trailingIcon;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(8),

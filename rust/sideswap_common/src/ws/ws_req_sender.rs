@@ -65,7 +65,9 @@ impl WsReqSender {
         self.connected
     }
 
+    /// Is cancel-safe
     pub async fn recv(&mut self) -> WrappedResponse {
+        // Must be cancel safe!
         if let Some(event) = self.received.pop_front() {
             event
         } else {

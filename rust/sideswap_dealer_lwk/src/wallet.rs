@@ -1,4 +1,5 @@
 use std::{
+    path::PathBuf,
     sync::mpsc::{Receiver, RecvTimeoutError},
     time::{Duration, Instant},
 };
@@ -17,12 +18,15 @@ use sideswap_common::{
     network::Network,
     retry_delay::RetryDelay,
 };
-use sideswap_dealer::utxo_data::{self, UtxoData, UtxoWithKey};
+use sideswap_dealer::{
+    market::{SendAssetReq, SendAssetResp},
+    utxo_data::{self, UtxoData, UtxoWithKey},
+};
 use tokio::sync::mpsc::UnboundedSender;
 
 pub struct Params {
     pub network: Network,
-    pub work_dir: String,
+    pub work_dir: PathBuf,
     pub mnemonic: bip39::Mnemonic,
     pub script_variant: lwk_common::Singlesig,
 }
@@ -33,6 +37,10 @@ pub enum Command {
     },
     BroadcastTx {
         tx: String,
+    },
+    SendAsset {
+        req: SendAssetReq,
+        res_sender: UncheckedOneshotSender<Result<SendAssetResp, anyhow::Error>>,
     },
 }
 
@@ -48,6 +56,24 @@ fn broadcast_tx(
     let tx = elements::encode::deserialize::<elements::Transaction>(&tx)?;
     let txid = electrum_client.broadcast(&tx)?;
     Ok(txid)
+}
+
+fn send_asset(
+    req: SendAssetReq,
+    wallet: &lwk_wollet::Wollet,
+    signer: &lwk_signer::SwSigner,
+    electrum_client: &lwk_wollet::ElectrumClient,
+) -> Result<SendAssetResp, anyhow::Error> {
+    use lwk_common::Signer;
+    let mut pset = wallet
+        .tx_builder()
+        .enable_ct_discount()
+        .add_recipient(&req.address, req.amount, req.asset_id)?
+        .finish()?;
+    signer.sign(&mut pset)?;
+    let tx = wallet.finalize(&mut pset)?;
+    let txid = electrum_client.broadcast(&tx)?;
+    Ok(SendAssetResp { txid })
 }
 
 fn run(
@@ -217,6 +243,11 @@ fn run(
                             Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
                             Err(err) => log::error!("tx broadcast failed: {err}"),
                         }
+                    }
+
+                    Command::SendAsset { req, res_sender } => {
+                        let res = send_asset(req, &wallet, &signer, &electrum_client);
+                        res_sender.send(res);
                     }
                 },
 

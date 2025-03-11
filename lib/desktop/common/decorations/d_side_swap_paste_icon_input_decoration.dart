@@ -33,34 +33,32 @@ class DSideSwapPasteIconInputDecoration extends InputDecoration {
            16,
          ),
          fillColor: Colors.white,
-         focusColor: Colors.white,
-         hoverColor: Colors.white,
          errorBorder: const OutlineInputBorder(
            borderSide: BorderSide(color: SideSwapColors.bitterSweet),
          ),
          filled: true,
-         suffixIcon:
-             onPastePressed == null
-                 ? null
-                 : Column(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     MouseRegion(
-                       cursor: SystemMouseCursors.basic,
-                       child: DTransparentButton(
-                         onPressed: onPastePressed,
-                         child: SvgPicture.asset(
-                           'assets/paste.svg',
-                           width: 20,
-                           height: 20,
-                           colorFilter: const ColorFilter.mode(
-                             SideSwapColors.chathamsBlue,
-                             BlendMode.srcIn,
-                           ),
-                         ),
-                       ),
+         suffixIcon: switch (onPastePressed) {
+           final onPastePressed? => Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+               MouseRegion(
+                 cursor: SystemMouseCursors.basic,
+                 child: DTransparentButton(
+                   onPressed: onPastePressed,
+                   child: SvgPicture.asset(
+                     'assets/paste.svg',
+                     width: 20,
+                     height: 20,
+                     colorFilter: const ColorFilter.mode(
+                       SideSwapColors.chathamsBlue,
+                       BlendMode.srcIn,
                      ),
-                   ],
+                   ),
                  ),
+               ),
+             ],
+           ),
+           _ => null,
+         },
        );
 }

@@ -186,7 +186,7 @@ pub struct MakerSwapInfo {
 
 pub type InputWitness = Vec<Vec<u8>>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum QuoteStatus {
     Success {
         quote_id: QuoteId,
@@ -653,7 +653,7 @@ pub struct PublicOrderRemovedNotif {
     pub order_id: OrdId,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QuoteNotif {
     pub quote_sub_id: QuoteSubId,
     pub asset_pair: AssetPair,

@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use serde::Deserialize;
 use sideswap_api::mkt::AssetPair;
@@ -6,10 +6,12 @@ use sideswap_common::{
     channel_helpers::UncheckedUnboundedSender,
     dealer_ticker::{DealerTicker, TickerLoader, WhitelistedAssets},
     rpc::{self, RpcServer},
-    types::Amount,
+    types::{sat_to_btc, Amount},
 };
 use sideswap_dealer::{
-    dealer_rpc, market, price_stream,
+    dealer_rpc,
+    market::{self, SendAssetResp},
+    price_stream,
     utxo_data::{self, UtxoData},
 };
 
@@ -18,7 +20,7 @@ struct Settings {
     env: sideswap_common::env::Env,
     #[serde(default)]
     disable_new_swaps: bool,
-    work_dir: String,
+    work_dir: PathBuf,
     rpc: RpcServer,
 
     bitcoin_amount_submit: f64,
@@ -98,6 +100,23 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                     Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
                     Err(err) => log::error!("tx broadcast failed: {err}"),
                 }
+            });
+        }
+
+        market::Event::SendAsset { req, res_sender } => {
+            let rpc_server = data.settings.rpc.clone();
+            tokio::spawn(async move {
+                let res = rpc::make_rpc_call(
+                    &rpc_server,
+                    rpc::SendToAddressCall {
+                        address: req.address,
+                        amount: sat_to_btc(req.amount), // Elements RPC uses bitcoin asset precision for all assets
+                        asset_id: req.asset_id,
+                    },
+                )
+                .await
+                .map(|txid| SendAssetResp { txid });
+                res_sender.send(res);
             });
         }
     }

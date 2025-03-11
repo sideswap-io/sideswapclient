@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::mpsc::{channel, Sender};
 use std::sync::Arc;
@@ -17,7 +18,7 @@ struct Settings {
     env: sideswap_common::env::Env,
     #[serde(default)]
     disable_new_swaps: bool,
-    work_dir: String,
+    work_dir: PathBuf,
     mnemonic: bip39::Mnemonic,
     script_variant: String,
     web_server: Option<market::WebServerConfig>,
@@ -76,6 +77,12 @@ fn process_market_event(data: &mut Data, event: market::Event) {
         market::Event::BroadcastTx { tx } => {
             data.wallet_command_sender
                 .send(wallet::Command::BroadcastTx { tx })
+                .expect("must be open");
+        }
+
+        market::Event::SendAsset { req, res_sender } => {
+            data.wallet_command_sender
+                .send(wallet::Command::SendAsset { req, res_sender })
                 .expect("must be open");
         }
     }

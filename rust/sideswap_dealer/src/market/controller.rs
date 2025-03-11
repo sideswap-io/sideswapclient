@@ -9,6 +9,7 @@ use sideswap_common::{
     channel_helpers::UncheckedUnboundedSender,
     dealer_ticker::{DealerTicker, TickerLoader},
     exchange_pair::ExchangePair,
+    network::Network,
     types::asset_int_amount_,
     verify,
 };
@@ -22,6 +23,7 @@ use super::{
 
 #[derive(Clone)]
 pub struct Controller {
+    network: Network,
     ticker_loader: Arc<TickerLoader>,
     command_sender: UnboundedSender<ClientCommand>,
 }
@@ -37,13 +39,33 @@ async fn recv_res<T>(receiver: oneshot::Receiver<Result<T, super::Error>>) -> Re
 
 impl Controller {
     pub fn new(
+        network: Network,
         ticker_loader: Arc<TickerLoader>,
         command_sender: UnboundedSender<ClientCommand>,
     ) -> Controller {
         Controller {
+            network,
             ticker_loader,
             command_sender,
         }
+    }
+
+    pub fn parse_address(&self, address: &str) -> Result<elements::Address, Error> {
+        let address = elements::Address::from_str(address)
+            .map_err(|err| Error::InvalidAddress(address.to_owned(), err.into()))?;
+
+        verify!(
+            address.params == self.network.d().elements_params,
+            Error::InvalidAddress(
+                address.to_string(),
+                anyhow::anyhow!(
+                    "invalid address network, expected network: {:?}",
+                    self.network
+                )
+            )
+        );
+
+        Ok(address)
     }
 
     pub fn parse_ticker(&self, value: &str) -> Result<DealerTicker, Error> {
@@ -338,6 +360,30 @@ impl Controller {
             res_sender: res_sender.into(),
         })?;
         let super::AcceptQuoteResp { txid } = recv_res(res_receiver).await?;
+        Ok(txid)
+    }
+
+    pub async fn send_asset(
+        &self,
+        address: &str,
+        ticker: DealerTicker,
+        amount: f64,
+    ) -> Result<elements::Txid, Error> {
+        let address = self.parse_address(&address)?;
+        let asset_id = *self.ticker_loader.asset_id(ticker);
+        let asset_precision = self.ticker_loader.precision(ticker);
+        let amount = try_convert_asset_amount(amount, asset_precision)?;
+
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.make_request(ClientCommand::SendAsset {
+            req: super::SendAssetReq {
+                address,
+                asset_id,
+                amount,
+            },
+            res_sender: res_sender.into(),
+        })?;
+        let super::SendAssetResp { txid } = res_receiver.await?.map_err(Error::WalletError)?;
         Ok(txid)
     }
 }

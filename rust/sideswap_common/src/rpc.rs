@@ -5,6 +5,9 @@ use sideswap_types::bitcoin_amount::BtcAmount;
 use std::collections::BTreeMap;
 use std::vec::Vec;
 
+pub mod balances;
+pub mod sign_raw_transaction;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RpcServer {
     pub host: String,

@@ -825,6 +825,19 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
             }
         }
 
+        Notification::Market(mkt::Notification::TxBroadcast(notif)) => {
+            let rpc_server = data.params.rpc.clone();
+            tokio::spawn(async move {
+                let res =
+                    rpc::make_rpc_call(&rpc_server, rpc::SendRawTransactionCall { tx: notif.tx })
+                        .await;
+                match res {
+                    Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
+                    Err(err) => log::error!("tx broadcast failed: {err}"),
+                }
+            });
+        }
+
         _ => {}
     }
 }

@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, str::FromStr};
+use std::{collections::BTreeMap, path::Path, str::FromStr};
 
 use anyhow::anyhow;
 use elements::AssetId;
@@ -184,7 +184,7 @@ impl TickerLoader {
     }
 
     pub async fn load(
-        work_dir: &str,
+        work_dir: &Path,
         whitelisted_assets: Option<&WhitelistedAssets>,
         network: Network,
     ) -> Result<TickerLoader, anyhow::Error> {
