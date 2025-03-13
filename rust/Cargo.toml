@@ -2,6 +2,7 @@
 resolver = "2"
 
 members = [
+    "depix_convert",
     "sideswap_amp",
     "sideswap_api",
     "sideswap_client",
@@ -12,6 +13,7 @@ members = [
     "sideswap_dealer_elements",
     "sideswap_dealer_lwk",
     "sideswap_jade",
+    "sideswap_lwk",
     "sideswap_manager",
     "sideswap_monitoring",
     "sideswap_payjoin",
@@ -54,9 +56,9 @@ jni = "0.21.1"
 libc = "0.2"
 log = "0.4"
 log4rs = { version = "1.2", features = ["gzip", "toml_format"] }
-lwk_common = { version = "0.8" }
-lwk_signer = { version = "0.8" }
-lwk_wollet = { version = "0.8" }
+lwk_common = { version = "0.9" }
+lwk_signer = { version = "0.9" }
+lwk_wollet = { version = "0.9" }
 poem = "3"
 poem-openapi = { version = "5", features = ["swagger-ui"] }
 prost = "0.12"

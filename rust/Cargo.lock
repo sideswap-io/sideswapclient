@@ -105,9 +105,9 @@ dependencies = [
 
 [[package]]
 name = "age"
-version = "0.10.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edeef7d7b199195a2d7d7a8155d2d04aee736e60c5c7bdd7097d115369a8817d"
+checksum = "57fc171f4874fa10887e47088f81a55fcf030cd421aa31ec2b370cafebcc608a"
 dependencies = [
  "age-core",
  "base64 0.21.7",
@@ -131,9 +131,9 @@ dependencies = [
 
 [[package]]
 name = "age-core"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5f11899bc2bbddd135edbc30c36b1924fa59d0746bb45beb5933fafe3fe509b"
+checksum = "e2bf6a89c984ca9d850913ece2da39e1d200563b0a94b002b253beee4c5acf99"
 dependencies = [
  "base64 0.21.7",
  "chacha20poly1305",
@@ -1091,15 +1091,16 @@ dependencies = [
 
 [[package]]
 name = "dashmap"
-version = "5.5.3"
+version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
+checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
 dependencies = [
  "cfg-if",
+ "crossbeam-utils",
  "hashbrown 0.14.5",
  "lock_api",
  "once_cell",
- "parking_lot_core 0.9.10",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -1107,6 +1108,29 @@ name = "data-encoding"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8566979429cf69b49a5c740c60791108e86440e8be149bbea4fe54d2c32d6e2"
+
+[[package]]
+name = "depix_convert"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "base64 0.21.7",
+ "bip39",
+ "config",
+ "elements",
+ "hex",
+ "log",
+ "lwk_common",
+ "lwk_signer",
+ "lwk_wollet",
+ "serde 1.0.214",
+ "sideswap_api",
+ "sideswap_common",
+ "sideswap_dealer",
+ "sideswap_lwk",
+ "sideswap_types",
+ "tokio",
+]
 
 [[package]]
 name = "der"
@@ -1527,7 +1551,7 @@ checksum = "1d930c203dd0b6ff06e0201a4a2fe9149b43c684fd4420555b26d21b1a02956f"
 dependencies = [
  "futures-core",
  "lock_api",
- "parking_lot 0.12.3",
+ "parking_lot",
 ]
 
 [[package]]
@@ -2108,9 +2132,9 @@ dependencies = [
 
 [[package]]
 name = "i18n-embed"
-version = "0.14.1"
+version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94205d95764f5bb9db9ea98fa77f89653365ca748e27161f5bbea2ffd50e459c"
+checksum = "d0454970a5853f498e686cbd7bf9391aac2244928194780cb7a0af0f41937db6"
 dependencies = [
  "arc-swap",
  "fluent",
@@ -2118,9 +2142,8 @@ dependencies = [
  "fluent-syntax",
  "i18n-embed-impl",
  "intl-memoizer",
- "lazy_static",
  "log",
- "parking_lot 0.12.3",
+ "parking_lot",
  "rust-embed",
  "thiserror 1.0.68",
  "unic-langid",
@@ -2129,9 +2152,9 @@ dependencies = [
 
 [[package]]
 name = "i18n-embed-fl"
-version = "0.7.0"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fc1f8715195dffc4caddcf1cf3128da15fe5d8a137606ea8856c9300047d5a2"
+checksum = "0b7578cee2940492a648bd60fb49ca85ee8c821a63790e0ef5b604cfed353b2a"
 dependencies = [
  "dashmap",
  "find-crate",
@@ -2139,11 +2162,10 @@ dependencies = [
  "fluent-syntax",
  "i18n-config",
  "i18n-embed",
- "lazy_static",
- "proc-macro-error",
+ "proc-macro-error2",
  "proc-macro2",
  "quote",
- "strsim 0.10.0",
+ "strsim 0.11.1",
  "syn 2.0.87",
  "unic-langid",
 ]
@@ -2310,16 +2332,6 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "idna"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d20d6b07bfbc108882d88ed8e37d39636dcc260e15e30c45e6ba089610b917c"
-dependencies = [
- "unicode-bidi",
- "unicode-normalization",
-]
-
-[[package]]
-name = "idna"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "686f825264d630750a544639377bae737628043f20d38bbc029e8f29ea968a7e"
@@ -2356,15 +2368,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
 dependencies = [
  "generic-array",
-]
-
-[[package]]
-name = "instant"
-version = "0.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0242819d153cba4b4b05a5a8f2a7e9bbf97b6055b2a002b395c96b5ff3c0222"
-dependencies = [
- "cfg-if",
 ]
 
 [[package]]
@@ -2613,7 +2616,7 @@ dependencies = [
  "log",
  "log-mdc",
  "once_cell",
- "parking_lot 0.12.3",
+ "parking_lot",
  "rand",
  "serde 1.0.214",
  "serde-value",
@@ -2628,9 +2631,9 @@ dependencies = [
 
 [[package]]
 name = "lwk_common"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7a47f891714f551516c658fa54e6f981eb2ec6e942ab837fe19c1a19fb5b238"
+checksum = "e055bce03c8a966bbdf11b1de04b2973d8c8854d7cc5877a37c5bb0c492a2909"
 dependencies = [
  "base64 0.21.7",
  "elements",
@@ -2643,9 +2646,9 @@ dependencies = [
 
 [[package]]
 name = "lwk_containers"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f88c9817902800ee931cc42ef91df10df1e98fdb14848c07996463b4c711f80"
+checksum = "357528be7457df199f8835865ee0e823da41ed8bcbcb1b6f04fea6ebc97eb174"
 dependencies = [
  "bitcoin",
  "rand",
@@ -2655,9 +2658,9 @@ dependencies = [
 
 [[package]]
 name = "lwk_jade"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "237fb37f329df999a3f503536da0de035332256c821bc341cf4644590a8057c8"
+checksum = "13333941bb75e78781ef95c72130bbcdea42488bf71b9805a19e278a748c3d65"
 dependencies = [
  "elements",
  "elements-miniscript",
@@ -2673,14 +2676,14 @@ dependencies = [
  "serde_json",
  "tempfile",
  "thiserror 1.0.68",
- "wasm-timer",
+ "web-time",
 ]
 
 [[package]]
 name = "lwk_signer"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14af12af3c1a94584f2f0b70828c634d48e091781a4ba70a26781e01e2db88f1"
+checksum = "97ed102b56d95656bd4dbab8e36f7c2d40cabf956409b9a3e81a46cca4657aae"
 dependencies = [
  "base64 0.13.1",
  "bip39",
@@ -2692,11 +2695,11 @@ dependencies = [
 
 [[package]]
 name = "lwk_wollet"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "feec6e609d87cb93757bb8d52e14fb2c2b79887ccaf20cd8f8078df24c4bef75"
+checksum = "44164918e75771585624098a328cf0d5e28931ccdd5af1c9a95a6ecf0c5cb67a"
 dependencies = [
- "aes-gcm-siv 0.10.1",
+ "aes-gcm-siv 0.11.1",
  "age",
  "base64 0.21.7",
  "bip39",
@@ -2705,7 +2708,8 @@ dependencies = [
  "elements",
  "elements-miniscript",
  "fxhash",
- "idna 0.4.0",
+ "idna",
+ "js-sys",
  "log",
  "lwk_common",
  "once_cell",
@@ -2715,7 +2719,10 @@ dependencies = [
  "serde 1.0.214",
  "serde_json",
  "thiserror 1.0.68",
+ "tokio",
  "url",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]
@@ -2999,37 +3006,12 @@ checksum = "f38d5652c16fde515bb1ecef450ab0f6a219d619a7274976324d5e377f7dceba"
 
 [[package]]
 name = "parking_lot"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
-dependencies = [
- "instant",
- "lock_api",
- "parking_lot_core 0.8.6",
-]
-
-[[package]]
-name = "parking_lot"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1bf18183cf54e8d6059647fc3063646a1801cf30896933ec2311622cc4b9a27"
 dependencies = [
  "lock_api",
- "parking_lot_core 0.9.10",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60a2cfe6f0ad2bfc16aefa463b497d5c7a5ecd44a23efa72aa342d90177356dc"
-dependencies = [
- "cfg-if",
- "instant",
- "libc",
- "redox_syscall 0.2.16",
- "smallvec",
- "winapi",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -3040,7 +3022,7 @@ checksum = "1e401f977ab385c9e4e3ab30627d6f26d00e2c73eef317493c4ec6d468726cf8"
 dependencies = [
  "cfg-if",
  "libc",
- "redox_syscall 0.5.7",
+ "redox_syscall",
  "smallvec",
  "windows-targets 0.52.6",
 ]
@@ -3169,7 +3151,7 @@ dependencies = [
  "mime",
  "multer",
  "nix 0.29.0",
- "parking_lot 0.12.3",
+ "parking_lot",
  "percent-encoding",
  "pin-project-lite",
  "poem-derive",
@@ -3314,30 +3296,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecf48c7ca261d60b74ab1a7b20da18bede46776b2e55535cb958eb595c5fa7b"
 dependencies = [
  "toml_edit",
-]
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2",
- "quote",
- "version_check",
 ]
 
 [[package]]
@@ -3535,15 +3493,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
-]
-
-[[package]]
-name = "redox_syscall"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
-dependencies = [
- "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -3954,9 +3903,9 @@ dependencies = [
 
 [[package]]
 name = "secrecy"
-version = "0.8.0"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bd1c54ea06cfd2f6b63219704de0b9b4f72dcc2b8fdef820be6cd799780e91e"
+checksum = "e891af845473308773346dc847b2c23ee78fe442e0472ac50e22a18a93d3ae5a"
 dependencies = [
  "zeroize",
 ]
@@ -4411,6 +4360,7 @@ dependencies = [
  "sideswap_api",
  "sideswap_common",
  "sideswap_dealer",
+ "sideswap_lwk",
  "sideswap_types",
  "tokio",
 ]
@@ -4436,6 +4386,27 @@ dependencies = [
  "uniffi",
  "ureq",
  "uuid",
+]
+
+[[package]]
+name = "sideswap_lwk"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "base64 0.21.7",
+ "bip39",
+ "config",
+ "elements",
+ "hex",
+ "log",
+ "lwk_common",
+ "lwk_signer",
+ "lwk_wollet",
+ "serde 1.0.214",
+ "sideswap_api",
+ "sideswap_common",
+ "sideswap_dealer",
+ "tokio",
 ]
 
 [[package]]
@@ -5584,7 +5555,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d157f1b96d14500ffdc1f10ba712e780825526c03d9a49b4d0324b0d9113ada"
 dependencies = [
  "form_urlencoded",
- "idna 1.0.3",
+ "idna",
  "percent-encoding",
 ]
 
@@ -5749,25 +5720,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "65fc09f10666a9f147042251e0dda9c18f166ff7de300607007e96bdebc1068d"
 
 [[package]]
-name = "wasm-timer"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be0ecb0db480561e9a7642b5d3e4187c128914e58aa84330b9493e3eb68c5e7f"
-dependencies = [
- "futures",
- "js-sys",
- "parking_lot 0.11.2",
- "pin-utils",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "web-sys"
 version = "0.3.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6488b90108c040df0fe62fa815cbdee25124641df01814dd7282749234c6112"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "web-time"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -5803,7 +5769,7 @@ version = "1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "372d5b87f58ec45c384ba03563b03544dc5fadc3983e434b286913f5b4a9bb6d"
 dependencies = [
- "redox_syscall 0.5.7",
+ "redox_syscall",
  "wasite",
 ]
 

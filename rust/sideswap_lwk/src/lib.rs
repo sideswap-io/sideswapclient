@@ -11,7 +11,8 @@ use elements::{
 };
 use lwk_common::singlesig_desc;
 use lwk_wollet::{
-    elements_miniscript, secp256k1::SECP256K1, BlockchainBackend, ElementsNetwork, WolletDescriptor,
+    blocking::BlockchainBackend, elements_miniscript, secp256k1::SECP256K1, ElementsNetwork,
+    WolletDescriptor,
 };
 use sideswap_common::{
     channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
@@ -184,12 +185,19 @@ fn run(
                     use elements_miniscript::ForEachKey;
                     utxo_desc.for_each_key(|d| {
                         let full_path = d.full_derivation_path().expect("must be set");
+
                         let priv_key = master_key
                             .derive_priv(SECP256K1, &full_path)
                             .expect("must not fail")
                             .to_priv();
-                        let pub_key = priv_key.public_key(&SECP256K1);
-                        let redeem_script = sideswap_common::pset::p2shwpkh_redeem_script(&pub_key);
+
+                        let redeem_script = match script_variant {
+                            lwk_common::Singlesig::Wpkh => None,
+                            lwk_common::Singlesig::ShWpkh => {
+                                let pub_key = priv_key.public_key(&SECP256K1);
+                                Some(sideswap_common::pset::p2shwpkh_redeem_script(&pub_key))
+                            }
+                        };
 
                         assert!(utxo_details.is_none());
                         utxo_details = Some((redeem_script, priv_key));
@@ -207,7 +215,7 @@ fn run(
                             asset_bf: utxo.unblinded.asset_bf,
                             value: utxo.unblinded.value,
                             value_bf: utxo.unblinded.value_bf,
-                            redeem_script: Some(redeem_script),
+                            redeem_script,
                         },
                         priv_key,
                     }

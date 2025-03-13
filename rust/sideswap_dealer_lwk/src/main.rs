@@ -11,8 +11,6 @@ use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_dealer::{market, price_stream, utxo_data};
 use tokio::sync::mpsc::unbounded_channel;
 
-mod wallet;
-
 #[derive(Debug, serde::Deserialize)]
 struct Settings {
     env: sideswap_common::env::Env,
@@ -29,15 +27,15 @@ struct Settings {
 
 struct Data {
     market_command_sender: UncheckedUnboundedSender<market::Command>,
-    wallet_command_sender: Sender<wallet::Command>,
+    wallet_command_sender: Sender<sideswap_lwk::Command>,
     utxo_data: UtxoData,
     price_stream: price_stream::Data,
     ticker_loader: Arc<TickerLoader>,
 }
 
-fn process_wallet_event(data: &mut Data, event: wallet::Event) {
+fn process_wallet_event(data: &mut Data, event: sideswap_lwk::Event) {
     match event {
-        wallet::Event::Utxos { utxo_data } => {
+        sideswap_lwk::Event::Utxos { utxo_data } => {
             data.market_command_sender.send(market::Command::Utxos {
                 utxos: utxo_data.utxos().to_vec(),
             });
@@ -59,7 +57,7 @@ fn process_market_event(data: &mut Data, event: market::Event) {
 
         market::Event::NewAddress { res_sender } => {
             data.wallet_command_sender
-                .send(wallet::Command::NewAdddress { res_sender })
+                .send(sideswap_lwk::Command::NewAdddress { res_sender })
                 .expect("must be open");
         }
 
@@ -76,13 +74,13 @@ fn process_market_event(data: &mut Data, event: market::Event) {
 
         market::Event::BroadcastTx { tx } => {
             data.wallet_command_sender
-                .send(wallet::Command::BroadcastTx { tx })
+                .send(sideswap_lwk::Command::BroadcastTx { tx })
                 .expect("must be open");
         }
 
         market::Event::SendAsset { req, res_sender } => {
             data.wallet_command_sender
-                .send(wallet::Command::SendAsset { req, res_sender })
+                .send(sideswap_lwk::Command::SendAsset { req, res_sender })
                 .expect("must be open");
         }
     }
@@ -141,15 +139,16 @@ async fn main() -> Result<(), anyhow::Error> {
     let script_variant = lwk_common::Singlesig::from_str(&settings.script_variant)
         .map_err(|err| anyhow::anyhow!("invalid script_variant value: {err}"))?;
 
-    let (wallet_command_sender, wallet_command_receiver) = channel::<wallet::Command>();
-    let (wallet_event_sender, mut wallet_event_receiver) = unbounded_channel::<wallet::Event>();
-    let wallet_params = wallet::Params {
+    let (wallet_command_sender, wallet_command_receiver) = channel::<sideswap_lwk::Command>();
+    let (wallet_event_sender, mut wallet_event_receiver) =
+        unbounded_channel::<sideswap_lwk::Event>();
+    let wallet_params = sideswap_lwk::Params {
         network,
         work_dir: settings.work_dir.clone(),
         mnemonic: settings.mnemonic.clone(),
         script_variant,
     };
-    wallet::start(wallet_params, wallet_command_receiver, wallet_event_sender);
+    sideswap_lwk::start(wallet_params, wallet_command_receiver, wallet_event_sender);
 
     let price_stream = price_stream::Data::new(
         settings.env,

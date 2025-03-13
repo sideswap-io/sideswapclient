@@ -1,5 +1,5 @@
 [package]
-name = "sideswap_dealer_lwk"
+name = "depix_convert"
 version = "0.1.2"
 edition = "2021"
 
