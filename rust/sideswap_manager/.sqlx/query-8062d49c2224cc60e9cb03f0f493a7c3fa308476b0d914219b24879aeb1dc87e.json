@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "insert into swaps (txid) values (?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "8062d49c2224cc60e9cb03f0f493a7c3fa308476b0d914219b24879aeb1dc87e"
+}

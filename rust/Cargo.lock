@@ -4414,6 +4414,7 @@ name = "sideswap_manager"
 version = "0.1.2"
 dependencies = [
  "anyhow",
+ "bip39",
  "config",
  "elements",
  "futures",
@@ -4424,6 +4425,7 @@ dependencies = [
  "sideswap_api",
  "sideswap_common",
  "sideswap_dealer",
+ "sideswap_lwk",
  "sideswap_types",
  "sqlx",
  "thiserror 1.0.68",

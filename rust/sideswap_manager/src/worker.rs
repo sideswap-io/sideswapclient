@@ -1,16 +1,22 @@
-use std::{collections::BTreeMap, sync::Arc, time::Duration};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::{
+        mpsc::{self, channel},
+        Arc,
+    },
+    time::Duration,
+};
 
 use elements::{pset::PartiallySignedTransaction, AssetId};
 use sideswap_api::{
-    mkt::{self, AssetType, TradeDir},
-    ResponseMessage,
+    mkt::{self, AssetType, QuoteId, TradeDir},
+    OrderId, PegStatus, ResponseMessage,
 };
 use sideswap_common::{
     abort, b64,
     channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
     dealer_ticker::{DealerTicker, TickerLoader},
-    make_market_request,
-    rpc::{self, balances::ParsedBalanceMap, RpcServer},
+    make_market_request, make_request,
     types::{asset_float_amount_, asset_int_amount_},
     verify,
     ws::{
@@ -18,10 +24,22 @@ use sideswap_common::{
         ws_req_sender::{self, WsReqSender},
     },
 };
+use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_types::asset_precision::AssetPrecision;
-use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
+use sqlx::types::Text;
+use tokio::{
+    sync::mpsc::{unbounded_channel, UnboundedReceiver},
+    time::Instant,
+};
 
-use crate::{api, db::Db, error::Error, ws_server::ClientId, Settings};
+use crate::{
+    api,
+    db::Db,
+    error::Error,
+    models::{Peg, Swap},
+    ws_server::ClientId,
+    Settings,
+};
 
 pub enum Command {
     NewAddress {
@@ -35,6 +53,18 @@ pub enum Command {
         req: api::AcceptQuoteReq,
         res_sender: UncheckedOneshotSender<Result<api::AcceptQuoteResp, Error>>,
     },
+    NewPeg {
+        req: api::NewPegReq,
+        res_sender: UncheckedOneshotSender<Result<api::NewPegResp, Error>>,
+    },
+    DelPeg {
+        req: api::DelPegReq,
+        res_sender: UncheckedOneshotSender<Result<api::DelPegResp, Error>>,
+    },
+    GetSwaps {
+        req: api::GetSwapsReq,
+        res_sender: UncheckedOneshotSender<Result<api::GetSwapsResp, Error>>,
+    },
     ClientConnected {
         client_id: ClientId,
         notif_sender: UncheckedUnboundedSender<api::Notif>,
@@ -44,20 +74,26 @@ pub enum Command {
     },
 }
 
-enum Event {
-    Balances {
-        balances: rpc::balances::GetBalances,
-    },
-}
-
 struct ClientData {
     notif_sender: UncheckedUnboundedSender<api::Notif>,
 }
 
-struct Data {
-    settings: Settings,
+struct Quote {
+    txid: elements::Txid,
+    pset: PartiallySignedTransaction,
+    expires_at: Instant,
+}
 
-    policy_asset: AssetId,
+impl Quote {
+    fn ttl_valid(&self) -> bool {
+        Instant::now() < self.expires_at
+    }
+}
+
+struct Data {
+    _settings: Settings,
+
+    _policy_asset: AssetId,
 
     ticker_loader: Arc<TickerLoader>,
 
@@ -65,11 +101,34 @@ struct Data {
 
     ws: WsReqSender,
 
+    wallet_command_sender: mpsc::Sender<sideswap_lwk::Command>,
+
     markets: Vec<mkt::MarketInfo>,
 
     clients: BTreeMap<ClientId, ClientData>,
 
     last_balances: Option<api::BalancesNotif>,
+
+    utxo_data: Option<UtxoData>,
+
+    pegs: BTreeSet<OrderId>,
+
+    peg_statuses: BTreeMap<OrderId, PegStatus>,
+
+    swaps: BTreeSet<elements::Txid>,
+
+    quotes: BTreeMap<QuoteId, Quote>,
+}
+
+fn encode_pset(pset: &PartiallySignedTransaction) -> String {
+    let pset = elements::encode::serialize(pset);
+    b64::encode(&pset)
+}
+
+fn decode_pset(pset: &str) -> Result<PartiallySignedTransaction, Error> {
+    let pset = b64::decode(pset)?;
+    let pset = elements::encode::deserialize(&pset)?;
+    Ok(pset)
 }
 
 fn send_notifs(data: &Data, notif: &api::Notif) {
@@ -104,16 +163,37 @@ fn try_convert_asset_amount(amount: f64, asset_precision: AssetPrecision) -> Res
     Ok(int_amount)
 }
 
-async fn new_address(rpc_server: &RpcServer) -> Result<elements::Address, Error> {
-    rpc::make_rpc_call(rpc_server, rpc::GetNewAddressCall {})
-        .await
-        .map_err(Error::Rpc)
+fn convert_balances(data: &Data, utxo_data: &UtxoData) -> api::Balances {
+    let mut totals = BTreeMap::<elements::AssetId, u64>::new();
+    for utxo in utxo_data.utxos() {
+        *totals.entry(utxo.asset).or_default() += utxo.value;
+    }
+
+    totals
+        .iter()
+        .filter_map(|(asset_id, amount)| {
+            let ticker = data.ticker_loader.ticker(asset_id)?;
+            let precision = data.ticker_loader.precision(ticker);
+            let amount = asset_float_amount_(*amount, precision);
+            Some((ticker, amount))
+        })
+        .collect()
 }
 
 enum QuoteStatus {
     Disconnected,
     Timeout(tokio::time::error::Elapsed),
     Quote(mkt::QuoteNotif),
+}
+
+async fn new_recv_address(data: &Data) -> Result<elements::Address, Error> {
+    let (res_sender, res_receiver) = tokio::sync::oneshot::channel();
+    data.wallet_command_sender
+        .send(sideswap_lwk::Command::NewAdddress {
+            res_sender: res_sender.into(),
+        })?;
+    let address = res_receiver.await?.map_err(Error::Wallet)?;
+    Ok(address)
 }
 
 async fn get_quote(data: &mut Data, req: api::GetQuoteReq) -> Result<api::GetQuoteResp, Error> {
@@ -153,23 +233,17 @@ async fn get_quote(data: &mut Data, req: api::GetQuoteReq) -> Result<api::GetQuo
     let send_amount = try_convert_asset_amount(req.send_amount, send_asset.precision)?;
 
     // TODO: Reuse addresses
-    let receive_address = new_address(&data.settings.rpc).await?;
-    let change_address = new_address(&data.settings.rpc).await?;
+    let receive_address = req.receive_address;
+    let change_address = new_recv_address(&data).await?;
 
-    let utxos = rpc::make_rpc_call(&data.settings.rpc, rpc::ListUnspentCall { minconf: 0 })
-        .await
-        .map_err(Error::Rpc)?
-        .into_iter()
+    let utxos = data
+        .utxo_data
+        .as_ref()
+        .ok_or(Error::NoUtxos)?
+        .utxos()
+        .iter()
         .filter(|utxo| utxo.asset == send_asset.asset_id)
-        .map(|unspent| sideswap_api::Utxo {
-            txid: unspent.txid,
-            vout: unspent.vout,
-            asset: unspent.asset,
-            asset_bf: unspent.assetblinder,
-            value: unspent.amount.to_sat(),
-            value_bf: unspent.amountblinder,
-            redeem_script: unspent.redeem_script.clone(),
-        })
+        .cloned()
         .collect::<Vec<_>>();
 
     let total = utxos.iter().map(|utxo| utxo.value).sum::<u64>();
@@ -274,10 +348,35 @@ async fn get_quote(data: &mut Data, req: api::GetQuoteReq) -> Result<api::GetQuo
 
             let quote_recv_amount = asset_float_amount_(quote_recv_amount, recv_asset.precision);
 
+            let quote_resp =
+                make_market_request!(data.ws, GetQuote, mkt::GetQuoteRequest { quote_id })?;
+
+            let pset = decode_pset(&quote_resp.pset)?;
+
+            let txid = pset.extract_tx()?.txid();
+
+            let expires_at = Instant::now() + quote_resp.ttl.duration();
+
+            let pset = data
+                .utxo_data
+                .as_ref()
+                .ok_or(Error::NoUtxos)?
+                .sign_pset(pset);
+
+            data.quotes.insert(
+                quote_id,
+                Quote {
+                    txid,
+                    pset,
+                    expires_at,
+                },
+            );
+
             Ok(api::GetQuoteResp {
                 quote_id,
                 recv_amount: quote_recv_amount,
                 ttl,
+                txid,
             })
         }
 
@@ -304,63 +403,136 @@ async fn accept_quote(
     data: &mut Data,
     req: api::AcceptQuoteReq,
 ) -> Result<api::AcceptQuoteResp, Error> {
-    let quote_resp = make_market_request!(
-        data.ws,
-        GetQuote,
-        mkt::GetQuoteRequest {
-            quote_id: req.quote_id
-        }
-    )?;
+    let quote = data.quotes.get(&req.quote_id).ok_or(Error::NoQuote)?;
 
-    let pset = b64::decode(&quote_resp.pset)?;
-    let mut pset = elements::encode::deserialize::<PartiallySignedTransaction>(&pset)?;
+    verify!(quote.ttl_valid(), Error::QuoteExpired);
 
-    let unsigned_tx = pset.extract_tx()?;
+    let pset = encode_pset(&quote.pset);
 
-    let signed_tx = rpc::make_rpc_call(
-        &data.settings.rpc,
-        rpc::sign_raw_transaction::SignRawTransactionWithWalletCall {
-            raw_tx: unsigned_tx.into(),
-        },
-    )
-    .await
-    .map_err(Error::Rpc)?;
+    data.db
+        .add_swap(Swap {
+            txid: Text(quote.txid),
+        })
+        .await;
 
-    let signed_tx = signed_tx.hex.into_inner();
-
-    for (tx_input, pset_input) in signed_tx.input.iter().zip(pset.inputs_mut()) {
-        if !tx_input.script_sig.is_empty() {
-            pset_input.final_script_sig = Some(tx_input.script_sig.clone());
-        }
-        if !tx_input.witness.script_witness.is_empty() {
-            pset_input.final_script_witness = Some(tx_input.witness.script_witness.clone());
-        }
-    }
-
-    let pset = elements::encode::serialize(&pset);
+    data.swaps.insert(quote.txid);
 
     let accept_resp = make_market_request!(
         data.ws,
         TakerSign,
         mkt::TakerSignRequest {
             quote_id: req.quote_id,
-            pset: b64::encode(&pset)
+            pset,
         }
     )?;
+
+    assert_eq!(quote.txid, accept_resp.txid);
 
     Ok(api::AcceptQuoteResp {
         txid: accept_resp.txid,
     })
 }
 
+async fn new_peg(
+    data: &mut Data,
+    api::NewPegReq {
+        recv_addr,
+        peg_in,
+        blocks,
+    }: api::NewPegReq,
+) -> Result<api::NewPegResp, Error> {
+    let resp = make_request!(
+        data.ws,
+        Peg,
+        sideswap_api::PegRequest {
+            recv_addr,
+            send_amount: None,
+            peg_in,
+            device_key: None,
+            blocks,
+            peg_out_amounts: None,
+        }
+    )?;
+
+    let status = make_request!(
+        data.ws,
+        PegStatus,
+        sideswap_api::PegStatusRequest {
+            order_id: resp.order_id,
+            peg_in: None,
+        }
+    )?;
+
+    process_peg_status(data, status);
+
+    data.db
+        .add_peg(Peg {
+            order_id: Text(resp.order_id),
+        })
+        .await;
+
+    data.pegs.insert(resp.order_id);
+
+    Ok(api::NewPegResp {
+        order_id: resp.order_id,
+        peg_addr: resp.peg_addr,
+    })
+}
+
+async fn del_peg(
+    data: &mut Data,
+    api::DelPegReq { order_id }: api::DelPegReq,
+) -> Result<api::DelPegResp, Error> {
+    data.db.delete_peg(order_id).await;
+
+    Ok(api::DelPegResp {})
+}
+
+async fn get_swaps(
+    data: &mut Data,
+    api::GetSwapsReq {}: api::GetSwapsReq,
+) -> Result<api::GetSwapsResp, Error> {
+    let (res_sender, res_receiver) = tokio::sync::oneshot::channel();
+    data.wallet_command_sender
+        .send(sideswap_lwk::Command::GetTxs {
+            req: sideswap_lwk::GetTxsReq {
+                txids: data.swaps.clone(),
+            },
+            res_sender: res_sender.into(),
+        })?;
+    let txs = res_receiver.await?.map_err(Error::Wallet)?;
+
+    let swaps = data
+        .swaps
+        .iter()
+        .map(|txid| {
+            let tx = txs.txs.iter().find(|tx| tx.txid == *txid);
+
+            let status = if let Some(tx) = tx {
+                if tx.height.is_some() {
+                    api::SwapStatus::Confirmed
+                } else {
+                    api::SwapStatus::Mempool
+                }
+            } else {
+                api::SwapStatus::NotFound
+            };
+
+            api::Swap {
+                txid: *txid,
+                status,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    Ok(api::GetSwapsResp { swaps })
+}
+
 async fn process_command(data: &mut Data, command: Command) {
     match command {
         Command::NewAddress { res_sender } => {
-            let rpc_server = data.settings.rpc.clone();
-            tokio::spawn(async move {
-                let res = new_address(&rpc_server).await;
-                res_sender.send(res);
-            });
+            let res = new_recv_address(data).await;
+            res_sender.send(res);
         }
 
         Command::GetQuote { req, res_sender } => {
@@ -373,6 +545,21 @@ async fn process_command(data: &mut Data, command: Command) {
             res_sender.send(res);
         }
 
+        Command::NewPeg { req, res_sender } => {
+            let res = new_peg(data, req).await;
+            res_sender.send(res);
+        }
+
+        Command::DelPeg { req, res_sender } => {
+            let res = del_peg(data, req).await;
+            res_sender.send(res);
+        }
+
+        Command::GetSwaps { req, res_sender } => {
+            let res = get_swaps(data, req).await;
+            res_sender.send(res);
+        }
+
         Command::ClientConnected {
             client_id,
             notif_sender,
@@ -380,6 +567,11 @@ async fn process_command(data: &mut Data, command: Command) {
             if let Some(balance) = &data.last_balances {
                 notif_sender.send(api::Notif::Balances(balance.clone()));
             }
+
+            for status in data.peg_statuses.values() {
+                notif_sender.send(api::Notif::PegStatus(status.clone()));
+            }
+
             data.clients.insert(client_id, ClientData { notif_sender });
         }
 
@@ -389,43 +581,20 @@ async fn process_command(data: &mut Data, command: Command) {
     }
 }
 
-fn convert_balances(data: &Data, balances: ParsedBalanceMap) -> api::Balances {
-    balances
-        .iter()
-        .filter_map(|(asset_id, amount)| {
-            let ticker = data.ticker_loader.ticker(asset_id)?;
-            let precision = data.ticker_loader.precision(ticker);
-            let amount = asset_float_amount_(*amount, precision);
-            Some((ticker, amount))
-        })
-        .collect()
-}
-
-fn process_event(data: &mut Data, event: Event) {
-    match event {
-        Event::Balances { balances } => {
-            let trusted = rpc::balances::parse_balances(&balances.mine.trusted, &data.policy_asset);
-            let untrusted_pending =
-                rpc::balances::parse_balances(&balances.mine.untrusted_pending, &data.policy_asset);
-            let new_balances = api::BalancesNotif {
-                trusted: convert_balances(data, trusted),
-                untrusted_pending: convert_balances(data, untrusted_pending),
-            };
-            if data.last_balances.as_ref() != Some(&new_balances) {
-                // TODO: Send updated balances to the clients
-                log::debug!("wallet balances updated: {new_balances:?}");
-                send_notifs(data, &api::Notif::Balances(new_balances.clone()));
-                data.last_balances = Some(new_balances);
-            }
-        }
-    }
-}
-
 fn process_ws_connected(data: &mut Data) {
     data.ws
         .send_request(sideswap_api::Request::Market(mkt::Request::ListMarkets(
             mkt::ListMarketsRequest {},
         )));
+
+    for order_id in data.pegs.iter() {
+        data.ws.send_request(sideswap_api::Request::PegStatus(
+            sideswap_api::PegStatusRequest {
+                order_id: *order_id,
+                peg_in: None,
+            },
+        ));
+    }
 }
 
 fn process_ws_disconnected(_data: &mut Data) {}
@@ -459,6 +628,13 @@ fn process_market_resp(data: &mut Data, resp: mkt::Response) {
         | mkt::Response::LoadHistory(_)
         | mkt::Response::Ack(_) => {}
     }
+}
+
+fn process_peg_status(data: &mut Data, status: PegStatus) {
+    if data.pegs.contains(&status.order_id) {
+        send_notifs(data, &api::Notif::PegStatus(status.clone()));
+    }
+    data.peg_statuses.insert(status.order_id, status);
 }
 
 fn process_market_notif(data: &mut Data, notif: mkt::Notification) {
@@ -505,22 +681,19 @@ async fn process_ws_event(data: &mut Data, event: WrappedResponse) {
             process_market_resp(data, resp);
         }
 
-        WrappedResponse::Response(ResponseMessage::Response(req_id, res)) => {
-            // let req_id = req_id.expect("mut be set");
-            // let ws_callback = data.async_requests.remove(&req_id);
-            // if let Some(callback) = ws_callback {
-            //     let res = match res {
-            //         Ok(sideswap_api::Response::Market(resp)) => Ok(resp),
-            //         Ok(_) => Err(Error::WsRequestError(
-            //             ws_req_sender::Error::UnexpectedResponse,
-            //         )),
-            //         Err(err) => Err(Error::WsRequestError(ws_req_sender::Error::BackendError(
-            //             err.message,
-            //             err.code,
-            //         ))),
-            //     };
-            //     callback(data, res);
-            // }
+        WrappedResponse::Response(ResponseMessage::Response(
+            _,
+            Ok(sideswap_api::Response::PegStatus(status)),
+        )) => {
+            process_peg_status(data, status);
+        }
+
+        WrappedResponse::Response(ResponseMessage::Response(_req_id, _res)) => {}
+
+        WrappedResponse::Response(ResponseMessage::Notification(
+            sideswap_api::Notification::PegStatus(status),
+        )) => {
+            process_peg_status(data, status);
         }
 
         WrappedResponse::Response(ResponseMessage::Notification(
@@ -533,22 +706,20 @@ async fn process_ws_event(data: &mut Data, event: WrappedResponse) {
     }
 }
 
-async fn update_balance(rpc: RpcServer, event_sender: UnboundedSender<Event>) {
-    loop {
-        let res = rpc::make_rpc_call(&rpc, rpc::balances::GetBalancesCall {}).await;
+fn process_wallet_event(data: &mut Data, event: sideswap_lwk::Event) {
+    match event {
+        sideswap_lwk::Event::Utxos { utxo_data } => {
+            let new_balances = api::BalancesNotif {
+                balances: convert_balances(data, &utxo_data),
+            };
 
-        match res {
-            Ok(balances) => {
-                let res = event_sender.send(Event::Balances { balances });
-                if res.is_err() {
-                    log::debug!("stop update balances loop");
-                    break;
-                }
-                tokio::time::sleep(Duration::from_secs(5)).await;
-            }
-            Err(err) => {
-                log::error!("wallet balance loading failed: {err}");
-                tokio::time::sleep(Duration::from_secs(15)).await;
+            data.utxo_data = Some(utxo_data);
+
+            if data.last_balances.as_ref() != Some(&new_balances) {
+                // TODO: Send updated balances to the clients
+                log::debug!("wallet balances updated: {new_balances:?}");
+                send_notifs(data, &api::Notif::Balances(new_balances.clone()));
+                data.last_balances = Some(new_balances);
             }
         }
     }
@@ -573,34 +744,63 @@ pub async fn run(
 
     let policy_asset = settings.env.nd().policy_asset.asset_id();
 
+    let network = settings.env.d().network;
+
+    let (wallet_command_sender, wallet_command_receiver) = channel::<sideswap_lwk::Command>();
+    let (wallet_event_sender, mut wallet_event_receiver) =
+        unbounded_channel::<sideswap_lwk::Event>();
+    let wallet_params = sideswap_lwk::Params {
+        network,
+        work_dir: settings.work_dir.clone(),
+        mnemonic: settings.mnemonic.clone(),
+        script_variant: settings.script_variant,
+    };
+    sideswap_lwk::start(wallet_params, wallet_command_receiver, wallet_event_sender);
+
+    let pegs = db
+        .load_pegs()
+        .await
+        .iter()
+        .map(|peg| peg.order_id.0)
+        .collect();
+
+    let swaps = db
+        .load_swaps()
+        .await
+        .iter()
+        .map(|swap| swap.txid.0)
+        .collect();
+
     let mut data = Data {
-        settings,
-        policy_asset,
+        _settings: settings,
+        _policy_asset: policy_asset,
         ticker_loader,
         db,
         ws,
+        wallet_command_sender,
         markets: Vec::new(),
         clients: BTreeMap::new(),
         last_balances: None,
+        utxo_data: None,
+        pegs,
+        peg_statuses: BTreeMap::new(),
+        swaps,
+        quotes: BTreeMap::new(),
     };
 
     let term_signal = sideswap_dealer::signals::TermSignal::new();
 
-    let (event_sender, mut event_receiver) = tokio::sync::mpsc::unbounded_channel();
-
-    tokio::spawn(update_balance(data.settings.rpc.clone(), event_sender));
-
     loop {
         tokio::select! {
+            event = wallet_event_receiver.recv() => {
+                let event = event.expect("must be open");
+                process_wallet_event(&mut data, event);
+            },
+
             command = command_receiver.recv() => {
                 let command = command.expect("channel must be open");
                 process_command(&mut data, command).await;
             },
-
-            event = event_receiver.recv() => {
-                let event = event.expect("channel must be open");
-                process_event(&mut data, event);
-            }
 
             event = data.ws.recv() => {
                 process_ws_event(&mut data, event).await;
@@ -611,6 +811,8 @@ pub async fn run(
                 break;
             },
         }
+
+        data.quotes.retain(|_quote_id, quote| quote.ttl_valid())
     }
 
     data.db.close().await;

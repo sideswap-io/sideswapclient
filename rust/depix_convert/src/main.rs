@@ -8,7 +8,6 @@ use sideswap_common::ws::ws_req_sender::WsReqSender;
 use sideswap_common::{b64, make_market_request, ws};
 use sideswap_dealer::utxo_data::UtxoData;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::mpsc::{self, channel};
 use std::time::Duration;
 use tokio::sync::mpsc::unbounded_channel;
@@ -18,7 +17,7 @@ struct Settings {
     env: sideswap_common::env::Env,
     work_dir: PathBuf,
     mnemonic: bip39::Mnemonic,
-    script_variant: String,
+    script_variant: sideswap_lwk::ScriptVariant,
     receive_address: elements::Address,
 }
 
@@ -266,10 +265,6 @@ async fn main() {
 
     let network = settings.env.d().network;
 
-    let script_variant = lwk_common::Singlesig::from_str(&settings.script_variant)
-        .map_err(|err| anyhow::anyhow!("invalid script_variant value: {err}"))
-        .expect("must be valid");
-
     let (wallet_command_sender, wallet_command_receiver) = channel::<sideswap_lwk::Command>();
     let (wallet_event_sender, mut wallet_event_receiver) =
         unbounded_channel::<sideswap_lwk::Event>();
@@ -277,7 +272,7 @@ async fn main() {
         network,
         work_dir: settings.work_dir.clone(),
         mnemonic: settings.mnemonic.clone(),
-        script_variant,
+        script_variant: settings.script_variant,
     };
     sideswap_lwk::start(wallet_params, wallet_command_receiver, wallet_event_sender);
 
@@ -300,9 +295,9 @@ async fn main() {
 
     loop {
         tokio::select! {
-             event = wallet_event_receiver.recv() => {
-                 let event = event.expect("must be open");
-                 process_wallet_event(&mut data, event);
+            event = wallet_event_receiver.recv() => {
+                let event = event.expect("must be open");
+                process_wallet_event(&mut data, event);
             },
 
             event = data.ws.recv() => {

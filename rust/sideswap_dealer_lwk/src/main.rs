@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::mpsc::{channel, Sender};
 use std::sync::Arc;
 use std::time::Duration;
@@ -18,7 +17,7 @@ struct Settings {
     disable_new_swaps: bool,
     work_dir: PathBuf,
     mnemonic: bip39::Mnemonic,
-    script_variant: String,
+    script_variant: sideswap_lwk::ScriptVariant,
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
     price_stream: sideswap_common::price_stream::Markets,
@@ -136,9 +135,6 @@ async fn main() -> Result<(), anyhow::Error> {
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
-    let script_variant = lwk_common::Singlesig::from_str(&settings.script_variant)
-        .map_err(|err| anyhow::anyhow!("invalid script_variant value: {err}"))?;
-
     let (wallet_command_sender, wallet_command_receiver) = channel::<sideswap_lwk::Command>();
     let (wallet_event_sender, mut wallet_event_receiver) =
         unbounded_channel::<sideswap_lwk::Event>();
@@ -146,7 +142,7 @@ async fn main() -> Result<(), anyhow::Error> {
         network,
         work_dir: settings.work_dir.clone(),
         mnemonic: settings.mnemonic.clone(),
-        script_variant,
+        script_variant: settings.script_variant,
     };
     sideswap_lwk::start(wallet_params, wallet_command_receiver, wallet_event_sender);
 

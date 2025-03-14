@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "delete from pegs where order_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "37967ed094cae3e8ac1c2db1a3db3e307a3402e3e88dad88d83def34f7213609"
+}

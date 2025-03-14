@@ -7,9 +7,11 @@ edition = "2021"
 sideswap_api = { path = "../sideswap_api" }
 sideswap_common = { path = "../sideswap_common" }
 sideswap_dealer = { path = "../sideswap_dealer" }
+sideswap_lwk = { path = "../sideswap_lwk" }
 sideswap_types = { path = "../sideswap_types" }
 
 anyhow.workspace = true
+bip39.workspace = true
 config.workspace = true
 elements.workspace = true
 futures.workspace = true

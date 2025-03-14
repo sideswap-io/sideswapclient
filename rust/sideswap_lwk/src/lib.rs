@@ -1,5 +1,7 @@
 use std::{
+    collections::BTreeSet,
     path::PathBuf,
+    str::FromStr,
     sync::mpsc::{Receiver, RecvTimeoutError},
     time::{Duration, Instant},
 };
@@ -12,7 +14,7 @@ use elements::{
 use lwk_common::singlesig_desc;
 use lwk_wollet::{
     blocking::BlockchainBackend, elements_miniscript, secp256k1::SECP256K1, ElementsNetwork,
-    WolletDescriptor,
+    WalletTx, WolletDescriptor,
 };
 use sideswap_common::{
     channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
@@ -25,11 +27,34 @@ use sideswap_dealer::{
 };
 use tokio::sync::mpsc::UnboundedSender;
 
+#[derive(Debug, Copy, Clone)]
+pub struct ScriptVariant(lwk_common::Singlesig);
+
+impl<'de> serde::Deserialize<'de> for ScriptVariant {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        let value =
+            lwk_common::Singlesig::from_str(&value).map_err(|err| serde::de::Error::custom(err))?;
+        Ok(ScriptVariant(value))
+    }
+}
+
 pub struct Params {
     pub network: Network,
     pub work_dir: PathBuf,
     pub mnemonic: bip39::Mnemonic,
-    pub script_variant: lwk_common::Singlesig,
+    pub script_variant: ScriptVariant,
+}
+
+pub struct GetTxsReq {
+    pub txids: BTreeSet<elements::Txid>,
+}
+
+pub struct GetTxsResp {
+    pub txs: Vec<WalletTx>,
 }
 
 pub enum Command {
@@ -42,6 +67,10 @@ pub enum Command {
     SendAsset {
         req: SendAssetReq,
         res_sender: UncheckedOneshotSender<Result<SendAssetResp, anyhow::Error>>,
+    },
+    GetTxs {
+        req: GetTxsReq,
+        res_sender: UncheckedOneshotSender<Result<GetTxsResp, anyhow::Error>>,
     },
 }
 
@@ -77,6 +106,17 @@ fn send_asset(
     Ok(SendAssetResp { txid })
 }
 
+fn get_txs(req: GetTxsReq, wallet: &lwk_wollet::Wollet) -> Result<GetTxsResp, anyhow::Error> {
+    let mut txs = Vec::new();
+    for txid in req.txids.iter() {
+        let tx = wallet.transaction(txid)?;
+        if let Some(tx) = tx {
+            txs.push(tx);
+        }
+    }
+    Ok(GetTxsResp { txs })
+}
+
 fn run(
     Params {
         network,
@@ -101,7 +141,7 @@ fn run(
 
     let descriptor = singlesig_desc(
         &signer,
-        script_variant,
+        script_variant.0,
         lwk_common::DescriptorBlindingKey::Slip77,
         is_mainnet,
     )
@@ -191,7 +231,7 @@ fn run(
                             .expect("must not fail")
                             .to_priv();
 
-                        let redeem_script = match script_variant {
+                        let redeem_script = match script_variant.0 {
                             lwk_common::Singlesig::Wpkh => None,
                             lwk_common::Singlesig::ShWpkh => {
                                 let pub_key = priv_key.public_key(&SECP256K1);
@@ -255,6 +295,11 @@ fn run(
 
                     Command::SendAsset { req, res_sender } => {
                         let res = send_asset(req, &wallet, &signer, &electrum_client);
+                        res_sender.send(res);
+                    }
+
+                    Command::GetTxs { req, res_sender } => {
+                        let res = get_txs(req, &wallet);
                         res_sender.send(res);
                     }
                 },

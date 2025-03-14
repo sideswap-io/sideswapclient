@@ -57,6 +57,21 @@ async fn process_ws_req(data: &mut Data, req: api::Req) -> Result<api::Resp, Err
             let resp = data.controller.accept_quote(req).await?;
             Ok(api::Resp::AcceptQuote(resp))
         }
+
+        api::Req::NewPeg(req) => {
+            let resp = data.controller.new_peg(req).await?;
+            Ok(api::Resp::NewPeg(resp))
+        }
+
+        api::Req::DelPeg(req) => {
+            let resp = data.controller.del_peg(req).await?;
+            Ok(api::Resp::DelPeg(resp))
+        }
+
+        api::Req::GetSwaps(req) => {
+            let resp = data.controller.get_swaps(req).await?;
+            Ok(api::Resp::GetSwaps(resp))
+        }
     }
 }
 

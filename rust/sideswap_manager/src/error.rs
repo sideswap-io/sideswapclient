@@ -18,8 +18,8 @@ pub enum Error {
     UnknownTicker(DealerTicker),
     #[error("Channel closed, please report bug")]
     ChannelClosed,
-    #[error("RPC error: {0}")]
-    Rpc(anyhow::Error),
+    #[error("Wallet error: {0}")]
+    Wallet(anyhow::Error),
     #[error("WS error: {0}")]
     WsError(#[from] ws_req_sender::Error),
     #[error("Invalid asset amount: {0} (asset_precison: {1})")]
@@ -42,6 +42,12 @@ pub enum Error {
     EncodeError(#[from] elements::encode::Error),
     #[error("PSET error: {0}")]
     PsetError(#[from] elements::pset::Error),
+    #[error("No UTXOs")]
+    NoUtxos,
+    #[error("Quote expired")]
+    QuoteExpired,
+    #[error("No quote")]
+    NoQuote,
 }
 
 impl From<tokio::sync::oneshot::error::RecvError> for Error {
@@ -56,22 +62,30 @@ impl<T> From<tokio::sync::mpsc::error::SendError<T>> for Error {
     }
 }
 
+impl<T> From<std::sync::mpsc::SendError<T>> for Error {
+    fn from(_value: std::sync::mpsc::SendError<T>) -> Self {
+        Error::ChannelClosed
+    }
+}
+
 impl Error {
     pub fn error_code(&self) -> api::ErrorCode {
         match self {
             Error::InvalidAddress(_, _)
             | Error::InvalidTicker(_)
             | Error::UnknownTicker(_)
-            | Error::ChannelClosed
-            | Error::Rpc(_)
-            | Error::WsError(_)
+            | Error::Wallet(_)
             | Error::InvalidAssetAmount(_, _)
             | Error::NoMarket
             | Error::NotEnoughAmount { .. }
             | Error::QuoteError(_)
             | Error::Base64(_)
             | Error::EncodeError(_)
-            | Error::PsetError(_) => api::ErrorCode::InvalidRequest,
+            | Error::PsetError(_)
+            | Error::QuoteExpired
+            | Error::NoQuote => api::ErrorCode::InvalidRequest,
+            Error::ChannelClosed | Error::NoUtxos => api::ErrorCode::ServerError,
+            Error::WsError(_) => api::ErrorCode::NetworkError,
         }
     }
 }

@@ -82,8 +82,8 @@ impl Controller {
             req,
             res_sender: res_sender.into(),
         })?;
-        let address = res_receiver.await??;
-        Ok(address)
+        let resp = res_receiver.await??;
+        Ok(resp)
     }
 
     pub async fn accept_quote(
@@ -95,7 +95,37 @@ impl Controller {
             req,
             res_sender: res_sender.into(),
         })?;
-        let address = res_receiver.await??;
-        Ok(address)
+        let resp = res_receiver.await??;
+        Ok(resp)
+    }
+
+    pub async fn new_peg(&self, req: api::NewPegReq) -> Result<api::NewPegResp, Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.make_request(Command::NewPeg {
+            req,
+            res_sender: res_sender.into(),
+        })?;
+        let resp = res_receiver.await??;
+        Ok(resp)
+    }
+
+    pub async fn del_peg(&self, req: api::DelPegReq) -> Result<api::DelPegResp, Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.make_request(Command::DelPeg {
+            req,
+            res_sender: res_sender.into(),
+        })?;
+        let resp = res_receiver.await??;
+        Ok(resp)
+    }
+
+    pub async fn get_swaps(&self, req: api::GetSwapsReq) -> Result<api::GetSwapsResp, Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.make_request(Command::GetSwaps {
+            req,
+            res_sender: res_sender.into(),
+        })?;
+        let resp = res_receiver.await??;
+        Ok(resp)
     }
 }

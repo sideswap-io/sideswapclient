@@ -1,15 +1,13 @@
 use std::{path::PathBuf, sync::Arc};
 
 use serde::Deserialize;
-use sideswap_common::{
-    dealer_ticker::{TickerLoader, WhitelistedAssets},
-    rpc::RpcServer,
-};
+use sideswap_common::dealer_ticker::{TickerLoader, WhitelistedAssets};
 
 mod api;
 mod controller;
 mod db;
 mod error;
+mod models;
 mod worker;
 mod ws_server;
 
@@ -17,7 +15,9 @@ mod ws_server;
 struct Settings {
     env: sideswap_common::env::Env,
     work_dir: PathBuf,
-    rpc: RpcServer,
+
+    mnemonic: bip39::Mnemonic,
+    script_variant: sideswap_lwk::ScriptVariant,
     ws_server: ws_server::Config,
     whitelisted_assets: Option<WhitelistedAssets>,
 }
