@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_background.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_button.dart';
 import 'package:sideswap/screens/swap/widgets/swap_deliver_amount.dart';
@@ -190,7 +190,6 @@ class SwapMain extends HookConsumerWidget {
                             ),
                           ),
                           SwapMiddleIcon(
-                            visibleToggles: false,
                             onTap: ref.read(swapHelperProvider).toggleAssets,
                           ),
                           const SizedBox(height: 6),

@@ -106,6 +106,7 @@ class InternalUiOrder {
             amount: priceSatoshi,
             precision: pricePrecision,
             trailingZeroes: false,
+            useNumberFormatter: true,
           ),
         );
   }
@@ -145,7 +146,7 @@ class InternalUiOrder {
 @riverpod
 Iterable<InternalUiOrder> internalUiOrders(Ref ref) {
   final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
-  final publicOrderMap = ref.watch(marketPublicOrdersNotifierProvider);
+  final publicOrderMap = ref.watch(debouncedMarketPublicOrdersProvider);
   final uiOwnOrders = ref.watch(marketOwnOrdersNotifierProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 

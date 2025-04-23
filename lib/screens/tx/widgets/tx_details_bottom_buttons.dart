@@ -76,25 +76,27 @@ class TxDetailsBottomButtonsState
         CustomBigButton(
           height: 54,
           width: 251,
-          enabled: widget.enabled,
-          onPressed: () async {
-            await showDialog<void>(
-              context: context,
-              barrierDismissible: true,
-              builder: (context) {
-                return ShareExternalExplorerDialog(
-                  shareIconType: ShareIconType.link,
-                  blindType: widget.blindType,
-                  onBlindedPressed: () async {
-                    await _openUrl(widget.id, widget.isLiquid, false);
-                  },
-                  onUnblindedPressed: () async {
-                    await _openUrl(widget.id, widget.isLiquid, true);
-                  },
-                );
-              },
-            );
-          },
+          onPressed:
+              widget.enabled
+                  ? () async {
+                    await showDialog<void>(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) {
+                        return ShareExternalExplorerDialog(
+                          shareIconType: ShareIconType.link,
+                          blindType: widget.blindType,
+                          onBlindedPressed: () async {
+                            await _openUrl(widget.id, widget.isLiquid, false);
+                          },
+                          onUnblindedPressed: () async {
+                            await _openUrl(widget.id, widget.isLiquid, true);
+                          },
+                        );
+                      },
+                    );
+                  }
+                  : null,
           child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 20),
             child: Row(
@@ -128,25 +130,35 @@ class TxDetailsBottomButtonsState
         CustomBigButton(
           height: 54,
           width: 60,
-          enabled: widget.enabled,
-          onPressed: () async {
-            await showDialog<void>(
-              context: context,
-              barrierDismissible: true,
-              builder: (context) {
-                return ShareExternalExplorerDialog(
-                  shareIconType: ShareIconType.share,
-                  blindType: widget.blindType,
-                  onBlindedPressed: () async {
-                    await _shareAddress(widget.id, widget.isLiquid, false);
-                  },
-                  onUnblindedPressed: () async {
-                    await _shareAddress(widget.id, widget.isLiquid, true);
-                  },
-                );
-              },
-            );
-          },
+          onPressed:
+              widget.enabled
+                  ? () async {
+                    await showDialog<void>(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) {
+                        return ShareExternalExplorerDialog(
+                          shareIconType: ShareIconType.share,
+                          blindType: widget.blindType,
+                          onBlindedPressed: () async {
+                            await _shareAddress(
+                              widget.id,
+                              widget.isLiquid,
+                              false,
+                            );
+                          },
+                          onUnblindedPressed: () async {
+                            await _shareAddress(
+                              widget.id,
+                              widget.isLiquid,
+                              true,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }
+                  : null,
           child: SvgPicture.asset(
             'assets/share2.svg',
             width: 22,

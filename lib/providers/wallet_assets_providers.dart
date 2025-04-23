@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:cached_memory_image/cached_memory_image.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -114,6 +117,27 @@ class AssetsState extends _$AssetsState {
 }
 
 @riverpod
+Iterable<Asset> assets(Ref ref) {
+  final assetsMap = ref.watch(assetsStateProvider);
+  return assetsMap.values;
+}
+
+@riverpod
+Option<Asset> assetFromAssetId(Ref ref, String? assetId) {
+  if (assetId == null) {
+    return Option.none();
+  }
+
+  final assets = ref.watch(assetsProvider);
+  final asset = assets.firstWhereOrNull((e) => e.assetId == assetId);
+  if (asset == null) {
+    return Option.none();
+  }
+
+  return Option.of(asset);
+}
+
+@riverpod
 AssetUtils assetUtils(Ref ref) {
   final assets = ref.watch(assetsStateProvider);
   return AssetUtils(ref, assets: assets);
@@ -191,17 +215,31 @@ class AssetUtils {
 }
 
 @Riverpod(keepAlive: true)
+CacheManager cacheManager(Ref ref) {
+  final key = 'imageCache';
+  return CacheManager(
+    Config(
+      key,
+      stalePeriod: const Duration(days: 30),
+      maxNrOfCacheObjects: 100,
+      fileService: HttpFileService(),
+    ),
+  );
+}
+
+@Riverpod(keepAlive: true)
 CachedImageBase64Manager cachedImageManager(Ref ref) {
-  return CachedImageBase64Manager.instance();
+  final cacheManager = ref.watch(cacheManagerProvider);
+  return CachedImageBase64Manager(cacheManager);
 }
 
 // clear image cache at startup - use cache only when app is running
 @Riverpod(keepAlive: true)
 FutureOr<bool> clearImageCacheFuture(Ref ref) async {
-  final cacheManager = CachedImageBase64Manager.instance();
+  final cacheImageManager = ref.watch(cachedImageManagerProvider);
   logger.d('Clearing image cache...');
 
-  await cacheManager.clearCache();
+  await cacheImageManager.clearCache();
 
   return true;
 }
@@ -239,13 +277,24 @@ FutureOr<Uint8List?> imageBytesResizedFuture(
   required double width,
   required double height,
 }) async {
-  // replace disk cache to own memory cache if you want to load images faster
-  final cacheManager = ref.watch(cachedImageManagerProvider);
-
   final cacheKey = '${uniqueKey}_${width.ceil()}x${height.ceil()}';
 
-  if (await cacheManager.isExists(cacheKey)) {
-    final cachedFile = await cacheManager.cacheBytes(cacheKey, Uint8List(0));
+  // first try to read cached image from memory
+  final cacheManager = ref.watch(cacheManagerProvider);
+
+  final cachedFileInfo = await cacheManager.getFileFromMemory(cacheKey);
+  if (cachedFileInfo != null) {
+    return cachedFileInfo.file.readAsBytes();
+  }
+
+  // if not found in memory then cache file on disk and load to memory
+  final cacheImageManager = ref.watch(cachedImageManagerProvider);
+
+  if (await cacheImageManager.isExists(cacheKey)) {
+    final cachedFile = await cacheImageManager.cacheBytes(
+      cacheKey,
+      Uint8List(0),
+    );
     return cachedFile.readAsBytes();
   }
 
@@ -254,6 +303,7 @@ FutureOr<Uint8List?> imageBytesResizedFuture(
     base64,
     width,
     height,
+    resize: true,
   );
 
   if (imageBytes.isEmpty) {
@@ -261,7 +311,7 @@ FutureOr<Uint8List?> imageBytesResizedFuture(
     return imageBytes;
   }
 
-  final cachedFile = await cacheManager.cacheBytes(cacheKey, imageBytes);
+  final cachedFile = await cacheImageManager.cacheBytes(cacheKey, imageBytes);
   return cachedFile.readAsBytes();
 }
 

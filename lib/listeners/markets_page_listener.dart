@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,9 +6,11 @@ import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/chart_providers.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -24,14 +27,15 @@ class MarketsPageListener extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(limitOrderAmountControllerNotifierProvider);
-    ref.watch(limitOrderPriceAmountControllerNotifierProvider);
+    ref.watch(limitOrderPriceControllerNotifierProvider);
     ref.watch(marketEditDetailsOrderNotifierProvider);
     ref.watch(marketIndexPriceProvider);
     ref.watch(marketLastPriceProvider);
     ref.watch(chartsNotifierProvider);
     ref.watch(marketPublicOrdersNotifierProvider);
-    ref.watch(marketOneTimeAuthorizedProvider);
+    ref.watch(jadeOneTimeAuthorizationProvider);
     ref.watch(pageStorageKeyDataProvider);
+    ref.watch(debouncedMarketPublicOrdersProvider);
 
     final subscribedAssetPair = ref.watch(
       marketSubscribedAssetPairNotifierProvider,
@@ -143,7 +147,7 @@ class MarketsPageListener extends HookConsumerWidget {
     }, [showAcceptQuoteSuccessDialog]);
 
     final optionAccepQuoteSuccess = ref.watch(marketAcceptQuoteSuccessProvider);
-    final optionAcceptQuoteError = ref.watch(acceptQuoteErrorProvider);
+    final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
     final allTxSorted = ref.watch(allTxsSortedProvider);
 
     useEffect(() {
@@ -173,7 +177,7 @@ class MarketsPageListener extends HookConsumerWidget {
                     isPeg: allPegsById.containsKey(transItem.id),
                   );
               ref.invalidate(marketQuoteNotifierProvider);
-              ref.invalidate(marketAcceptQuoteNotifierProvider);
+              ref.invalidate(acceptQuoteNotifierProvider);
             }
           });
         },
@@ -189,7 +193,7 @@ class MarketsPageListener extends HookConsumerWidget {
           Future.microtask(() async {
             await ref.read(desktopDialogProvider).showAcceptQuoteErrorDialog();
             ref.invalidate(marketQuoteNotifierProvider);
-            ref.invalidate(marketAcceptQuoteNotifierProvider);
+            ref.invalidate(acceptQuoteNotifierProvider);
           });
         },
       )();
@@ -197,35 +201,85 @@ class MarketsPageListener extends HookConsumerWidget {
       return;
     }, [optionAcceptQuoteError]);
 
+    final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
     final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
 
     useEffect(() {
-      optionOrderSubmit.match(
-        () => () {},
-        (orderSubmit) => () {
-          if (orderSubmit.hasSubmitSucceed() ||
-              orderSubmit.hasError() ||
-              orderSubmit.hasUnregisteredGaid()) {
-            Future.microtask(() async {
-              if (!context.mounted) {
-                return;
-              }
-              await showDialog<void>(
-                context: context,
-                builder: (context) {
-                  return OrderSubmitDialog();
-                },
-                routeSettings: RouteSettings(name: orderSubmitRouteName),
-                useRootNavigator: false,
-                barrierDismissible: false,
-              );
-            });
-          }
-        },
-      )();
+      optionOrderSubmit.match(() {}, (orderSubmit) {
+        final uiOwnOrder = uiOwnOrders.firstWhereOrNull(
+          (e) => e.ownOrder.orderId == orderSubmit.submitSucceed.orderId,
+        );
+
+        // set submit order success state
+        if (orderSubmit.hasSubmitSucceed() && uiOwnOrder != null) {
+          Future.microtask(
+            () => ref
+                .read(orderSubmitSuccessNotifierProvider.notifier)
+                .setState(
+                  uiOwnOrder.copyWith(ownOrder: orderSubmit.submitSucceed),
+                ),
+          );
+        }
+
+        // set submit order error state
+        if (orderSubmit.hasError() && orderSubmit.error.isNotEmpty) {
+          Future.microtask(
+            () => ref
+                .read(orderSubmitErrorNotifierProvider.notifier)
+                .setState(orderSubmit.error),
+          );
+        }
+
+        // set submit order unregistered gaid state
+        if (orderSubmit.hasUnregisteredGaid()) {
+          Future.microtask(
+            () => ref
+                .read(orderSubmitUnregisteredGaidNotifierProvider.notifier)
+                .setState(orderSubmit.unregisteredGaid.domainAgent),
+          );
+        }
+      });
 
       return;
-    }, [optionOrderSubmit]);
+    }, [optionOrderSubmit, uiOwnOrders]);
+
+    final optionOrderSubmitSuccess = ref.watch(
+      orderSubmitSuccessNotifierProvider,
+    );
+    final optionOrderSubmitError = ref.watch(orderSubmitErrorNotifierProvider);
+    final optionOrderSubmitUnregisteredGaid = ref.watch(
+      orderSubmitUnregisteredGaidNotifierProvider,
+    );
+
+    useEffect(
+      () {
+        if (optionOrderSubmitSuccess.isSome() ||
+            optionOrderSubmitError.isSome() ||
+            optionOrderSubmitUnregisteredGaid.isSome()) {
+          Future.microtask(() async {
+            if (!context.mounted) {
+              return;
+            }
+            await showDialog<void>(
+              context: context,
+              builder: (context) {
+                return OrderSubmitDialog();
+              },
+              routeSettings: RouteSettings(name: orderSubmitRouteName),
+              useRootNavigator: false,
+              barrierDismissible: false,
+            );
+          });
+        }
+
+        return;
+      },
+      [
+        optionOrderSubmitSuccess,
+        optionOrderSubmitError,
+        optionOrderSubmitUnregisteredGaid,
+      ],
+    );
 
     final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionStartOrderQuoteSuccess = ref.watch(
@@ -236,6 +290,10 @@ class MarketsPageListener extends HookConsumerWidget {
       Future.microtask(() {
         optionStartOrderQuoteSuccess.match(() {}, (quoteSuccess) async {
           ref.invalidate(marketQuoteNotifierProvider);
+
+          if (ref.read(previewOrderQuoteSuccessNotifierProvider).isSome()) {
+            return;
+          }
 
           await marketTradeRepository.makeSwapTrade(
             context: context,
@@ -350,7 +408,7 @@ class MarketsPageListener extends HookConsumerWidget {
       optionStartOrderId.match(
         () => optionCurrentQuote.match(() {}, (_) {
           Future.microtask(() {
-            ref.invalidate(limitOrderPriceAmountControllerNotifierProvider);
+            ref.invalidate(limitOrderPriceControllerNotifierProvider);
             ref.invalidate(marketOrderAmountControllerNotifierProvider);
             ref.invalidate(marketQuoteNotifierProvider);
           });

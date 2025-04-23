@@ -12,7 +12,6 @@ import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/listeners/markets_page_listener.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/limit_amount_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/limit_price_text_field.dart';
@@ -29,8 +28,8 @@ class MarketLimitPage extends HookConsumerWidget {
     final optionAssetPair = ref.watch(
       marketSubscribedAssetPairNotifierProvider,
     );
-    final baseAmount = ref.watch(limitOrderAmountProvider);
-    final priceAmount = ref.watch(limitPriceAmountProvider);
+    final orderAmount = ref.watch(limitOrderAmountProvider);
+    final orderPrice = ref.watch(limitOrderPriceProvider);
     final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
     final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
     final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
@@ -44,9 +43,11 @@ class MarketLimitPage extends HookConsumerWidget {
           return;
         }
 
-        ref.read(authInProgressStateNotifierProvider.notifier).setState(true);
+        ref
+            .read(jadeAuthInProgressStateNotifierProvider.notifier)
+            .setState(true);
         final authSucceed = await ref.read(walletProvider).isAuthenticated();
-        ref.invalidate(authInProgressStateNotifierProvider);
+        ref.invalidate(jadeAuthInProgressStateNotifierProvider);
         if (!authSucceed) {
           return;
         }
@@ -55,8 +56,8 @@ class MarketLimitPage extends HookConsumerWidget {
           final msg = To();
           msg.orderSubmit = To_OrderSubmit(
             assetPair: assetPair,
-            baseAmount: Int64(baseAmount.asSatoshi()),
-            price: priceAmount.asDouble(),
+            baseAmount: Int64(orderAmount.asSatoshi()),
+            price: orderPrice.asDouble(),
             tradeDir: tradeDirState,
             ttlSeconds: limitTtlFlag.seconds(),
             private: orderType == OrderType.private(),
@@ -68,8 +69,8 @@ class MarketLimitPage extends HookConsumerWidget {
       },
       [
         optionAssetPair,
-        baseAmount,
-        priceAmount,
+        orderAmount,
+        orderPrice,
         tradeDirState,
         limitTtlFlag,
         orderType,
@@ -124,6 +125,8 @@ class MarketLimitBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: CustomScrollView(
@@ -131,7 +134,11 @@ class MarketLimitBody extends ConsumerWidget {
           SliverToBoxAdapter(child: SizedBox(height: 16)),
           SliverToBoxAdapter(child: MarketIndexPrice()),
           SliverToBoxAdapter(child: SizedBox(height: 24)),
-          SliverToBoxAdapter(child: LimitAmountTextField()),
+          SliverToBoxAdapter(
+            child: LimitAmountTextField(
+              showMaxButton: tradeDirState == TradeDir.SELL,
+            ),
+          ),
           SliverToBoxAdapter(child: SizedBox(height: 6)),
           SliverToBoxAdapter(child: LimitPriceTextField()),
           SliverToBoxAdapter(child: LimitTtlPopupMenu()),

@@ -7,13 +7,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/screens/accounts/accounts.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/home/home.dart';
 import 'package:sideswap/screens/markets/markets.dart';
 import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
+import 'package:sideswap/screens/instant_swap/instant_swap.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 import 'package:sideswap/screens/wallet_main/widgets/main_bottom_navigation_bar.dart';
 
@@ -122,7 +123,7 @@ class WalletMainChildPage extends ConsumerWidget {
       WalletMainNavigationItemEnum.accounts => const Accounts(),
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
       WalletMainNavigationItemEnum.markets => const Markets(),
-      WalletMainNavigationItemEnum.swap => const SwapMain(key: ValueKey(false)),
+      WalletMainNavigationItemEnum.swap => InstantSwap(),
       WalletMainNavigationItemEnum.pegs => const SwapMain(key: ValueKey(true)),
       _ => const SizedBox(),
     };

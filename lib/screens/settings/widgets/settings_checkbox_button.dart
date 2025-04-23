@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-
 import 'package:sideswap/screens/settings/widgets/settings_checkbox.dart';
 
-class SettingsCheckboxButton extends StatefulWidget {
+class SettingsCheckboxButton extends ConsumerWidget {
   const SettingsCheckboxButton({
     super.key,
-    required this.checked,
-    required this.onChanged,
-    required this.content,
+    this.checked = false,
+    this.onChanged,
+    this.content,
     this.trailingIconVisible = false,
   });
 
   final bool checked;
-  final ValueChanged<bool> onChanged;
-  final Widget content;
+  final void Function(bool value)? onChanged;
+  final Widget? content;
   final bool trailingIconVisible;
 
   @override
-  SettingsCheckboxButtonState createState() => SettingsCheckboxButtonState();
-}
-
-class SettingsCheckboxButtonState extends State<SettingsCheckboxButton> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       height: 54,
       width: double.infinity,
       child: TextButton(
         onPressed: () {
-          widget.onChanged(!widget.checked);
+          onChanged?.call(!checked);
         },
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
@@ -52,13 +47,13 @@ class SettingsCheckboxButtonState extends State<SettingsCheckboxButton> {
             children: [
               IgnorePointer(
                 child: SettingsCheckbox(
-                  value: widget.checked,
+                  value: checked,
                   onChanged: (value) {},
-                  title: widget.content,
+                  title: content ?? const SizedBox(),
                 ),
               ),
               const Spacer(),
-              if (widget.trailingIconVisible) ...[
+              if (trailingIconVisible) ...[
                 const Padding(
                   padding: EdgeInsets.only(right: 16),
                   child: Icon(Icons.keyboard_arrow_right),

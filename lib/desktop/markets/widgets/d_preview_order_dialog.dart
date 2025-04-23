@@ -10,6 +10,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/market_preview_order_dialog_common_body.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -34,11 +35,17 @@ class DPreviewOrderDialog extends HookConsumerWidget {
         );
 
     final optionQuoteSuccess = ref.watch(
-      marketPreviewOrderQuoteNotifierProvider,
+      previewOrderQuoteSuccessNotifierProvider,
     );
-    final previewOrderTtl = ref.watch(marketPreviewOrderTtlProvider);
+    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
 
     final closeCallback = useCallback(() {
+      ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+      ref.invalidate(quoteEventNotifierProvider);
+      ref.invalidate(marketQuoteNotifierProvider);
+      Future.microtask(
+        () => ref.invalidate(previewOrderQuoteSuccessNotifierProvider),
+      );
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != desktopOrderPreviewRouteName;
       });
@@ -73,7 +80,7 @@ class DPreviewOrderDialog extends HookConsumerWidget {
               },
               (quoteSuccess) => () {
                 return Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Column(
                     children: [
                       MarketPreviewOrderDialogCommonBody(),

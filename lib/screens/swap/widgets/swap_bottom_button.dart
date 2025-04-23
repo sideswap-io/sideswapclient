@@ -3,7 +3,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 
 class SwapBottomButton extends HookConsumerWidget {
   const SwapBottomButton({super.key});
@@ -17,7 +17,6 @@ class SwapBottomButton extends HookConsumerWidget {
       child: CustomBigButton(
         width: double.infinity,
         height: 54,
-        enabled: enabled,
         backgroundColor: SideSwapColors.brightTurquoise,
         onPressed:
             enabled ? () => ref.read(swapHelperProvider).swapAccept() : null,

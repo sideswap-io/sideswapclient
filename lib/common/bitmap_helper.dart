@@ -142,8 +142,8 @@ class BitmapHelper {
       } else {
         newImage = image.copyResize(
           img,
-          width: width.ceil(),
-          height: height.ceil(),
+          width: width < 128 ? 128 : width.ceil(),
+          height: height < 128 ? 128 : height.ceil(),
           maintainAspect: true,
           interpolation: image.Interpolation.cubic,
         );

@@ -16,11 +16,13 @@ class MarketOrderButton extends ConsumerWidget {
     required this.isSell,
     this.onPressed,
     this.text,
+    this.height = 54,
   });
 
   final bool isSell;
   final VoidCallback? onPressed;
   final String? text;
+  final double? height;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,14 +38,14 @@ class MarketOrderButton extends ConsumerWidget {
       child: switch (isMobile) {
         true => CustomBigButton(
           width: double.infinity,
-          height: 54,
+          height: height,
           text: textDescription,
           backgroundColor: SideSwapColors.brightTurquoise,
           onPressed: onPressed,
         ),
         _ => DCustomFilledBigButton(
           width: 344,
-          height: 54,
+          height: height ?? 54,
           onPressed: onPressed,
           style: DButtonStyle(
             padding: ButtonState.all(EdgeInsets.zero),

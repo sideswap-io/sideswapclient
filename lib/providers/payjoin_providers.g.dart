@@ -117,7 +117,7 @@ final deductFeeFromOutputNotifierProvider =
 
 typedef _$DeductFeeFromOutputNotifier = AutoDisposeNotifier<bool>;
 String _$payjoinFeeAssetNotifierHash() =>
-    r'2aa6050a0ebec670c7ae48049565ce639731a0eb';
+    r'5665f14adce9037ac08c981bc9379a0fe28d78bf';
 
 /// See also [PayjoinFeeAssetNotifier].
 @ProviderFor(PayjoinFeeAssetNotifier)

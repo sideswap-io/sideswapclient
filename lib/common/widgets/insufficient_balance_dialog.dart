@@ -6,7 +6,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 
 void showInsufficientBalanceDialog(
   WidgetRef ref,

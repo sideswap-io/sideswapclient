@@ -8,16 +8,17 @@ import 'dart:ffi' as ffi;
 class NativeLibrary {
   /// Holds the symbol lookup function.
   final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-  _lookup;
+      _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
   NativeLibrary(ffi.DynamicLibrary dynamicLibrary)
-    : _lookup = dynamicLibrary.lookup;
+      : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
   NativeLibrary.fromLookup(
-    ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
-  ) : _lookup = lookup;
+      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+          lookup)
+      : _lookup = lookup;
 
   int sideswap_client_start(
     int env,
@@ -25,97 +26,112 @@ class NativeLibrary {
     ffi.Pointer<ffi.Char> version,
     int dart_port,
   ) {
-    return _sideswap_client_start(env, work_dir, version, dart_port);
+    return _sideswap_client_start(
+      env,
+      work_dir,
+      version,
+      dart_port,
+    );
   }
 
   late final _sideswap_client_startPtr = _lookup<
-    ffi.NativeFunction<
-      IntPtr Function(
-        ffi.Int32,
-        ffi.Pointer<ffi.Char>,
-        ffi.Pointer<ffi.Char>,
-        ffi.Int64,
-      )
-    >
-  >('sideswap_client_start');
-  late final _sideswap_client_start =
-      _sideswap_client_startPtr
-          .asFunction<
-            int Function(int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)
-          >();
+      ffi.NativeFunction<
+          IntPtr Function(ffi.Int32, ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>, ffi.Int64)>>('sideswap_client_start');
+  late final _sideswap_client_start = _sideswap_client_startPtr.asFunction<
+      int Function(int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)>();
 
-  void sideswap_send_request(int client, ffi.Pointer<ffi.Uint8> data, int len) {
-    return _sideswap_send_request(client, data, len);
+  void sideswap_send_request(
+    int client,
+    ffi.Pointer<ffi.Uint8> data,
+    int len,
+  ) {
+    return _sideswap_send_request(
+      client,
+      data,
+      len,
+    );
   }
 
   late final _sideswap_send_requestPtr = _lookup<
-    ffi.NativeFunction<
-      ffi.Void Function(IntPtr, ffi.Pointer<ffi.Uint8>, ffi.Uint64)
-    >
-  >('sideswap_send_request');
-  late final _sideswap_send_request =
-      _sideswap_send_requestPtr
-          .asFunction<void Function(int, ffi.Pointer<ffi.Uint8>, int)>();
+      ffi.NativeFunction<
+          ffi.Void Function(IntPtr, ffi.Pointer<ffi.Uint8>,
+              ffi.Uint64)>>('sideswap_send_request');
+  late final _sideswap_send_request = _sideswap_send_requestPtr
+      .asFunction<void Function(int, ffi.Pointer<ffi.Uint8>, int)>();
 
-  void sideswap_process_background(ffi.Pointer<ffi.Char> data) {
-    return _sideswap_process_background(data);
+  void sideswap_process_background(
+    ffi.Pointer<ffi.Char> data,
+  ) {
+    return _sideswap_process_background(
+      data,
+    );
   }
 
   late final _sideswap_process_backgroundPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char>)>>(
-        'sideswap_process_background',
-      );
-  late final _sideswap_process_background =
-      _sideswap_process_backgroundPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
+          'sideswap_process_background');
+  late final _sideswap_process_background = _sideswap_process_backgroundPtr
+      .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 
   bool sideswap_check_addr(
     int client,
     ffi.Pointer<ffi.Char> addr,
     int addr_type,
   ) {
-    return _sideswap_check_addr(client, addr, addr_type);
+    return _sideswap_check_addr(
+      client,
+      addr,
+      addr_type,
+    );
   }
 
   late final _sideswap_check_addrPtr = _lookup<
-    ffi.NativeFunction<
-      ffi.Bool Function(IntPtr, ffi.Pointer<ffi.Char>, ffi.Int32)
-    >
-  >('sideswap_check_addr');
-  late final _sideswap_check_addr =
-      _sideswap_check_addrPtr
-          .asFunction<bool Function(int, ffi.Pointer<ffi.Char>, int)>();
+      ffi.NativeFunction<
+          ffi.Bool Function(IntPtr, ffi.Pointer<ffi.Char>,
+              ffi.Int32)>>('sideswap_check_addr');
+  late final _sideswap_check_addr = _sideswap_check_addrPtr
+      .asFunction<bool Function(int, ffi.Pointer<ffi.Char>, int)>();
 
-  ffi.Pointer<ffi.Uint8> sideswap_msg_ptr(int msg) {
-    return _sideswap_msg_ptr(msg);
+  ffi.Pointer<ffi.Uint8> sideswap_msg_ptr(
+    int msg,
+  ) {
+    return _sideswap_msg_ptr(
+      msg,
+    );
   }
 
   late final _sideswap_msg_ptrPtr =
       _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Uint8> Function(IntPtr)>>(
-        'sideswap_msg_ptr',
-      );
+          'sideswap_msg_ptr');
   late final _sideswap_msg_ptr =
       _sideswap_msg_ptrPtr.asFunction<ffi.Pointer<ffi.Uint8> Function(int)>();
 
-  int sideswap_msg_len(int msg) {
-    return _sideswap_msg_len(msg);
+  int sideswap_msg_len(
+    int msg,
+  ) {
+    return _sideswap_msg_len(
+      msg,
+    );
   }
 
   late final _sideswap_msg_lenPtr =
       _lookup<ffi.NativeFunction<ffi.Uint64 Function(IntPtr)>>(
-        'sideswap_msg_len',
-      );
+          'sideswap_msg_len');
   late final _sideswap_msg_len =
       _sideswap_msg_lenPtr.asFunction<int Function(int)>();
 
-  void sideswap_msg_free(int msg) {
-    return _sideswap_msg_free(msg);
+  void sideswap_msg_free(
+    int msg,
+  ) {
+    return _sideswap_msg_free(
+      msg,
+    );
   }
 
   late final _sideswap_msg_freePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(IntPtr)>>(
-        'sideswap_msg_free',
-      );
+          'sideswap_msg_free');
   late final _sideswap_msg_free =
       _sideswap_msg_freePtr.asFunction<void Function(int)>();
 
@@ -125,41 +141,190 @@ class NativeLibrary {
 
   late final _sideswap_generate_mnemonic12Ptr =
       _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function()>>(
-        'sideswap_generate_mnemonic12',
-      );
-  late final _sideswap_generate_mnemonic12 =
-      _sideswap_generate_mnemonic12Ptr
-          .asFunction<ffi.Pointer<ffi.Char> Function()>();
+          'sideswap_generate_mnemonic12');
+  late final _sideswap_generate_mnemonic12 = _sideswap_generate_mnemonic12Ptr
+      .asFunction<ffi.Pointer<ffi.Char> Function()>();
 
-  bool sideswap_verify_mnemonic(ffi.Pointer<ffi.Char> mnemonic) {
-    return _sideswap_verify_mnemonic(mnemonic);
+  bool sideswap_verify_mnemonic(
+    ffi.Pointer<ffi.Char> mnemonic,
+  ) {
+    return _sideswap_verify_mnemonic(
+      mnemonic,
+    );
   }
 
   late final _sideswap_verify_mnemonicPtr =
       _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<ffi.Char>)>>(
-        'sideswap_verify_mnemonic',
-      );
-  late final _sideswap_verify_mnemonic =
-      _sideswap_verify_mnemonicPtr
-          .asFunction<bool Function(ffi.Pointer<ffi.Char>)>();
+          'sideswap_verify_mnemonic');
+  late final _sideswap_verify_mnemonic = _sideswap_verify_mnemonicPtr
+      .asFunction<bool Function(ffi.Pointer<ffi.Char>)>();
 
-  void sideswap_string_free(ffi.Pointer<ffi.Char> str) {
-    return _sideswap_string_free(str);
+  void sideswap_string_free(
+    ffi.Pointer<ffi.Char> str,
+  ) {
+    return _sideswap_string_free(
+      str,
+    );
   }
 
   late final _sideswap_string_freePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char>)>>(
-        'sideswap_string_free',
-      );
-  late final _sideswap_string_free =
-      _sideswap_string_freePtr
-          .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
+          'sideswap_string_free');
+  late final _sideswap_string_free = _sideswap_string_freePtr
+      .asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 }
+
+typedef __u_char = ffi.UnsignedChar;
+typedef Dart__u_char = int;
+typedef __u_short = ffi.UnsignedShort;
+typedef Dart__u_short = int;
+typedef __u_int = ffi.UnsignedInt;
+typedef Dart__u_int = int;
+typedef __u_long = ffi.UnsignedLong;
+typedef Dart__u_long = int;
+typedef __int8_t = ffi.SignedChar;
+typedef Dart__int8_t = int;
+typedef __uint8_t = ffi.UnsignedChar;
+typedef Dart__uint8_t = int;
+typedef __int16_t = ffi.Short;
+typedef Dart__int16_t = int;
+typedef __uint16_t = ffi.UnsignedShort;
+typedef Dart__uint16_t = int;
+typedef __int32_t = ffi.Int;
+typedef Dart__int32_t = int;
+typedef __uint32_t = ffi.UnsignedInt;
+typedef Dart__uint32_t = int;
+typedef __int64_t = ffi.Long;
+typedef Dart__int64_t = int;
+typedef __uint64_t = ffi.UnsignedLong;
+typedef Dart__uint64_t = int;
+typedef __int_least8_t = __int8_t;
+typedef __uint_least8_t = __uint8_t;
+typedef __int_least16_t = __int16_t;
+typedef __uint_least16_t = __uint16_t;
+typedef __int_least32_t = __int32_t;
+typedef __uint_least32_t = __uint32_t;
+typedef __int_least64_t = __int64_t;
+typedef __uint_least64_t = __uint64_t;
+typedef __quad_t = ffi.Long;
+typedef Dart__quad_t = int;
+typedef __u_quad_t = ffi.UnsignedLong;
+typedef Dart__u_quad_t = int;
+typedef __intmax_t = ffi.Long;
+typedef Dart__intmax_t = int;
+typedef __uintmax_t = ffi.UnsignedLong;
+typedef Dart__uintmax_t = int;
+typedef __dev_t = ffi.UnsignedLong;
+typedef Dart__dev_t = int;
+typedef __uid_t = ffi.UnsignedInt;
+typedef Dart__uid_t = int;
+typedef __gid_t = ffi.UnsignedInt;
+typedef Dart__gid_t = int;
+typedef __ino_t = ffi.UnsignedLong;
+typedef Dart__ino_t = int;
+typedef __ino64_t = ffi.UnsignedLong;
+typedef Dart__ino64_t = int;
+typedef __mode_t = ffi.UnsignedInt;
+typedef Dart__mode_t = int;
+typedef __nlink_t = ffi.UnsignedLong;
+typedef Dart__nlink_t = int;
+typedef __off_t = ffi.Long;
+typedef Dart__off_t = int;
+typedef __off64_t = ffi.Long;
+typedef Dart__off64_t = int;
+typedef __pid_t = ffi.Int;
+typedef Dart__pid_t = int;
 
 final class __fsid_t extends ffi.Struct {
   @ffi.Array.multi([2])
   external ffi.Array<ffi.Int> __val;
 }
+
+typedef __clock_t = ffi.Long;
+typedef Dart__clock_t = int;
+typedef __rlim_t = ffi.UnsignedLong;
+typedef Dart__rlim_t = int;
+typedef __rlim64_t = ffi.UnsignedLong;
+typedef Dart__rlim64_t = int;
+typedef __id_t = ffi.UnsignedInt;
+typedef Dart__id_t = int;
+typedef __time_t = ffi.Long;
+typedef Dart__time_t = int;
+typedef __useconds_t = ffi.UnsignedInt;
+typedef Dart__useconds_t = int;
+typedef __suseconds_t = ffi.Long;
+typedef Dart__suseconds_t = int;
+typedef __suseconds64_t = ffi.Long;
+typedef Dart__suseconds64_t = int;
+typedef __daddr_t = ffi.Int;
+typedef Dart__daddr_t = int;
+typedef __key_t = ffi.Int;
+typedef Dart__key_t = int;
+typedef __clockid_t = ffi.Int;
+typedef Dart__clockid_t = int;
+typedef __timer_t = ffi.Pointer<ffi.Void>;
+typedef __blksize_t = ffi.Long;
+typedef Dart__blksize_t = int;
+typedef __blkcnt_t = ffi.Long;
+typedef Dart__blkcnt_t = int;
+typedef __blkcnt64_t = ffi.Long;
+typedef Dart__blkcnt64_t = int;
+typedef __fsblkcnt_t = ffi.UnsignedLong;
+typedef Dart__fsblkcnt_t = int;
+typedef __fsblkcnt64_t = ffi.UnsignedLong;
+typedef Dart__fsblkcnt64_t = int;
+typedef __fsfilcnt_t = ffi.UnsignedLong;
+typedef Dart__fsfilcnt_t = int;
+typedef __fsfilcnt64_t = ffi.UnsignedLong;
+typedef Dart__fsfilcnt64_t = int;
+typedef __fsword_t = ffi.Long;
+typedef Dart__fsword_t = int;
+typedef __ssize_t = ffi.Long;
+typedef Dart__ssize_t = int;
+typedef __syscall_slong_t = ffi.Long;
+typedef Dart__syscall_slong_t = int;
+typedef __syscall_ulong_t = ffi.UnsignedLong;
+typedef Dart__syscall_ulong_t = int;
+typedef __loff_t = __off64_t;
+typedef __caddr_t = ffi.Pointer<ffi.Char>;
+typedef __intptr_t = ffi.Long;
+typedef Dart__intptr_t = int;
+typedef __socklen_t = ffi.UnsignedInt;
+typedef Dart__socklen_t = int;
+typedef __sig_atomic_t = ffi.Int;
+typedef Dart__sig_atomic_t = int;
+typedef int_least8_t = __int_least8_t;
+typedef int_least16_t = __int_least16_t;
+typedef int_least32_t = __int_least32_t;
+typedef int_least64_t = __int_least64_t;
+typedef uint_least8_t = __uint_least8_t;
+typedef uint_least16_t = __uint_least16_t;
+typedef uint_least32_t = __uint_least32_t;
+typedef uint_least64_t = __uint_least64_t;
+typedef int_fast8_t = ffi.SignedChar;
+typedef Dartint_fast8_t = int;
+typedef int_fast16_t = ffi.Long;
+typedef Dartint_fast16_t = int;
+typedef int_fast32_t = ffi.Long;
+typedef Dartint_fast32_t = int;
+typedef int_fast64_t = ffi.Long;
+typedef Dartint_fast64_t = int;
+typedef uint_fast8_t = ffi.UnsignedChar;
+typedef Dartuint_fast8_t = int;
+typedef uint_fast16_t = ffi.UnsignedLong;
+typedef Dartuint_fast16_t = int;
+typedef uint_fast32_t = ffi.UnsignedLong;
+typedef Dartuint_fast32_t = int;
+typedef uint_fast64_t = ffi.UnsignedLong;
+typedef Dartuint_fast64_t = int;
+typedef intmax_t = __intmax_t;
+typedef uintmax_t = __uintmax_t;
+typedef _Float32 = ffi.Float;
+typedef Dart_Float32 = double;
+typedef _Float64 = ffi.Double;
+typedef Dart_Float64 = double;
+typedef _Float32x = ffi.Double;
+typedef Dart_Float32x = double;
 
 final class div_t extends ffi.Struct {
   @ffi.Int()
@@ -185,10 +350,50 @@ final class lldiv_t extends ffi.Struct {
   external int rem;
 }
 
+typedef u_char = __u_char;
+typedef u_short = __u_short;
+typedef u_int = __u_int;
+typedef u_long = __u_long;
+typedef quad_t = __quad_t;
+typedef u_quad_t = __u_quad_t;
+typedef fsid_t = __fsid_t;
+typedef loff_t = __loff_t;
+typedef ino_t = __ino_t;
+typedef dev_t = __dev_t;
+typedef gid_t = __gid_t;
+typedef mode_t = __mode_t;
+typedef nlink_t = __nlink_t;
+typedef uid_t = __uid_t;
+typedef off_t = __off_t;
+typedef pid_t = __pid_t;
+typedef id_t = __id_t;
+typedef ssize_t = __ssize_t;
+typedef daddr_t = __daddr_t;
+typedef caddr_t = __caddr_t;
+typedef key_t = __key_t;
+typedef clock_t = __clock_t;
+typedef clockid_t = __clockid_t;
+typedef time_t = __time_t;
+typedef timer_t = __timer_t;
+typedef ulong = ffi.UnsignedLong;
+typedef Dartulong = int;
+typedef ushort = ffi.UnsignedShort;
+typedef Dartushort = int;
+typedef uint = ffi.UnsignedInt;
+typedef Dartuint = int;
+typedef u_int8_t = __uint8_t;
+typedef u_int16_t = __uint16_t;
+typedef u_int32_t = __uint32_t;
+typedef u_int64_t = __uint64_t;
+typedef register_t = ffi.Long;
+typedef Dartregister_t = int;
+
 final class __sigset_t extends ffi.Struct {
   @ffi.Array.multi([16])
   external ffi.Array<ffi.UnsignedLong> __val;
 }
+
+typedef sigset_t = __sigset_t;
 
 final class timeval extends ffi.Struct {
   @__time_t()
@@ -198,11 +403,6 @@ final class timeval extends ffi.Struct {
   external int tv_usec;
 }
 
-typedef __time_t = ffi.Long;
-typedef Dart__time_t = int;
-typedef __suseconds_t = ffi.Long;
-typedef Dart__suseconds_t = int;
-
 final class timespec extends ffi.Struct {
   @__time_t()
   external int tv_sec;
@@ -211,23 +411,20 @@ final class timespec extends ffi.Struct {
   external int tv_nsec;
 }
 
-typedef __syscall_slong_t = ffi.Long;
-typedef Dart__syscall_slong_t = int;
+typedef suseconds_t = __suseconds_t;
+typedef __fd_mask = ffi.Long;
+typedef Dart__fd_mask = int;
 
 final class fd_set extends ffi.Struct {
   @ffi.Array.multi([16])
   external ffi.Array<__fd_mask> __fds_bits;
 }
 
-typedef __fd_mask = ffi.Long;
-typedef Dart__fd_mask = int;
-
-final class __atomic_wide_counter extends ffi.Union {
-  @ffi.UnsignedLongLong()
-  external int __value64;
-
-  external UnnamedStruct1 __value32;
-}
+typedef fd_mask = __fd_mask;
+typedef blksize_t = __blksize_t;
+typedef blkcnt_t = __blkcnt_t;
+typedef fsblkcnt_t = __fsblkcnt_t;
+typedef fsfilcnt_t = __fsfilcnt_t;
 
 final class UnnamedStruct1 extends ffi.Struct {
   @ffi.UnsignedInt()
@@ -237,15 +434,26 @@ final class UnnamedStruct1 extends ffi.Struct {
   external int __high;
 }
 
+final class __atomic_wide_counter extends ffi.Union {
+  @ffi.UnsignedLongLong()
+  external int __value64;
+
+  external UnnamedStruct1 __value32;
+}
+
 final class __pthread_internal_list extends ffi.Struct {
   external ffi.Pointer<__pthread_internal_list> __prev;
 
   external ffi.Pointer<__pthread_internal_list> __next;
 }
 
+typedef __pthread_list_t = __pthread_internal_list;
+
 final class __pthread_internal_slist extends ffi.Struct {
   external ffi.Pointer<__pthread_internal_slist> __next;
 }
+
+typedef __pthread_slist_t = __pthread_internal_slist;
 
 final class __pthread_mutex_s extends ffi.Struct {
   @ffi.Int()
@@ -271,8 +479,6 @@ final class __pthread_mutex_s extends ffi.Struct {
 
   external __pthread_list_t __list;
 }
-
-typedef __pthread_list_t = __pthread_internal_list;
 
 final class __pthread_rwlock_arch_t extends ffi.Struct {
   @ffi.UnsignedInt()
@@ -333,10 +539,18 @@ final class __pthread_cond_s extends ffi.Struct {
   external ffi.Array<ffi.UnsignedInt> __g_signals;
 }
 
+typedef __tss_t = ffi.UnsignedInt;
+typedef Dart__tss_t = int;
+typedef __thrd_t = ffi.UnsignedLong;
+typedef Dart__thrd_t = int;
+
 final class __once_flag extends ffi.Struct {
   @ffi.Int()
   external int __data;
 }
+
+typedef pthread_t = ffi.UnsignedLong;
+typedef Dartpthread_t = int;
 
 final class pthread_mutexattr_t extends ffi.Union {
   @ffi.Array.multi([4])
@@ -353,6 +567,11 @@ final class pthread_condattr_t extends ffi.Union {
   @ffi.Int()
   external int __align;
 }
+
+typedef pthread_key_t = ffi.UnsignedInt;
+typedef Dartpthread_key_t = int;
+typedef pthread_once_t = ffi.Int;
+typedef Dartpthread_once_t = int;
 
 final class pthread_attr_t extends ffi.Union {
   @ffi.Array.multi([56])
@@ -452,6 +671,11 @@ final class drand48_data extends ffi.Struct {
   external int __a;
 }
 
+typedef __compar_fn_tFunction = ffi.Int Function(
+    ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>);
+typedef Dart__compar_fn_tFunction = int Function(
+    ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>);
+typedef __compar_fn_t = ffi.Pointer<ffi.NativeFunction<__compar_fn_tFunction>>;
 typedef IntPtr = ffi.Uint64;
 typedef DartIntPtr = int;
 
@@ -513,6 +737,8 @@ const int __GLIBC_USE_DEPRECATED_GETS = 0;
 
 const int __GLIBC_USE_DEPRECATED_SCANF = 0;
 
+const int __GLIBC_USE_C2X_STRTOL = 1;
+
 const int _STDC_PREDEF_H = 1;
 
 const int __STDC_IEC_559__ = 1;
@@ -529,7 +755,7 @@ const int __GNU_LIBRARY__ = 6;
 
 const int __GLIBC__ = 2;
 
-const int __GLIBC_MINOR__ = 36;
+const int __GLIBC_MINOR__ = 39;
 
 const int _SYS_CDEFS_H = 1;
 
@@ -584,6 +810,8 @@ const int __WCHAR_MIN = -2147483648;
 const int _BITS_STDINT_INTN_H = 1;
 
 const int _BITS_STDINT_UINTN_H = 1;
+
+const int _BITS_STDINT_LEAST_H = 1;
 
 const int INT8_MIN = -128;
 

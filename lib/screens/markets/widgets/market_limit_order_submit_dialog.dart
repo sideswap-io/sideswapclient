@@ -24,18 +24,41 @@ class OrderSubmitDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final closeCallback = useCallback(() {
-      // clear order submit state
-      ref.invalidate(orderSubmitNotifierProvider);
-
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != orderSubmitRouteName;
       });
+
+      // clear order submit state
+      Future.microtask(() {
+        ref.invalidate(orderSubmitNotifierProvider);
+        ref.invalidate(orderSubmitSuccessNotifierProvider);
+        ref.invalidate(orderSubmitErrorNotifierProvider);
+        ref.invalidate(orderSubmitUnregisteredGaidNotifierProvider);
+      });
     });
 
-    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
-    final optionOrderSubmitError = ref.watch(orderSubmitErrorProvider);
+    final optionOrderSubmitSuccess = ref.watch(
+      orderSubmitSuccessNotifierProvider,
+    );
+    final optionOrderSubmitError = ref.watch(orderSubmitErrorNotifierProvider);
     final optionOrderSubmitUnregisteredGaid = ref.watch(
-      orderSubmitUnregisteredGaidProvider,
+      orderSubmitUnregisteredGaidNotifierProvider,
+    );
+
+    useEffect(
+      () {
+        if (optionOrderSubmitSuccess.isNone() &&
+            optionOrderSubmitError.isNone() &&
+            optionOrderSubmitUnregisteredGaid.isNone()) {
+          closeCallback();
+        }
+        return;
+      },
+      [
+        optionOrderSubmitSuccess,
+        optionOrderSubmitError,
+        optionOrderSubmitUnregisteredGaid,
+      ],
     );
 
     return switch (FlavorConfig.isDesktop) {
@@ -59,10 +82,10 @@ class OrderSubmitDialog extends HookConsumerWidget {
         ),
         (_) => MobileOrderSubmitSuccessDialog(
           onClose: () {
-            ref.invalidate(limitPriceAmountProvider);
+            ref.invalidate(limitOrderPriceProvider);
             ref.invalidate(limitOrderAmountProvider);
             ref.invalidate(limitOrderAmountControllerNotifierProvider);
-            ref.invalidate(limitOrderPriceAmountControllerNotifierProvider);
+            ref.invalidate(limitOrderPriceControllerNotifierProvider);
             closeCallback();
             ref
                 .read(pageStatusNotifierProvider.notifier)
@@ -108,7 +131,7 @@ class MobileOrderSubmitUnregisteredGaid extends HookConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionUnregisteredGaid = ref.watch(
-                  orderSubmitUnregisteredGaidProvider,
+                  orderSubmitUnregisteredGaidNotifierProvider,
                 );
                 return optionUnregisteredGaid.match(
                   () => SizedBox(),
@@ -187,7 +210,7 @@ class MobileOrderSubmitErrorDialog extends HookConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionOrderSubmitError = ref.watch(
-                  orderSubmitErrorProvider,
+                  orderSubmitErrorNotifierProvider,
                 );
 
                 return optionOrderSubmitError.match(
@@ -225,7 +248,9 @@ class MobileOrderSubmitSuccessDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
+    final optionOrderSubmitSuccess = ref.watch(
+      orderSubmitSuccessNotifierProvider,
+    );
 
     return SideSwapPopup(
       onClose: () {

@@ -144,28 +144,34 @@ class SettingsCustomHost extends HookConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 40),
                             child: CustomBigButton(
-                              enabled: applyEnabled.value,
                               width: double.maxFinite,
                               height: 54,
                               text: 'APPLY'.tr(),
-                              onPressed: () {
-                                ref
-                                    .read(
-                                      networkSettingsNotifierProvider.notifier,
-                                    )
-                                    .setModel(
-                                      NetworkSettingsModelApply(
-                                        settingsNetworkType:
-                                            SettingsNetworkType.personal,
-                                        env: SIDESWAP_ENV_PROD,
-                                        host: hostController.text,
-                                        port: int.parse(portController.text),
-                                        useTls: useTls.value,
-                                      ),
-                                    );
+                              onPressed:
+                                  applyEnabled.value
+                                      ? () {
+                                        ref
+                                            .read(
+                                              networkSettingsNotifierProvider
+                                                  .notifier,
+                                            )
+                                            .setModel(
+                                              NetworkSettingsModelApply(
+                                                settingsNetworkType:
+                                                    SettingsNetworkType
+                                                        .personal,
+                                                env: SIDESWAP_ENV_PROD,
+                                                host: hostController.text,
+                                                port: int.parse(
+                                                  portController.text,
+                                                ),
+                                                useTls: useTls.value,
+                                              ),
+                                            );
 
-                                Navigator.of(context).pop();
-                              },
+                                        Navigator.of(context).pop();
+                                      }
+                                      : null,
                               backgroundColor: SideSwapColors.brightTurquoise,
                               textColor: Colors.white,
                             ),

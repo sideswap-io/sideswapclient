@@ -10,6 +10,13 @@ import 'package:sideswap/providers/locales_provider.dart';
 
 part 'amount_to_string_provider.g.dart';
 
+extension Precision on double {
+  double toPrecision(int fractionDigits) {
+    final mod = pow(10, fractionDigits);
+    return ((this * mod).round().toDouble() / mod);
+  }
+}
+
 @riverpod
 AmountToString amountToString(Ref ref) {
   final locale = ref.watch(localesNotifierProvider);
@@ -21,6 +28,7 @@ class AmountToString {
 
   AmountToString({required this.locale});
 
+  // useNumberFormatter will use scale conversion from scaleForAmount function
   String amountToString(AmountToStringParameters arg) {
     const int kCoin = 100000000;
 
@@ -28,7 +36,7 @@ class AmountToString {
     var amount = arg.amount;
     var forceSign = arg.forceSign;
     var precision = arg.precision;
-    final formatterThousandsSeparator = NumberFormat("#,##0.00######", locale)
+    final formatterThousandsSeparator = NumberFormat("#0.00######", 'en')
       ..maximumFractionDigits = arg.precision;
 
     if (amount < 0) {
@@ -58,7 +66,12 @@ class AmountToString {
     final decimalTrailingZeroes =
         Decimal.tryParse(resultAmountWithTrailingZeroes) ?? Decimal.zero;
 
-    final doubleTrailingZeroes = decimalTrailingZeroes.toDouble();
+    final newScale = scaleForAmount(decimalTrailingZeroes, precision);
+    final doubleTrailingZeroes =
+        arg.useNumberFormatter
+            ? decimalTrailingZeroes.toDouble().toPrecision(newScale)
+            : decimalTrailingZeroes.toDouble();
+
     final formatted = formatterThousandsSeparator.format(doubleTrailingZeroes);
 
     final resultAmountWithNumberFormatter =
@@ -130,5 +143,24 @@ class AmountToString {
     }
 
     return amount.toString();
+  }
+
+  // truncate to new scale, it will omit trailing zeroes too
+  String indexPriceFormatted(Decimal amount, int assetPrecision) {
+    final truncated = amount.truncate(
+      scale: scaleForAmount(amount, assetPrecision),
+    );
+
+    return truncated.toString();
+  }
+
+  int scaleForAmount(Decimal amount, int assetPrecision) {
+    return switch (amount) {
+      Decimal() when amount > Decimal.fromInt(1000) && assetPrecision > 2 => 2,
+      Decimal() when amount > Decimal.fromInt(100) && assetPrecision > 3 => 3,
+      Decimal() when amount > Decimal.fromInt(10) && assetPrecision > 4 => 4,
+      Decimal() when amount > Decimal.one && assetPrecision > 5 => 5,
+      _ => assetPrecision,
+    };
   }
 }

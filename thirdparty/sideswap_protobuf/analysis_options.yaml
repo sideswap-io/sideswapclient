@@ -5,8 +5,10 @@ analyzer:
     strict-casts: true
     strict-raw-types: true
   exclude:
-    - "**/*.g.dart"
-    - "**/*.freezed.dart"
-    - "**/*.pb.dart"
+    - build/** # Exclude generated files in the build directory
+    - .dart_tool/** # Exclude Dart tool-generated files
+    - lib/**.g.dart
+    - lib/**.freezed.dart
+    - lib/**.pb.dart
   errors:
     collection_methods_unrelated_type: error

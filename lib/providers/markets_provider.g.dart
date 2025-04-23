@@ -394,6 +394,24 @@ class _MarketInfoByMarketTypeProviderElement
       (origin as MarketInfoByMarketTypeProvider).marketType;
 }
 
+String _$stableMarketsHash() => r'f59ea4c91a3cac5c823dbb0c11fb44169092a73a';
+
+/// See also [stableMarkets].
+@ProviderFor(stableMarkets)
+final stableMarketsProvider = AutoDisposeProvider<List<MarketInfo>>.internal(
+  stableMarkets,
+  name: r'stableMarketsProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$stableMarketsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef StableMarketsRef = AutoDisposeProviderRef<List<MarketInfo>>;
 String _$baseAssetByMarketInfoHash() =>
     r'3320120e9ba1099dfedc24e51cc4a616036455de';
 
@@ -1165,8 +1183,27 @@ final marketQuoteUnregisteredGaidProvider =
 // ignore: unused_element
 typedef MarketQuoteUnregisteredGaidRef =
     AutoDisposeProviderRef<Option<QuoteUnregisteredGaid>>;
+String _$marketAcceptQuoteHash() => r'c7c686b0a9c261b96e08501d70183fe3e58429f6';
+
+/// See also [marketAcceptQuote].
+@ProviderFor(marketAcceptQuote)
+final marketAcceptQuoteProvider =
+    AutoDisposeProvider<Option<From_AcceptQuote>>.internal(
+      marketAcceptQuote,
+      name: r'marketAcceptQuoteProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$marketAcceptQuoteHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MarketAcceptQuoteRef = AutoDisposeProviderRef<Option<From_AcceptQuote>>;
 String _$marketAcceptQuoteSuccessHash() =>
-    r'9f600156a0dcafd1efa6b50488770bd39a6a420c';
+    r'b769333f4e8061062194f2acbe05ca2790d34b0d';
 
 /// See also [marketAcceptQuoteSuccess].
 @ProviderFor(marketAcceptQuoteSuccess)
@@ -1185,24 +1222,26 @@ final marketAcceptQuoteSuccessProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef MarketAcceptQuoteSuccessRef = AutoDisposeProviderRef<Option<String>>;
-String _$acceptQuoteErrorHash() => r'189c83c899726743b828e027317134b81afaad81';
+String _$marketAcceptQuoteErrorHash() =>
+    r'18dc40ab4c6fd2f681571f6fd796e0744bdd9444';
 
-/// See also [acceptQuoteError].
-@ProviderFor(acceptQuoteError)
-final acceptQuoteErrorProvider = AutoDisposeProvider<Option<String>>.internal(
-  acceptQuoteError,
-  name: r'acceptQuoteErrorProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$acceptQuoteErrorHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+/// See also [marketAcceptQuoteError].
+@ProviderFor(marketAcceptQuoteError)
+final marketAcceptQuoteErrorProvider =
+    AutoDisposeProvider<Option<String>>.internal(
+      marketAcceptQuoteError,
+      name: r'marketAcceptQuoteErrorProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$marketAcceptQuoteErrorHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef AcceptQuoteErrorRef = AutoDisposeProviderRef<Option<String>>;
+typedef MarketAcceptQuoteErrorRef = AutoDisposeProviderRef<Option<String>>;
 String _$limitOrderAmountHash() => r'cb89eacf8042f7467f758a1f49fa1209c18177ab';
 
 /// See also [limitOrderAmount].
@@ -1221,26 +1260,26 @@ final limitOrderAmountProvider = AutoDisposeProvider<OrderAmount>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef LimitOrderAmountRef = AutoDisposeProviderRef<OrderAmount>;
-String _$limitPriceAmountHash() => r'5587603fa6fe3340a35e5bf4d8674e003eb9354f';
+String _$limitOrderPriceHash() => r'ce395206d793c868d9d2d8c7b8d01a9eedc34545';
 
-/// See also [limitPriceAmount].
-@ProviderFor(limitPriceAmount)
-final limitPriceAmountProvider = AutoDisposeProvider<OrderAmount>.internal(
-  limitPriceAmount,
-  name: r'limitPriceAmountProvider',
+/// See also [limitOrderPrice].
+@ProviderFor(limitOrderPrice)
+final limitOrderPriceProvider = AutoDisposeProvider<OrderAmount>.internal(
+  limitOrderPrice,
+  name: r'limitOrderPriceProvider',
   debugGetCreateSourceHash:
       const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$limitPriceAmountHash,
+          : _$limitOrderPriceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef LimitPriceAmountRef = AutoDisposeProviderRef<OrderAmount>;
+typedef LimitOrderPriceRef = AutoDisposeProviderRef<OrderAmount>;
 String _$limitOrderTradeButtonEnabledHash() =>
-    r'd923081e60a05c11279f8ea6115929b1d25b9d7a';
+    r'd0da36f4e9d3a7912860513fd8ab77c6a8a1fcd1';
 
 /// See also [limitOrderTradeButtonEnabled].
 @ProviderFor(limitOrderTradeButtonEnabled)
@@ -1258,64 +1297,6 @@ final limitOrderTradeButtonEnabledProvider = AutoDisposeProvider<bool>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef LimitOrderTradeButtonEnabledRef = AutoDisposeProviderRef<bool>;
-String _$orderSubmitSuccessHash() =>
-    r'2b3c85ecbc63cbb35cea76b261ed27f34134ff1c';
-
-/// See also [orderSubmitSuccess].
-@ProviderFor(orderSubmitSuccess)
-final orderSubmitSuccessProvider =
-    AutoDisposeProvider<Option<UiOwnOrder>>.internal(
-      orderSubmitSuccess,
-      name: r'orderSubmitSuccessProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$orderSubmitSuccessHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrderSubmitSuccessRef = AutoDisposeProviderRef<Option<UiOwnOrder>>;
-String _$orderSubmitErrorHash() => r'd646972443916b63c5f9b440067f77a40a8f2728';
-
-/// See also [orderSubmitError].
-@ProviderFor(orderSubmitError)
-final orderSubmitErrorProvider = AutoDisposeProvider<Option<String>>.internal(
-  orderSubmitError,
-  name: r'orderSubmitErrorProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$orderSubmitErrorHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrderSubmitErrorRef = AutoDisposeProviderRef<Option<String>>;
-String _$orderSubmitUnregisteredGaidHash() =>
-    r'7c59145e649fcd5d8d1b1bb74b084f5f0f888302';
-
-/// See also [orderSubmitUnregisteredGaid].
-@ProviderFor(orderSubmitUnregisteredGaid)
-final orderSubmitUnregisteredGaidProvider =
-    AutoDisposeProvider<Option<String>>.internal(
-      orderSubmitUnregisteredGaid,
-      name: r'orderSubmitUnregisteredGaidProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$orderSubmitUnregisteredGaidHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrderSubmitUnregisteredGaidRef = AutoDisposeProviderRef<Option<String>>;
 String _$marketEditOrderAmountHash() =>
     r'9cc3b9d65db3f61358fc311a301e8c459273edd0';
 
@@ -1785,7 +1766,7 @@ final limitInsufficientAmountProvider = AutoDisposeProvider<bool>.internal(
 // ignore: unused_element
 typedef LimitInsufficientAmountRef = AutoDisposeProviderRef<bool>;
 String _$limitInsufficientPriceHash() =>
-    r'bbd7fbb7e2c07077e5d9e3fb9bee0bf7f7f1aa9b';
+    r'1d37576878ae5af25a154f3921c110570b8f6297';
 
 /// See also [limitInsufficientPrice].
 @ProviderFor(limitInsufficientPrice)
@@ -1822,6 +1803,108 @@ final marketOrderButtonTextProvider = AutoDisposeProvider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef MarketOrderButtonTextRef = AutoDisposeProviderRef<String>;
+String _$marketLimitOrderAggregateVolumeHash() =>
+    r'53e474a4ff006a6de8c4d044ff5b21b2711569a0';
+
+/// Aggregated volume
+///
+/// Copied from [marketLimitOrderAggregateVolume].
+@ProviderFor(marketLimitOrderAggregateVolume)
+final marketLimitOrderAggregateVolumeProvider =
+    AutoDisposeProvider<MarketOrderAggregateVolumeProvider>.internal(
+      marketLimitOrderAggregateVolume,
+      name: r'marketLimitOrderAggregateVolumeProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$marketLimitOrderAggregateVolumeHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MarketLimitOrderAggregateVolumeRef =
+    AutoDisposeProviderRef<MarketOrderAggregateVolumeProvider>;
+String _$marketLimitOrderAggregatedVolumeWithTickerHash() =>
+    r'b5d0e314dc4a2c2098e5644d11fb7ee4b9d18a90';
+
+/// See also [marketLimitOrderAggregatedVolumeWithTicker].
+@ProviderFor(marketLimitOrderAggregatedVolumeWithTicker)
+final marketLimitOrderAggregatedVolumeWithTickerProvider =
+    AutoDisposeProvider<String>.internal(
+      marketLimitOrderAggregatedVolumeWithTicker,
+      name: r'marketLimitOrderAggregatedVolumeWithTickerProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$marketLimitOrderAggregatedVolumeWithTickerHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MarketLimitOrderAggregatedVolumeWithTickerRef =
+    AutoDisposeProviderRef<String>;
+String _$makeLimitOrderAggregateVolumeTooHighHash() =>
+    r'447949de2176fa2d31b686e83e3a599c77cf248d';
+
+/// See also [makeLimitOrderAggregateVolumeTooHigh].
+@ProviderFor(makeLimitOrderAggregateVolumeTooHigh)
+final makeLimitOrderAggregateVolumeTooHighProvider =
+    AutoDisposeProvider<bool>.internal(
+      makeLimitOrderAggregateVolumeTooHigh,
+      name: r'makeLimitOrderAggregateVolumeTooHighProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$makeLimitOrderAggregateVolumeTooHighHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MakeLimitOrderAggregateVolumeTooHighRef = AutoDisposeProviderRef<bool>;
+String _$marketLimitPriceBalanceHash() =>
+    r'9ae4744e9967382dd56404acf27b738928d10940';
+
+/// See also [marketLimitPriceBalance].
+@ProviderFor(marketLimitPriceBalance)
+final marketLimitPriceBalanceProvider = AutoDisposeProvider<String>.internal(
+  marketLimitPriceBalance,
+  name: r'marketLimitPriceBalanceProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$marketLimitPriceBalanceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MarketLimitPriceBalanceRef = AutoDisposeProviderRef<String>;
+String _$marketLimitAmountBalanceHash() =>
+    r'9b33e576b8b42d81c432c8f398e39a1ebc3e23e4';
+
+/// See also [marketLimitAmountBalance].
+@ProviderFor(marketLimitAmountBalance)
+final marketLimitAmountBalanceProvider = AutoDisposeProvider<String>.internal(
+  marketLimitAmountBalance,
+  name: r'marketLimitAmountBalanceProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$marketLimitAmountBalanceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MarketLimitAmountBalanceRef = AutoDisposeProviderRef<String>;
 String _$tradeDirStateNotifierHash() =>
     r'5a70559c300307c02ed10ff386851d086b4e93bf';
 
@@ -1881,6 +1964,27 @@ final marketPublicOrdersNotifierProvider = AutoDisposeNotifierProvider<
 );
 
 typedef _$MarketPublicOrdersNotifier =
+    AutoDisposeNotifier<Map<AssetPair, List<PublicOrder>>>;
+String _$debouncedMarketPublicOrdersHash() =>
+    r'cf5363a202e5db49d0bc67fcbf2d60ed068a74dd';
+
+/// See also [DebouncedMarketPublicOrders].
+@ProviderFor(DebouncedMarketPublicOrders)
+final debouncedMarketPublicOrdersProvider = AutoDisposeNotifierProvider<
+  DebouncedMarketPublicOrders,
+  Map<AssetPair, List<PublicOrder>>
+>.internal(
+  DebouncedMarketPublicOrders.new,
+  name: r'debouncedMarketPublicOrdersProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$debouncedMarketPublicOrdersHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$DebouncedMarketPublicOrders =
     AutoDisposeNotifier<Map<AssetPair, List<PublicOrder>>>;
 String _$marketOwnOrdersNotifierHash() =>
     r'd08c11d040f8b76d187434986f8cd7569e157ea9';
@@ -1990,7 +2094,7 @@ final marketTypeSwitchStateNotifierProvider = AutoDisposeNotifierProvider<
 typedef _$MarketTypeSwitchStateNotifier =
     AutoDisposeNotifier<MarketTypeSwitchState>;
 String _$marketOrderAmountControllerNotifierHash() =>
-    r'97277c4f5581707d7b9695103476a3adb6c83d9e';
+    r'59c54a409397517707b92fb06c1315bf486eaaa7';
 
 /// See also [MarketOrderAmountControllerNotifier].
 @ProviderFor(MarketOrderAmountControllerNotifier)
@@ -2010,7 +2114,7 @@ final marketOrderAmountControllerNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$MarketOrderAmountControllerNotifier = AutoDisposeNotifier<String>;
 String _$marketQuoteNotifierHash() =>
-    r'91762b3ac218fd682a1db84875c14fb42c5e8bd2';
+    r'f6be7996f713b9cadaf47e84b7652fcb9f095d58';
 
 /// See also [MarketQuoteNotifier].
 @ProviderFor(MarketQuoteNotifier)
@@ -2029,65 +2133,6 @@ final marketQuoteNotifierProvider = AutoDisposeNotifierProvider<
 );
 
 typedef _$MarketQuoteNotifier = AutoDisposeNotifier<Option<From_Quote>>;
-String _$marketPreviewOrderQuoteNotifierHash() =>
-    r'240a2ffa2af01242e4d7287c1c1ca67a63a43781';
-
-/// See also [MarketPreviewOrderQuoteNotifier].
-@ProviderFor(MarketPreviewOrderQuoteNotifier)
-final marketPreviewOrderQuoteNotifierProvider = NotifierProvider<
-  MarketPreviewOrderQuoteNotifier,
-  Option<QuoteSuccess>
->.internal(
-  MarketPreviewOrderQuoteNotifier.new,
-  name: r'marketPreviewOrderQuoteNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$marketPreviewOrderQuoteNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$MarketPreviewOrderQuoteNotifier = Notifier<Option<QuoteSuccess>>;
-String _$marketPreviewOrderTtlHash() =>
-    r'cd2bfe7578585ba9e1c340f15e6b5925a515933a';
-
-/// See also [MarketPreviewOrderTtl].
-@ProviderFor(MarketPreviewOrderTtl)
-final marketPreviewOrderTtlProvider =
-    AutoDisposeNotifierProvider<MarketPreviewOrderTtl, int>.internal(
-      MarketPreviewOrderTtl.new,
-      name: r'marketPreviewOrderTtlProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$marketPreviewOrderTtlHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$MarketPreviewOrderTtl = AutoDisposeNotifier<int>;
-String _$marketAcceptQuoteNotifierHash() =>
-    r'2e8f0e4a97fba71f22043dae48b4fec088723ad6';
-
-/// See also [MarketAcceptQuoteNotifier].
-@ProviderFor(MarketAcceptQuoteNotifier)
-final marketAcceptQuoteNotifierProvider = AutoDisposeNotifierProvider<
-  MarketAcceptQuoteNotifier,
-  Option<From_AcceptQuote>
->.internal(
-  MarketAcceptQuoteNotifier.new,
-  name: r'marketAcceptQuoteNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$marketAcceptQuoteNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$MarketAcceptQuoteNotifier =
-    AutoDisposeNotifier<Option<From_AcceptQuote>>;
 String _$marketAcceptQuoteSuccessShowDialogNotifierHash() =>
     r'5c1f0ee5f5a4bda4c6576ce07ca31c5a00c252fd';
 
@@ -2129,7 +2174,7 @@ final limitTtlFlagNotifierProvider =
 
 typedef _$LimitTtlFlagNotifier = AutoDisposeNotifier<LimitTtlFlag>;
 String _$limitOrderAmountControllerNotifierHash() =>
-    r'cdb9f2f94a3d57faa8605b289c851873d6f7cbef';
+    r'437d5bc4f0901b73b02f343a12a045033941e6f7';
 
 /// See also [LimitOrderAmountControllerNotifier].
 @ProviderFor(LimitOrderAmountControllerNotifier)
@@ -2148,27 +2193,26 @@ final limitOrderAmountControllerNotifierProvider = AutoDisposeNotifierProvider<
 );
 
 typedef _$LimitOrderAmountControllerNotifier = AutoDisposeNotifier<String>;
-String _$limitOrderPriceAmountControllerNotifierHash() =>
-    r'f9dd77a4c3220c06fd2f70da72e97efdec5103cb';
+String _$limitOrderPriceControllerNotifierHash() =>
+    r'5e8478147eea5b308c4cd6c2e2a41343e59ec985';
 
-/// See also [LimitOrderPriceAmountControllerNotifier].
-@ProviderFor(LimitOrderPriceAmountControllerNotifier)
-final limitOrderPriceAmountControllerNotifierProvider =
-    AutoDisposeNotifierProvider<
-      LimitOrderPriceAmountControllerNotifier,
-      String
-    >.internal(
-      LimitOrderPriceAmountControllerNotifier.new,
-      name: r'limitOrderPriceAmountControllerNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$limitOrderPriceAmountControllerNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+/// See also [LimitOrderPriceControllerNotifier].
+@ProviderFor(LimitOrderPriceControllerNotifier)
+final limitOrderPriceControllerNotifierProvider = AutoDisposeNotifierProvider<
+  LimitOrderPriceControllerNotifier,
+  String
+>.internal(
+  LimitOrderPriceControllerNotifier.new,
+  name: r'limitOrderPriceControllerNotifierProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$limitOrderPriceControllerNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-typedef _$LimitOrderPriceAmountControllerNotifier = AutoDisposeNotifier<String>;
+typedef _$LimitOrderPriceControllerNotifier = AutoDisposeNotifier<String>;
 String _$orderSubmitNotifierHash() =>
     r'e029689020453e06ce8769ab983b38f384aed3ea';
 
@@ -2189,6 +2233,67 @@ final orderSubmitNotifierProvider = AutoDisposeNotifierProvider<
 );
 
 typedef _$OrderSubmitNotifier = AutoDisposeNotifier<Option<From_OrderSubmit>>;
+String _$orderSubmitSuccessNotifierHash() =>
+    r'8f7ea033f62ae178a29444da78457d6bf21ecc9a';
+
+/// See also [OrderSubmitSuccessNotifier].
+@ProviderFor(OrderSubmitSuccessNotifier)
+final orderSubmitSuccessNotifierProvider = AutoDisposeNotifierProvider<
+  OrderSubmitSuccessNotifier,
+  Option<UiOwnOrder>
+>.internal(
+  OrderSubmitSuccessNotifier.new,
+  name: r'orderSubmitSuccessNotifierProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$orderSubmitSuccessNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderSubmitSuccessNotifier = AutoDisposeNotifier<Option<UiOwnOrder>>;
+String _$orderSubmitErrorNotifierHash() =>
+    r'd7bc701e94a0f7bb9888fb9d9af28ce0d01e5f85';
+
+/// See also [OrderSubmitErrorNotifier].
+@ProviderFor(OrderSubmitErrorNotifier)
+final orderSubmitErrorNotifierProvider = AutoDisposeNotifierProvider<
+  OrderSubmitErrorNotifier,
+  Option<String>
+>.internal(
+  OrderSubmitErrorNotifier.new,
+  name: r'orderSubmitErrorNotifierProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$orderSubmitErrorNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderSubmitErrorNotifier = AutoDisposeNotifier<Option<String>>;
+String _$orderSubmitUnregisteredGaidNotifierHash() =>
+    r'cf392f7ce800a200fb3a03a610ffc673c1de0722';
+
+/// See also [OrderSubmitUnregisteredGaidNotifier].
+@ProviderFor(OrderSubmitUnregisteredGaidNotifier)
+final orderSubmitUnregisteredGaidNotifierProvider = AutoDisposeNotifierProvider<
+  OrderSubmitUnregisteredGaidNotifier,
+  Option<String>
+>.internal(
+  OrderSubmitUnregisteredGaidNotifier.new,
+  name: r'orderSubmitUnregisteredGaidNotifierProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$orderSubmitUnregisteredGaidNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderSubmitUnregisteredGaidNotifier =
+    AutoDisposeNotifier<Option<String>>;
 String _$marketEditOrderErrorNotifierHash() =>
     r'e4c2bf12555c514fcf171a71c12cb74830fb1de6';
 
@@ -2210,7 +2315,7 @@ final marketEditOrderErrorNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$MarketEditOrderErrorNotifier = AutoDisposeNotifier<Option<String>>;
 String _$marketEditDetailsOrderNotifierHash() =>
-    r'08f60ebe5f52d3be9c08b20ec411c3d704d5e042';
+    r'7e0ef91b7f5faf39d550833c0d858f75221a5643';
 
 /// See also [MarketEditDetailsOrderNotifier].
 @ProviderFor(MarketEditDetailsOrderNotifier)
@@ -2409,24 +2514,6 @@ final marketStartOrderErrorNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$MarketStartOrderErrorNotifier =
     AutoDisposeNotifier<Option<StartOrderError>>;
-String _$marketOneTimeAuthorizedHash() =>
-    r'4b663a09c9f578ae97b70f816cfa31dbe90e5ebc';
-
-/// See also [MarketOneTimeAuthorized].
-@ProviderFor(MarketOneTimeAuthorized)
-final marketOneTimeAuthorizedProvider =
-    AutoDisposeNotifierProvider<MarketOneTimeAuthorized, bool>.internal(
-      MarketOneTimeAuthorized.new,
-      name: r'marketOneTimeAuthorizedProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$marketOneTimeAuthorizedHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$MarketOneTimeAuthorized = AutoDisposeNotifier<bool>;
 String _$marketMinimalAmountsNotfierHash() =>
     r'f5c08326d9de968c56c855822b3d5d4196ff3dbf';
 

@@ -7,98 +7,121 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
-class WalletTypeButtons extends ConsumerWidget {
+class WalletTypeButtons extends HookConsumerWidget {
   const WalletTypeButtons({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
 
-    return Container(
-      height: 36,
-      decoration: const BoxDecoration(
-        color: SideSwapColors.prussianBlue,
-        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: SwapButton(
-              color:
-                  selectedAccountType == AccountType.reg
-                      ? SideSwapColors.cyanCornflowerBlue
-                      : SideSwapColors.prussianBlue,
-              onPressed: () {
-                ref
-                    .read(selectedAccountTypeNotifierProvider.notifier)
-                    .setAccountType(AccountType.reg);
-              },
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Regular wallet'.tr(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color:
-                            selectedAccountType == AccountType.reg
-                                ? Colors.white
-                                : SideSwapColors.ceruleanFrost,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxButtonWidth = constraints.maxWidth / 2;
+        final maxTextWidth = maxButtonWidth - 65 - 18;
+
+        return Container(
+          width: constraints.maxWidth,
+          height: 36,
+          decoration: const BoxDecoration(
+            color: SideSwapColors.prussianBlue,
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SwapButton(
+                color:
+                    selectedAccountType == AccountType.reg
+                        ? SideSwapColors.cyanCornflowerBlue
+                        : SideSwapColors.prussianBlue,
+                onPressed: () {
+                  ref
+                      .read(selectedAccountTypeNotifierProvider.notifier)
+                      .setAccountType(AccountType.reg);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: maxTextWidth,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Regular wallet'.tr(),
+                            maxLines: 1,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color:
+                                  selectedAccountType == AccountType.reg
+                                      ? Colors.white
+                                      : SideSwapColors.ceruleanFrost,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    WalletTypeIcon(
-                      text: 'Singlesig',
-                      enabled: selectedAccountType == AccountType.reg,
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      WalletTypeIcon(
+                        text: 'Singlesig',
+                        enabled: selectedAccountType == AccountType.reg,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ),
-          Flexible(
-            child: SwapButton(
-              color:
-                  selectedAccountType == AccountType.amp
-                      ? SideSwapColors.cyanCornflowerBlue
-                      : SideSwapColors.prussianBlue,
-              onPressed: () {
-                ref
-                    .read(selectedAccountTypeNotifierProvider.notifier)
-                    .setAccountType(AccountType.amp);
-              },
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'AMP wallet'.tr(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color:
-                            selectedAccountType == AccountType.amp
-                                ? Colors.white
-                                : SideSwapColors.ceruleanFrost,
+              SwapButton(
+                color:
+                    selectedAccountType == AccountType.amp
+                        ? SideSwapColors.cyanCornflowerBlue
+                        : SideSwapColors.prussianBlue,
+                onPressed: () {
+                  ref
+                      .read(selectedAccountTypeNotifierProvider.notifier)
+                      .setAccountType(AccountType.amp);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: maxTextWidth,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'AMP wallet'.tr(),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color:
+                                  selectedAccountType == AccountType.amp
+                                      ? Colors.white
+                                      : SideSwapColors.ceruleanFrost,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    WalletTypeIcon(
-                      text: 'Multisig',
-                      enabled: selectedAccountType == AccountType.amp,
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      WalletTypeIcon(
+                        text: 'Multisig',
+                        enabled: selectedAccountType == AccountType.amp,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

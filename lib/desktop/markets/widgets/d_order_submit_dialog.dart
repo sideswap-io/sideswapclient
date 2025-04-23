@@ -26,7 +26,9 @@ class OrderSubmitSuccessDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
+    final optionOrderSubmitSuccess = ref.watch(
+      orderSubmitSuccessNotifierProvider,
+    );
 
     final defaultDialogTheme = ref
         .watch(desktopAppThemeNotifierProvider)
@@ -384,7 +386,7 @@ class OrderSubmitErrorDialog extends ConsumerWidget {
               Consumer(
                 builder: (context, ref, child) {
                   final optionOrderSubmitError = ref.watch(
-                    orderSubmitErrorProvider,
+                    orderSubmitErrorNotifierProvider,
                   );
 
                   return optionOrderSubmitError.match(
@@ -451,7 +453,7 @@ class OrderSubmitUnregisteredGaid extends ConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionUnregisteredGaid = ref.watch(
-                  orderSubmitUnregisteredGaidProvider,
+                  orderSubmitUnregisteredGaidNotifierProvider,
                 );
                 return optionUnregisteredGaid.match(
                   () => SizedBox(),

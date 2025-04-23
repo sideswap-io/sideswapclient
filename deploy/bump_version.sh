@@ -3,6 +3,8 @@ set -o errexit -o pipefail -o noclobber -o nounset
 
 cd "$(dirname "$0")/.."
 
+../sideswap_rust/sideswap_client/data/update_assets.sh
+
 VERSION="$1"
 
 VERSION_SHORT=$(echo "$VERSION" | cut -d'+' -f1)
@@ -21,4 +23,4 @@ sed -i "3 c version: $VERSION" pubspec.yaml
 sed -i "1 c const appVersion = '$VERSION_SHORT';" lib/app_version.dart
 sed -i "2 c const appBuildNumber = $BUILD_NUMBER;" lib/app_version.dart
 
-./rust/sideswap_client/data/update_assets.sh
+echo Success

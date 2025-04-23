@@ -41,6 +41,7 @@ import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
@@ -62,7 +63,7 @@ import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
@@ -687,6 +688,7 @@ class SideswapWallet {
         _processRegisterAmpResult(from.registerAmp);
         break;
       case From_Msg.localMessage:
+        logger.w('local message: ${from.localMessage}');
         ref
             .read(localNotificationsProvider)
             .showNotification(from.localMessage.title, from.localMessage.body);
@@ -2169,11 +2171,11 @@ class SideswapWallet {
 
   void _handleQuote(From_Quote quote) {
     logger.d('From_Quote: $quote');
-    ref.read(marketQuoteNotifierProvider.notifier).setQuote(quote);
+    ref.read(quoteEventNotifierProvider.notifier).setQuote(quote);
   }
 
   void _handleAcceptQuote(From_AcceptQuote acceptQuote) {
-    ref.read(marketAcceptQuoteNotifierProvider.notifier).setState(acceptQuote);
+    ref.read(acceptQuoteNotifierProvider.notifier).setState(acceptQuote);
   }
 
   void _handleOrderSubmit(From_OrderSubmit orderSubmit) {

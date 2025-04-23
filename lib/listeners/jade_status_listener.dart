@@ -5,7 +5,7 @@ import 'package:sideswap/desktop/d_jade_info_dialog.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
-import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/jade/jade_info_dialog.dart';
 
@@ -59,7 +59,7 @@ class JadeStatusListener extends HookConsumerWidget {
             Navigator.of(context).removeRoute(jadeInfoDialogRoute);
             ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
             // rest of MarketTradeRepository.makeSwapTrade
-            ref.invalidate(marketPreviewOrderQuoteNotifierProvider);
+            ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
           }
         });
       }

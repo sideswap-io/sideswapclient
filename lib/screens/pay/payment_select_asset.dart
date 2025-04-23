@@ -192,7 +192,7 @@ class PaymentSelectAssetTabBar extends HookConsumerWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TabBar(
                 tabAlignment: TabAlignment.start,
                 isScrollable: true,
@@ -228,12 +228,7 @@ class PaymentSelectAssetTabBar extends HookConsumerWidget {
               child: Container(
                 color: SideSwapColors.chathamsBlue,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 6,
-                    right: 6,
-                    top: 24,
-                    bottom: 8,
-                  ),
+                  padding: const EdgeInsets.only(top: 24, bottom: 8),
                   child: TabBarView(
                     children: [
                       ...assetTypes.map(
@@ -283,7 +278,7 @@ class PaymentAssetList extends ConsumerWidget {
                   paymentIsAssetDisabledProvider(accountAsset),
                 );
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: AccountItem(
                     accountAsset: accountAsset,
                     disabled: disabled,

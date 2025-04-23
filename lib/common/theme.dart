@@ -5,7 +5,12 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/button_styles.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
+import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
+import 'package:sideswap/screens/instant_swap/widgets/asset_ticker_button.dart';
+import 'package:sideswap/screens/instant_swap/widgets/instant_swap_divider.dart';
+import 'package:sideswap/screens/instant_swap/widgets/max_button.dart';
 
 part 'theme.g.dart';
 
@@ -183,7 +188,42 @@ class MobileThemeData {
       marketAssetRowStyle(),
       marketColorsStyle(),
       customBackButtonStyle(),
+      maxButtonStyle(),
+      assetTickerButtonMobileStyle(),
+      instantSwapDividerButtonStyle(),
+      customBigButtonStyle(),
     ];
+  }
+
+  CustomBigButtonStyle customBigButtonStyle() {
+    return CustomBigButtonStyle(
+      buttonStyle: ButtonStyle(
+        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        foregroundColor: WidgetStateColor.resolveWith((states) {
+          return switch (states) {
+            Set<WidgetState>() when states.contains(WidgetState.disabled) =>
+              Colors.white.withValues(alpha: 0.5),
+            Set<WidgetState>() when states.contains(WidgetState.hovered) =>
+              Colors.white,
+            Set<WidgetState>() when states.contains(WidgetState.pressed) =>
+              Colors.white,
+            _ => Colors.white,
+          };
+        }),
+        backgroundColor: WidgetStateColor.resolveWith((states) {
+          return switch (states) {
+            Set<WidgetState>() when states.contains(WidgetState.disabled) =>
+              SideSwapColors.lapisLazuli.withValues(alpha: 0.5),
+            Set<WidgetState>() when states.contains(WidgetState.hovered) =>
+              SideSwapColors.lapisLazuli.lerpWith(Colors.black, 0.1),
+            Set<WidgetState>() when states.contains(WidgetState.pressed) =>
+              SideSwapColors.lapisLazuli.lerpWith(Colors.black, 0.15),
+            _ => SideSwapColors.lapisLazuli,
+          };
+        }),
+        textStyle: WidgetStatePropertyAll(textTheme.bodyLarge),
+      ),
+    );
   }
 
   CustomBackButtonStyle customBackButtonStyle() {
@@ -272,6 +312,38 @@ class MobileThemeData {
       conversionStyle: textTheme.titleSmall?.copyWith(
         fontSize: 13,
         color: SideSwapColors.halfBaked,
+      ),
+    );
+  }
+
+  MaxButtonStyle maxButtonStyle() {
+    return MaxButtonStyle(
+      buttonStyle: TextButton.styleFrom(
+        foregroundColor: SideSwapColors.brightTurquoise,
+        padding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          side: BorderSide(color: SideSwapColors.brightTurquoise),
+        ),
+        textStyle: textTheme.labelMedium?.copyWith(
+          color: SideSwapColors.brightTurquoise,
+        ),
+      ),
+    );
+  }
+
+  AssetTickerButtonMobileStyle assetTickerButtonMobileStyle() {
+    return AssetTickerButtonMobileStyle(
+      style: TextButton.styleFrom(padding: EdgeInsets.zero),
+    );
+  }
+
+  InstantSwapDividerButtonStyle instantSwapDividerButtonStyle() {
+    return InstantSwapDividerButtonStyle(
+      buttonStyle: TextButton.styleFrom(
+        shape: CircleBorder(),
+        padding: EdgeInsets.zero,
+        backgroundColor: SideSwapColors.brightTurquoise,
       ),
     );
   }

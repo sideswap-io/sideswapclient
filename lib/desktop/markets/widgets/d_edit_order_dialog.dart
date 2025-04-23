@@ -142,7 +142,7 @@ class DEditOrderDialog extends HookConsumerWidget {
     });
 
     return DContentDialog(
-      constraints: const BoxConstraints(maxWidth: 450, maxHeight: 444),
+      constraints: const BoxConstraints(maxWidth: 450, maxHeight: 464),
       style: defaultDialogTheme,
       title: DContentDialogTitle(
         content: Text('Edit order'.tr()),
@@ -152,7 +152,7 @@ class DEditOrderDialog extends HookConsumerWidget {
       ),
       content: SizedBox(
         width: 450,
-        height: 344,
+        height: 364,
         child: optionOrder.match(
           () => SizedBox(),
           (order) => Column(

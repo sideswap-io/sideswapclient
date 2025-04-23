@@ -6,7 +6,7 @@ part of 'orders_panel_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$internalUiOrdersHash() => r'a1d87bc6ced73ee70935e649425d13d7ea38f22d';
+String _$internalUiOrdersHash() => r'f33866cf468a8a65bb5cdf76b2dadac47c01e067';
 
 /// See also [internalUiOrders].
 @ProviderFor(internalUiOrders)

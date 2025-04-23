@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/addresses/d_addresses.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
 
@@ -9,16 +8,17 @@ import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
 import 'package:sideswap/desktop/home/d_home.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
+import 'package:sideswap/desktop/instant_swap/d_instant_swap.dart';
+import 'package:sideswap/desktop/swap/d_swap_main.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
-import 'package:sideswap/screens/swap/swap.dart';
 
 final pageStorageBucket = PageStorageBucket();
 
@@ -32,9 +32,7 @@ class DesktopWalletMain extends HookConsumerWidget {
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
       WalletMainNavigationItemEnum.transactions => const DTxHistory(),
       WalletMainNavigationItemEnum.markets => const DMarkets(),
-      WalletMainNavigationItemEnum.swap => const DSwapMain(
-        key: ValueKey(false),
-      ),
+      WalletMainNavigationItemEnum.swap => DInstantSwap(),
       WalletMainNavigationItemEnum.pegs => const DSwapMain(key: ValueKey(true)),
       WalletMainNavigationItemEnum.addresses => const DAddresses(),
     };
@@ -73,34 +71,6 @@ class DesktopWalletMain extends HookConsumerWidget {
           }
         },
       ),
-    );
-  }
-}
-
-class DSwapMain extends StatelessWidget {
-  const DSwapMain({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Spacer(),
-        Column(
-          children: [
-            const SizedBox(height: 28),
-            Container(
-              width: 570,
-              height: 551,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: SideSwapColors.prussianBlue,
-              ),
-              child: const SwapMain(),
-            ),
-          ],
-        ),
-        const Spacer(),
-      ],
     );
   }
 }

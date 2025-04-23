@@ -16,7 +16,7 @@ import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';

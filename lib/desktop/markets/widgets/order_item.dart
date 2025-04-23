@@ -149,7 +149,7 @@ class OrderItem extends HookConsumerWidget {
                       : TradeDir.BUY,
                 );
             ref
-                .read(limitOrderPriceAmountControllerNotifierProvider.notifier)
+                .read(limitOrderPriceControllerNotifierProvider.notifier)
                 .setState(order!.priceString);
             ref
                 .read(limitOrderAmountControllerNotifierProvider.notifier)

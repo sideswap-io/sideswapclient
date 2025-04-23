@@ -47,7 +47,7 @@ class Settings extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(bottom: 24),
                       child: SettingsLogoWithAppVersion(),
                     ),

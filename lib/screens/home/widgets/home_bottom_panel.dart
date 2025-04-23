@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 
 import 'package:sideswap/providers/payment_provider.dart';
@@ -21,6 +22,7 @@ class HomeBottomPanel extends ConsumerWidget {
     final paymentHelper = ref.watch(paymentHelperProvider);
 
     ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
+      logger.d(next);
       (switch (next) {
         QrCodeResultModelData() => () {
           if (next.result?.outputsData != null) {
@@ -41,7 +43,7 @@ class HomeBottomPanel extends ConsumerWidget {
           });
         },
         _ => () {},
-      });
+      }());
     });
 
     return Container(

@@ -558,5 +558,13 @@
   "Discount vsize": "Discount vsize",
   "Link to explorer\n(pay-in)": "Link to explorer\n(pay-in)",
   "Link to explorer\n(pay-out)": "Link to explorer\n(pay-out)",
-  "Price": "Price"
+  "Price": "Price",
+  "Sell {}": "Sell {}",
+  "Buy {}": "Buy {}",
+  "Low balance": "Low balance",
+  "Order settings": "Order settings",
+  "Show testnet servers": "Show testnet servers",
+  "Balance exceeded": "Balance exceeded",
+  "Online orders (recommended):\n- Are not tied to specific UTXOs (spending UTXOs won't cancel online orders).\n- Can be partially matched, making them more flexible.\n- Order amount can be more than the available wallet balance.\n- Allow price editing.\n- Requires the application to be open and your computer to be running.\n\nOffline orders:\n- Are tied to specific UTXOs (spending UTXOs can cancel one or more orders).\n- Requires exact UTXO amount and therefore may require a funding transaction and payment of network fee.\n- Order amount cannot exceed available wallet balance.\n- Does not allow price editing.\n- Allows the application to be offline.": "Online orders (recommended):\n- Are not tied to specific UTXOs (spending UTXOs won't cancel online orders).\n- Can be partially matched, making them more flexible.\n- Order amount can be more than the available wallet balance.\n- Allow price editing.\n- Requires the application to be open and your computer to be running.\n\nOffline orders:\n- Are tied to specific UTXOs (spending UTXOs can cancel one or more orders).\n- Requires exact UTXO amount and therefore may require a funding transaction and payment of network fee.\n- Order amount cannot exceed available wallet balance.\n- Does not allow price editing.\n- Allows the application to be offline.",
+  "Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.": "Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline."
 }

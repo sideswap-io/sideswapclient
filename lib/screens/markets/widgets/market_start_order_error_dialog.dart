@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/markets/widgets/d_start_order_error_dialog.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/mobile_start_order_error_dialog.dart';
 

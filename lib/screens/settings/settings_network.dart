@@ -9,6 +9,7 @@ import 'package:sideswap/common/utils/numerical_range_formatter.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/common/widgets/custom_check_box_row.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 import 'package:sideswap/models/connection_models.dart';
@@ -57,64 +58,42 @@ class SettingsNetwork extends ConsumerWidget {
         }
       },
       body: SafeArea(
-        child: LayoutBuilder(
-          builder:
-              (context, constraints) => SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: constraints.maxWidth,
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16),
-                      child: Column(
-                        children: [
-                          SwitchButton(
-                            width: constraints.maxWidth - 32,
-                            height: 54,
-                            backgroundColor: SideSwapColors.chathamsBlue,
-                            borderColor: SideSwapColors.chathamsBlue,
-                            inactiveToggleBackground:
-                                SideSwapColors.chathamsBlue,
-                            value:
-                                networkAccessTab ==
-                                const NetworkAccessTabStateProxy(),
-                            activeText: 'Proxy'.tr(),
-                            inactiveText: 'Network access server'.tr(),
-                            onToggle: (value) {
-                              ref
-                                  .read(
-                                    networkAccessTabNotifierProvider.notifier,
-                                  )
-                                  .setNetworkAccessTab(
-                                    value
-                                        ? const NetworkAccessTabStateProxy()
-                                        : const NetworkAccessTabStateServer(),
-                                  );
-                            },
-                            activeTextStyle: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(fontSize: 14, color: Colors.white),
-                            inactiveTextStyle: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(fontSize: 14, color: Colors.white),
-                          ),
-                          switch (networkAccessTab) {
-                            NetworkAccessTabStateServer() =>
-                              const SettingsNetworkAccessServer(),
-                            _ => const Flexible(
-                              child: SettingsNetworkAccessProxy(),
-                            ),
-                          },
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              SwitchButton(
+                width: MediaQuery.of(context).size.width - 32,
+                height: 54,
+                backgroundColor: SideSwapColors.chathamsBlue,
+                borderColor: SideSwapColors.chathamsBlue,
+                inactiveToggleBackground: SideSwapColors.chathamsBlue,
+                value: networkAccessTab == const NetworkAccessTabStateProxy(),
+                activeText: 'Proxy'.tr(),
+                inactiveText: 'Network access server'.tr(),
+                onToggle: (value) {
+                  ref
+                      .read(networkAccessTabNotifierProvider.notifier)
+                      .setNetworkAccessTab(
+                        value
+                            ? const NetworkAccessTabStateProxy()
+                            : const NetworkAccessTabStateServer(),
+                      );
+                },
+                activeTextStyle: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontSize: 14, color: Colors.white),
+                inactiveTextStyle: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontSize: 14, color: Colors.white),
               ),
+              Flexible(
+                child: switch (networkAccessTab) {
+                  NetworkAccessTabStateServer() =>
+                    const SettingsNetworkAccessServer(),
+                  _ => SettingsNetworkAccessProxy(),
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -241,77 +220,162 @@ class SettingsNetworkAccessServer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 620,
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          const SettingsNetworkServerButton(
-            name: 'BlockStream (Mainnet)',
-            buttonNetwork: SettingsNetworkType.blockstream,
-            buttonEnv: SIDESWAP_ENV_PROD,
-          ),
-          const SettingsNetworkServerButton(
-            name: 'BlockStream (Testnet)',
-            buttonNetwork: SettingsNetworkType.blockstream,
-            buttonEnv: SIDESWAP_ENV_TESTNET,
-          ),
-          const SettingsNetworkServerButton(
-            name: 'SideSwap (Mainnet)',
-            buttonNetwork: SettingsNetworkType.sideswap,
-            buttonEnv: SIDESWAP_ENV_PROD,
-          ),
-          const SettingsNetworkServerButton(
-            name: 'SideSwap (Testnet)',
-            buttonNetwork: SettingsNetworkType.sideswap,
-            buttonEnv: SIDESWAP_ENV_TESTNET,
-          ),
-          const SettingsNetworkServerButton(
-            name: 'SideSwap China (Mainnet)',
-            buttonNetwork: SettingsNetworkType.sideswapChina,
-            buttonEnv: SIDESWAP_ENV_PROD,
-          ),
-          Consumer(
-            builder: (context, ref, _) {
-              final networkSettingsModel = ref.watch(
-                networkSettingsNotifierProvider,
-              );
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              SettingsNetworkServerButton(
+                name: 'BlockStream (Mainnet)',
+                buttonNetwork: SettingsNetworkType.blockstream,
+                buttonEnv: SIDESWAP_ENV_PROD,
+              ),
+              SettingsNetworkServerButton(
+                name: 'SideSwap (Mainnet)',
+                buttonNetwork: SettingsNetworkType.sideswap,
+                buttonEnv: SIDESWAP_ENV_PROD,
+              ),
+              SettingsNetworkServerButton(
+                name: 'SideSwap China (Mainnet)',
+                buttonNetwork: SettingsNetworkType.sideswapChina,
+                buttonEnv: SIDESWAP_ENV_PROD,
+              ),
+              Consumer(
+                builder: (context, ref, _) {
+                  final networkSettingsModel = ref.watch(
+                    networkSettingsNotifierProvider,
+                  );
 
-              return Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: SettingsCheckboxButton(
-                  trailingIconVisible: true,
-                  checked:
-                      networkSettingsModel.settingsNetworkType ==
-                      SettingsNetworkType.personal,
-                  onChanged: (value) {
-                    Navigator.of(context, rootNavigator: true).push<void>(
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsCustomHost(),
-                      ),
-                    );
-                  },
-                  content: Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                      'Personal Electrum Server'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.white,
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: SettingsCheckboxButton(
+                      trailingIconVisible: true,
+                      checked:
+                          networkSettingsModel.settingsNetworkType ==
+                          SettingsNetworkType.personal,
+                      onChanged: (value) {
+                        Navigator.of(context, rootNavigator: true).push<void>(
+                          MaterialPageRoute(
+                            builder: (context) => SettingsCustomHost(),
+                          ),
+                        );
+                      },
+                      content: Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text(
+                          'Personal Electrum Server'.tr(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            },
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              SettingsNetworkTestnetServers(),
+              const SizedBox(height: 16),
+            ],
           ),
-          const Spacer(),
-          const SizedBox(height: 16),
-          const SettingsNetworkSaveButton(),
-          const SizedBox(height: 16),
-        ],
-      ),
+        ),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Column(
+            children: [
+              Spacer(),
+              SettingsNetworkSaveButton(),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SettingsNetworkTestnetServers extends HookConsumerWidget {
+  const SettingsNetworkTestnetServers({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+
+    final isExpanded = useState(switch (networkSettingsModel.env) {
+      SIDESWAP_ENV_TESTNET => true,
+      _ => false,
+    });
+
+    final animationController = useAnimationController(
+      duration: const Duration(milliseconds: 150),
+      initialValue: 0,
+    );
+
+    final Animation<double> sizeFactor = useMemoized(() {
+      return animationController.drive(CurveTween(curve: Curves.easeIn));
+    }, [animationController]);
+
+    useEffect(() {
+      if (isExpanded.value) {
+        animationController.value = animationController.upperBound;
+      }
+
+      return;
+    }, const []);
+
+    useEffect(() {
+      if (isExpanded.value) {
+        animationController.forward();
+        return;
+      }
+
+      animationController.reverse();
+      return;
+    }, [isExpanded.value]);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomCheckBoxRow(
+          onChanged: (value) {
+            isExpanded.value = value;
+          },
+          value: isExpanded.value,
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                'Show testnet servers'.tr(),
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+            ],
+          ),
+        ),
+        SizeTransition(
+          sizeFactor: sizeFactor,
+          child: ExcludeFocus(
+            excluding: !isExpanded.value,
+            child: Column(
+              children: [
+                SettingsNetworkServerButton(
+                  name: 'BlockStream (Testnet)',
+                  buttonNetwork: SettingsNetworkType.blockstream,
+                  buttonEnv: SIDESWAP_ENV_TESTNET,
+                ),
+                SettingsNetworkServerButton(
+                  name: 'SideSwap (Testnet)',
+                  buttonNetwork: SettingsNetworkType.sideswap,
+                  buttonEnv: SIDESWAP_ENV_TESTNET,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

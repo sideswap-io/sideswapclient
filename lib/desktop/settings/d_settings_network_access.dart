@@ -6,6 +6,7 @@ import 'package:flutter_switch/flutter_switch.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/numerical_range_formatter.dart';
+import 'package:sideswap/common/widgets/custom_check_box_row.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -249,24 +250,24 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             },
             content: const Text('Blockstream (Mainnet)'),
           ),
-          const SizedBox(height: 10),
-          DSettingsRadioButton(
-            checked:
-                networkSettingsModel.settingsNetworkType ==
-                    SettingsNetworkType.blockstream &&
-                networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
-            onChanged: (value) {
-              ref
-                  .read(networkSettingsNotifierProvider.notifier)
-                  .setModel(
-                    const NetworkSettingsModelApply(
-                      settingsNetworkType: SettingsNetworkType.blockstream,
-                      env: SIDESWAP_ENV_TESTNET,
-                    ),
-                  );
-            },
-            content: const Text('Blockstream (Testnet)'),
-          ),
+          // const SizedBox(height: 10),
+          // DSettingsRadioButton(
+          //   checked:
+          //       networkSettingsModel.settingsNetworkType ==
+          //           SettingsNetworkType.blockstream &&
+          //       networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
+          //   onChanged: (value) {
+          //     ref
+          //         .read(networkSettingsNotifierProvider.notifier)
+          //         .setModel(
+          //           const NetworkSettingsModelApply(
+          //             settingsNetworkType: SettingsNetworkType.blockstream,
+          //             env: SIDESWAP_ENV_TESTNET,
+          //           ),
+          //         );
+          //   },
+          //   content: const Text('Blockstream (Testnet)'),
+          // ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
             checked:
@@ -285,24 +286,24 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             },
             content: const Text('SideSwap (Mainnet)'),
           ),
-          const SizedBox(height: 10),
-          DSettingsRadioButton(
-            checked:
-                networkSettingsModel.settingsNetworkType ==
-                    SettingsNetworkType.sideswap &&
-                networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
-            onChanged: (value) {
-              ref
-                  .read(networkSettingsNotifierProvider.notifier)
-                  .setModel(
-                    const NetworkSettingsModelApply(
-                      settingsNetworkType: SettingsNetworkType.sideswap,
-                      env: SIDESWAP_ENV_TESTNET,
-                    ),
-                  );
-            },
-            content: const Text('SideSwap (Testnet)'),
-          ),
+          // const SizedBox(height: 10),
+          // DSettingsRadioButton(
+          //   checked:
+          //       networkSettingsModel.settingsNetworkType ==
+          //           SettingsNetworkType.sideswap &&
+          //       networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
+          //   onChanged: (value) {
+          //     ref
+          //         .read(networkSettingsNotifierProvider.notifier)
+          //         .setModel(
+          //           const NetworkSettingsModelApply(
+          //             settingsNetworkType: SettingsNetworkType.sideswap,
+          //             env: SIDESWAP_ENV_TESTNET,
+          //           ),
+          //         );
+          //   },
+          //   content: const Text('SideSwap (Testnet)'),
+          // ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
             checked:
@@ -336,8 +337,119 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             },
             content: Text('Personal Electrum Server'.tr()),
           ),
+          const SizedBox(height: 10),
+          DSettingsNetworkTestnetServers(),
         ],
       ),
+    );
+  }
+}
+
+class DSettingsNetworkTestnetServers extends HookConsumerWidget {
+  const DSettingsNetworkTestnetServers({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+
+    final isExpanded = useState(switch (networkSettingsModel.env) {
+      SIDESWAP_ENV_TESTNET => true,
+      _ => false,
+    });
+
+    final animationController = useAnimationController(
+      duration: const Duration(milliseconds: 150),
+      initialValue: 0,
+    );
+
+    final Animation<double> sizeFactor = useMemoized(() {
+      return animationController.drive(CurveTween(curve: Curves.easeIn));
+    }, [animationController]);
+
+    useEffect(() {
+      if (isExpanded.value) {
+        animationController.value = animationController.upperBound;
+      }
+
+      return;
+    }, const []);
+
+    useEffect(() {
+      if (isExpanded.value) {
+        animationController.forward();
+        return;
+      }
+
+      animationController.reverse();
+      return;
+    }, [isExpanded.value]);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomCheckBoxRow(
+          onChanged: (value) {
+            isExpanded.value = value;
+          },
+          value: isExpanded.value,
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                'Show testnet servers'.tr(),
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ],
+          ),
+        ),
+        SizeTransition(
+          sizeFactor: sizeFactor,
+          child: ExcludeFocus(
+            excluding: !isExpanded.value,
+            child: Column(
+              children: [
+                DSettingsRadioButton(
+                  checked:
+                      networkSettingsModel.settingsNetworkType ==
+                          SettingsNetworkType.blockstream &&
+                      networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
+                  onChanged: (value) {
+                    ref
+                        .read(networkSettingsNotifierProvider.notifier)
+                        .setModel(
+                          const NetworkSettingsModelApply(
+                            settingsNetworkType:
+                                SettingsNetworkType.blockstream,
+                            env: SIDESWAP_ENV_TESTNET,
+                          ),
+                        );
+                  },
+                  content: const Text('Blockstream (Testnet)'),
+                ),
+                const SizedBox(height: 10),
+                DSettingsRadioButton(
+                  checked:
+                      networkSettingsModel.settingsNetworkType ==
+                          SettingsNetworkType.sideswap &&
+                      networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
+                  onChanged: (value) {
+                    ref
+                        .read(networkSettingsNotifierProvider.notifier)
+                        .setModel(
+                          const NetworkSettingsModelApply(
+                            settingsNetworkType: SettingsNetworkType.sideswap,
+                            env: SIDESWAP_ENV_TESTNET,
+                          ),
+                        );
+                  },
+                  content: const Text('SideSwap (Testnet)'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

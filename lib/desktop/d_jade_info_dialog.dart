@@ -9,7 +9,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
-import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DJadeInfoDialog extends HookConsumerWidget {
@@ -24,9 +24,9 @@ class DJadeInfoDialog extends HookConsumerWidget {
     final showAmpOnboarding =
         ref.watch(configurationProvider).showAmpOnboarding;
     final optionQuoteSuccess = ref.watch(
-      marketPreviewOrderQuoteNotifierProvider,
+      previewOrderQuoteSuccessNotifierProvider,
     );
-    final previewOrderTtl = ref.watch(marketPreviewOrderTtlProvider);
+    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
 
     useEffect(() {
       if (jadeStatus != const JadeStatusMasterBlindingKey()) {

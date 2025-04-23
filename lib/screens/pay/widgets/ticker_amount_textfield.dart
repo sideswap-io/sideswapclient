@@ -9,7 +9,7 @@ import 'package:sideswap/common/utils/number_spaced_formatter.dart';
 import 'package:sideswap/desktop/main/d_payment_select_asset.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/pay/payment_select_asset.dart';

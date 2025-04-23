@@ -31,7 +31,7 @@ class DMarkets extends HookConsumerWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      const MarketOrderPanel(),
+                      MarketOrderPanel(),
                       const SizedBox(width: 20),
                       Expanded(
                         child: Align(

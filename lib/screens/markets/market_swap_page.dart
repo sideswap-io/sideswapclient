@@ -14,11 +14,11 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/listeners/markets_page_listener.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/market_header.dart';
 import 'package:sideswap/screens/markets/widgets/market_index_price.dart';
@@ -52,7 +52,12 @@ class MarketSwapPage extends HookConsumerWidget {
         },
         _ => jadeLockRepository.refreshJadeLockState,
       },
-      [jadeLockRepository.lockState, tradeButtonEnabled],
+      [
+        jadeLockRepository.lockState,
+        tradeButtonEnabled,
+        optionQuoteSuccess,
+        marketTradeRepository,
+      ],
     );
 
     return SideSwapScaffold(
@@ -123,7 +128,7 @@ class MarketSwapAmount extends HookConsumerWidget {
     final optionSubscribedAssetPair = ref.watch(
       marketSubscribedAssetPairNotifierProvider,
     );
-    final optionAcceptQuoteError = ref.watch(acceptQuoteErrorProvider);
+    final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
     final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
     final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
@@ -180,17 +185,27 @@ class MarketSwapAmount extends HookConsumerWidget {
     ) {
       final asset =
           marketSideState == MarketSideState.base() ? baseAsset : quoteAsset;
-      final accountAsset = AccountAsset(
-        asset.ampMarket ? AccountType.amp : AccountType.reg,
-        asset.assetId,
-      );
-      final balance = ref.read(
-        maxAvailableBalanceForAccountAssetProvider(accountAsset),
-      );
+
+      /// * get amp balance for amp asset or instead get sum for all accounts
+      final balance =
+          asset.ampMarket
+              ? ref.read(
+                maxAvailableBalanceForAccountAssetProvider(
+                  AccountAsset(AccountType.amp, asset.assetId),
+                ),
+              )
+              : ref.read(
+                totalMaxAvailableBalanceForAssetProvider(asset.assetId),
+              );
+
       amountController.text = ref
           .watch(amountToStringProvider)
           .amountToString(
-            AmountToStringParameters(amount: balance, trailingZeroes: false),
+            AmountToStringParameters(
+              amount: balance,
+              trailingZeroes: false,
+              precision: asset.precision,
+            ),
           );
     }, [marketSideState]);
 
@@ -219,18 +234,16 @@ class MarketSwapAmount extends HookConsumerWidget {
                 }
               },
               onChanged: onChanged,
-            ),
-            BalanceLine(
+              showMaxButton: tradeDirState == TradeDir.SELL,
               onMaxPressed: () {
                 onMaxPressedCallback(baseAsset, quoteAsset);
               },
-              amountSide: true,
             ),
+            BalanceLine(amountSide: true),
             MarketAmountError(),
             MarketLowBalanceError(),
             MarketQuoteSuccess(),
             MarketUnregisteredGaidError(),
-            // Spacer(),
           ],
         ),
       ),
@@ -244,11 +257,12 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionQuoteSuccess = ref.watch(
-      marketPreviewOrderQuoteNotifierProvider,
+      previewOrderQuoteSuccessNotifierProvider,
     );
-    final previewOrderTtl = ref.watch(marketPreviewOrderTtlProvider);
+    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
 
     final closeCallback = useCallback(() {
+      ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != mobileOrderPreviewRouteName;
       });
@@ -308,12 +322,15 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
                         onPressed: () async {
                           ref
                               .read(
-                                authInProgressStateNotifierProvider.notifier,
+                                jadeAuthInProgressStateNotifierProvider
+                                    .notifier,
                               )
                               .setState(true);
                           final authSucceed =
                               await ref.read(walletProvider).isAuthenticated();
-                          ref.invalidate(authInProgressStateNotifierProvider);
+                          ref.invalidate(
+                            jadeAuthInProgressStateNotifierProvider,
+                          );
                           if (!authSucceed) {
                             return;
                           }

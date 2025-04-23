@@ -1,60 +1,70 @@
-# SideSwap client
+# SideSwap Client
 
-SideSwap is released under the terms of the GNU General Public License. See [LICENSE](LICENSE) for more information.
+> **Cross‑platform, non‑custodial wallet and atomic swap marketplace for the Liquid Network**
 
-SideSwap swap protocol: [rust/docs/protocol.md](rust/docs/protocol.md).
 
-Dealer documentation: [rust/docs/dealer.md](rust/docs/dealer.md).
+SideSwap Client is the official open‑source desktop & mobile application that lets you manage and atomically swap assets on Blockstream’s [**Liquid Network**](https://blockstream.com/liquid).\
+It is written in **Flutter (Dart)** with a high‑performance **Rust core** and relies on the [Green Development Kit (GDK)](https://github.com/Blockstream/gdk) for low‑level wallet functionality.
 
-API reference: [https://sideswap.io/docs/](https://sideswap.io/docs/).
+*Peer‑to‑peer swaps, peg‑in/peg‑out bridging, AMP token management, multi‑platform binaries, and a fully documented swap protocol—everything you need to settle assets on Liquid.*
 
-SideSwap client uses [GDK library](https://github.com/Blockstream/gdk) from Blockstream.
+---
 
-# Android build instructions
+## ✨ Key Features
 
-Run app with gcm enabled:
-flutter run -t .\lib\main.dart --flavor full
+|                                     |                                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 🔄 **Atomic swaps**                 | Trust‑minimised trades between any two Liquid assets (L‑BTC, USDt, EURx, AMP tokens, NFTs, etc.).     |
+| 🪙 **Asset management**             | Transfer AMP assets without intermediaries.                              |
+| 🔐 **Confidential & non‑custodial** | You keep the keys; amounts & asset types are hidden on‑chain thanks to Liquid CT.                     |
+| 📈 **Market & order‑book view**     | Built‑in price index and order aggregation for stablecoin, AMP and custom token markets.              |
+| 🔌 **Pluggable dealer bots**        | Headless *Dealer* daemons (written in Rust) expose HTTP + WebSocket APIs for automated market‑making. |
+| 🖥  **Fully cross‑platform**        | Build & run on **Android, iOS, Linux, Windows and macOS** from a single code base.                    |
+| 🛡 **GPL‑3.0 licensed**             | 100 % open source; auditable by anyone.                                                               |
 
-Build app with gcm:
-flutter build apk --split-per-abi run -t .\lib\main.dart --flavor full
+See the [Rust sources](https://github.com/sideswap-io/sideswap_rust/) for more details.
 
-apk output directory
-full: sideswap\build\app\outputs\apk\full\release
+---
 
-# Android - fdroid version
+## 🚀 Quick Start (pre‑built binaries)
 
-Run once - add pubm to env path:
-dart pub global activate pubm
+1. Download the latest release for your OS from the [releases page](https://github.com/sideswap-io/sideswapclient/releases).
+2. Verify the PGP signature (using this [public key](https://sideswap.io/resource/sideswap.gpg.txt)).
+3. Unpack the archive and launch the executable / `.apk` / `.dmg` / `.AppImage`.
+4. Create or import a Liquid mnemonic and you are ready to swap.
 
-Activate fdroid pubspec.yaml version:
-pubm -f fdroid -v
+> Need help? Check the in‑app **Guides** tab or the [FAQ on sideswap.io](https://sideswap.io/faq/).
 
-then run:
-flutter clean
-flutter pub get
-Now app is configured without firebase stuff
+---
 
-Run fdroid app:
-flutter run -t .\lib\main_fdroid.dart --flavor fdroid
+## 🔒 Security & Responsible Disclosure
 
-Build fdroid app:
-flutter build apk --split-per-abi run -t .\lib\main_fdroid.dart --flavor fdroid
+If you find a security vulnerability **please DO NOT open a public issue**.\
+Instead, email [**hello@sideswap.io**](mailto\:hello@sideswap.io) or message [@Sideswap](https://t.me/Sideswap) on Telegram, optionally using the [project PGP key](https://sideswap.io/resource/sideswap.gpg.txt). We will coordinate a patch and release timeline with you.
 
-apk output directory
-fdroid: sideswap\build\app\outputs\apk\fdroid\release
+---
 
-Back to main andoid version:
-pubm -f main -v
-flutter clean
-flutter pub get
+## 📄 License
 
-# Sideswap client and gdk library paths
+SideSwap Client is released under the **GNU General Public License v3.0**.\
+See the [LICENSE](LICENSE) file for the full text.
 
-Android:
-sideswap/android/app/src/main/jniLibs
+---
 
-iOS/macos:
-Open runner and add (if missing) lgreenaddress_full.a
+## 🙏 Acknowledgements
 
-Windows/linux
-add dynamic library to executable folder
+- [Blockstream GDK](https://github.com/Blockstream/gdk) for Liquid wallet primitives.
+- The wider [Flutter](https://flutter.dev) and [Rust](https://www.rust-lang.org/) communities.
+
+---
+
+### 📣 Stay Connected
+
+- Website & blog: [https://sideswap.io](https://sideswap.io)
+- Twitter/X: [https://x.com/side_swap](https://x.com/side_swap)
+- Telegram: [@Sideswap](https://t.me/Sideswap)
+- Community chat: [https://t.me/SideSwap_io](https://t.me/SideSwap_io)
+
+---
+
+*Settle any asset against any other—instantly, privately and without intermediaries. Welcome to the financial layer of Bitcoin.*

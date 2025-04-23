@@ -1032,7 +1032,7 @@ class _AccountAssetBalanceWithInputsInDefaultCurrencyStringProviderElement
 }
 
 String _$totalMaxAvailableBalanceForAssetHash() =>
-    r'27a48e81969ea2dce92117cc80d49fd2a66929df';
+    r'7ce7f14878122884d13c6e436e419a84f02ac5fd';
 
 /// Balance providers without inputs
 ///
@@ -1053,7 +1053,7 @@ class TotalMaxAvailableBalanceForAssetFamily extends Family<int> {
   /// Balance providers without inputs
   ///
   /// Copied from [totalMaxAvailableBalanceForAsset].
-  TotalMaxAvailableBalanceForAssetProvider call(String assetId) {
+  TotalMaxAvailableBalanceForAssetProvider call(String? assetId) {
     return TotalMaxAvailableBalanceForAssetProvider(assetId);
   }
 
@@ -1087,7 +1087,7 @@ class TotalMaxAvailableBalanceForAssetProvider
   /// Balance providers without inputs
   ///
   /// Copied from [totalMaxAvailableBalanceForAsset].
-  TotalMaxAvailableBalanceForAssetProvider(String assetId)
+  TotalMaxAvailableBalanceForAssetProvider(String? assetId)
     : this._internal(
         (ref) => totalMaxAvailableBalanceForAsset(
           ref as TotalMaxAvailableBalanceForAssetRef,
@@ -1115,7 +1115,7 @@ class TotalMaxAvailableBalanceForAssetProvider
     required this.assetId,
   }) : super.internal();
 
-  final String assetId;
+  final String? assetId;
 
   @override
   Override overrideWith(
@@ -1159,7 +1159,7 @@ class TotalMaxAvailableBalanceForAssetProvider
 // ignore: unused_element
 mixin TotalMaxAvailableBalanceForAssetRef on AutoDisposeProviderRef<int> {
   /// The parameter `assetId` of this provider.
-  String get assetId;
+  String? get assetId;
 }
 
 class _TotalMaxAvailableBalanceForAssetProviderElement
@@ -1168,7 +1168,7 @@ class _TotalMaxAvailableBalanceForAssetProviderElement
   _TotalMaxAvailableBalanceForAssetProviderElement(super.provider);
 
   @override
-  String get assetId =>
+  String? get assetId =>
       (origin as TotalMaxAvailableBalanceForAssetProvider).assetId;
 }
 
@@ -3486,6 +3486,139 @@ class _AccountAssetBalanceStringProviderElement
   @override
   AccountAsset get accountAsset =>
       (origin as AccountAssetBalanceStringProvider).accountAsset;
+}
+
+String _$totalMaxAvailableBalanceForAssetAsStringHash() =>
+    r'013b010f7f9191b0eec2512097b03b4b4f4eb675';
+
+/// See also [totalMaxAvailableBalanceForAssetAsString].
+@ProviderFor(totalMaxAvailableBalanceForAssetAsString)
+const totalMaxAvailableBalanceForAssetAsStringProvider =
+    TotalMaxAvailableBalanceForAssetAsStringFamily();
+
+/// See also [totalMaxAvailableBalanceForAssetAsString].
+class TotalMaxAvailableBalanceForAssetAsStringFamily extends Family<String> {
+  /// See also [totalMaxAvailableBalanceForAssetAsString].
+  const TotalMaxAvailableBalanceForAssetAsStringFamily();
+
+  /// See also [totalMaxAvailableBalanceForAssetAsString].
+  TotalMaxAvailableBalanceForAssetAsStringProvider call(String? assetId) {
+    return TotalMaxAvailableBalanceForAssetAsStringProvider(assetId);
+  }
+
+  @override
+  TotalMaxAvailableBalanceForAssetAsStringProvider getProviderOverride(
+    covariant TotalMaxAvailableBalanceForAssetAsStringProvider provider,
+  ) {
+    return call(provider.assetId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'totalMaxAvailableBalanceForAssetAsStringProvider';
+}
+
+/// See also [totalMaxAvailableBalanceForAssetAsString].
+class TotalMaxAvailableBalanceForAssetAsStringProvider
+    extends AutoDisposeProvider<String> {
+  /// See also [totalMaxAvailableBalanceForAssetAsString].
+  TotalMaxAvailableBalanceForAssetAsStringProvider(String? assetId)
+    : this._internal(
+        (ref) => totalMaxAvailableBalanceForAssetAsString(
+          ref as TotalMaxAvailableBalanceForAssetAsStringRef,
+          assetId,
+        ),
+        from: totalMaxAvailableBalanceForAssetAsStringProvider,
+        name: r'totalMaxAvailableBalanceForAssetAsStringProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$totalMaxAvailableBalanceForAssetAsStringHash,
+        dependencies:
+            TotalMaxAvailableBalanceForAssetAsStringFamily._dependencies,
+        allTransitiveDependencies:
+            TotalMaxAvailableBalanceForAssetAsStringFamily
+                ._allTransitiveDependencies,
+        assetId: assetId,
+      );
+
+  TotalMaxAvailableBalanceForAssetAsStringProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String? assetId;
+
+  @override
+  Override overrideWith(
+    String Function(TotalMaxAvailableBalanceForAssetAsStringRef provider)
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: TotalMaxAvailableBalanceForAssetAsStringProvider._internal(
+        (ref) => create(ref as TotalMaxAvailableBalanceForAssetAsStringRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<String> createElement() {
+    return _TotalMaxAvailableBalanceForAssetAsStringProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TotalMaxAvailableBalanceForAssetAsStringProvider &&
+        other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin TotalMaxAvailableBalanceForAssetAsStringRef
+    on AutoDisposeProviderRef<String> {
+  /// The parameter `assetId` of this provider.
+  String? get assetId;
+}
+
+class _TotalMaxAvailableBalanceForAssetAsStringProviderElement
+    extends AutoDisposeProviderElement<String>
+    with TotalMaxAvailableBalanceForAssetAsStringRef {
+  _TotalMaxAvailableBalanceForAssetAsStringProviderElement(super.provider);
+
+  @override
+  String? get assetId =>
+      (origin as TotalMaxAvailableBalanceForAssetAsStringProvider).assetId;
 }
 
 String _$defaultCurrencyTickerHash() =>

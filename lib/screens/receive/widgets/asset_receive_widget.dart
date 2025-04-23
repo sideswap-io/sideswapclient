@@ -11,7 +11,7 @@ import 'package:sideswap/common/utils/use_timeout_fn.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';

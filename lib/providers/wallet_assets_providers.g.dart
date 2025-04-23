@@ -24,6 +24,164 @@ final bitcoinAssetIdProvider = Provider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef BitcoinAssetIdRef = ProviderRef<String>;
+String _$assetsHash() => r'8c124724af564e592ba0632abcef778f8aab2bea';
+
+/// See also [assets].
+@ProviderFor(assets)
+final assetsProvider = AutoDisposeProvider<Iterable<Asset>>.internal(
+  assets,
+  name: r'assetsProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$assetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AssetsRef = AutoDisposeProviderRef<Iterable<Asset>>;
+String _$assetFromAssetIdHash() => r'b72841dbd1056e3de308d8a84b47822c12263170';
+
+/// Copied from Dart SDK
+class _SystemHash {
+  _SystemHash._();
+
+  static int combine(int hash, int value) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + value);
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    // ignore: parameter_assignments
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
+}
+
+/// See also [assetFromAssetId].
+@ProviderFor(assetFromAssetId)
+const assetFromAssetIdProvider = AssetFromAssetIdFamily();
+
+/// See also [assetFromAssetId].
+class AssetFromAssetIdFamily extends Family<Option<Asset>> {
+  /// See also [assetFromAssetId].
+  const AssetFromAssetIdFamily();
+
+  /// See also [assetFromAssetId].
+  AssetFromAssetIdProvider call(String? assetId) {
+    return AssetFromAssetIdProvider(assetId);
+  }
+
+  @override
+  AssetFromAssetIdProvider getProviderOverride(
+    covariant AssetFromAssetIdProvider provider,
+  ) {
+    return call(provider.assetId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'assetFromAssetIdProvider';
+}
+
+/// See also [assetFromAssetId].
+class AssetFromAssetIdProvider extends AutoDisposeProvider<Option<Asset>> {
+  /// See also [assetFromAssetId].
+  AssetFromAssetIdProvider(String? assetId)
+    : this._internal(
+        (ref) => assetFromAssetId(ref as AssetFromAssetIdRef, assetId),
+        from: assetFromAssetIdProvider,
+        name: r'assetFromAssetIdProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$assetFromAssetIdHash,
+        dependencies: AssetFromAssetIdFamily._dependencies,
+        allTransitiveDependencies:
+            AssetFromAssetIdFamily._allTransitiveDependencies,
+        assetId: assetId,
+      );
+
+  AssetFromAssetIdProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String? assetId;
+
+  @override
+  Override overrideWith(
+    Option<Asset> Function(AssetFromAssetIdRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AssetFromAssetIdProvider._internal(
+        (ref) => create(ref as AssetFromAssetIdRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<Option<Asset>> createElement() {
+    return _AssetFromAssetIdProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssetFromAssetIdProvider && other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AssetFromAssetIdRef on AutoDisposeProviderRef<Option<Asset>> {
+  /// The parameter `assetId` of this provider.
+  String? get assetId;
+}
+
+class _AssetFromAssetIdProviderElement
+    extends AutoDisposeProviderElement<Option<Asset>>
+    with AssetFromAssetIdRef {
+  _AssetFromAssetIdProviderElement(super.provider);
+
+  @override
+  String? get assetId => (origin as AssetFromAssetIdProvider).assetId;
+}
+
 String _$assetUtilsHash() => r'3ab23b14fed091938634c0c8d49080f197bcc2d5';
 
 /// See also [assetUtils].
@@ -40,8 +198,24 @@ final assetUtilsProvider = AutoDisposeProvider<AssetUtils>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AssetUtilsRef = AutoDisposeProviderRef<AssetUtils>;
+String _$cacheManagerHash() => r'e1b08ebd0a33e4e5a44d8fda304e3a88d3f25da7';
+
+/// See also [cacheManager].
+@ProviderFor(cacheManager)
+final cacheManagerProvider = Provider<CacheManager>.internal(
+  cacheManager,
+  name: r'cacheManagerProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$cacheManagerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CacheManagerRef = ProviderRef<CacheManager>;
 String _$cachedImageManagerHash() =>
-    r'f85f0a392291420d53f544e30ba64097076b124a';
+    r'0eb7658243703a883423f52915e0ec0fc998af9e';
 
 /// See also [cachedImageManager].
 @ProviderFor(cachedImageManager)
@@ -60,7 +234,7 @@ final cachedImageManagerProvider = Provider<CachedImageBase64Manager>.internal(
 // ignore: unused_element
 typedef CachedImageManagerRef = ProviderRef<CachedImageBase64Manager>;
 String _$clearImageCacheFutureHash() =>
-    r'51cf9e3b82df462869dc5270efcd38c873b1b60e';
+    r'ec01d17910dbfa5b87607209ccf50243b9873f85';
 
 /// See also [clearImageCacheFuture].
 @ProviderFor(clearImageCacheFuture)
@@ -97,28 +271,7 @@ final builtinAssetsProvider = AutoDisposeProvider<Map<String, Asset>>.internal(
 // ignore: unused_element
 typedef BuiltinAssetsRef = AutoDisposeProviderRef<Map<String, Asset>>;
 String _$imageBytesResizedFutureHash() =>
-    r'1f87eef85f9015af4f352b23cc54919396b02907';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
+    r'd9569c8a2a20bbc9174da5ea71dd74afc3710b39';
 
 /// See also [imageBytesResizedFuture].
 @ProviderFor(imageBytesResizedFuture)

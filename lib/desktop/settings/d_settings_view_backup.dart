@@ -74,6 +74,8 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
     final defaultDialogTheme =
         ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
+    final scrollController = useScrollController();
+
     useEffect(() {
       WindowManager.instance.addListener(this);
 
@@ -134,14 +136,25 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                         child: Column(
                           children: [
                             Text(
-                              'Your $wordCount word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
-                                  .tr(),
+                              'Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
+                                  .tr(args: [wordCount.toString()]),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 24),
-                              child: DMnemonicTable(
-                                enabled: false,
-                                itemsCount: wordCount,
+                            const SizedBox(height: 24),
+                            Flexible(
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: scrollController,
+                                child: CustomScrollView(
+                                  controller: scrollController,
+                                  slivers: [
+                                    SliverToBoxAdapter(
+                                      child: DMnemonicTable(
+                                        enabled: false,
+                                        itemsCount: wordCount,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -190,6 +203,7 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                                 },
                               ),
                             ),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),

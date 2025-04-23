@@ -28,7 +28,6 @@ class PaymentContinueButton extends ConsumerWidget {
       height: 54,
       backgroundColor: SideSwapColors.brightTurquoise,
       text: 'CONTINUE'.tr(),
-      enabled: enabled,
       onPressed:
           ((errorText != null) && (!enabled))
               ? null

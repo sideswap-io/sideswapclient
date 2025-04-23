@@ -232,5 +232,41 @@ final jadeLockStateNotifierProvider =
     );
 
 typedef _$JadeLockStateNotifier = AutoDisposeNotifier<JadeLockState>;
+String _$jadeOneTimeAuthorizationHash() =>
+    r'5d7f61d5b63e59947c6a586907786595af59eca3';
+
+/// See also [JadeOneTimeAuthorization].
+@ProviderFor(JadeOneTimeAuthorization)
+final jadeOneTimeAuthorizationProvider =
+    AutoDisposeNotifierProvider<JadeOneTimeAuthorization, bool>.internal(
+      JadeOneTimeAuthorization.new,
+      name: r'jadeOneTimeAuthorizationProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$jadeOneTimeAuthorizationHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$JadeOneTimeAuthorization = AutoDisposeNotifier<bool>;
+String _$jadeAuthInProgressStateNotifierHash() =>
+    r'a79ff7240cf37e122b0d2cd25e96ad694202a03a';
+
+/// See also [JadeAuthInProgressStateNotifier].
+@ProviderFor(JadeAuthInProgressStateNotifier)
+final jadeAuthInProgressStateNotifierProvider =
+    NotifierProvider<JadeAuthInProgressStateNotifier, bool>.internal(
+      JadeAuthInProgressStateNotifier.new,
+      name: r'jadeAuthInProgressStateNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$jadeAuthInProgressStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$JadeAuthInProgressStateNotifier = Notifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

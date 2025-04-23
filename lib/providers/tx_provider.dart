@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
+import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -679,40 +681,80 @@ class TransItemHelper {
 
   String txTargetPrice() {
     return switch (txType()) {
-      TxType.swap => () {
-        final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-        final balanceDelivered = transItem.tx.balances.firstWhere(
-          (e) => e.amount < 0,
-        );
-        final balanceReceived = transItem.tx.balances.firstWhere(
-          (e) => e.amount >= 0,
-        );
-        final assetSent =
-            ref.read(assetsStateProvider)[balanceDelivered.assetId];
-        final assetRecv =
-            ref.read(assetsStateProvider)[balanceReceived.assetId];
-        final satoshiDelivered = balanceDelivered.amount.toInt().abs();
-        final satoshiReceived = balanceReceived.amount.toInt().abs();
-        final sentBitcoin = balanceDelivered.assetId == liquidAssetId;
-        final networkFee = transItem.tx.networkFee.toInt().abs();
-        final satoshiDeliveredAdjusted =
-            sentBitcoin
-                ? satoshiDelivered - networkFee
-                : satoshiDelivered + networkFee;
-        final priceOrig =
-            toFloat(satoshiReceived, precision: assetRecv?.precision ?? 8) /
-            toFloat(satoshiDeliveredAdjusted);
-        final price = 1 / priceOrig;
-        var targetPrice = price.toStringAsFixed(assetSent?.precision ?? 8);
-        targetPrice = replaceCharacterOnPosition(
-          input: targetPrice,
-          currencyChar: assetSent?.ticker ?? '',
-          currencyCharAlignment: CurrencyCharAlignment.end,
-        );
-        targetPrice = '1 ${assetRecv?.ticker ?? ''} = $targetPrice';
-        return targetPrice;
-      }(),
+      TxType.swap => price(),
       _ => '',
+    };
+  }
+
+  String price() {
+    final satoshiRepository = ref.read(satoshiRepositoryProvider);
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+
+    final balanceDelivered = transItem.tx.balances.firstWhere(
+      (e) => e.amount < 0,
+    );
+    final balanceReceived = transItem.tx.balances.firstWhere(
+      (e) => e.amount >= 0,
+    );
+
+    final assetSent = ref.read(assetsStateProvider)[balanceDelivered.assetId];
+    final assetRecv = ref.read(assetsStateProvider)[balanceReceived.assetId];
+
+    final satoshiDelivered = balanceDelivered.amount.toInt().abs();
+    final satoshiReceived = balanceReceived.amount.toInt().abs();
+    final sentBitcoin = balanceDelivered.assetId == liquidAssetId;
+    final networkFee = transItem.tx.networkFee.toInt().abs();
+
+    final satoshiDeliveredAdjusted = switch (sentBitcoin) {
+      true => satoshiDelivered - networkFee,
+      _ => satoshiDelivered,
+    };
+
+    final decimalDelivered = satoshiRepository.toDecimal(
+      amount: satoshiDeliveredAdjusted,
+      precision: assetSent?.precision ?? 8,
+    );
+    final decimalReceived = satoshiRepository.toDecimal(
+      amount: satoshiReceived,
+      precision: assetRecv?.precision ?? 8,
+    );
+
+    // we're treat result as float amount (not an asset) with precision 8
+    const pricePrecision = 8;
+    final result = switch (sentBitcoin) {
+      true =>
+        (Decimal.one / decimalDelivered).toDecimal(
+              scaleOnInfinitePrecision: pricePrecision,
+            ) *
+            decimalReceived,
+      _ => (decimalDelivered / decimalReceived).toDecimal(
+        scaleOnInfinitePrecision: pricePrecision,
+      ),
+    };
+
+    final amountToString = ref.read(amountToStringProvider);
+    final decimalKCoin = Decimal.fromInt(kCoin);
+    final satoshiResult = result * decimalKCoin;
+
+    final priceString = amountToString.amountToString(
+      AmountToStringParameters(
+        amount: satoshiResult.toBigInt().toInt(),
+        precision: pricePrecision,
+        trailingZeroes: true,
+        useNumberFormatter: true,
+      ),
+    );
+
+    // format price
+    final targetPrice = replaceCharacterOnPosition(
+      input: priceString,
+      currencyChar: assetSent?.ticker ?? '',
+      currencyCharAlignment: CurrencyCharAlignment.end,
+    );
+
+    return switch (sentBitcoin) {
+      true => '1 ${assetSent?.ticker ?? ''} = $targetPrice',
+      _ => '1 ${assetRecv?.ticker ?? ''} = $targetPrice',
     };
   }
 

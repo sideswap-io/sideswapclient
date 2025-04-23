@@ -8,17 +8,22 @@ import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class LimitPriceTextField extends HookConsumerWidget {
-  const LimitPriceTextField({this.onEditingComplete, super.key});
+  const LimitPriceTextField({
+    this.showConversion = false,
+    this.showBalance = false,
+    this.onEditingComplete,
+    super.key,
+  });
 
   final VoidCallback? onEditingComplete;
+  final bool showConversion;
+  final bool showBalance;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
     final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
-    final priceString = ref.watch(
-      limitOrderPriceAmountControllerNotifierProvider,
-    );
+    final priceString = ref.watch(limitOrderPriceControllerNotifierProvider);
     final insufficientPrice = ref.watch(limitInsufficientPriceProvider);
     final minimumFeeAmount = ref.watch(limitMinimumFeeAmountProvider);
 
@@ -30,7 +35,7 @@ class LimitPriceTextField extends HookConsumerWidget {
       limitPriceController.addListener(() {
         Future.microtask(() {
           ref
-              .read(limitOrderPriceAmountControllerNotifierProvider.notifier)
+              .read(limitOrderPriceControllerNotifierProvider.notifier)
               .setState(limitPriceController.text);
         });
       });
@@ -76,6 +81,9 @@ class LimitPriceTextField extends HookConsumerWidget {
         focusNode: focusNode,
         onEditingComplete: () {},
         onChanged: (value) {},
+        showConversion: showConversion,
+        showBalance: showBalance,
+        showAggregate: true,
         error:
             insufficientPrice
                 ? LimitMinimumFeeError(

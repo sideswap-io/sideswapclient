@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/desktop/markets/widgets/product_columns.dart';
+import 'package:sideswap/screens/markets/widgets/market_product_columns.dart';
 
 class MarketSelectPopup extends StatelessWidget {
   const MarketSelectPopup({super.key, this.onAssetSelected});
@@ -26,7 +26,7 @@ class MarketSelectPopup extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 24),
-          child: ProductColumns(
+          child: MobileProductColumns(
             onMarketSelected: () {
               if (onAssetSelected != null) {
                 onAssetSelected!();

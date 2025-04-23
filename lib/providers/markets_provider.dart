@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:math';
 
-import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
@@ -9,17 +9,20 @@ import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/common/helpers.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:sideswap/common/helpers.dart' show kCoin;
 import 'package:sideswap/desktop/markets/widgets/d_preview_order_dialog.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/ui_history_order.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
-import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/models/ui_own_order.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -90,6 +93,11 @@ class MarketsNotifier extends _$MarketsNotifier {
 List<MarketInfo> marketInfoByMarketType(Ref ref, MarketType_ marketType) {
   final markets = ref.watch(marketsNotifierProvider);
   return markets.where((e) => e.type == marketType).toList();
+}
+
+@riverpod
+List<MarketInfo> stableMarkets(Ref ref) {
+  return ref.watch(marketInfoByMarketTypeProvider(MarketType_.STABLECOIN));
 }
 
 @riverpod
@@ -195,6 +203,34 @@ class MarketPublicOrdersNotifier extends _$MarketPublicOrdersNotifier {
     final msg = To();
     msg.marketUnsubscribe = Empty();
     ref.read(walletProvider).sendMsg(msg);
+  }
+}
+
+@riverpod
+class DebouncedMarketPublicOrders extends _$DebouncedMarketPublicOrders {
+  final _streamController =
+      StreamController<Map<AssetPair, List<PublicOrder>>>();
+
+  @override
+  Map<AssetPair, List<PublicOrder>> build() {
+    ref.listen(marketPublicOrdersNotifierProvider, (_, next) {
+      _streamController.sink.add(next);
+    });
+
+    final subscription = _streamController.stream
+        .debounceTime(const Duration(milliseconds: 150))
+        .listen(_updateState);
+
+    ref.onDispose(() {
+      _streamController.close();
+      subscription.cancel();
+    });
+
+    return <AssetPair, List<PublicOrder>>{};
+  }
+
+  void _updateState(Map<AssetPair, List<PublicOrder>> data) {
+    state = data;
   }
 }
 
@@ -529,7 +565,7 @@ class MarketOrderAmountControllerNotifier
   String build() {
     // cleanup when asset pair changed or order submit success
     ref.watch(marketSubscribedAssetPairNotifierProvider);
-    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(orderSubmitSuccessNotifierProvider);
     ref.watch(marketTypeSwitchStateNotifierProvider);
 
     return '';
@@ -594,10 +630,6 @@ bool marketOrderTradeButtonEnabled(Ref ref) {
 class MarketQuoteNotifier extends _$MarketQuoteNotifier {
   @override
   Option<From_Quote> build() {
-    ref.onDispose(() {
-      _stopQuotes();
-    });
-
     ref.listen(marketTypeSwitchStateNotifierProvider, (_, __) {
       _stopQuotes();
     });
@@ -619,11 +651,7 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
       _stopQuotes();
     });
 
-    return Option.none();
-  }
-
-  void setQuote(From_Quote quote) {
-    state = Option.of(quote);
+    return ref.watch(quoteEventNotifierProvider);
   }
 
   void _startQuotes() {
@@ -639,7 +667,9 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
         _stopQuotes();
       },
       (assetPair) => () {
-        if (state.isSome()) {
+        final optionStartOrderId = ref.read(marketStartOrderNotifierProvider);
+
+        if (state.isSome() && optionStartOrderId.isNone()) {
           _stopQuotes();
         }
 
@@ -656,37 +686,24 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
           return;
         }
 
-        final amount = Int64(marketOrderAmount.asSatoshi());
-        final msg = To();
-        msg.startQuotes = To_StartQuotes(
-          assetPair: assetPair,
-          assetType:
-              marketSideState == MarketSideStateBase()
-                  ? AssetType.BASE
-                  : AssetType.QUOTE,
-          amount: amount,
-          tradeDir: tradeDir,
-        );
-
-        ref.read(walletProvider).sendMsg(msg);
+        ref
+            .read(quoteEventNotifierProvider.notifier)
+            .startQuotes(
+              assetPair: assetPair,
+              assetType:
+                  marketSideState == MarketSideStateBase()
+                      ? AssetType.BASE
+                      : AssetType.QUOTE,
+              amount: marketOrderAmount.asSatoshi(),
+              tradeDir: tradeDir,
+            );
       },
     )();
   }
 
   void _stopQuotes() {
-    final msg = To();
-    msg.stopQuotes = Empty();
-    ref.read(walletProvider).sendMsg(msg);
-    state = Option.none();
+    ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
   }
-}
-
-@freezed
-sealed class QuoteError with _$QuoteError {
-  const factory QuoteError({
-    @Default('') String error,
-    @Default(0) int orderId,
-  }) = _QuoteError;
 }
 
 @riverpod
@@ -712,167 +729,6 @@ Option<QuoteError> marketQuoteError(Ref ref) {
         )(),
     (_) => Option.none(),
   );
-}
-
-class ConvertAmount {
-  final AmountToString amountToString;
-
-  ConvertAmount(this.amountToString);
-
-  String convertAmountForAsset(
-    int amount,
-    Option<Asset> optionAsset, {
-    bool trailingZeroes = true,
-  }) {
-    return optionAsset.match(
-      () => () {
-        return '';
-      },
-      (asset) => () {
-        final amountStr = amountToString.amountToString(
-          AmountToStringParameters(
-            amount: amount,
-            precision: asset.precision,
-            trailingZeroes: trailingZeroes,
-          ),
-        );
-        return amountStr;
-      },
-    )();
-  }
-}
-
-class QuoteLowBalance extends ConvertAmount {
-  final From_Quote_LowBalance _quoteLowBalance;
-  final AssetPair assetPair;
-  final AssetType assetType;
-  final TradeDir tradeDir;
-  final AssetType feeAsset;
-  final Map<String, Asset> assetsState;
-  final int orderId;
-
-  QuoteLowBalance(
-    super.amountToString,
-    this._quoteLowBalance,
-    this.assetPair,
-    this.assetType,
-    this.tradeDir,
-    this.feeAsset,
-    this.assetsState,
-    this.orderId,
-  );
-
-  From_Quote_LowBalance get quoteLowBalance => _quoteLowBalance;
-
-  Option<Asset> get baseAsset {
-    final asset = assetsState[assetPair.base];
-    if (asset == null) {
-      return Option.none();
-    }
-
-    return Option.of(asset);
-  }
-
-  Option<Asset> get quoteAsset {
-    final asset = assetsState[assetPair.quote];
-    if (asset == null) {
-      return Option.none();
-    }
-
-    return Option.of(asset);
-  }
-
-  int get baseAmount => _quoteLowBalance.baseAmount.toInt();
-  int get quoteAmount => _quoteLowBalance.quoteAmount.toInt();
-  int get serverFee => _quoteLowBalance.serverFee.toInt();
-  int get fixedFee => _quoteLowBalance.fixedFee.toInt();
-  int get totalFee =>
-      (_quoteLowBalance.serverFee + _quoteLowBalance.fixedFee).toInt();
-  int get available => _quoteLowBalance.available.toInt();
-
-  String get availableAmount {
-    return convertAmountForAsset(available, deliverAsset);
-  }
-
-  Option<Asset> get deliverAsset => switch (assetType) {
-    AssetType.BASE => switch (tradeDir) {
-      TradeDir.SELL => baseAsset,
-      _ => quoteAsset,
-    },
-    _ => switch (tradeDir) {
-      TradeDir.SELL => quoteAsset,
-      _ => baseAsset,
-    },
-  };
-
-  String get deliverAmount => switch (feeAsset == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-    },
-  };
-
-  Option<Asset> get receiveAsset => switch (assetType) {
-    AssetType.BASE => switch (tradeDir) {
-      TradeDir.SELL => quoteAsset,
-      _ => baseAsset,
-    },
-    _ => switch (tradeDir) {
-      TradeDir.SELL => baseAsset,
-      _ => quoteAsset,
-    },
-  };
-
-  String get receiveAmount => switch (feeAsset == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-  };
 }
 
 @riverpod
@@ -923,190 +779,6 @@ Option<QuoteLowBalance> marketQuoteLowBalanceError(Ref ref) {
   );
 }
 
-class QuoteSuccess extends ConvertAmount {
-  final From_Quote_Success _quoteSuccess;
-  final DateTime _timestamp;
-  final AssetPair assetPair;
-  final AssetType assetType;
-  final TradeDir tradeDir;
-  final AssetType feeAssetType;
-  final Map<String, Asset> assetsState;
-  final int orderId;
-
-  QuoteSuccess(
-    super.amountToString,
-    this._quoteSuccess,
-    this.assetPair,
-    this.assetType,
-    this.tradeDir,
-    this.feeAssetType,
-    this.assetsState,
-    this.orderId,
-  ) : _timestamp = DateTime.timestamp();
-
-  From_Quote_Success get quoteSuccess => _quoteSuccess;
-  int get quoteId => _quoteSuccess.quoteId.toInt();
-
-  DateTime get timestamp => _timestamp;
-
-  Option<Asset> get baseAsset {
-    final asset = assetsState[assetPair.base];
-    if (asset == null) {
-      return Option.none();
-    }
-
-    return Option.of(asset);
-  }
-
-  Option<Asset> get quoteAsset {
-    final asset = assetsState[assetPair.quote];
-    if (asset == null) {
-      return Option.none();
-    }
-
-    return Option.of(asset);
-  }
-
-  int get ttlMilliseconds => _quoteSuccess.ttlMilliseconds.toInt();
-  int get baseAmount => _quoteSuccess.baseAmount.toInt();
-  int get quoteAmount => _quoteSuccess.quoteAmount.toInt();
-  int get serverFee => _quoteSuccess.serverFee.toInt();
-  int get fixedFee => _quoteSuccess.fixedFee.toInt();
-  int get totalFee =>
-      (_quoteSuccess.serverFee + _quoteSuccess.fixedFee).toInt();
-
-  Option<Asset> get deliverAsset => switch (assetType) {
-    AssetType.BASE => switch (tradeDir) {
-      TradeDir.SELL => baseAsset,
-      _ => quoteAsset,
-    },
-    _ => switch (tradeDir) {
-      TradeDir.SELL => quoteAsset,
-      _ => baseAsset,
-    },
-  };
-
-  String get deliverAmount => switch (feeAssetType == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-      _ => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-    },
-  };
-
-  Option<Asset> get receiveAsset => switch (assetType) {
-    AssetType.BASE => switch (tradeDir) {
-      TradeDir.SELL => quoteAsset,
-      _ => baseAsset,
-    },
-    _ => switch (tradeDir) {
-      TradeDir.SELL => baseAsset,
-      _ => quoteAsset,
-    },
-  };
-
-  String get receiveAmount => switch (feeAssetType == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-      _ => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-  };
-
-  Option<Asset> get feeAsset => switch (feeAssetType) {
-    AssetType.BASE => baseAsset,
-    _ => quoteAsset,
-  };
-
-  String get fixedFeeString => convertAmountForAsset(fixedFee, feeAsset);
-  String get serverFeeString => convertAmountForAsset(serverFee, feeAsset);
-
-  Decimal get price {
-    return quoteAsset.match(
-      () => Decimal.zero,
-      (quoteAsset) => baseAsset.match(
-        () => Decimal.zero,
-        (baseAsset) => priceAsset.match(() => Decimal.zero, (priceAsset) {
-          final quoteAmountString = super.amountToString.amountToString(
-            AmountToStringParameters(
-              amount: quoteAmount,
-              precision: quoteAsset.precision,
-            ),
-          );
-          final baseAmountString = super.amountToString.amountToString(
-            AmountToStringParameters(
-              amount: baseAmount,
-              precision: baseAsset.precision,
-            ),
-          );
-
-          final quoteDecimal =
-              Decimal.tryParse(quoteAmountString) ?? Decimal.zero;
-          final baseDecimal =
-              Decimal.tryParse(baseAmountString) ?? Decimal.zero;
-
-          final priceDecimal = (quoteDecimal / baseDecimal).toDecimal(
-            scaleOnInfinitePrecision: priceAsset.precision,
-          );
-
-          return priceDecimal;
-        }),
-      ),
-    );
-  }
-
-  String get priceString {
-    return priceAsset.match(() => '', (asset) {
-      final amount = toIntAmount(price.toDouble(), precision: asset.precision);
-      return convertAmountForAsset(amount, priceAsset);
-    });
-  }
-
-  Option<Asset> get priceAsset => feeAsset;
-}
-
 @riverpod
 Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
   final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
@@ -1155,14 +827,6 @@ Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
   );
 }
 
-class QuoteUnregisteredGaid {
-  final From_Quote_UnregisteredGaid quoteUnregisteredGaid;
-
-  QuoteUnregisteredGaid({required this.quoteUnregisteredGaid});
-
-  String get domainAgent => quoteUnregisteredGaid.domainAgent;
-}
-
 @riverpod
 Option<QuoteUnregisteredGaid> marketQuoteUnregisteredGaid(Ref ref) {
   final optionQuote = ref.watch(marketQuoteNotifierProvider);
@@ -1190,70 +854,14 @@ Option<QuoteUnregisteredGaid> marketQuoteUnregisteredGaid(Ref ref) {
   );
 }
 
-@Riverpod(keepAlive: true)
-class MarketPreviewOrderQuoteNotifier
-    extends _$MarketPreviewOrderQuoteNotifier {
-  @override
-  Option<QuoteSuccess> build() {
-    return Option.none();
-  }
-
-  void setState(QuoteSuccess quoteSuccess) {
-    state = Option.of(quoteSuccess);
-  }
-}
-
 @riverpod
-class MarketPreviewOrderTtl extends _$MarketPreviewOrderTtl {
-  @override
-  int build() {
-    ref.watch(marketPreviewOrderQuoteNotifierProvider);
-
-    final timer = Timer.periodic(Duration(seconds: 1), (_) => updateState());
-    ref.onDispose(() => timer.cancel());
-
-    return updateState();
-  }
-
-  int updateState() {
-    final optionQuoteSuccess = ref.read(
-      marketPreviewOrderQuoteNotifierProvider,
-    );
-
-    state =
-        optionQuoteSuccess.match(
-          () => () {
-            return 0;
-          },
-          (quoteSuccess) => () {
-            final timestamp = quoteSuccess.timestamp;
-            final seconds = (quoteSuccess.ttlMilliseconds / 1000).round();
-            final futuredTimestamp = timestamp.add(Duration(seconds: seconds));
-            final now = DateTime.timestamp();
-            final diff = futuredTimestamp.difference(now);
-            return diff.inSeconds < 0 ? 0 : diff.inSeconds;
-          },
-        )();
-
-    return state;
-  }
-}
-
-@riverpod
-class MarketAcceptQuoteNotifier extends _$MarketAcceptQuoteNotifier {
-  @override
-  Option<From_AcceptQuote> build() {
-    return Option.none();
-  }
-
-  void setState(From_AcceptQuote acceptQuote) {
-    state = Option.of(acceptQuote);
-  }
+Option<From_AcceptQuote> marketAcceptQuote(Ref ref) {
+  return ref.watch(acceptQuoteNotifierProvider);
 }
 
 @riverpod
 Option<String> marketAcceptQuoteSuccess(Ref ref) {
-  final optionAcceptQuote = ref.watch(marketAcceptQuoteNotifierProvider);
+  final optionAcceptQuote = ref.watch(marketAcceptQuoteProvider);
 
   return optionAcceptQuote.match(
     () => () {
@@ -1284,8 +892,8 @@ class MarketAcceptQuoteSuccessShowDialogNotifier
 }
 
 @riverpod
-Option<String> acceptQuoteError(Ref ref) {
-  final optionAcceptQuote = ref.watch(marketAcceptQuoteNotifierProvider);
+Option<String> marketAcceptQuoteError(Ref ref) {
+  final optionAcceptQuote = ref.watch(marketAcceptQuoteProvider);
 
   return optionAcceptQuote.match(
     () => () {
@@ -1362,7 +970,7 @@ class LimitOrderAmountControllerNotifier
   String build() {
     // cleanup when asset pair changed or order submit success
     ref.watch(marketSubscribedAssetPairNotifierProvider);
-    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(orderSubmitSuccessNotifierProvider);
     ref.watch(marketTypeSwitchStateNotifierProvider);
 
     return '';
@@ -1409,13 +1017,13 @@ OrderAmount limitOrderAmount(Ref ref) {
 }
 
 @riverpod
-class LimitOrderPriceAmountControllerNotifier
-    extends _$LimitOrderPriceAmountControllerNotifier {
+class LimitOrderPriceControllerNotifier
+    extends _$LimitOrderPriceControllerNotifier {
   @override
   String build() {
     // cleanup when asset pair changed or order submit success
     ref.watch(marketSubscribedAssetPairNotifierProvider);
-    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(orderSubmitSuccessNotifierProvider);
     ref.watch(marketTypeSwitchStateNotifierProvider);
 
     return '';
@@ -1427,13 +1035,11 @@ class LimitOrderPriceAmountControllerNotifier
 }
 
 @riverpod
-OrderAmount limitPriceAmount(Ref ref) {
+OrderAmount limitOrderPrice(Ref ref) {
   final subscribedAssetPair = ref.watch(
     marketSubscribedAssetPairNotifierProvider,
   );
-  final amountString = ref.watch(
-    limitOrderPriceAmountControllerNotifierProvider,
-  );
+  final priceString = ref.watch(limitOrderPriceControllerNotifierProvider);
   final marketSideState = ref.watch(marketSideStateNotifierProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
@@ -1451,14 +1057,14 @@ OrderAmount limitPriceAmount(Ref ref) {
           marketSideState == MarketSideStateBase()
               ? assetPair.quote
               : assetPair.base;
-      final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
+      final priceDecimal = Decimal.tryParse(priceString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
-        amount: amountDecimal.toString(),
+        amount: priceDecimal.toString(),
         assetId: assetId,
       );
 
       return OrderAmount(
-        amount: amountDecimal,
+        amount: priceDecimal,
         satoshi: amountSatoshi,
         assetId: assetId,
         assetPair: assetPair,
@@ -1481,7 +1087,7 @@ bool limitOrderTradeButtonEnabled(Ref ref) {
   }
 
   final limitAmount = ref.watch(limitOrderAmountProvider);
-  final limitPrice = ref.watch(limitPriceAmountProvider);
+  final limitPrice = ref.watch(limitOrderPriceProvider);
 
   if (limitAmount.amount == Decimal.zero || limitPrice.amount == Decimal.zero) {
     return false;
@@ -1503,65 +1109,40 @@ class OrderSubmitNotifier extends _$OrderSubmitNotifier {
 }
 
 @riverpod
-Option<UiOwnOrder> orderSubmitSuccess(Ref ref) {
-  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
-  final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
+class OrderSubmitSuccessNotifier extends _$OrderSubmitSuccessNotifier {
+  @override
+  Option<UiOwnOrder> build() {
+    return Option.none();
+  }
 
-  return optionOrderSubmit.match(
-    () => () {
-      return Option<UiOwnOrder>.none();
-    },
-    (orderSubmit) => () {
-      if (orderSubmit.hasSubmitSucceed()) {
-        final uiOwnOrder = uiOwnOrders.firstWhereOrNull(
-          (e) => e.ownOrder.orderId == orderSubmit.submitSucceed.orderId,
-        );
-        if (uiOwnOrder == null) {
-          return Option<UiOwnOrder>.none();
-        }
-
-        return Option.of(
-          uiOwnOrder.copyWith(ownOrder: orderSubmit.submitSucceed),
-        );
-      }
-
-      return Option<UiOwnOrder>.none();
-    },
-  )();
+  void setState(UiOwnOrder uiOwnOrder) {
+    state = Option.of(uiOwnOrder);
+  }
 }
 
 @riverpod
-Option<String> orderSubmitError(Ref ref) {
-  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
-  return optionOrderSubmit.match(
-    () => () {
-      return Option<String>.none();
-    },
-    (orderSubmit) => () {
-      if (orderSubmit.hasError() && orderSubmit.error.isNotEmpty) {
-        return Option.of(orderSubmit.error);
-      }
+class OrderSubmitErrorNotifier extends _$OrderSubmitErrorNotifier {
+  @override
+  Option<String> build() {
+    return Option.none();
+  }
 
-      return Option<String>.none();
-    },
-  )();
+  void setState(String errorMsg) {
+    state = Option.of(errorMsg);
+  }
 }
 
 @riverpod
-Option<String> orderSubmitUnregisteredGaid(Ref ref) {
-  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
-  return optionOrderSubmit.match(
-    () => () {
-      return Option<String>.none();
-    },
-    (orderSubmit) => () {
-      if (orderSubmit.hasUnregisteredGaid()) {
-        return Option.of(orderSubmit.unregisteredGaid.domainAgent);
-      }
+class OrderSubmitUnregisteredGaidNotifier
+    extends _$OrderSubmitUnregisteredGaidNotifier {
+  @override
+  Option<String> build() {
+    return Option.none();
+  }
 
-      return Option<String>.none();
-    },
-  )();
+  void setState(String domainAgent) {
+    state = Option.of(domainAgent);
+  }
 }
 
 @riverpod
@@ -2002,31 +1583,6 @@ Option<QuoteError> marketStartOrderQuoteError(Ref ref) {
   );
 }
 
-@riverpod
-class MarketOneTimeAuthorized extends _$MarketOneTimeAuthorized {
-  @override
-  bool build() {
-    return false;
-  }
-
-  void setState(bool value) {
-    state = value;
-  }
-
-  Future<bool> authorize() async {
-    if (state) {
-      return true;
-    }
-
-    ref.read(authInProgressStateNotifierProvider.notifier).setState(true);
-    final authSucceed = await ref.read(walletProvider).isAuthenticated();
-    ref.invalidate(authInProgressStateNotifierProvider);
-    state = authSucceed;
-
-    return state;
-  }
-}
-
 abstract class AbstractMarketTradeRepository {
   Future<void> makeSwapTrade({
     required BuildContext context,
@@ -2047,12 +1603,12 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
     await optionQuoteSuccess.match(
       () => () {},
       (quoteSuccess) => () async {
-        var authorized = ref.read(marketOneTimeAuthorizedProvider);
+        var authorized = ref.read(jadeOneTimeAuthorizationProvider);
 
-        if (!ref.read(marketOneTimeAuthorizedProvider)) {
+        if (!ref.read(jadeOneTimeAuthorizationProvider)) {
           authorized =
               await ref
-                  .read(marketOneTimeAuthorizedProvider.notifier)
+                  .read(jadeOneTimeAuthorizationProvider.notifier)
                   .authorize();
         }
 
@@ -2062,7 +1618,7 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
 
         if (context.mounted) {
           ref
-              .read(marketPreviewOrderQuoteNotifierProvider.notifier)
+              .read(previewOrderQuoteSuccessNotifierProvider.notifier)
               .setState(quoteSuccess);
 
           if (FlavorConfig.isDesktop) {
@@ -2092,7 +1648,7 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
             return;
           }
 
-          ref.invalidate(marketPreviewOrderQuoteNotifierProvider);
+          ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
         }
       },
     )();
@@ -2211,7 +1767,7 @@ bool limitInsufficientPrice(Ref ref) {
   final optionFeeAsset = ref.watch(limitFeeAssetProvider);
   final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
   final minimalAmounts = ref.watch(marketMinimalAmountsNotfierProvider);
-  final priceAmount = ref.watch(limitPriceAmountProvider);
+  final priceAmount = ref.watch(limitOrderPriceProvider);
   final orderAmount = ref.watch(limitOrderAmountProvider);
 
   if (priceAmount.amount == Decimal.zero) {
@@ -2270,4 +1826,109 @@ String marketOrderButtonText(Ref ref) {
     JadeLockStateUnlocked() => continueText,
     _ => unlockText,
   };
+}
+
+/// Aggregated volume
+
+@riverpod
+MarketOrderAggregateVolumeProvider marketLimitOrderAggregateVolume(Ref ref) {
+  final orderAmount = ref.watch(limitOrderAmountProvider);
+  final orderPrice = ref.watch(limitOrderPriceProvider);
+  final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
+
+  return optionQuoteAsset.match(
+    () => MarketOrderAggregateVolumeProvider(
+      amount: orderAmount.amount,
+      price: orderPrice.amount,
+      precision: 0,
+    ),
+    (quoteAsset) => MarketOrderAggregateVolumeProvider(
+      amount: orderAmount.amount,
+      price: orderPrice.amount,
+      precision: quoteAsset.precision,
+    ),
+  );
+}
+
+@riverpod
+String marketLimitOrderAggregatedVolumeWithTicker(Ref ref) {
+  final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
+  final aggregateVolume = ref.watch(marketLimitOrderAggregateVolumeProvider);
+
+  return optionQuoteAsset.match(
+    () => aggregateVolume.asString(),
+    (quoteAsset) => '${aggregateVolume.asString()} ${quoteAsset.ticker}',
+  );
+}
+
+@riverpod
+bool makeLimitOrderAggregateVolumeTooHigh(Ref ref) {
+  final aggregateVolume = ref.watch(marketLimitOrderAggregateVolumeProvider);
+  final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
+
+  return optionQuoteAsset.match(() => true, (quoteAsset) {
+    final accountAsset = ref.watch(accountAssetFromAssetProvider(quoteAsset));
+    final assetBalance = ref.watch(
+      accountAssetBalanceStringProvider(accountAsset),
+    );
+
+    final balance = double.tryParse(assetBalance) ?? .0;
+    return aggregateVolume.asDouble() > balance;
+  });
+}
+
+class MarketOrderAggregateVolumeProvider {
+  final Decimal amount;
+  final Decimal price;
+  final int precision;
+
+  MarketOrderAggregateVolumeProvider({
+    required this.amount,
+    required this.price,
+    required this.precision,
+  });
+
+  String asString() {
+    final multipliedInSat = amount * price * Decimal.fromInt(kCoin);
+    final power =
+        Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
+        Decimal.zero;
+    final amountWithPrecision = (multipliedInSat / power).toDecimal();
+
+    if (precision == 0) {
+      return amountWithPrecision.toBigInt().toString();
+    }
+
+    return (multipliedInSat / power).toDecimal().toStringAsFixed(precision);
+  }
+
+  double asDouble() {
+    return double.tryParse(asString()) ?? 0.0;
+  }
+}
+
+@riverpod
+String marketLimitPriceBalance(Ref ref) {
+  final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
+
+  return optionQuoteAsset.match(() => '', (quoteAsset) {
+    final totalBalance = ref.watch(
+      totalMaxAvailableBalanceForAssetAsStringProvider(quoteAsset.assetId),
+    );
+
+    return totalBalance;
+  });
+}
+
+@riverpod
+String marketLimitAmountBalance(Ref ref) {
+  final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
+
+  return optionBaseAsset.match(() => '', (baseAsset) {
+    final totalBalance = ref.watch(
+      totalMaxAvailableBalanceForAssetAsStringProvider(baseAsset.assetId),
+    );
+
+    return totalBalance;
+  });
 }

@@ -275,3 +275,41 @@ AbstractJadeLockRepository jadeLockRepository(Ref ref) {
     lockState: lockState,
   );
 }
+
+@riverpod
+class JadeOneTimeAuthorization extends _$JadeOneTimeAuthorization {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+
+  Future<bool> authorize() async {
+    if (state) {
+      return true;
+    }
+
+    ref.read(jadeAuthInProgressStateNotifierProvider.notifier).setState(true);
+    final authSucceed = await ref.read(walletProvider).isAuthenticated();
+    ref.invalidate(jadeAuthInProgressStateNotifierProvider);
+    state = authSucceed;
+
+    return state;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class JadeAuthInProgressStateNotifier
+    extends _$JadeAuthInProgressStateNotifier {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+}

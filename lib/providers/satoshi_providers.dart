@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:decimal/decimal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'satoshi_providers.g.dart';
@@ -15,8 +16,8 @@ AbstractSatoshiRepository satoshiRepository(Ref ref) {
 
 abstract class AbstractSatoshiRepository {
   int? parseAssetAmount({required String amount, required int precision});
-
   int satoshiForAmount({String? assetId, required String amount});
+  Decimal toDecimal({required int amount, required int precision});
 }
 
 class SatoshiRepository implements AbstractSatoshiRepository {
@@ -62,5 +63,19 @@ class SatoshiRepository implements AbstractSatoshiRepository {
   int satoshiForAmount({String? assetId, required String amount}) {
     final precision = assetUtils.getPrecisionForAssetId(assetId: assetId);
     return parseAssetAmount(amount: amount, precision: precision) ?? 0;
+  }
+
+  @override
+  Decimal toDecimal({required int amount, int precision = 8}) {
+    final decimalAmount = Decimal.fromInt(amount);
+    final decimalPow =
+        Decimal.tryParse(pow(10, precision).toString()) ?? Decimal.zero;
+    if (decimalPow == Decimal.zero) {
+      logger.w('pow is zero');
+      return Decimal.zero;
+    }
+
+    final result = decimalAmount / decimalPow;
+    return result.toDecimal(scaleOnInfinitePrecision: 8);
   }
 }

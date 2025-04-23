@@ -5,6 +5,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/button_styles.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
+import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
@@ -13,6 +14,8 @@ import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
 import 'package:sideswap/desktop/common/d_typography.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/instant_swap/widgets/d_instant_swap_divider_button.dart';
+import 'package:sideswap/desktop/instant_swap/widgets/d_max_button.dart';
 import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
 
 part 'theme.g.dart';
@@ -409,6 +412,16 @@ class DesktopAppTheme {
         DButtonStyle(
           border: ButtonState.all(BorderSide.none),
           textStyle: ButtonState.all(const TextStyle()),
+          backgroundColor: ButtonState.resolveWith((states) {
+            return switch (states) {
+              Set<ButtonStates>() when states.isDisabled => Colors.transparent,
+              Set<ButtonStates>() when states.isPressing => Colors.transparent
+                  .lerpWith(Colors.black, 0.15),
+              Set<ButtonStates>() when states.isHovering => Colors.transparent
+                  .lerpWith(Colors.black, 0.1),
+              _ => Colors.transparent,
+            };
+          }),
         ),
       );
 
@@ -689,7 +702,46 @@ class DesktopAppTheme {
       sideswapCancelButtonStyle(),
       sideswapOkButtonStyle(),
       customBackButtonStyle(),
+      dMaxButtonStyle(),
+      dInstantSwapDividerButtonStyle(),
+      dCustomBigButtonStyle(),
     ];
+  }
+
+  DCustomBigButtonStyle dCustomBigButtonStyle() {
+    return DCustomBigButtonStyle(
+      buttonStyle: DButtonStyle(
+        padding: ButtonState.all(EdgeInsets.zero),
+        textStyle: ButtonState.all(
+          const TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+        ),
+        foregroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled => Colors.white
+                .withValues(alpha: 0.5),
+            Set<ButtonStates>() when states.isPressing => Colors.white,
+            Set<ButtonStates>() when states.isHovering => Colors.white,
+            _ => Colors.white,
+          };
+        }),
+        backgroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled => SideSwapColors
+                .lapisLazuli
+                .withValues(alpha: 0.5),
+            Set<ButtonStates>() when states.isPressing => SideSwapColors
+                .lapisLazuli
+                .lerpWith(Colors.black, 0.15),
+            Set<ButtonStates>() when states.isHovering => SideSwapColors
+                .lapisLazuli
+                .lerpWith(Colors.black, 0.1),
+            _ => SideSwapColors.lapisLazuli,
+          };
+        }),
+
+        border: ButtonState.all(BorderSide.none),
+      ),
+    );
   }
 
   CustomBackButtonStyle customBackButtonStyle() {
@@ -757,6 +809,52 @@ class DesktopAppTheme {
       conversionStyle: textTheme.titleSmall?.copyWith(
         fontSize: 13,
         color: SideSwapColors.halfBaked,
+      ),
+    );
+  }
+
+  DMaxButtonStyle dMaxButtonStyle() {
+    return DMaxButtonStyle(
+      buttonStyle: DButtonStyle(
+        shape: ButtonState.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: SideSwapColors.brightTurquoise,
+              width: 1,
+              style: BorderStyle.solid,
+            ),
+          ),
+        ),
+        textStyle: ButtonState.all(
+          textTheme.labelMedium?.copyWith(
+            color: SideSwapColors.brightTurquoise,
+          ),
+        ),
+      ),
+    );
+  }
+
+  DInstantSwapDividerButtonStyle dInstantSwapDividerButtonStyle() {
+    return DInstantSwapDividerButtonStyle(
+      buttonStyle: DButtonStyle(
+        padding: ButtonState.all(EdgeInsets.zero),
+        shape: ButtonState.all(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(48)),
+        ),
+        backgroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled =>
+              SideSwapColors.brightTurquoise.toAccentColor().darker,
+            Set<ButtonStates>() when states.isPressing => SideSwapColors
+                .brightTurquoise
+                .lerpWith(Colors.black, 0.25),
+            Set<ButtonStates>() when states.isHovering => SideSwapColors
+                .brightTurquoise
+                .lerpWith(Colors.black, 0.2),
+            _ => SideSwapColors.brightTurquoise,
+          };
+        }),
       ),
     );
   }

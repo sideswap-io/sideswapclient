@@ -3,44 +3,38 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
+import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class ProductColumns extends HookConsumerWidget {
-  const ProductColumns({super.key, this.onMarketSelected});
+  const ProductColumns({this.height, this.onMarketSelected, super.key});
 
   final VoidCallback? onMarketSelected;
+  final double? height;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scrollController = useScrollController();
-    final pageStorageKeyData = ref.watch(pageStorageKeyDataProvider);
-    final defaultStorageKey = useMemoized(
-      () => PageStorageKey(pageStorageKeyData),
-    );
-
-    return CustomScrollView(
-      controller: scrollController,
-      key: defaultStorageKey,
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: ProductSliverGroup(
+    return Row(
+      children: [
+        Flexible(
+          child: ProductGroup(
+            height: height,
             marketType: MarketType_.STABLECOIN,
             onMarketSelected: onMarketSelected,
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: ProductSliverGroup(
+        Flexible(
+          child: ProductGroup(
+            height: height,
             marketType: MarketType_.AMP,
             onMarketSelected: onMarketSelected,
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: ProductSliverGroup(
+        Flexible(
+          child: ProductGroup(
+            height: height,
             marketType: MarketType_.TOKEN,
             onMarketSelected: onMarketSelected,
           ),
@@ -50,13 +44,15 @@ class ProductColumns extends HookConsumerWidget {
   }
 }
 
-class ProductSliverGroup extends ConsumerWidget {
-  const ProductSliverGroup({
+class ProductGroup extends HookConsumerWidget {
+  const ProductGroup({
+    this.height,
     required this.marketType,
     this.onMarketSelected,
     super.key,
   });
 
+  final double? height;
   final MarketType_ marketType;
   final VoidCallback? onMarketSelected;
 
@@ -67,97 +63,161 @@ class ProductSliverGroup extends ConsumerWidget {
     );
     final marketTypeName = ref.watch(marketTypeNameProvider(marketType));
 
-    return switch (marketInfoList.isEmpty) {
-      true => SliverToBoxAdapter(child: SizedBox()),
-      _ => SliverMainAxisGroup(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Text(
-              marketTypeName,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: SideSwapColors.brightTurquoise,
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              child: Container(height: 1, color: const Color(0xFF3E82A8)),
-            ),
-          ),
-          SliverList.builder(
-            itemBuilder: (context, index) {
-              return DHoverButton(
-                builder: (context, states) {
-                  return Consumer(
-                    builder: (context, ref, child) {
-                      final baseAsset =
-                          ref
-                              .watch(
-                                baseAssetByMarketInfoProvider(
-                                  marketInfoList[index],
-                                ),
-                              )
-                              .toNullable();
-                      final quoteAsset =
-                          ref
-                              .watch(
-                                quoteAssetByMarketInfoProvider(
-                                  marketInfoList[index],
-                                ),
-                              )
-                              .toNullable();
-                      final subscribedAssetPair =
-                          ref
-                              .watch(marketSubscribedAssetPairNotifierProvider)
-                              .toNullable();
+    final scrollController = useScrollController();
+    final pageStorageKeyData = ref.watch(pageStorageKeyDataProvider);
 
-                      return Container(
-                        padding: const EdgeInsets.only(
-                          left: 4,
-                          right: 0,
-                          top: 7,
-                          bottom: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(8),
-                          ),
-                          color:
-                              marketInfoList[index].assetPair ==
-                                      subscribedAssetPair
-                                  ? SideSwapColors.brightTurquoise
-                                  : (states.isHovering
-                                      ? SideSwapColors.chathamsBlue
-                                      : null),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              '${baseAsset?.ticker ?? ''} / ${quoteAsset?.ticker ?? ''}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
+    final defaultStorageKey = useMemoized(
+      () => PageStorageKey('$pageStorageKeyData + $marketTypeName'),
+    );
+
+    return switch (marketInfoList.isEmpty) {
+      true => SizedBox(),
+      _ => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Flexible(
+              child: CustomScrollView(
+                controller: scrollController,
+                key: defaultStorageKey,
+                slivers: [
+                  SliverPersistentHeader(
+                    delegate: ProductGroupHeaderDelegate(title: marketTypeName),
+                    pinned: true,
+                  ),
+                  SliverList.builder(
+                    itemBuilder: (context, index) {
+                      return ProductItem(
+                        marketInfo: marketInfoList[index],
+                        onMarketSelected: onMarketSelected,
                       );
                     },
-                  );
-                },
-                onPressed: () {
-                  ref
-                      .read(marketSubscribedAssetPairNotifierProvider.notifier)
-                      .setState(marketInfoList[index].assetPair);
-                  onMarketSelected?.call();
-                },
-              );
-            },
-            itemCount: marketInfoList.length,
-          ),
-          SliverToBoxAdapter(child: SizedBox(height: 16)),
-        ],
+                    itemCount: marketInfoList.length,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     };
   }
+}
+
+class ProductItem extends ConsumerWidget {
+  final MarketInfo marketInfo;
+  final VoidCallback? onMarketSelected;
+  const ProductItem({
+    this.onMarketSelected,
+    required this.marketInfo,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return DHoverButton(
+      builder: (context, states) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final baseAsset =
+                ref
+                    .watch(baseAssetByMarketInfoProvider(marketInfo))
+                    .toNullable();
+            final quoteAsset =
+                ref
+                    .watch(quoteAssetByMarketInfoProvider(marketInfo))
+                    .toNullable();
+            final subscribedAssetPair =
+                ref
+                    .watch(marketSubscribedAssetPairNotifierProvider)
+                    .toNullable();
+            final baseIcon = ref
+                .read(assetImageRepositoryProvider)
+                .getVerySmallImage(baseAsset?.assetId);
+            final quoteIcon = ref
+                .read(assetImageRepositoryProvider)
+                .getVerySmallImage(quoteAsset?.assetId);
+
+            return Container(
+              padding: const EdgeInsets.only(top: 7, bottom: 7),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                color:
+                    marketInfo.assetPair == subscribedAssetPair
+                        ? SideSwapColors.brightTurquoise
+                        : (states.isHovering
+                            ? SideSwapColors.chathamsBlue
+                            : null),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 6),
+                  baseIcon,
+                  const SizedBox(width: 6),
+                  Text(
+                    '${baseAsset?.ticker ?? ''}  /',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  quoteIcon,
+                  const SizedBox(width: 6),
+                  Text(
+                    quoteAsset?.ticker ?? '',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      onPressed: () {
+        ref
+            .read(marketSubscribedAssetPairNotifierProvider.notifier)
+            .setState(marketInfo.assetPair);
+        onMarketSelected?.call();
+      },
+    );
+  }
+}
+
+class ProductGroupHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String title;
+  final double height;
+
+  ProductGroupHeaderDelegate({required this.title, this.height = 36});
+
+  @override
+  Widget build(context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Color(0xFF084366),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: SideSwapColors.brightTurquoise,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: Container(height: 1, color: const Color(0xFF3E82A8)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) => false;
 }

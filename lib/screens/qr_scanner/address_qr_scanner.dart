@@ -13,12 +13,16 @@ import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/qrcode_models.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/qr_scanner/qr_overlay_shape.dart';
 import 'package:sideswap/screens/qr_scanner/qr_scanner_overlay_clipper.dart';
 import 'package:sideswap_permissions/sideswap_permissions.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class AddressQrScanner extends HookConsumerWidget {
   final BIP21AddressTypeEnum? expectedAddress;
@@ -41,11 +45,37 @@ class AddressQrScanner extends HookConsumerWidget {
         .handleAppUrlStr(code);
 
     return switch (linkResultState) {
-      LinkResultState.success => () {
+      LinkResultStateSuccess(:final LinkResultDetails? details) => () {
         Navigator.of(context).pop();
+        if (details != null && details is LinkResultDetailsSwap) {
+          ref.read(universalLinkProvider).handleSwapLinkResult(
+            linkResultState,
+            (orderId, privateId) {
+              Future.microtask(() {
+                final walletMainArguments = ref.read(
+                  uiStateArgsNotifierProvider,
+                );
+                ref
+                    .read(uiStateArgsNotifierProvider.notifier)
+                    .setWalletMainArguments(walletMainArguments.fromIndex(2));
+
+                // stop market quotes if any
+                ref.invalidate(marketQuoteNotifierProvider);
+
+                final msg = To();
+                msg.startOrder = To_StartOrder(
+                  orderId: orderId,
+                  privateId: privateId.isNotEmpty ? privateId : null,
+                );
+                ref.read(walletProvider).sendMsg(msg);
+                ref.invalidate(universalLinkResultStateNotifierProvider);
+              });
+            },
+          );
+        }
         return;
       }(),
-      LinkResultState.failed || LinkResultState.failedUriPath => () {
+      LinkResultStateFailed() || LinkResultStateFailedUriPath() => () {
         errorCallback('Invalid QR code'.tr());
         return;
       }(),

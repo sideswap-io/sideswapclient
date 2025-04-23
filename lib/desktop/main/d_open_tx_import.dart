@@ -11,9 +11,9 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -271,6 +271,10 @@ class DOpenTxImport extends HookConsumerWidget {
                                   orderId,
                                   privateId,
                                 ) {
+                                  // stop market quotes if any
+                                  ref
+                                      .read(quoteEventNotifierProvider.notifier)
+                                      .stopQuotes();
                                   final navigator = Navigator.of(context);
                                   navigator.pop();
                                   ref
@@ -281,9 +285,6 @@ class DOpenTxImport extends HookConsumerWidget {
                                         walletMainArguments.fromIndexDesktop(1),
                                       );
 
-                                  // stop market quotes if any
-                                  ref.invalidate(marketQuoteNotifierProvider);
-
                                   Future.microtask(() {
                                     final msg = To();
                                     msg.startOrder = To_StartOrder(
@@ -293,42 +294,6 @@ class DOpenTxImport extends HookConsumerWidget {
                                     ref.read(walletProvider).sendMsg(msg);
                                   });
                                 });
-
-                            // if (linkResultState is! LinkResultStateSuccess) {
-                            //   return;
-                            // }
-
-                            // final details = linkResultState.details;
-
-                            // if (details == null || details.orderId == null) {
-                            //   return;
-                            // }
-
-                            // final orderId = Int64.tryParseInt(details.orderId!);
-
-                            // if (orderId == null) {
-                            //   return;
-                            // }
-
-                            // final navigator = Navigator.of(context);
-                            // navigator.pop();
-                            // ref
-                            //     .read(uiStateArgsNotifierProvider.notifier)
-                            //     .setWalletMainArguments(
-                            //       walletMainArguments.fromIndexDesktop(1),
-                            //     );
-
-                            // // stop market quotes if any
-                            // ref.invalidate(marketQuoteNotifierProvider);
-
-                            // Future.microtask(() {
-                            //   final msg = To();
-                            //   msg.startOrder = To_StartOrder(
-                            //     orderId: orderId,
-                            //     privateId: details.privateId,
-                            //   );
-                            //   ref.read(walletProvider).sendMsg(msg);
-                            // });
                           }
                           : null,
                   child: Text('CONTINUE'.tr()),

@@ -16,7 +16,7 @@ class DAcceptQuoteErrorDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionAcceptQuoteError = ref.watch(acceptQuoteErrorProvider);
+    final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
 
     final defaultDialogTheme = ref
         .watch(desktopAppThemeNotifierProvider)

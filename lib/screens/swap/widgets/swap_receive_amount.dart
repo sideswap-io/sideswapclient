@@ -8,7 +8,7 @@ import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/subscribe_price_providers.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 import 'package:easy_localization/easy_localization.dart';

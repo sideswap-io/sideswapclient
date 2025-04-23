@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/screens/swap/widgets/rounded_text_label.dart';
 import 'package:sideswap/screens/swap/widgets/swap_arrows_button.dart';
 
 class SwapMiddleIcon extends ConsumerWidget {
-  const SwapMiddleIcon({super.key, required this.visibleToggles, this.onTap});
+  const SwapMiddleIcon({super.key, this.onTap});
 
   final _swapIconSize = 48.0;
-  final bool visibleToggles;
   final VoidCallback? onTap;
 
   @override

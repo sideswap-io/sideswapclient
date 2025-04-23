@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/jade_provider.dart';
-import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/screens/onboarding/jade/widgets/jade_circular_progress_indicator.dart';
 
 class JadeInfoDialog extends HookConsumerWidget {
@@ -168,9 +168,9 @@ class JadeInfoDialogSign extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionQuoteSuccess = ref.watch(
-      marketPreviewOrderQuoteNotifierProvider,
+      previewOrderQuoteSuccessNotifierProvider,
     );
-    final previewOrderTtl = ref.watch(marketPreviewOrderTtlProvider);
+    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
 
     return Align(
       alignment: Alignment.bottomCenter,

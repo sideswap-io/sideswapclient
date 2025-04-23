@@ -37,8 +37,8 @@ const AssetType$json = {
 };
 
 /// Descriptor for `AssetType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List assetTypeDescriptor =
-    $convert.base64Decode('CglBc3NldFR5cGUSCAoEQkFTRRABEgkKBVFVT1RFEAI=');
+final $typed_data.Uint8List assetTypeDescriptor = $convert.base64Decode(
+    'CglBc3NldFR5cGUSCAoEQkFTRRABEgkKBVFVT1RFEAI=');
 
 @$core.Deprecated('Use marketType_Descriptor instead')
 const MarketType_$json = {
@@ -64,8 +64,8 @@ const TradeDir$json = {
 };
 
 /// Descriptor for `TradeDir`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List tradeDirDescriptor =
-    $convert.base64Decode('CghUcmFkZURpchIICgRTRUxMEAESBwoDQlVZEAI=');
+final $typed_data.Uint8List tradeDirDescriptor = $convert.base64Decode(
+    'CghUcmFkZURpchIICgRTRUxMEAESBwoDQlVZEAI=');
 
 @$core.Deprecated('Use histStatusDescriptor instead')
 const HistStatus$json = {
@@ -94,8 +94,8 @@ const Empty$json = {
 };
 
 /// Descriptor for `Empty`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List emptyDescriptor =
-    $convert.base64Decode('CgVFbXB0eQ==');
+final $typed_data.Uint8List emptyDescriptor = $convert.base64Decode(
+    'CgVFbXB0eQ==');
 
 @$core.Deprecated('Use accountDescriptor instead')
 const Account$json = {
@@ -106,8 +106,8 @@ const Account$json = {
 };
 
 /// Descriptor for `Account`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List accountDescriptor =
-    $convert.base64Decode('CgdBY2NvdW50Eg4KAmlkGAEgAigFUgJpZA==');
+final $typed_data.Uint8List accountDescriptor = $convert.base64Decode(
+    'CgdBY2NvdW50Eg4KAmlkGAEgAigFUgJpZA==');
 
 @$core.Deprecated('Use addressDescriptor instead')
 const Address$json = {
@@ -118,8 +118,8 @@ const Address$json = {
 };
 
 /// Descriptor for `Address`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List addressDescriptor =
-    $convert.base64Decode('CgdBZGRyZXNzEhIKBGFkZHIYASACKAlSBGFkZHI=');
+final $typed_data.Uint8List addressDescriptor = $convert.base64Decode(
+    'CgdBZGRyZXNzEhIKBGFkZHIYASACKAlSBGFkZHI=');
 
 @$core.Deprecated('Use addressAmountDescriptor instead')
 const AddressAmount$json = {
@@ -154,13 +154,7 @@ final $typed_data.Uint8List balanceDescriptor = $convert.base64Decode(
 const AmpAssetRestrictions$json = {
   '1': 'AmpAssetRestrictions',
   '2': [
-    {
-      '1': 'allowed_countries',
-      '3': 1,
-      '4': 3,
-      '5': 9,
-      '10': 'allowedCountries'
-    },
+    {'1': 'allowed_countries', '3': 1, '4': 3, '5': 9, '10': 'allowedCountries'},
   ],
 };
 
@@ -184,23 +178,10 @@ const Asset$json = {
     {'1': 'unregistered', '3': 8, '4': 2, '5': 8, '10': 'unregistered'},
     {'1': 'domain', '3': 7, '4': 1, '5': 9, '10': 'domain'},
     {'1': 'domain_agent', '3': 10, '4': 1, '5': 9, '10': 'domainAgent'},
-    {
-      '1': 'domain_agent_link',
-      '3': 13,
-      '4': 1,
-      '5': 9,
-      '10': 'domainAgentLink'
-    },
+    {'1': 'domain_agent_link', '3': 13, '4': 1, '5': 9, '10': 'domainAgentLink'},
     {'1': 'always_show', '3': 12, '4': 1, '5': 8, '10': 'alwaysShow'},
     {'1': 'payjoin', '3': 15, '4': 1, '5': 8, '10': 'payjoin'},
-    {
-      '1': 'amp_asset_restrictions',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.AmpAssetRestrictions',
-      '10': 'ampAssetRestrictions'
-    },
+    {'1': 'amp_asset_restrictions', '3': 14, '4': 1, '5': 11, '6': '.sideswap.proto.AmpAssetRestrictions', '10': 'ampAssetRestrictions'},
   ],
 };
 
@@ -221,26 +202,12 @@ final $typed_data.Uint8List assetDescriptor = $convert.base64Decode(
 const Tx$json = {
   '1': 'Tx',
   '2': [
-    {
-      '1': 'balances',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.Balance',
-      '10': 'balances'
-    },
+    {'1': 'balances', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.Balance', '10': 'balances'},
     {'1': 'txid', '3': 2, '4': 2, '5': 9, '10': 'txid'},
     {'1': 'network_fee', '3': 3, '4': 2, '5': 3, '10': 'networkFee'},
     {'1': 'vsize', '3': 6, '4': 2, '5': 3, '10': 'vsize'},
     {'1': 'memo', '3': 4, '4': 2, '5': 9, '10': 'memo'},
-    {
-      '1': 'balances_all',
-      '3': 7,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.Balance',
-      '10': 'balancesAll'
-    },
+    {'1': 'balances_all', '3': 7, '4': 3, '5': 11, '6': '.sideswap.proto.Balance', '10': 'balancesAll'},
   ],
 };
 
@@ -291,40 +258,10 @@ const TransItem$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 2, '5': 9, '10': 'id'},
     {'1': 'created_at', '3': 2, '4': 2, '5': 3, '10': 'createdAt'},
-    {
-      '1': 'confs',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Confs',
-      '10': 'confs'
-    },
-    {
-      '1': 'account',
-      '3': 4,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
-    {
-      '1': 'tx',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Tx',
-      '9': 0,
-      '10': 'tx'
-    },
-    {
-      '1': 'peg',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Peg',
-      '9': 0,
-      '10': 'peg'
-    },
+    {'1': 'confs', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.Confs', '10': 'confs'},
+    {'1': 'account', '3': 4, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
+    {'1': 'tx', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.Tx', '9': 0, '10': 'tx'},
+    {'1': 'peg', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.Peg', '9': 0, '10': 'peg'},
   ],
   '8': [
     {'1': 'item'},
@@ -348,8 +285,8 @@ const AssetId$json = {
 };
 
 /// Descriptor for `AssetId`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List assetIdDescriptor =
-    $convert.base64Decode('CgdBc3NldElkEhkKCGFzc2V0X2lkGAEgAigJUgdhc3NldElk');
+final $typed_data.Uint8List assetIdDescriptor = $convert.base64Decode(
+    'CgdBc3NldElkEhkKCGFzc2V0X2lkGAEgAigJUgdhc3NldElk');
 
 @$core.Deprecated('Use genericResponseDescriptor instead')
 const GenericResponse$json = {
@@ -384,35 +321,10 @@ const ServerStatus$json = {
   '1': 'ServerStatus',
   '2': [
     {'1': 'min_peg_in_amount', '3': 1, '4': 2, '5': 3, '10': 'minPegInAmount'},
-    {
-      '1': 'min_peg_out_amount',
-      '3': 2,
-      '4': 2,
-      '5': 3,
-      '10': 'minPegOutAmount'
-    },
-    {
-      '1': 'server_fee_percent_peg_in',
-      '3': 3,
-      '4': 2,
-      '5': 1,
-      '10': 'serverFeePercentPegIn'
-    },
-    {
-      '1': 'server_fee_percent_peg_out',
-      '3': 4,
-      '4': 2,
-      '5': 1,
-      '10': 'serverFeePercentPegOut'
-    },
-    {
-      '1': 'bitcoin_fee_rates',
-      '3': 5,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.FeeRate',
-      '10': 'bitcoinFeeRates'
-    },
+    {'1': 'min_peg_out_amount', '3': 2, '4': 2, '5': 3, '10': 'minPegOutAmount'},
+    {'1': 'server_fee_percent_peg_in', '3': 3, '4': 2, '5': 1, '10': 'serverFeePercentPegIn'},
+    {'1': 'server_fee_percent_peg_out', '3': 4, '4': 2, '5': 1, '10': 'serverFeePercentPegOut'},
+    {'1': 'bitcoin_fee_rates', '3': 5, '4': 3, '5': 11, '6': '.sideswap.proto.FeeRate', '10': 'bitcoinFeeRates'},
   ],
 };
 
@@ -442,38 +354,11 @@ final $typed_data.Uint8List outPointDescriptor = $convert.base64Decode(
 const CreateTx$json = {
   '1': 'CreateTx',
   '2': [
-    {
-      '1': 'addressees',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.AddressAmount',
-      '10': 'addressees'
-    },
-    {
-      '1': 'account',
-      '3': 2,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
-    {
-      '1': 'utxos',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.OutPoint',
-      '10': 'utxos'
-    },
+    {'1': 'addressees', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.AddressAmount', '10': 'addressees'},
+    {'1': 'account', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
+    {'1': 'utxos', '3': 3, '4': 3, '5': 11, '6': '.sideswap.proto.OutPoint', '10': 'utxos'},
     {'1': 'fee_asset_id', '3': 4, '4': 1, '5': 9, '10': 'feeAssetId'},
-    {
-      '1': 'deduct_fee_output',
-      '3': 5,
-      '4': 1,
-      '5': 13,
-      '10': 'deductFeeOutput'
-    },
+    {'1': 'deduct_fee_output', '3': 5, '4': 1, '5': 13, '10': 'deductFeeOutput'},
   ],
 };
 
@@ -490,14 +375,7 @@ const CreatedTx$json = {
   '1': 'CreatedTx',
   '2': [
     {'1': 'id', '3': 9, '4': 2, '5': 9, '10': 'id'},
-    {
-      '1': 'req',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.CreateTx',
-      '10': 'req'
-    },
+    {'1': 'req', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.CreateTx', '10': 'req'},
     {'1': 'input_count', '3': 2, '4': 2, '5': 5, '10': 'inputCount'},
     {'1': 'output_count', '3': 3, '4': 2, '5': 5, '10': 'outputCount'},
     {'1': 'size', '3': 4, '4': 2, '5': 3, '10': 'size'},
@@ -506,14 +384,7 @@ const CreatedTx$json = {
     {'1': 'network_fee', '3': 5, '4': 2, '5': 3, '10': 'networkFee'},
     {'1': 'server_fee', '3': 10, '4': 1, '5': 3, '10': 'serverFee'},
     {'1': 'fee_per_byte', '3': 6, '4': 2, '5': 1, '10': 'feePerByte'},
-    {
-      '1': 'addressees',
-      '3': 8,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.AddressAmount',
-      '10': 'addressees'
-    },
+    {'1': 'addressees', '3': 8, '4': 3, '5': 11, '6': '.sideswap.proto.AddressAmount', '10': 'addressees'},
   ],
 };
 
@@ -563,30 +434,9 @@ final $typed_data.Uint8List assetPairDescriptor = $convert.base64Decode(
 const MarketInfo$json = {
   '1': 'MarketInfo',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'fee_asset',
-      '3': 2,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.AssetType',
-      '10': 'feeAsset'
-    },
-    {
-      '1': 'type',
-      '3': 3,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.MarketType_',
-      '10': 'type'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'fee_asset', '3': 2, '4': 2, '5': 14, '6': '.sideswap.proto.AssetType', '10': 'feeAsset'},
+    {'1': 'type', '3': 3, '4': 2, '5': 14, '6': '.sideswap.proto.MarketType_', '10': 'type'},
   ],
 };
 
@@ -606,37 +456,16 @@ const OrderId$json = {
 };
 
 /// Descriptor for `OrderId`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List orderIdDescriptor =
-    $convert.base64Decode('CgdPcmRlcklkEg4KAmlkGAEgAigEUgJpZA==');
+final $typed_data.Uint8List orderIdDescriptor = $convert.base64Decode(
+    'CgdPcmRlcklkEg4KAmlkGAEgAigEUgJpZA==');
 
 @$core.Deprecated('Use publicOrderDescriptor instead')
 const PublicOrder$json = {
   '1': 'PublicOrder',
   '2': [
-    {
-      '1': 'order_id',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '10': 'orderId'
-    },
-    {
-      '1': 'asset_pair',
-      '3': 2,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'trade_dir',
-      '3': 3,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'order_id', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.OrderId', '10': 'orderId'},
+    {'1': 'asset_pair', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'trade_dir', '3': 3, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
     {'1': 'amount', '3': 4, '4': 2, '5': 4, '10': 'amount'},
     {'1': 'price', '3': 5, '4': 2, '5': 1, '10': 'price'},
     {'1': 'two_step', '3': 6, '4': 2, '5': 8, '10': 'twoStep'},
@@ -655,30 +484,9 @@ final $typed_data.Uint8List publicOrderDescriptor = $convert.base64Decode(
 const OwnOrder$json = {
   '1': 'OwnOrder',
   '2': [
-    {
-      '1': 'order_id',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '10': 'orderId'
-    },
-    {
-      '1': 'asset_pair',
-      '3': 2,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'trade_dir',
-      '3': 3,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'order_id', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.OrderId', '10': 'orderId'},
+    {'1': 'asset_pair', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'trade_dir', '3': 3, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
     {'1': 'orig_amount', '3': 4, '4': 2, '5': 4, '10': 'origAmount'},
     {'1': 'active_amount', '3': 5, '4': 2, '5': 4, '10': 'activeAmount'},
     {'1': 'price', '3': 6, '4': 2, '5': 1, '10': 'price'},
@@ -705,41 +513,13 @@ const HistoryOrder$json = {
   '1': 'HistoryOrder',
   '2': [
     {'1': 'id', '3': 1, '4': 2, '5': 4, '10': 'id'},
-    {
-      '1': 'order_id',
-      '3': 2,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '10': 'orderId'
-    },
-    {
-      '1': 'asset_pair',
-      '3': 3,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'trade_dir',
-      '3': 4,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'order_id', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.OrderId', '10': 'orderId'},
+    {'1': 'asset_pair', '3': 3, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'trade_dir', '3': 4, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
     {'1': 'base_amount', '3': 5, '4': 2, '5': 4, '10': 'baseAmount'},
     {'1': 'quote_amount', '3': 6, '4': 2, '5': 4, '10': 'quoteAmount'},
     {'1': 'price', '3': 7, '4': 2, '5': 1, '10': 'price'},
-    {
-      '1': 'status',
-      '3': 8,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.HistStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 8, '4': 2, '5': 14, '6': '.sideswap.proto.HistStatus', '10': 'status'},
     {'1': 'txid', '3': 9, '4': 1, '5': 9, '10': 'txid'},
   ],
 };
@@ -758,393 +538,49 @@ final $typed_data.Uint8List historyOrderDescriptor = $convert.base64Decode(
 const To$json = {
   '1': 'To',
   '2': [
-    {
-      '1': 'login',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.Login',
-      '9': 0,
-      '10': 'login'
-    },
-    {
-      '1': 'logout',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'logout'
-    },
-    {
-      '1': 'network_settings',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.NetworkSettings',
-      '9': 0,
-      '10': 'networkSettings'
-    },
-    {
-      '1': 'proxy_settings',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.ProxySettings',
-      '9': 0,
-      '10': 'proxySettings'
-    },
-    {
-      '1': 'update_push_token',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.UpdatePushToken',
-      '9': 0,
-      '10': 'updatePushToken'
-    },
-    {
-      '1': 'encrypt_pin',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.EncryptPin',
-      '9': 0,
-      '10': 'encryptPin'
-    },
-    {
-      '1': 'decrypt_pin',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.DecryptPin',
-      '9': 0,
-      '10': 'decryptPin'
-    },
+    {'1': 'login', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.To.Login', '9': 0, '10': 'login'},
+    {'1': 'logout', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'logout'},
+    {'1': 'network_settings', '3': 9, '4': 1, '5': 11, '6': '.sideswap.proto.To.NetworkSettings', '9': 0, '10': 'networkSettings'},
+    {'1': 'proxy_settings', '3': 7, '4': 1, '5': 11, '6': '.sideswap.proto.To.ProxySettings', '9': 0, '10': 'proxySettings'},
+    {'1': 'update_push_token', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.To.UpdatePushToken', '9': 0, '10': 'updatePushToken'},
+    {'1': 'encrypt_pin', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.To.EncryptPin', '9': 0, '10': 'encryptPin'},
+    {'1': 'decrypt_pin', '3': 5, '4': 1, '5': 11, '6': '.sideswap.proto.To.DecryptPin', '9': 0, '10': 'decryptPin'},
     {'1': 'push_message', '3': 6, '4': 1, '5': 9, '9': 0, '10': 'pushMessage'},
-    {
-      '1': 'app_state',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.AppState',
-      '9': 0,
-      '10': 'appState'
-    },
-    {
-      '1': 'active_page',
-      '3': 19,
-      '4': 1,
-      '5': 14,
-      '6': '.sideswap.proto.ActivePage',
-      '9': 0,
-      '10': 'activePage'
-    },
-    {
-      '1': 'set_memo',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.SetMemo',
-      '9': 0,
-      '10': 'setMemo'
-    },
-    {
-      '1': 'get_recv_address',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '9': 0,
-      '10': 'getRecvAddress'
-    },
-    {
-      '1': 'create_tx',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.CreateTx',
-      '9': 0,
-      '10': 'createTx'
-    },
-    {
-      '1': 'send_tx',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.SendTx',
-      '9': 0,
-      '10': 'sendTx'
-    },
-    {
-      '1': 'blinded_values',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.BlindedValues',
-      '9': 0,
-      '10': 'blindedValues'
-    },
-    {
-      '1': 'load_utxos',
-      '3': 17,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '9': 0,
-      '10': 'loadUtxos'
-    },
-    {
-      '1': 'load_addresses',
-      '3': 18,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '9': 0,
-      '10': 'loadAddresses'
-    },
-    {
-      '1': 'swap_request',
-      '3': 20,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.SwapRequest',
-      '9': 0,
-      '10': 'swapRequest'
-    },
-    {
-      '1': 'peg_in_request',
-      '3': 21,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.PegInRequest',
-      '9': 0,
-      '10': 'pegInRequest'
-    },
-    {
-      '1': 'peg_out_amount',
-      '3': 24,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.PegOutAmount',
-      '9': 0,
-      '10': 'pegOutAmount'
-    },
-    {
-      '1': 'peg_out_request',
-      '3': 22,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.PegOutRequest',
-      '9': 0,
-      '10': 'pegOutRequest'
-    },
-    {
-      '1': 'asset_details',
-      '3': 57,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.AssetId',
-      '9': 0,
-      '10': 'assetDetails'
-    },
-    {
-      '1': 'subscribe_price_stream',
-      '3': 58,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.SubscribePriceStream',
-      '9': 0,
-      '10': 'subscribePriceStream'
-    },
-    {
-      '1': 'unsubscribe_price_stream',
-      '3': 59,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'unsubscribePriceStream'
-    },
-    {
-      '1': 'portfolio_prices',
-      '3': 62,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'portfolioPrices'
-    },
-    {
-      '1': 'conversion_rates',
-      '3': 63,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'conversionRates'
-    },
-    {
-      '1': 'jade_rescan',
-      '3': 71,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'jadeRescan'
-    },
-    {
-      '1': 'jade_unlock',
-      '3': 72,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'jadeUnlock'
-    },
-    {
-      '1': 'gaid_status',
-      '3': 81,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.GaidStatus',
-      '9': 0,
-      '10': 'gaidStatus'
-    },
-    {
-      '1': 'market_subscribe',
-      '3': 100,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '9': 0,
-      '10': 'marketSubscribe'
-    },
-    {
-      '1': 'market_unsubscribe',
-      '3': 101,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'marketUnsubscribe'
-    },
-    {
-      '1': 'order_submit',
-      '3': 102,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.OrderSubmit',
-      '9': 0,
-      '10': 'orderSubmit'
-    },
-    {
-      '1': 'order_edit',
-      '3': 103,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.OrderEdit',
-      '9': 0,
-      '10': 'orderEdit'
-    },
-    {
-      '1': 'order_cancel',
-      '3': 104,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.OrderCancel',
-      '9': 0,
-      '10': 'orderCancel'
-    },
-    {
-      '1': 'start_quotes',
-      '3': 110,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.StartQuotes',
-      '9': 0,
-      '10': 'startQuotes'
-    },
-    {
-      '1': 'start_order',
-      '3': 113,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.StartOrder',
-      '9': 0,
-      '10': 'startOrder'
-    },
-    {
-      '1': 'stop_quotes',
-      '3': 111,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'stopQuotes'
-    },
-    {
-      '1': 'accept_quote',
-      '3': 112,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.AcceptQuote',
-      '9': 0,
-      '10': 'acceptQuote'
-    },
-    {
-      '1': 'charts_subscribe',
-      '3': 120,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '9': 0,
-      '10': 'chartsSubscribe'
-    },
-    {
-      '1': 'charts_unsubscribe',
-      '3': 121,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'chartsUnsubscribe'
-    },
-    {
-      '1': 'load_history',
-      '3': 130,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.LoadHistory',
-      '9': 0,
-      '10': 'loadHistory'
-    },
+    {'1': 'app_state', '3': 8, '4': 1, '5': 11, '6': '.sideswap.proto.To.AppState', '9': 0, '10': 'appState'},
+    {'1': 'active_page', '3': 19, '4': 1, '5': 14, '6': '.sideswap.proto.ActivePage', '9': 0, '10': 'activePage'},
+    {'1': 'set_memo', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.To.SetMemo', '9': 0, '10': 'setMemo'},
+    {'1': 'get_recv_address', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.Account', '9': 0, '10': 'getRecvAddress'},
+    {'1': 'create_tx', '3': 12, '4': 1, '5': 11, '6': '.sideswap.proto.CreateTx', '9': 0, '10': 'createTx'},
+    {'1': 'send_tx', '3': 13, '4': 1, '5': 11, '6': '.sideswap.proto.To.SendTx', '9': 0, '10': 'sendTx'},
+    {'1': 'blinded_values', '3': 14, '4': 1, '5': 11, '6': '.sideswap.proto.To.BlindedValues', '9': 0, '10': 'blindedValues'},
+    {'1': 'load_utxos', '3': 17, '4': 1, '5': 11, '6': '.sideswap.proto.Account', '9': 0, '10': 'loadUtxos'},
+    {'1': 'load_addresses', '3': 18, '4': 1, '5': 11, '6': '.sideswap.proto.Account', '9': 0, '10': 'loadAddresses'},
+    {'1': 'swap_request', '3': 20, '4': 1, '5': 11, '6': '.sideswap.proto.To.SwapRequest', '9': 0, '10': 'swapRequest'},
+    {'1': 'peg_in_request', '3': 21, '4': 1, '5': 11, '6': '.sideswap.proto.To.PegInRequest', '9': 0, '10': 'pegInRequest'},
+    {'1': 'peg_out_amount', '3': 24, '4': 1, '5': 11, '6': '.sideswap.proto.To.PegOutAmount', '9': 0, '10': 'pegOutAmount'},
+    {'1': 'peg_out_request', '3': 22, '4': 1, '5': 11, '6': '.sideswap.proto.To.PegOutRequest', '9': 0, '10': 'pegOutRequest'},
+    {'1': 'asset_details', '3': 57, '4': 1, '5': 11, '6': '.sideswap.proto.AssetId', '9': 0, '10': 'assetDetails'},
+    {'1': 'subscribe_price_stream', '3': 58, '4': 1, '5': 11, '6': '.sideswap.proto.To.SubscribePriceStream', '9': 0, '10': 'subscribePriceStream'},
+    {'1': 'unsubscribe_price_stream', '3': 59, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'unsubscribePriceStream'},
+    {'1': 'portfolio_prices', '3': 62, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'portfolioPrices'},
+    {'1': 'conversion_rates', '3': 63, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'conversionRates'},
+    {'1': 'jade_rescan', '3': 71, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'jadeRescan'},
+    {'1': 'jade_unlock', '3': 72, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'jadeUnlock'},
+    {'1': 'gaid_status', '3': 81, '4': 1, '5': 11, '6': '.sideswap.proto.To.GaidStatus', '9': 0, '10': 'gaidStatus'},
+    {'1': 'market_subscribe', '3': 100, '4': 1, '5': 11, '6': '.sideswap.proto.AssetPair', '9': 0, '10': 'marketSubscribe'},
+    {'1': 'market_unsubscribe', '3': 101, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'marketUnsubscribe'},
+    {'1': 'order_submit', '3': 102, '4': 1, '5': 11, '6': '.sideswap.proto.To.OrderSubmit', '9': 0, '10': 'orderSubmit'},
+    {'1': 'order_edit', '3': 103, '4': 1, '5': 11, '6': '.sideswap.proto.To.OrderEdit', '9': 0, '10': 'orderEdit'},
+    {'1': 'order_cancel', '3': 104, '4': 1, '5': 11, '6': '.sideswap.proto.To.OrderCancel', '9': 0, '10': 'orderCancel'},
+    {'1': 'start_quotes', '3': 110, '4': 1, '5': 11, '6': '.sideswap.proto.To.StartQuotes', '9': 0, '10': 'startQuotes'},
+    {'1': 'start_order', '3': 113, '4': 1, '5': 11, '6': '.sideswap.proto.To.StartOrder', '9': 0, '10': 'startOrder'},
+    {'1': 'stop_quotes', '3': 111, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'stopQuotes'},
+    {'1': 'accept_quote', '3': 112, '4': 1, '5': 11, '6': '.sideswap.proto.To.AcceptQuote', '9': 0, '10': 'acceptQuote'},
+    {'1': 'charts_subscribe', '3': 120, '4': 1, '5': 11, '6': '.sideswap.proto.AssetPair', '9': 0, '10': 'chartsSubscribe'},
+    {'1': 'charts_unsubscribe', '3': 121, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'chartsUnsubscribe'},
+    {'1': 'load_history', '3': 130, '4': 1, '5': 11, '6': '.sideswap.proto.To.LoadHistory', '9': 0, '10': 'loadHistory'},
   ],
-  '3': [
-    To_Login$json,
-    To_NetworkSettings$json,
-    To_ProxySettings$json,
-    To_EncryptPin$json,
-    To_DecryptPin$json,
-    To_AppState$json,
-    To_SwapRequest$json,
-    To_PegInRequest$json,
-    To_PegOutAmount$json,
-    To_PegOutRequest$json,
-    To_SetMemo$json,
-    To_SendTx$json,
-    To_BlindedValues$json,
-    To_UpdatePushToken$json,
-    To_SubscribePriceStream$json,
-    To_GaidStatus$json,
-    To_OrderSubmit$json,
-    To_OrderEdit$json,
-    To_OrderCancel$json,
-    To_StartQuotes$json,
-    To_StartOrder$json,
-    To_AcceptQuote$json,
-    To_LoadHistory$json
-  ],
+  '3': [To_Login$json, To_NetworkSettings$json, To_ProxySettings$json, To_EncryptPin$json, To_DecryptPin$json, To_AppState$json, To_SwapRequest$json, To_PegInRequest$json, To_PegOutAmount$json, To_PegOutRequest$json, To_SetMemo$json, To_SendTx$json, To_BlindedValues$json, To_UpdatePushToken$json, To_SubscribePriceStream$json, To_GaidStatus$json, To_OrderSubmit$json, To_OrderEdit$json, To_OrderCancel$json, To_StartQuotes$json, To_StartOrder$json, To_AcceptQuote$json, To_LoadHistory$json],
   '8': [
     {'1': 'msg'},
   ],
@@ -1167,42 +603,10 @@ const To_Login$json = {
 const To_NetworkSettings$json = {
   '1': 'NetworkSettings',
   '2': [
-    {
-      '1': 'blockstream',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'blockstream'
-    },
-    {
-      '1': 'sideswap',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'sideswap'
-    },
-    {
-      '1': 'sideswap_cn',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'sideswapCn'
-    },
-    {
-      '1': 'custom',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.NetworkSettings.Custom',
-      '9': 0,
-      '10': 'custom'
-    },
+    {'1': 'blockstream', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'blockstream'},
+    {'1': 'sideswap', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'sideswap'},
+    {'1': 'sideswap_cn', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'sideswapCn'},
+    {'1': 'custom', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.To.NetworkSettings.Custom', '9': 0, '10': 'custom'},
   ],
   '3': [To_NetworkSettings_Custom$json],
   '8': [
@@ -1224,14 +628,7 @@ const To_NetworkSettings_Custom$json = {
 const To_ProxySettings$json = {
   '1': 'ProxySettings',
   '2': [
-    {
-      '1': 'proxy',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.To.ProxySettings.Proxy',
-      '10': 'proxy'
-    },
+    {'1': 'proxy', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.To.ProxySettings.Proxy', '10': 'proxy'},
   ],
   '3': [To_ProxySettings_Proxy$json],
 };
@@ -1298,14 +695,7 @@ const To_PegOutAmount$json = {
     {'1': 'amount', '3': 1, '4': 2, '5': 3, '10': 'amount'},
     {'1': 'is_send_entered', '3': 2, '4': 2, '5': 8, '10': 'isSendEntered'},
     {'1': 'fee_rate', '3': 3, '4': 2, '5': 1, '10': 'feeRate'},
-    {
-      '1': 'account',
-      '3': 4,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 4, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
   ],
 };
 
@@ -1319,14 +709,7 @@ const To_PegOutRequest$json = {
     {'1': 'fee_rate', '3': 5, '4': 2, '5': 1, '10': 'feeRate'},
     {'1': 'recv_addr', '3': 6, '4': 2, '5': 9, '10': 'recvAddr'},
     {'1': 'blocks', '3': 7, '4': 2, '5': 5, '10': 'blocks'},
-    {
-      '1': 'account',
-      '3': 8,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 8, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
   ],
 };
 
@@ -1334,14 +717,7 @@ const To_PegOutRequest$json = {
 const To_SetMemo$json = {
   '1': 'SetMemo',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
     {'1': 'txid', '3': 2, '4': 2, '5': 9, '10': 'txid'},
     {'1': 'memo', '3': 3, '4': 2, '5': 9, '10': 'memo'},
   ],
@@ -1351,14 +727,7 @@ const To_SetMemo$json = {
 const To_SendTx$json = {
   '1': 'SendTx',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
     {'1': 'id', '3': 2, '4': 2, '5': 9, '10': 'id'},
   ],
 };
@@ -1403,34 +772,14 @@ const To_GaidStatus$json = {
 const To_OrderSubmit$json = {
   '1': 'OrderSubmit',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
     {'1': 'base_amount', '3': 2, '4': 2, '5': 4, '10': 'baseAmount'},
     {'1': 'price', '3': 3, '4': 1, '5': 1, '10': 'price'},
     {'1': 'price_tracking', '3': 9, '4': 1, '5': 1, '10': 'priceTracking'},
-    {
-      '1': 'trade_dir',
-      '3': 4,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'trade_dir', '3': 4, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
     {'1': 'ttl_seconds', '3': 5, '4': 1, '5': 4, '10': 'ttlSeconds'},
     {'1': 'two_step', '3': 6, '4': 2, '5': 8, '10': 'twoStep'},
-    {
-      '1': 'tx_chaining_allowed',
-      '3': 7,
-      '4': 1,
-      '5': 8,
-      '10': 'txChainingAllowed'
-    },
+    {'1': 'tx_chaining_allowed', '3': 7, '4': 1, '5': 8, '10': 'txChainingAllowed'},
     {'1': 'private', '3': 8, '4': 2, '5': 8, '10': 'private'},
   ],
 };
@@ -1439,14 +788,7 @@ const To_OrderSubmit$json = {
 const To_OrderEdit$json = {
   '1': 'OrderEdit',
   '2': [
-    {
-      '1': 'order_id',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '10': 'orderId'
-    },
+    {'1': 'order_id', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.OrderId', '10': 'orderId'},
     {'1': 'base_amount', '3': 2, '4': 1, '5': 4, '10': 'baseAmount'},
     {'1': 'price', '3': 3, '4': 1, '5': 1, '10': 'price'},
     {'1': 'price_tracking', '3': 4, '4': 1, '5': 1, '10': 'priceTracking'},
@@ -1457,14 +799,7 @@ const To_OrderEdit$json = {
 const To_OrderCancel$json = {
   '1': 'OrderCancel',
   '2': [
-    {
-      '1': 'order_id',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '10': 'orderId'
-    },
+    {'1': 'order_id', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.OrderId', '10': 'orderId'},
   ],
 };
 
@@ -1472,31 +807,12 @@ const To_OrderCancel$json = {
 const To_StartQuotes$json = {
   '1': 'StartQuotes',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'asset_type',
-      '3': 2,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.AssetType',
-      '10': 'assetType'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'asset_type', '3': 2, '4': 2, '5': 14, '6': '.sideswap.proto.AssetType', '10': 'assetType'},
     {'1': 'amount', '3': 3, '4': 2, '5': 4, '10': 'amount'},
-    {
-      '1': 'trade_dir',
-      '3': 4,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'trade_dir', '3': 4, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
+    {'1': 'instant_swaps', '3': 5, '4': 2, '5': 8, '10': 'instantSwaps'},
+    {'1': 'client_sub_id', '3': 6, '4': 1, '5': 3, '10': 'clientSubId'},
   ],
 };
 
@@ -1624,607 +940,84 @@ final $typed_data.Uint8List toDescriptor = $convert.base64Decode(
     'dvcmRlcklkEh8KC2Jhc2VfYW1vdW50GAIgASgEUgpiYXNlQW1vdW50EhQKBXByaWNlGAMgASgB'
     'UgVwcmljZRIlCg5wcmljZV90cmFja2luZxgEIAEoAVINcHJpY2VUcmFja2luZxpBCgtPcmRlck'
     'NhbmNlbBIyCghvcmRlcl9pZBgBIAIoCzIXLnNpZGVzd2FwLnByb3RvLk9yZGVySWRSB29yZGVy'
-    'SWQa0AEKC1N0YXJ0UXVvdGVzEjgKCmFzc2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by'
+    'SWQamQIKC1N0YXJ0UXVvdGVzEjgKCmFzc2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by'
     '5Bc3NldFBhaXJSCWFzc2V0UGFpchI4Cgphc3NldF90eXBlGAIgAigOMhkuc2lkZXN3YXAucHJv'
     'dG8uQXNzZXRUeXBlUglhc3NldFR5cGUSFgoGYW1vdW50GAMgAigEUgZhbW91bnQSNQoJdHJhZG'
-    'VfZGlyGAQgAigOMhguc2lkZXN3YXAucHJvdG8uVHJhZGVEaXJSCHRyYWRlRGlyGkYKClN0YXJ0'
-    'T3JkZXISGQoIb3JkZXJfaWQYASACKARSB29yZGVySWQSHQoKcHJpdmF0ZV9pZBgCIAEoCVIJcH'
-    'JpdmF0ZUlkGigKC0FjY2VwdFF1b3RlEhkKCHF1b3RlX2lkGAEgAigEUgdxdW90ZUlkGnEKC0xv'
-    'YWRIaXN0b3J5Eh0KCnN0YXJ0X3RpbWUYASABKARSCXN0YXJ0VGltZRIZCghlbmRfdGltZRgCIA'
-    'EoBFIHZW5kVGltZRISCgRza2lwGAMgASgNUgRza2lwEhQKBWNvdW50GAQgASgNUgVjb3VudEIF'
-    'CgNtc2c=');
+    'VfZGlyGAQgAigOMhguc2lkZXN3YXAucHJvdG8uVHJhZGVEaXJSCHRyYWRlRGlyEiMKDWluc3Rh'
+    'bnRfc3dhcHMYBSACKAhSDGluc3RhbnRTd2FwcxIiCg1jbGllbnRfc3ViX2lkGAYgASgDUgtjbG'
+    'llbnRTdWJJZBpGCgpTdGFydE9yZGVyEhkKCG9yZGVyX2lkGAEgAigEUgdvcmRlcklkEh0KCnBy'
+    'aXZhdGVfaWQYAiABKAlSCXByaXZhdGVJZBooCgtBY2NlcHRRdW90ZRIZCghxdW90ZV9pZBgBIA'
+    'IoBFIHcXVvdGVJZBpxCgtMb2FkSGlzdG9yeRIdCgpzdGFydF90aW1lGAEgASgEUglzdGFydFRp'
+    'bWUSGQoIZW5kX3RpbWUYAiABKARSB2VuZFRpbWUSEgoEc2tpcBgDIAEoDVIEc2tpcBIUCgVjb3'
+    'VudBgEIAEoDVIFY291bnRCBQoDbXNn');
 
 @$core.Deprecated('Use fromDescriptor instead')
 const From$json = {
   '1': 'From',
   '2': [
-    {
-      '1': 'login',
-      '3': 17,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.Login',
-      '9': 0,
-      '10': 'login'
-    },
-    {
-      '1': 'logout',
-      '3': 16,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'logout'
-    },
-    {
-      '1': 'env_settings',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.EnvSettings',
-      '9': 0,
-      '10': 'envSettings'
-    },
-    {
-      '1': 'register_amp',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.RegisterAmp',
-      '9': 0,
-      '10': 'registerAmp'
-    },
-    {
-      '1': 'updated_txs',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.UpdatedTxs',
-      '9': 0,
-      '10': 'updatedTxs'
-    },
-    {
-      '1': 'removed_txs',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.RemovedTxs',
-      '9': 0,
-      '10': 'removedTxs'
-    },
-    {
-      '1': 'updated_pegs',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.UpdatedPegs',
-      '9': 0,
-      '10': 'updatedPegs'
-    },
-    {
-      '1': 'new_asset',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Asset',
-      '9': 0,
-      '10': 'newAsset'
-    },
-    {
-      '1': 'amp_assets',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.AmpAssets',
-      '9': 0,
-      '10': 'ampAssets'
-    },
-    {
-      '1': 'balance_update',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.BalanceUpdate',
-      '9': 0,
-      '10': 'balanceUpdate'
-    },
-    {
-      '1': 'server_status',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.ServerStatus',
-      '9': 0,
-      '10': 'serverStatus'
-    },
-    {
-      '1': 'price_update',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.PriceUpdate',
-      '9': 0,
-      '10': 'priceUpdate'
-    },
-    {
-      '1': 'wallet_loaded',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'walletLoaded'
-    },
-    {
-      '1': 'sync_complete',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'syncComplete'
-    },
-    {
-      '1': 'subscribed_value',
-      '3': 15,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.SubscribedValue',
-      '9': 0,
-      '10': 'subscribedValue'
-    },
-    {
-      '1': 'encrypt_pin',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.EncryptPin',
-      '9': 0,
-      '10': 'encryptPin'
-    },
-    {
-      '1': 'decrypt_pin',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.DecryptPin',
-      '9': 0,
-      '10': 'decryptPin'
-    },
-    {
-      '1': 'pegin_wait_tx',
-      '3': 21,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.PeginWaitTx',
-      '9': 0,
-      '10': 'peginWaitTx'
-    },
-    {
-      '1': 'peg_out_amount',
-      '3': 24,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.PegOutAmount',
-      '9': 0,
-      '10': 'pegOutAmount'
-    },
-    {
-      '1': 'swap_succeed',
-      '3': 22,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.TransItem',
-      '9': 0,
-      '10': 'swapSucceed'
-    },
+    {'1': 'login', '3': 17, '4': 1, '5': 11, '6': '.sideswap.proto.From.Login', '9': 0, '10': 'login'},
+    {'1': 'logout', '3': 16, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'logout'},
+    {'1': 'env_settings', '3': 13, '4': 1, '5': 11, '6': '.sideswap.proto.From.EnvSettings', '9': 0, '10': 'envSettings'},
+    {'1': 'register_amp', '3': 8, '4': 1, '5': 11, '6': '.sideswap.proto.From.RegisterAmp', '9': 0, '10': 'registerAmp'},
+    {'1': 'updated_txs', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.From.UpdatedTxs', '9': 0, '10': 'updatedTxs'},
+    {'1': 'removed_txs', '3': 12, '4': 1, '5': 11, '6': '.sideswap.proto.From.RemovedTxs', '9': 0, '10': 'removedTxs'},
+    {'1': 'updated_pegs', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.From.UpdatedPegs', '9': 0, '10': 'updatedPegs'},
+    {'1': 'new_asset', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.Asset', '9': 0, '10': 'newAsset'},
+    {'1': 'amp_assets', '3': 9, '4': 1, '5': 11, '6': '.sideswap.proto.From.AmpAssets', '9': 0, '10': 'ampAssets'},
+    {'1': 'balance_update', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.From.BalanceUpdate', '9': 0, '10': 'balanceUpdate'},
+    {'1': 'server_status', '3': 5, '4': 1, '5': 11, '6': '.sideswap.proto.ServerStatus', '9': 0, '10': 'serverStatus'},
+    {'1': 'price_update', '3': 6, '4': 1, '5': 11, '6': '.sideswap.proto.From.PriceUpdate', '9': 0, '10': 'priceUpdate'},
+    {'1': 'wallet_loaded', '3': 7, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'walletLoaded'},
+    {'1': 'sync_complete', '3': 14, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'syncComplete'},
+    {'1': 'subscribed_value', '3': 15, '4': 1, '5': 11, '6': '.sideswap.proto.From.SubscribedValue', '9': 0, '10': 'subscribedValue'},
+    {'1': 'encrypt_pin', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.From.EncryptPin', '9': 0, '10': 'encryptPin'},
+    {'1': 'decrypt_pin', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.From.DecryptPin', '9': 0, '10': 'decryptPin'},
+    {'1': 'pegin_wait_tx', '3': 21, '4': 1, '5': 11, '6': '.sideswap.proto.From.PeginWaitTx', '9': 0, '10': 'peginWaitTx'},
+    {'1': 'peg_out_amount', '3': 24, '4': 1, '5': 11, '6': '.sideswap.proto.From.PegOutAmount', '9': 0, '10': 'pegOutAmount'},
+    {'1': 'swap_succeed', '3': 22, '4': 1, '5': 11, '6': '.sideswap.proto.TransItem', '9': 0, '10': 'swapSucceed'},
     {'1': 'swap_failed', '3': 23, '4': 1, '5': 9, '9': 0, '10': 'swapFailed'},
-    {
-      '1': 'recv_address',
-      '3': 30,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.RecvAddress',
-      '9': 0,
-      '10': 'recvAddress'
-    },
-    {
-      '1': 'create_tx_result',
-      '3': 31,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.CreateTxResult',
-      '9': 0,
-      '10': 'createTxResult'
-    },
-    {
-      '1': 'send_result',
-      '3': 32,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.SendResult',
-      '9': 0,
-      '10': 'sendResult'
-    },
-    {
-      '1': 'blinded_values',
-      '3': 33,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.BlindedValues',
-      '9': 0,
-      '10': 'blindedValues'
-    },
-    {
-      '1': 'load_utxos',
-      '3': 35,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.LoadUtxos',
-      '9': 0,
-      '10': 'loadUtxos'
-    },
-    {
-      '1': 'load_addresses',
-      '3': 36,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.LoadAddresses',
-      '9': 0,
-      '10': 'loadAddresses'
-    },
-    {
-      '1': 'show_message',
-      '3': 50,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.ShowMessage',
-      '9': 0,
-      '10': 'showMessage'
-    },
-    {
-      '1': 'insufficient_funds',
-      '3': 55,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.ShowInsufficientFunds',
-      '9': 0,
-      '10': 'insufficientFunds'
-    },
-    {
-      '1': 'server_connected',
-      '3': 60,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'serverConnected'
-    },
-    {
-      '1': 'server_disconnected',
-      '3': 61,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'serverDisconnected'
-    },
-    {
-      '1': 'asset_details',
-      '3': 65,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.AssetDetails',
-      '9': 0,
-      '10': 'assetDetails'
-    },
-    {
-      '1': 'update_price_stream',
-      '3': 66,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.UpdatePriceStream',
-      '9': 0,
-      '10': 'updatePriceStream'
-    },
-    {
-      '1': 'local_message',
-      '3': 68,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.LocalMessage',
-      '9': 0,
-      '10': 'localMessage'
-    },
-    {
-      '1': 'portfolio_prices',
-      '3': 72,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.PortfolioPrices',
-      '9': 0,
-      '10': 'portfolioPrices'
-    },
-    {
-      '1': 'conversion_rates',
-      '3': 73,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.ConversionRates',
-      '9': 0,
-      '10': 'conversionRates'
-    },
-    {
-      '1': 'jade_ports',
-      '3': 80,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.JadePorts',
-      '9': 0,
-      '10': 'jadePorts'
-    },
-    {
-      '1': 'jade_status',
-      '3': 83,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.JadeStatus',
-      '9': 0,
-      '10': 'jadeStatus'
-    },
-    {
-      '1': 'jade_unlock',
-      '3': 81,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.GenericResponse',
-      '9': 0,
-      '10': 'jadeUnlock'
-    },
-    {
-      '1': 'gaid_status',
-      '3': 91,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.GaidStatus',
-      '9': 0,
-      '10': 'gaidStatus'
-    },
-    {
-      '1': 'market_list',
-      '3': 100,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.MarketList',
-      '9': 0,
-      '10': 'marketList'
-    },
-    {
-      '1': 'market_added',
-      '3': 101,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.MarketInfo',
-      '9': 0,
-      '10': 'marketAdded'
-    },
-    {
-      '1': 'market_removed',
-      '3': 102,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '9': 0,
-      '10': 'marketRemoved'
-    },
-    {
-      '1': 'public_orders',
-      '3': 105,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.PublicOrders',
-      '9': 0,
-      '10': 'publicOrders'
-    },
-    {
-      '1': 'public_order_created',
-      '3': 106,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.PublicOrder',
-      '9': 0,
-      '10': 'publicOrderCreated'
-    },
-    {
-      '1': 'public_order_removed',
-      '3': 107,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '9': 0,
-      '10': 'publicOrderRemoved'
-    },
-    {
-      '1': 'market_price',
-      '3': 110,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.MarketPrice',
-      '9': 0,
-      '10': 'marketPrice'
-    },
-    {
-      '1': 'min_market_amounts',
-      '3': 119,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.MinMarketAmounts',
-      '9': 0,
-      '10': 'minMarketAmounts'
-    },
-    {
-      '1': 'own_orders',
-      '3': 120,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.OwnOrders',
-      '9': 0,
-      '10': 'ownOrders'
-    },
-    {
-      '1': 'own_order_created',
-      '3': 121,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.OwnOrder',
-      '9': 0,
-      '10': 'ownOrderCreated'
-    },
-    {
-      '1': 'own_order_removed',
-      '3': 122,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.OrderId',
-      '9': 0,
-      '10': 'ownOrderRemoved'
-    },
-    {
-      '1': 'order_submit',
-      '3': 130,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.OrderSubmit',
-      '9': 0,
-      '10': 'orderSubmit'
-    },
-    {
-      '1': 'order_edit',
-      '3': 131,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.GenericResponse',
-      '9': 0,
-      '10': 'orderEdit'
-    },
-    {
-      '1': 'order_cancel',
-      '3': 132,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.GenericResponse',
-      '9': 0,
-      '10': 'orderCancel'
-    },
-    {
-      '1': 'start_order',
-      '3': 142,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.StartOrder',
-      '9': 0,
-      '10': 'startOrder'
-    },
-    {
-      '1': 'quote',
-      '3': 140,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.Quote',
-      '9': 0,
-      '10': 'quote'
-    },
-    {
-      '1': 'accept_quote',
-      '3': 141,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.AcceptQuote',
-      '9': 0,
-      '10': 'acceptQuote'
-    },
-    {
-      '1': 'charts_subscribe',
-      '3': 150,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.ChartsSubscribe',
-      '9': 0,
-      '10': 'chartsSubscribe'
-    },
-    {
-      '1': 'charts_update',
-      '3': 151,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.ChartsUpdate',
-      '9': 0,
-      '10': 'chartsUpdate'
-    },
-    {
-      '1': 'load_history',
-      '3': 160,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.LoadHistory',
-      '9': 0,
-      '10': 'loadHistory'
-    },
-    {
-      '1': 'history_updated',
-      '3': 161,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.HistoryUpdated',
-      '9': 0,
-      '10': 'historyUpdated'
-    },
+    {'1': 'recv_address', '3': 30, '4': 1, '5': 11, '6': '.sideswap.proto.From.RecvAddress', '9': 0, '10': 'recvAddress'},
+    {'1': 'create_tx_result', '3': 31, '4': 1, '5': 11, '6': '.sideswap.proto.From.CreateTxResult', '9': 0, '10': 'createTxResult'},
+    {'1': 'send_result', '3': 32, '4': 1, '5': 11, '6': '.sideswap.proto.From.SendResult', '9': 0, '10': 'sendResult'},
+    {'1': 'blinded_values', '3': 33, '4': 1, '5': 11, '6': '.sideswap.proto.From.BlindedValues', '9': 0, '10': 'blindedValues'},
+    {'1': 'load_utxos', '3': 35, '4': 1, '5': 11, '6': '.sideswap.proto.From.LoadUtxos', '9': 0, '10': 'loadUtxos'},
+    {'1': 'load_addresses', '3': 36, '4': 1, '5': 11, '6': '.sideswap.proto.From.LoadAddresses', '9': 0, '10': 'loadAddresses'},
+    {'1': 'show_message', '3': 50, '4': 1, '5': 11, '6': '.sideswap.proto.From.ShowMessage', '9': 0, '10': 'showMessage'},
+    {'1': 'insufficient_funds', '3': 55, '4': 1, '5': 11, '6': '.sideswap.proto.From.ShowInsufficientFunds', '9': 0, '10': 'insufficientFunds'},
+    {'1': 'server_connected', '3': 60, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'serverConnected'},
+    {'1': 'server_disconnected', '3': 61, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'serverDisconnected'},
+    {'1': 'asset_details', '3': 65, '4': 1, '5': 11, '6': '.sideswap.proto.From.AssetDetails', '9': 0, '10': 'assetDetails'},
+    {'1': 'update_price_stream', '3': 66, '4': 1, '5': 11, '6': '.sideswap.proto.From.UpdatePriceStream', '9': 0, '10': 'updatePriceStream'},
+    {'1': 'local_message', '3': 68, '4': 1, '5': 11, '6': '.sideswap.proto.From.LocalMessage', '9': 0, '10': 'localMessage'},
+    {'1': 'portfolio_prices', '3': 72, '4': 1, '5': 11, '6': '.sideswap.proto.From.PortfolioPrices', '9': 0, '10': 'portfolioPrices'},
+    {'1': 'conversion_rates', '3': 73, '4': 1, '5': 11, '6': '.sideswap.proto.From.ConversionRates', '9': 0, '10': 'conversionRates'},
+    {'1': 'jade_ports', '3': 80, '4': 1, '5': 11, '6': '.sideswap.proto.From.JadePorts', '9': 0, '10': 'jadePorts'},
+    {'1': 'jade_status', '3': 83, '4': 1, '5': 11, '6': '.sideswap.proto.From.JadeStatus', '9': 0, '10': 'jadeStatus'},
+    {'1': 'jade_unlock', '3': 81, '4': 1, '5': 11, '6': '.sideswap.proto.GenericResponse', '9': 0, '10': 'jadeUnlock'},
+    {'1': 'gaid_status', '3': 91, '4': 1, '5': 11, '6': '.sideswap.proto.From.GaidStatus', '9': 0, '10': 'gaidStatus'},
+    {'1': 'market_list', '3': 100, '4': 1, '5': 11, '6': '.sideswap.proto.From.MarketList', '9': 0, '10': 'marketList'},
+    {'1': 'market_added', '3': 101, '4': 1, '5': 11, '6': '.sideswap.proto.MarketInfo', '9': 0, '10': 'marketAdded'},
+    {'1': 'market_removed', '3': 102, '4': 1, '5': 11, '6': '.sideswap.proto.AssetPair', '9': 0, '10': 'marketRemoved'},
+    {'1': 'public_orders', '3': 105, '4': 1, '5': 11, '6': '.sideswap.proto.From.PublicOrders', '9': 0, '10': 'publicOrders'},
+    {'1': 'public_order_created', '3': 106, '4': 1, '5': 11, '6': '.sideswap.proto.PublicOrder', '9': 0, '10': 'publicOrderCreated'},
+    {'1': 'public_order_removed', '3': 107, '4': 1, '5': 11, '6': '.sideswap.proto.OrderId', '9': 0, '10': 'publicOrderRemoved'},
+    {'1': 'market_price', '3': 110, '4': 1, '5': 11, '6': '.sideswap.proto.From.MarketPrice', '9': 0, '10': 'marketPrice'},
+    {'1': 'min_market_amounts', '3': 119, '4': 1, '5': 11, '6': '.sideswap.proto.From.MinMarketAmounts', '9': 0, '10': 'minMarketAmounts'},
+    {'1': 'own_orders', '3': 120, '4': 1, '5': 11, '6': '.sideswap.proto.From.OwnOrders', '9': 0, '10': 'ownOrders'},
+    {'1': 'own_order_created', '3': 121, '4': 1, '5': 11, '6': '.sideswap.proto.OwnOrder', '9': 0, '10': 'ownOrderCreated'},
+    {'1': 'own_order_removed', '3': 122, '4': 1, '5': 11, '6': '.sideswap.proto.OrderId', '9': 0, '10': 'ownOrderRemoved'},
+    {'1': 'order_submit', '3': 130, '4': 1, '5': 11, '6': '.sideswap.proto.From.OrderSubmit', '9': 0, '10': 'orderSubmit'},
+    {'1': 'order_edit', '3': 131, '4': 1, '5': 11, '6': '.sideswap.proto.GenericResponse', '9': 0, '10': 'orderEdit'},
+    {'1': 'order_cancel', '3': 132, '4': 1, '5': 11, '6': '.sideswap.proto.GenericResponse', '9': 0, '10': 'orderCancel'},
+    {'1': 'start_order', '3': 142, '4': 1, '5': 11, '6': '.sideswap.proto.From.StartOrder', '9': 0, '10': 'startOrder'},
+    {'1': 'quote', '3': 140, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote', '9': 0, '10': 'quote'},
+    {'1': 'accept_quote', '3': 141, '4': 1, '5': 11, '6': '.sideswap.proto.From.AcceptQuote', '9': 0, '10': 'acceptQuote'},
+    {'1': 'charts_subscribe', '3': 150, '4': 1, '5': 11, '6': '.sideswap.proto.From.ChartsSubscribe', '9': 0, '10': 'chartsSubscribe'},
+    {'1': 'charts_update', '3': 151, '4': 1, '5': 11, '6': '.sideswap.proto.From.ChartsUpdate', '9': 0, '10': 'chartsUpdate'},
+    {'1': 'load_history', '3': 160, '4': 1, '5': 11, '6': '.sideswap.proto.From.LoadHistory', '9': 0, '10': 'loadHistory'},
+    {'1': 'history_updated', '3': 161, '4': 1, '5': 11, '6': '.sideswap.proto.From.HistoryUpdated', '9': 0, '10': 'historyUpdated'},
   ],
-  '3': [
-    From_Login$json,
-    From_EnvSettings$json,
-    From_EncryptPin$json,
-    From_DecryptPin$json,
-    From_RegisterAmp$json,
-    From_AmpAssets$json,
-    From_UpdatedTxs$json,
-    From_RemovedTxs$json,
-    From_UpdatedPegs$json,
-    From_BalanceUpdate$json,
-    From_PeginWaitTx$json,
-    From_PegOutAmount$json,
-    From_RecvAddress$json,
-    From_LoadUtxos$json,
-    From_LoadAddresses$json,
-    From_CreateTxResult$json,
-    From_SendResult$json,
-    From_BlindedValues$json,
-    From_PriceUpdate$json,
-    From_SubscribedValue$json,
-    From_ShowMessage$json,
-    From_ShowInsufficientFunds$json,
-    From_AssetDetails$json,
-    From_UpdatePriceStream$json,
-    From_LocalMessage$json,
-    From_PortfolioPrices$json,
-    From_ConversionRates$json,
-    From_JadePorts$json,
-    From_JadeStatus$json,
-    From_GaidStatus$json,
-    From_MarketList$json,
-    From_PublicOrders$json,
-    From_MinMarketAmounts$json,
-    From_OwnOrders$json,
-    From_MarketPrice$json,
-    From_OrderSubmit$json,
-    From_StartOrder$json,
-    From_Quote$json,
-    From_AcceptQuote$json,
-    From_ChartsSubscribe$json,
-    From_ChartsUpdate$json,
-    From_LoadHistory$json,
-    From_HistoryUpdated$json
-  ],
+  '3': [From_Login$json, From_EnvSettings$json, From_EncryptPin$json, From_DecryptPin$json, From_RegisterAmp$json, From_AmpAssets$json, From_UpdatedTxs$json, From_RemovedTxs$json, From_UpdatedPegs$json, From_BalanceUpdate$json, From_PeginWaitTx$json, From_PegOutAmount$json, From_RecvAddress$json, From_LoadUtxos$json, From_LoadAddresses$json, From_CreateTxResult$json, From_SendResult$json, From_BlindedValues$json, From_PriceUpdate$json, From_SubscribedValue$json, From_ShowMessage$json, From_ShowInsufficientFunds$json, From_AssetDetails$json, From_UpdatePriceStream$json, From_LocalMessage$json, From_PortfolioPrices$json, From_ConversionRates$json, From_JadePorts$json, From_JadeStatus$json, From_GaidStatus$json, From_MarketList$json, From_PublicOrders$json, From_MinMarketAmounts$json, From_OwnOrders$json, From_MarketPrice$json, From_OrderSubmit$json, From_StartOrder$json, From_Quote$json, From_AcceptQuote$json, From_ChartsSubscribe$json, From_ChartsUpdate$json, From_LoadHistory$json, From_HistoryUpdated$json],
   '8': [
     {'1': 'msg'},
   ],
@@ -2235,15 +1028,7 @@ const From_Login$json = {
   '1': 'Login',
   '2': [
     {'1': 'error_msg', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
-    {
-      '1': 'success',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.Empty',
-      '9': 0,
-      '10': 'success'
-    },
+    {'1': 'success', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'success'},
   ],
   '8': [
     {'1': 'result'},
@@ -2265,15 +1050,7 @@ const From_EncryptPin$json = {
   '1': 'EncryptPin',
   '2': [
     {'1': 'error', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'error'},
-    {
-      '1': 'data',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.EncryptPin.Data',
-      '9': 0,
-      '10': 'data'
-    },
+    {'1': 'data', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.From.EncryptPin.Data', '9': 0, '10': 'data'},
   ],
   '3': [From_EncryptPin_Data$json],
   '8': [
@@ -2296,15 +1073,7 @@ const From_EncryptPin_Data$json = {
 const From_DecryptPin$json = {
   '1': 'DecryptPin',
   '2': [
-    {
-      '1': 'error',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.DecryptPin.Error',
-      '9': 0,
-      '10': 'error'
-    },
+    {'1': 'error', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.From.DecryptPin.Error', '9': 0, '10': 'error'},
     {'1': 'mnemonic', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'mnemonic'},
   ],
   '3': [From_DecryptPin_Error$json],
@@ -2319,14 +1088,7 @@ const From_DecryptPin_Error$json = {
   '1': 'Error',
   '2': [
     {'1': 'error_msg', '3': 1, '4': 2, '5': 9, '10': 'errorMsg'},
-    {
-      '1': 'error_code',
-      '3': 2,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.From.DecryptPin.ErrorCode',
-      '10': 'errorCode'
-    },
+    {'1': 'error_code', '3': 2, '4': 2, '5': 14, '6': '.sideswap.proto.From.DecryptPin.ErrorCode', '10': 'errorCode'},
   ],
 };
 
@@ -2364,14 +1126,7 @@ const From_AmpAssets$json = {
 const From_UpdatedTxs$json = {
   '1': 'UpdatedTxs',
   '2': [
-    {
-      '1': 'items',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.TransItem',
-      '10': 'items'
-    },
+    {'1': 'items', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.TransItem', '10': 'items'},
   ],
 };
 
@@ -2388,14 +1143,7 @@ const From_UpdatedPegs$json = {
   '1': 'UpdatedPegs',
   '2': [
     {'1': 'order_id', '3': 1, '4': 2, '5': 9, '10': 'orderId'},
-    {
-      '1': 'items',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.TransItem',
-      '10': 'items'
-    },
+    {'1': 'items', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.TransItem', '10': 'items'},
   ],
 };
 
@@ -2403,22 +1151,8 @@ const From_UpdatedPegs$json = {
 const From_BalanceUpdate$json = {
   '1': 'BalanceUpdate',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
-    {
-      '1': 'balances',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.Balance',
-      '10': 'balances'
-    },
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
+    {'1': 'balances', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.Balance', '10': 'balances'},
   ],
 };
 
@@ -2436,15 +1170,7 @@ const From_PegOutAmount$json = {
   '1': 'PegOutAmount',
   '2': [
     {'1': 'error_msg', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
-    {
-      '1': 'amounts',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.PegOutAmount.Amounts',
-      '9': 0,
-      '10': 'amounts'
-    },
+    {'1': 'amounts', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.From.PegOutAmount.Amounts', '9': 0, '10': 'amounts'},
   ],
   '3': [From_PegOutAmount_Amounts$json],
   '8': [
@@ -2460,14 +1186,7 @@ const From_PegOutAmount_Amounts$json = {
     {'1': 'recv_amount', '3': 2, '4': 2, '5': 3, '10': 'recvAmount'},
     {'1': 'is_send_entered', '3': 4, '4': 2, '5': 8, '10': 'isSendEntered'},
     {'1': 'fee_rate', '3': 5, '4': 2, '5': 1, '10': 'feeRate'},
-    {
-      '1': 'account',
-      '3': 6,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 6, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
   ],
 };
 
@@ -2475,22 +1194,8 @@ const From_PegOutAmount_Amounts$json = {
 const From_RecvAddress$json = {
   '1': 'RecvAddress',
   '2': [
-    {
-      '1': 'addr',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Address',
-      '10': 'addr'
-    },
-    {
-      '1': 'account',
-      '3': 2,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'addr', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Address', '10': 'addr'},
+    {'1': 'account', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
   ],
 };
 
@@ -2498,22 +1203,8 @@ const From_RecvAddress$json = {
 const From_LoadUtxos$json = {
   '1': 'LoadUtxos',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
-    {
-      '1': 'utxos',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.From.LoadUtxos.Utxo',
-      '10': 'utxos'
-    },
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
+    {'1': 'utxos', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.From.LoadUtxos.Utxo', '10': 'utxos'},
     {'1': 'error_msg', '3': 3, '4': 1, '5': 9, '10': 'errorMsg'},
   ],
   '3': [From_LoadUtxos_Utxo$json],
@@ -2537,22 +1228,8 @@ const From_LoadUtxos_Utxo$json = {
 const From_LoadAddresses$json = {
   '1': 'LoadAddresses',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
-    {
-      '1': 'addresses',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.From.LoadAddresses.Address',
-      '10': 'addresses'
-    },
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
+    {'1': 'addresses', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.From.LoadAddresses.Address', '10': 'addresses'},
     {'1': 'error_msg', '3': 3, '4': 1, '5': 9, '10': 'errorMsg'},
   ],
   '3': [From_LoadAddresses_Address$json],
@@ -2563,13 +1240,7 @@ const From_LoadAddresses_Address$json = {
   '1': 'Address',
   '2': [
     {'1': 'address', '3': 1, '4': 2, '5': 9, '10': 'address'},
-    {
-      '1': 'unconfidential_address',
-      '3': 4,
-      '4': 2,
-      '5': 9,
-      '10': 'unconfidentialAddress'
-    },
+    {'1': 'unconfidential_address', '3': 4, '4': 2, '5': 9, '10': 'unconfidentialAddress'},
     {'1': 'index', '3': 2, '4': 2, '5': 13, '10': 'index'},
     {'1': 'is_internal', '3': 3, '4': 2, '5': 8, '10': 'isInternal'},
   ],
@@ -2580,15 +1251,7 @@ const From_CreateTxResult$json = {
   '1': 'CreateTxResult',
   '2': [
     {'1': 'error_msg', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
-    {
-      '1': 'created_tx',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.CreatedTx',
-      '9': 0,
-      '10': 'createdTx'
-    },
+    {'1': 'created_tx', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.CreatedTx', '9': 0, '10': 'createdTx'},
   ],
   '8': [
     {'1': 'result'},
@@ -2600,15 +1263,7 @@ const From_SendResult$json = {
   '1': 'SendResult',
   '2': [
     {'1': 'error_msg', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
-    {
-      '1': 'tx_item',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.TransItem',
-      '9': 0,
-      '10': 'txItem'
-    },
+    {'1': 'tx_item', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.TransItem', '9': 0, '10': 'txItem'},
   ],
   '8': [
     {'1': 'result'},
@@ -2621,14 +1276,7 @@ const From_BlindedValues$json = {
   '2': [
     {'1': 'txid', '3': 1, '4': 2, '5': 9, '10': 'txid'},
     {'1': 'error_msg', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
-    {
-      '1': 'blinded_values',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '9': 0,
-      '10': 'blindedValues'
-    },
+    {'1': 'blinded_values', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'blindedValues'},
   ],
   '8': [
     {'1': 'result'},
@@ -2649,38 +1297,10 @@ const From_PriceUpdate$json = {
 const From_SubscribedValue$json = {
   '1': 'SubscribedValue',
   '2': [
-    {
-      '1': 'peg_in_min_amount',
-      '3': 1,
-      '4': 1,
-      '5': 4,
-      '9': 0,
-      '10': 'pegInMinAmount'
-    },
-    {
-      '1': 'peg_in_wallet_balance',
-      '3': 2,
-      '4': 1,
-      '5': 4,
-      '9': 0,
-      '10': 'pegInWalletBalance'
-    },
-    {
-      '1': 'peg_out_min_amount',
-      '3': 3,
-      '4': 1,
-      '5': 4,
-      '9': 0,
-      '10': 'pegOutMinAmount'
-    },
-    {
-      '1': 'peg_out_wallet_balance',
-      '3': 4,
-      '4': 1,
-      '5': 4,
-      '9': 0,
-      '10': 'pegOutWalletBalance'
-    },
+    {'1': 'peg_in_min_amount', '3': 1, '4': 1, '5': 4, '9': 0, '10': 'pegInMinAmount'},
+    {'1': 'peg_in_wallet_balance', '3': 2, '4': 1, '5': 4, '9': 0, '10': 'pegInWalletBalance'},
+    {'1': 'peg_out_min_amount', '3': 3, '4': 1, '5': 4, '9': 0, '10': 'pegOutMinAmount'},
+    {'1': 'peg_out_wallet_balance', '3': 4, '4': 1, '5': 4, '9': 0, '10': 'pegOutWalletBalance'},
   ],
   '8': [
     {'1': 'result'},
@@ -2710,14 +1330,7 @@ const From_AssetDetails$json = {
   '1': 'AssetDetails',
   '2': [
     {'1': 'asset_id', '3': 1, '4': 2, '5': 9, '10': 'assetId'},
-    {
-      '1': 'stats',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.AssetDetails.Stats',
-      '10': 'stats'
-    },
+    {'1': 'stats', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.From.AssetDetails.Stats', '10': 'stats'},
     {'1': 'chart_url', '3': 3, '4': 1, '5': 9, '10': 'chartUrl'},
   ],
   '3': [From_AssetDetails_Stats$json],
@@ -2730,13 +1343,7 @@ const From_AssetDetails_Stats$json = {
     {'1': 'issued_amount', '3': 1, '4': 2, '5': 3, '10': 'issuedAmount'},
     {'1': 'burned_amount', '3': 2, '4': 2, '5': 3, '10': 'burnedAmount'},
     {'1': 'offline_amount', '3': 4, '4': 2, '5': 3, '10': 'offlineAmount'},
-    {
-      '1': 'has_blinded_issuances',
-      '3': 3,
-      '4': 2,
-      '5': 8,
-      '10': 'hasBlindedIssuances'
-    },
+    {'1': 'has_blinded_issuances', '3': 3, '4': 2, '5': 8, '10': 'hasBlindedIssuances'},
   ],
 };
 
@@ -2766,14 +1373,7 @@ const From_LocalMessage$json = {
 const From_PortfolioPrices$json = {
   '1': 'PortfolioPrices',
   '2': [
-    {
-      '1': 'prices_usd',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.From.PortfolioPrices.PricesUsdEntry',
-      '10': 'pricesUsd'
-    },
+    {'1': 'prices_usd', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.From.PortfolioPrices.PricesUsdEntry', '10': 'pricesUsd'},
   ],
   '3': [From_PortfolioPrices_PricesUsdEntry$json],
 };
@@ -2792,14 +1392,7 @@ const From_PortfolioPrices_PricesUsdEntry$json = {
 const From_ConversionRates$json = {
   '1': 'ConversionRates',
   '2': [
-    {
-      '1': 'usd_conversion_rates',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.From.ConversionRates.UsdConversionRatesEntry',
-      '10': 'usdConversionRates'
-    },
+    {'1': 'usd_conversion_rates', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.From.ConversionRates.UsdConversionRatesEntry', '10': 'usdConversionRates'},
   ],
   '3': [From_ConversionRates_UsdConversionRatesEntry$json],
 };
@@ -2818,14 +1411,7 @@ const From_ConversionRates_UsdConversionRatesEntry$json = {
 const From_JadePorts$json = {
   '1': 'JadePorts',
   '2': [
-    {
-      '1': 'ports',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.From.JadePorts.Port',
-      '10': 'ports'
-    },
+    {'1': 'ports', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.From.JadePorts.Port', '10': 'ports'},
   ],
   '3': [From_JadePorts_Port$json],
 };
@@ -2843,14 +1429,7 @@ const From_JadePorts_Port$json = {
 const From_JadeStatus$json = {
   '1': 'JadeStatus',
   '2': [
-    {
-      '1': 'status',
-      '3': 1,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.From.JadeStatus.Status',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 1, '4': 2, '5': 14, '6': '.sideswap.proto.From.JadeStatus.Status', '10': 'status'},
   ],
   '4': [From_JadeStatus_Status$json],
 };
@@ -2886,14 +1465,7 @@ const From_GaidStatus$json = {
 const From_MarketList$json = {
   '1': 'MarketList',
   '2': [
-    {
-      '1': 'markets',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.MarketInfo',
-      '10': 'markets'
-    },
+    {'1': 'markets', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.MarketInfo', '10': 'markets'},
   ],
 };
 
@@ -2901,22 +1473,8 @@ const From_MarketList$json = {
 const From_PublicOrders$json = {
   '1': 'PublicOrders',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'list',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.PublicOrder',
-      '10': 'list'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'list', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.PublicOrder', '10': 'list'},
   ],
 };
 
@@ -2934,14 +1492,7 @@ const From_MinMarketAmounts$json = {
 const From_OwnOrders$json = {
   '1': 'OwnOrders',
   '2': [
-    {
-      '1': 'list',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.OwnOrder',
-      '10': 'list'
-    },
+    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.OwnOrder', '10': 'list'},
   ],
 };
 
@@ -2949,14 +1500,7 @@ const From_OwnOrders$json = {
 const From_MarketPrice$json = {
   '1': 'MarketPrice',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
     {'1': 'ind_price', '3': 2, '4': 1, '5': 1, '10': 'indPrice'},
     {'1': 'last_price', '3': 3, '4': 1, '5': 1, '10': 'lastPrice'},
   ],
@@ -2966,25 +1510,9 @@ const From_MarketPrice$json = {
 const From_OrderSubmit$json = {
   '1': 'OrderSubmit',
   '2': [
-    {
-      '1': 'submit_succeed',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.OwnOrder',
-      '9': 0,
-      '10': 'submitSucceed'
-    },
+    {'1': 'submit_succeed', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.OwnOrder', '9': 0, '10': 'submitSucceed'},
     {'1': 'error', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'error'},
-    {
-      '1': 'unregistered_gaid',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.OrderSubmit.UnregisteredGaid',
-      '9': 0,
-      '10': 'unregisteredGaid'
-    },
+    {'1': 'unregistered_gaid', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.From.OrderSubmit.UnregisteredGaid', '9': 0, '10': 'unregisteredGaid'},
   ],
   '3': [From_OrderSubmit_UnregisteredGaid$json],
   '8': [
@@ -3005,15 +1533,7 @@ const From_StartOrder$json = {
   '1': 'StartOrder',
   '2': [
     {'1': 'order_id', '3': 5, '4': 2, '5': 4, '10': 'orderId'},
-    {
-      '1': 'success',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.StartOrder.Success',
-      '9': 0,
-      '10': 'success'
-    },
+    {'1': 'success', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.From.StartOrder.Success', '9': 0, '10': 'success'},
     {'1': 'error', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'error'},
   ],
   '3': [From_StartOrder_Success$json],
@@ -3026,24 +1546,11 @@ const From_StartOrder$json = {
 const From_StartOrder_Success$json = {
   '1': 'Success',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'trade_dir',
-      '3': 2,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'trade_dir', '3': 2, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
     {'1': 'amount', '3': 3, '4': 2, '5': 4, '10': 'amount'},
     {'1': 'price', '3': 4, '4': 2, '5': 1, '10': 'price'},
+    {'1': 'fee_asset', '3': 5, '4': 2, '5': 14, '6': '.sideswap.proto.AssetType', '10': 'feeAsset'},
   ],
 };
 
@@ -3051,66 +1558,19 @@ const From_StartOrder_Success$json = {
 const From_Quote$json = {
   '1': 'Quote',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'asset_type',
-      '3': 2,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.AssetType',
-      '10': 'assetType'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'asset_type', '3': 2, '4': 2, '5': 14, '6': '.sideswap.proto.AssetType', '10': 'assetType'},
     {'1': 'amount', '3': 3, '4': 2, '5': 4, '10': 'amount'},
-    {
-      '1': 'trade_dir',
-      '3': 4,
-      '4': 2,
-      '5': 14,
-      '6': '.sideswap.proto.TradeDir',
-      '10': 'tradeDir'
-    },
+    {'1': 'trade_dir', '3': 4, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
     {'1': 'order_id', '3': 5, '4': 1, '5': 4, '10': 'orderId'},
-    {
-      '1': 'success',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.Quote.Success',
-      '9': 0,
-      '10': 'success'
-    },
-    {
-      '1': 'low_balance',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.Quote.LowBalance',
-      '9': 0,
-      '10': 'lowBalance'
-    },
+    {'1': 'client_sub_id', '3': 6, '4': 1, '5': 3, '10': 'clientSubId'},
+    {'1': 'success', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.Success', '9': 0, '10': 'success'},
+    {'1': 'low_balance', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.LowBalance', '9': 0, '10': 'lowBalance'},
     {'1': 'error', '3': 12, '4': 1, '5': 9, '9': 0, '10': 'error'},
-    {
-      '1': 'unregistered_gaid',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.Quote.UnregisteredGaid',
-      '9': 0,
-      '10': 'unregisteredGaid'
-    },
+    {'1': 'unregistered_gaid', '3': 13, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.UnregisteredGaid', '9': 0, '10': 'unregisteredGaid'},
+    {'1': 'ind_price', '3': 14, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.IndPrice', '9': 0, '10': 'indPrice'},
   ],
-  '3': [
-    From_Quote_Success$json,
-    From_Quote_LowBalance$json,
-    From_Quote_UnregisteredGaid$json
-  ],
+  '3': [From_Quote_Success$json, From_Quote_LowBalance$json, From_Quote_IndPrice$json, From_Quote_UnregisteredGaid$json],
   '8': [
     {'1': 'result'},
   ],
@@ -3126,6 +1586,7 @@ const From_Quote_Success$json = {
     {'1': 'server_fee', '3': 4, '4': 2, '5': 4, '10': 'serverFee'},
     {'1': 'fixed_fee', '3': 5, '4': 2, '5': 4, '10': 'fixedFee'},
     {'1': 'ttl_milliseconds', '3': 6, '4': 2, '5': 4, '10': 'ttlMilliseconds'},
+    {'1': 'price_taker', '3': 7, '4': 2, '5': 1, '10': 'priceTaker'},
   ],
 };
 
@@ -3138,6 +1599,15 @@ const From_Quote_LowBalance$json = {
     {'1': 'server_fee', '3': 3, '4': 2, '5': 4, '10': 'serverFee'},
     {'1': 'fixed_fee', '3': 4, '4': 2, '5': 4, '10': 'fixedFee'},
     {'1': 'available', '3': 5, '4': 2, '5': 4, '10': 'available'},
+    {'1': 'price_taker', '3': 6, '4': 2, '5': 1, '10': 'priceTaker'},
+  ],
+};
+
+@$core.Deprecated('Use fromDescriptor instead')
+const From_Quote_IndPrice$json = {
+  '1': 'IndPrice',
+  '2': [
+    {'1': 'price_taker', '3': 1, '4': 2, '5': 1, '10': 'priceTaker'},
   ],
 };
 
@@ -3153,15 +1623,7 @@ const From_Quote_UnregisteredGaid$json = {
 const From_AcceptQuote$json = {
   '1': 'AcceptQuote',
   '2': [
-    {
-      '1': 'success',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.sideswap.proto.From.AcceptQuote.Success',
-      '9': 0,
-      '10': 'success'
-    },
+    {'1': 'success', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.From.AcceptQuote.Success', '9': 0, '10': 'success'},
     {'1': 'error', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'error'},
   ],
   '3': [From_AcceptQuote_Success$json],
@@ -3182,22 +1644,8 @@ const From_AcceptQuote_Success$json = {
 const From_ChartsSubscribe$json = {
   '1': 'ChartsSubscribe',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'data',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.ChartPoint',
-      '10': 'data'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'data', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.ChartPoint', '10': 'data'},
   ],
 };
 
@@ -3205,22 +1653,8 @@ const From_ChartsSubscribe$json = {
 const From_ChartsUpdate$json = {
   '1': 'ChartsUpdate',
   '2': [
-    {
-      '1': 'asset_pair',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.AssetPair',
-      '10': 'assetPair'
-    },
-    {
-      '1': 'update',
-      '3': 2,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.ChartPoint',
-      '10': 'update'
-    },
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'update', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.ChartPoint', '10': 'update'},
   ],
 };
 
@@ -3228,14 +1662,7 @@ const From_ChartsUpdate$json = {
 const From_LoadHistory$json = {
   '1': 'LoadHistory',
   '2': [
-    {
-      '1': 'list',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.HistoryOrder',
-      '10': 'list'
-    },
+    {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.HistoryOrder', '10': 'list'},
     {'1': 'total', '3': 2, '4': 2, '5': 13, '10': 'total'},
   ],
 };
@@ -3244,14 +1671,7 @@ const From_LoadHistory$json = {
 const From_HistoryUpdated$json = {
   '1': 'HistoryUpdated',
   '2': [
-    {
-      '1': 'order',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.HistoryOrder',
-      '10': 'order'
-    },
+    {'1': 'order', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.HistoryOrder', '10': 'order'},
     {'1': 'is_new', '3': 2, '4': 2, '5': 8, '10': 'isNew'},
   ],
 };
@@ -3431,53 +1851,51 @@ final $typed_data.Uint8List fromDescriptor = $convert.base64Decode(
     'ZBIWCgVlcnJvchgCIAEoCUgAUgVlcnJvchJgChF1bnJlZ2lzdGVyZWRfZ2FpZBgDIAEoCzIxLn'
     'NpZGVzd2FwLnByb3RvLkZyb20uT3JkZXJTdWJtaXQuVW5yZWdpc3RlcmVkR2FpZEgAUhB1bnJl'
     'Z2lzdGVyZWRHYWlkGjUKEFVucmVnaXN0ZXJlZEdhaWQSIQoMZG9tYWluX2FnZW50GAEgAigJUg'
-    'tkb21haW5BZ2VudEIICgZyZXN1bHQauQIKClN0YXJ0T3JkZXISGQoIb3JkZXJfaWQYBSACKARS'
+    'tkb21haW5BZ2VudEIICgZyZXN1bHQa8QIKClN0YXJ0T3JkZXISGQoIb3JkZXJfaWQYBSACKARS'
     'B29yZGVySWQSQwoHc3VjY2VzcxgBIAEoCzInLnNpZGVzd2FwLnByb3RvLkZyb20uU3RhcnRPcm'
-    'Rlci5TdWNjZXNzSABSB3N1Y2Nlc3MSFgoFZXJyb3IYAiABKAlIAFIFZXJyb3IaqAEKB1N1Y2Nl'
+    'Rlci5TdWNjZXNzSABSB3N1Y2Nlc3MSFgoFZXJyb3IYAiABKAlIAFIFZXJyb3Ia4AEKB1N1Y2Nl'
     'c3MSOAoKYXNzZXRfcGFpchgBIAIoCzIZLnNpZGVzd2FwLnByb3RvLkFzc2V0UGFpclIJYXNzZX'
     'RQYWlyEjUKCXRyYWRlX2RpchgCIAIoDjIYLnNpZGVzd2FwLnByb3RvLlRyYWRlRGlyUgh0cmFk'
-    'ZURpchIWCgZhbW91bnQYAyACKARSBmFtb3VudBIUCgVwcmljZRgEIAIoAVIFcHJpY2VCCAoGcm'
-    'VzdWx0GqMHCgVRdW90ZRI4Cgphc3NldF9wYWlyGAEgAigLMhkuc2lkZXN3YXAucHJvdG8uQXNz'
-    'ZXRQYWlyUglhc3NldFBhaXISOAoKYXNzZXRfdHlwZRgCIAIoDjIZLnNpZGVzd2FwLnByb3RvLk'
-    'Fzc2V0VHlwZVIJYXNzZXRUeXBlEhYKBmFtb3VudBgDIAIoBFIGYW1vdW50EjUKCXRyYWRlX2Rp'
-    'chgEIAIoDjIYLnNpZGVzd2FwLnByb3RvLlRyYWRlRGlyUgh0cmFkZURpchIZCghvcmRlcl9pZB'
-    'gFIAEoBFIHb3JkZXJJZBI+CgdzdWNjZXNzGAogASgLMiIuc2lkZXN3YXAucHJvdG8uRnJvbS5R'
-    'dW90ZS5TdWNjZXNzSABSB3N1Y2Nlc3MSSAoLbG93X2JhbGFuY2UYCyABKAsyJS5zaWRlc3dhcC'
-    '5wcm90by5Gcm9tLlF1b3RlLkxvd0JhbGFuY2VIAFIKbG93QmFsYW5jZRIWCgVlcnJvchgMIAEo'
-    'CUgAUgVlcnJvchJaChF1bnJlZ2lzdGVyZWRfZ2FpZBgNIAEoCzIrLnNpZGVzd2FwLnByb3RvLk'
-    'Zyb20uUXVvdGUuVW5yZWdpc3RlcmVkR2FpZEgAUhB1bnJlZ2lzdGVyZWRHYWlkGs8BCgdTdWNj'
-    'ZXNzEhkKCHF1b3RlX2lkGAEgAigEUgdxdW90ZUlkEh8KC2Jhc2VfYW1vdW50GAIgAigEUgpiYX'
-    'NlQW1vdW50EiEKDHF1b3RlX2Ftb3VudBgDIAIoBFILcXVvdGVBbW91bnQSHQoKc2VydmVyX2Zl'
-    'ZRgEIAIoBFIJc2VydmVyRmVlEhsKCWZpeGVkX2ZlZRgFIAIoBFIIZml4ZWRGZWUSKQoQdHRsX2'
-    '1pbGxpc2Vjb25kcxgGIAIoBFIPdHRsTWlsbGlzZWNvbmRzGqoBCgpMb3dCYWxhbmNlEh8KC2Jh'
-    'c2VfYW1vdW50GAEgAigEUgpiYXNlQW1vdW50EiEKDHF1b3RlX2Ftb3VudBgCIAIoBFILcXVvdG'
-    'VBbW91bnQSHQoKc2VydmVyX2ZlZRgDIAIoBFIJc2VydmVyRmVlEhsKCWZpeGVkX2ZlZRgEIAIo'
-    'BFIIZml4ZWRGZWUSHAoJYXZhaWxhYmxlGAUgAigEUglhdmFpbGFibGUaNQoQVW5yZWdpc3Rlcm'
-    'VkR2FpZBIhCgxkb21haW5fYWdlbnQYASACKAlSC2RvbWFpbkFnZW50QggKBnJlc3VsdBqUAQoL'
-    'QWNjZXB0UXVvdGUSRAoHc3VjY2VzcxgBIAEoCzIoLnNpZGVzd2FwLnByb3RvLkZyb20uQWNjZX'
-    'B0UXVvdGUuU3VjY2Vzc0gAUgdzdWNjZXNzEhYKBWVycm9yGAIgASgJSABSBWVycm9yGh0KB1N1'
-    'Y2Nlc3MSEgoEdHhpZBgBIAIoCVIEdHhpZEIICgZyZXN1bHQaewoPQ2hhcnRzU3Vic2NyaWJlEj'
-    'gKCmFzc2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by5Bc3NldFBhaXJSCWFzc2V0UGFp'
-    'chIuCgRkYXRhGAIgAygLMhouc2lkZXN3YXAucHJvdG8uQ2hhcnRQb2ludFIEZGF0YRp8CgxDaG'
-    'FydHNVcGRhdGUSOAoKYXNzZXRfcGFpchgBIAIoCzIZLnNpZGVzd2FwLnByb3RvLkFzc2V0UGFp'
-    'clIJYXNzZXRQYWlyEjIKBnVwZGF0ZRgCIAIoCzIaLnNpZGVzd2FwLnByb3RvLkNoYXJ0UG9pbn'
-    'RSBnVwZGF0ZRpVCgtMb2FkSGlzdG9yeRIwCgRsaXN0GAEgAygLMhwuc2lkZXN3YXAucHJvdG8u'
-    'SGlzdG9yeU9yZGVyUgRsaXN0EhQKBXRvdGFsGAIgAigNUgV0b3RhbBpbCg5IaXN0b3J5VXBkYX'
-    'RlZBIyCgVvcmRlchgBIAIoCzIcLnNpZGVzd2FwLnByb3RvLkhpc3RvcnlPcmRlclIFb3JkZXIS'
-    'FQoGaXNfbmV3GAIgAigIUgVpc05ld0IFCgNtc2c=');
+    'ZURpchIWCgZhbW91bnQYAyACKARSBmFtb3VudBIUCgVwcmljZRgEIAIoAVIFcHJpY2USNgoJZm'
+    'VlX2Fzc2V0GAUgAigOMhkuc2lkZXN3YXAucHJvdG8uQXNzZXRUeXBlUghmZWVBc3NldEIICgZy'
+    'ZXN1bHQa+ggKBVF1b3RlEjgKCmFzc2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by5Bc3'
+    'NldFBhaXJSCWFzc2V0UGFpchI4Cgphc3NldF90eXBlGAIgAigOMhkuc2lkZXN3YXAucHJvdG8u'
+    'QXNzZXRUeXBlUglhc3NldFR5cGUSFgoGYW1vdW50GAMgAigEUgZhbW91bnQSNQoJdHJhZGVfZG'
+    'lyGAQgAigOMhguc2lkZXN3YXAucHJvdG8uVHJhZGVEaXJSCHRyYWRlRGlyEhkKCG9yZGVyX2lk'
+    'GAUgASgEUgdvcmRlcklkEiIKDWNsaWVudF9zdWJfaWQYBiABKANSC2NsaWVudFN1YklkEj4KB3'
+    'N1Y2Nlc3MYCiABKAsyIi5zaWRlc3dhcC5wcm90by5Gcm9tLlF1b3RlLlN1Y2Nlc3NIAFIHc3Vj'
+    'Y2VzcxJICgtsb3dfYmFsYW5jZRgLIAEoCzIlLnNpZGVzd2FwLnByb3RvLkZyb20uUXVvdGUuTG'
+    '93QmFsYW5jZUgAUgpsb3dCYWxhbmNlEhYKBWVycm9yGAwgASgJSABSBWVycm9yEloKEXVucmVn'
+    'aXN0ZXJlZF9nYWlkGA0gASgLMisuc2lkZXN3YXAucHJvdG8uRnJvbS5RdW90ZS5VbnJlZ2lzdG'
+    'VyZWRHYWlkSABSEHVucmVnaXN0ZXJlZEdhaWQSQgoJaW5kX3ByaWNlGA4gASgLMiMuc2lkZXN3'
+    'YXAucHJvdG8uRnJvbS5RdW90ZS5JbmRQcmljZUgAUghpbmRQcmljZRrwAQoHU3VjY2VzcxIZCg'
+    'hxdW90ZV9pZBgBIAIoBFIHcXVvdGVJZBIfCgtiYXNlX2Ftb3VudBgCIAIoBFIKYmFzZUFtb3Vu'
+    'dBIhCgxxdW90ZV9hbW91bnQYAyACKARSC3F1b3RlQW1vdW50Eh0KCnNlcnZlcl9mZWUYBCACKA'
+    'RSCXNlcnZlckZlZRIbCglmaXhlZF9mZWUYBSACKARSCGZpeGVkRmVlEikKEHR0bF9taWxsaXNl'
+    'Y29uZHMYBiACKARSD3R0bE1pbGxpc2Vjb25kcxIfCgtwcmljZV90YWtlchgHIAIoAVIKcHJpY2'
+    'VUYWtlchrLAQoKTG93QmFsYW5jZRIfCgtiYXNlX2Ftb3VudBgBIAIoBFIKYmFzZUFtb3VudBIh'
+    'CgxxdW90ZV9hbW91bnQYAiACKARSC3F1b3RlQW1vdW50Eh0KCnNlcnZlcl9mZWUYAyACKARSCX'
+    'NlcnZlckZlZRIbCglmaXhlZF9mZWUYBCACKARSCGZpeGVkRmVlEhwKCWF2YWlsYWJsZRgFIAIo'
+    'BFIJYXZhaWxhYmxlEh8KC3ByaWNlX3Rha2VyGAYgAigBUgpwcmljZVRha2VyGisKCEluZFByaW'
+    'NlEh8KC3ByaWNlX3Rha2VyGAEgAigBUgpwcmljZVRha2VyGjUKEFVucmVnaXN0ZXJlZEdhaWQS'
+    'IQoMZG9tYWluX2FnZW50GAEgAigJUgtkb21haW5BZ2VudEIICgZyZXN1bHQalAEKC0FjY2VwdF'
+    'F1b3RlEkQKB3N1Y2Nlc3MYASABKAsyKC5zaWRlc3dhcC5wcm90by5Gcm9tLkFjY2VwdFF1b3Rl'
+    'LlN1Y2Nlc3NIAFIHc3VjY2VzcxIWCgVlcnJvchgCIAEoCUgAUgVlcnJvchodCgdTdWNjZXNzEh'
+    'IKBHR4aWQYASACKAlSBHR4aWRCCAoGcmVzdWx0GnsKD0NoYXJ0c1N1YnNjcmliZRI4Cgphc3Nl'
+    'dF9wYWlyGAEgAigLMhkuc2lkZXN3YXAucHJvdG8uQXNzZXRQYWlyUglhc3NldFBhaXISLgoEZG'
+    'F0YRgCIAMoCzIaLnNpZGVzd2FwLnByb3RvLkNoYXJ0UG9pbnRSBGRhdGEafAoMQ2hhcnRzVXBk'
+    'YXRlEjgKCmFzc2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by5Bc3NldFBhaXJSCWFzc2'
+    'V0UGFpchIyCgZ1cGRhdGUYAiACKAsyGi5zaWRlc3dhcC5wcm90by5DaGFydFBvaW50UgZ1cGRh'
+    'dGUaVQoLTG9hZEhpc3RvcnkSMAoEbGlzdBgBIAMoCzIcLnNpZGVzd2FwLnByb3RvLkhpc3Rvcn'
+    'lPcmRlclIEbGlzdBIUCgV0b3RhbBgCIAIoDVIFdG90YWwaWwoOSGlzdG9yeVVwZGF0ZWQSMgoF'
+    'b3JkZXIYASACKAsyHC5zaWRlc3dhcC5wcm90by5IaXN0b3J5T3JkZXJSBW9yZGVyEhUKBmlzX2'
+    '5ldxgCIAIoCFIFaXNOZXdCBQoDbXNn');
 
 @$core.Deprecated('Use settingsDescriptor instead')
 const Settings$json = {
   '1': 'Settings',
   '2': [
-    {
-      '1': 'disabled_accounts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.sideswap.proto.Settings.AccountAsset',
-      '10': 'disabledAccounts'
-    },
+    {'1': 'disabled_accounts', '3': 1, '4': 3, '5': 11, '6': '.sideswap.proto.Settings.AccountAsset', '10': 'disabledAccounts'},
   ],
   '3': [Settings_AccountAsset$json],
 };
@@ -3486,14 +1904,7 @@ const Settings$json = {
 const Settings_AccountAsset$json = {
   '1': 'AccountAsset',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 2,
-      '5': 11,
-      '6': '.sideswap.proto.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.Account', '10': 'account'},
     {'1': 'asset_id', '3': 2, '4': 2, '5': 9, '10': 'assetId'},
   ],
 };
@@ -3504,3 +1915,4 @@ final $typed_data.Uint8List settingsDescriptor = $convert.base64Decode(
     'NldHRpbmdzLkFjY291bnRBc3NldFIQZGlzYWJsZWRBY2NvdW50cxpcCgxBY2NvdW50QXNzZXQS'
     'MQoHYWNjb3VudBgBIAIoCzIXLnNpZGVzd2FwLnByb3RvLkFjY291bnRSB2FjY291bnQSGQoIYX'
     'NzZXRfaWQYAiACKAlSB2Fzc2V0SWQ=');
+

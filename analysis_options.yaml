@@ -7,9 +7,11 @@ analyzer:
     strict-casts: true
     strict-raw-types: true
   exclude:
+    - build/** # Exclude generated files in the build directory
+    - .dart_tool/** # Exclude Dart tool-generated files
     - "lib/side_swap_client_ffi.dart"
-    - "**/*.g.dart"
-    - "**/*.freezed.dart"
+    - lib/**.g.dart
+    - lib/**.freezed.dart
   errors:
     invalid_use_of_visible_for_testing_member: error
     collection_methods_unrelated_type: error

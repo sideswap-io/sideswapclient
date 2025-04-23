@@ -166,7 +166,6 @@ class PaymentSendPopup extends ConsumerWidget {
                   height: 54,
                   backgroundColor: SideSwapColors.brightTurquoise,
                   text: 'SEND'.tr(),
-                  enabled: buttonEnabled,
                   onPressed:
                       buttonEnabled
                           ? () async {

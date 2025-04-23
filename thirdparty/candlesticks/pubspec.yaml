@@ -5,7 +5,7 @@ homepage: https://github.com/r-mzy47/candlesticks
 
 environment:
   sdk: ^3.7.0
-  flutter: ^3.29.0
+  flutter: ^3.29.2
 
 dependencies:
   flutter:

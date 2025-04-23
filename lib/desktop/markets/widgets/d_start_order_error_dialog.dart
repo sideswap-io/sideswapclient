@@ -11,6 +11,7 @@ import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_error_icon.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/quote_event_providers.dart';
 
 class DStartOrderErrorDialog extends ConsumerWidget {
   const DStartOrderErrorDialog({super.key, required this.onClose});

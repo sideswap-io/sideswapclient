@@ -541,7 +541,6 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                 height: 54,
                 backgroundColor: SideSwapColors.brightTurquoise,
                 text: 'CONTINUE'.tr(),
-                enabled: enabled.value,
                 onPressed:
                     enabled.value
                         ? () {

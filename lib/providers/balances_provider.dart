@@ -179,7 +179,7 @@ String accountAssetBalanceWithInputsInDefaultCurrencyString(
 /// Balance providers without inputs
 
 @riverpod
-int totalMaxAvailableBalanceForAsset(Ref ref, String assetId) {
+int totalMaxAvailableBalanceForAsset(Ref ref, String? assetId) {
   final accounts = ref.watch(balanceUniqueAccountTypesProvider);
   return accounts
       .map(
@@ -461,6 +461,29 @@ String accountAssetBalanceString(Ref ref, AccountAsset accountAsset) {
           .amountToString(
             AmountToStringParameters(
               amount: accountBalance,
+              precision: asset.precision,
+            ),
+          );
+      return balanceStr;
+    }(),
+    _ => '0',
+  };
+}
+
+@riverpod
+String totalMaxAvailableBalanceForAssetAsString(Ref ref, String? assetId) {
+  final totalBalance = ref.watch(
+    totalMaxAvailableBalanceForAssetProvider(assetId),
+  );
+  final asset = ref.watch(assetsStateProvider)[assetId];
+
+  return switch (asset) {
+    Asset() => () {
+      final balanceStr = ref
+          .watch(amountToStringProvider)
+          .amountToString(
+            AmountToStringParameters(
+              amount: totalBalance,
               precision: asset.precision,
             ),
           );

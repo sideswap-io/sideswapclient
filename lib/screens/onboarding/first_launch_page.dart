@@ -157,26 +157,28 @@ class FirstLaunchPage extends HookConsumerWidget {
                             child: CustomBigButton(
                               width: double.infinity,
                               height: 54,
-                              enabled:
-                                  serverLoginState is! ServerLoginStateError,
                               text: 'CREATE NEW WALLET'.tr(),
                               textStyle: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
-                              onPressed: () async {
-                                ref
-                                    .read(
-                                      firstLaunchStateNotifierProvider.notifier,
-                                    )
-                                    .setFirstLaunchState(
-                                      const FirstLaunchStateCreateWallet(),
-                                    );
+                              onPressed:
+                                  serverLoginState is! ServerLoginStateError
+                                      ? () async {
+                                        ref
+                                            .read(
+                                              firstLaunchStateNotifierProvider
+                                                  .notifier,
+                                            )
+                                            .setFirstLaunchState(
+                                              const FirstLaunchStateCreateWallet(),
+                                            );
 
-                                await ref
-                                    .read(walletProvider)
-                                    .setReviewLicenseCreateWallet();
-                              },
+                                        await ref
+                                            .read(walletProvider)
+                                            .setReviewLicenseCreateWallet();
+                                      }
+                                      : null,
                             ),
                           ),
                           Padding(
@@ -184,8 +186,6 @@ class FirstLaunchPage extends HookConsumerWidget {
                             child: CustomBigButton(
                               width: double.infinity,
                               height: 54,
-                              enabled:
-                                  serverLoginState is! ServerLoginStateError,
                               text: 'IMPORT WALLET'.tr(),
                               textStyle: const TextStyle(
                                 fontSize: 16,
@@ -196,18 +196,22 @@ class FirstLaunchPage extends HookConsumerWidget {
                                 color: SideSwapColors.brightTurquoise,
                                 width: 1,
                               ),
-                              onPressed: () {
-                                ref
-                                    .read(
-                                      firstLaunchStateNotifierProvider.notifier,
-                                    )
-                                    .setFirstLaunchState(
-                                      const FirstLaunchStateImportWallet(),
-                                    );
-                                ref
-                                    .read(walletProvider)
-                                    .setReviewLicenseImportWallet();
-                              },
+                              onPressed:
+                                  serverLoginState is! ServerLoginStateError
+                                      ? () {
+                                        ref
+                                            .read(
+                                              firstLaunchStateNotifierProvider
+                                                  .notifier,
+                                            )
+                                            .setFirstLaunchState(
+                                              const FirstLaunchStateImportWallet(),
+                                            );
+                                        ref
+                                            .read(walletProvider)
+                                            .setReviewLicenseImportWallet();
+                                      }
+                                      : null,
                             ),
                           ),
                           if (FlavorConfig.enableJade) ...[
@@ -216,20 +220,24 @@ class FirstLaunchPage extends HookConsumerWidget {
                               child: CustomBigButton(
                                 width: double.infinity,
                                 height: 54,
-                                enabled:
-                                    serverLoginState is! ServerLoginStateError,
                                 backgroundColor: Colors.transparent,
                                 side: const BorderSide(
                                   color: SideSwapColors.brightTurquoise,
                                   width: 1,
                                 ),
-                                onPressed: () async {
-                                  ref
-                                      .read(pageStatusNotifierProvider.notifier)
-                                      .setStatus(
-                                        Status.jadeBluetoothPermission,
-                                      );
-                                },
+                                onPressed:
+                                    serverLoginState is! ServerLoginStateError
+                                        ? () async {
+                                          ref
+                                              .read(
+                                                pageStatusNotifierProvider
+                                                    .notifier,
+                                              )
+                                              .setStatus(
+                                                Status.jadeBluetoothPermission,
+                                              );
+                                        }
+                                        : null,
                                 child: Row(
                                   children: [
                                     Expanded(

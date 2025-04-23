@@ -1,6 +1,5 @@
-import 'dart:ui' as ui;
-
-import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart'
+    show StringTranslateExtension, TextTranslateExtension;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -12,12 +11,11 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
-
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
@@ -204,7 +202,7 @@ class SwapSideAmount extends HookConsumerWidget {
                         );
                         final renderParagraph = RenderParagraph(
                           TextSpan(text: errorDescription, style: textStyle),
-                          textDirection: ui.TextDirection.ltr,
+                          textDirection: TextDirection.ltr,
                           softWrap: false,
                           maxLines: 1,
                           overflow: TextOverflow.visible,
@@ -418,7 +416,7 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
   });
 
   final TextEditingController? addressController;
-  final ui.VoidCallback? onAddressLabelClose;
+  final VoidCallback? onAddressLabelClose;
 
   @override
   Widget build(BuildContext context) {
@@ -518,13 +516,55 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4),
       child: Padding(
         padding: padding,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
           children: [
-            Text('Fee suggestions'.tr(), style: labelStyle),
-            const Spacer(),
-            const FeeRatesDropdown(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Fee suggestions'.tr(), style: labelStyle),
+                const Spacer(),
+                const FeeRatesDropdown(),
+              ],
+            ),
+            Consumer(
+              builder: (context, ref, child) {
+                final optionCurrentFeeRate = ref.watch(
+                  bitcoinCurrentFeeRateNotifierProvider,
+                );
+
+                return optionCurrentFeeRate.match(
+                  () {
+                    return const SizedBox();
+                  },
+                  (currentFeeRate) {
+                    if (currentFeeRate.blocks != 2) {
+                      return Row(
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Your peg-out transaction will only be broadcast to the Bitcoin network once the network fee you have selected is sufficient to be processed by miners and included in a block.',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return const SizedBox();
+                  },
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -533,9 +573,9 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
 }
 
 class SwapSideAmountMaxButton extends StatelessWidget {
-  const SwapSideAmountMaxButton({super.key, required this.onMaxPressed});
+  const SwapSideAmountMaxButton({super.key, this.onMaxPressed});
 
-  final ui.VoidCallback? onMaxPressed;
+  final VoidCallback? onMaxPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -578,7 +618,7 @@ class SwapSideAmountSelectInputsButton extends ConsumerWidget {
     required this.onInputsSelected,
   });
 
-  final ui.VoidCallback? onInputsSelected;
+  final VoidCallback? onInputsSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

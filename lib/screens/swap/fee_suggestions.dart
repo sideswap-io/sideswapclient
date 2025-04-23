@@ -6,7 +6,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
-import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 
 class FeeRates extends StatelessWidget {
   const FeeRates({super.key});

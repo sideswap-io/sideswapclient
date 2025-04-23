@@ -1,11 +1,11 @@
 name: sideswap_permissions
 description: Sideswap permissions plugin.
 publish_to: "none"
-version: 0.0.14
+version: 0.0.16
 
 environment:
   sdk: ^3.7.0
-  flutter: ^3.29.0
+  flutter: ^3.29.2
 
 dependencies:
   device_info_plus: ^11.3.3
