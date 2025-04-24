@@ -2,7 +2,6 @@
 
 > **Cross‑platform, non‑custodial wallet and atomic swap marketplace for the Liquid Network**
 
-
 SideSwap Client is the official open‑source desktop & mobile application that lets you manage and atomically swap assets on Blockstream’s [**Liquid Network**](https://blockstream.com/liquid).\
 It is written in **Flutter (Dart)** with a high‑performance **Rust core** and relies on the [Green Development Kit (GDK)](https://github.com/Blockstream/gdk) for low‑level wallet functionality.
 
@@ -37,10 +36,43 @@ See the [Rust sources](https://github.com/sideswap-io/sideswap_rust/) for more d
 
 ---
 
+## 🛠️ Build from Source (Linux)
+
+The client can be compiled inside a minimal Debian 11 container—no toolchain installation required on the host. Make sure you have either **Docker** or **Podman** installed.
+
+### Using Docker
+
+```bash
+docker pull debian:11
+docker run --rm -v "$(pwd)":/sideswapclient debian:11 /sideswapclient/deploy/build_linux.sh
+```
+
+### Using Podman
+
+```bash
+podman pull docker.io/debian:11
+podman run --rm -v "$(pwd)":/sideswapclient:Z docker.io/debian:11 /sideswapclient/deploy/build_linux.sh
+```
+
+Run the application after a successful build with:
+
+```bash
+./output/sideswap_linux/sideswap
+```
+
+Temporary directories can then be removed:
+
+```bash
+rm -rf deps build
+```
+
+
+---
+
 ## 🔒 Security & Responsible Disclosure
 
 If you find a security vulnerability **please DO NOT open a public issue**.\
-Instead, email [**hello@sideswap.io**](mailto\:hello@sideswap.io) or message [@Sideswap](https://t.me/Sideswap) on Telegram, optionally using the [project PGP key](https://sideswap.io/resource/sideswap.gpg.txt). We will coordinate a patch and release timeline with you.
+Instead, email [**hello@sideswap.io**](mailto:hello@sideswap.io) or message [@Sideswap](https://t.me/Sideswap) on Telegram, optionally using the [project PGP key](https://sideswap.io/resource/sideswap.gpg.txt). We will coordinate a patch and release timeline with you.
 
 ---
 
@@ -68,3 +100,4 @@ See the [LICENSE](LICENSE) file for the full text.
 ---
 
 *Settle any asset against any other—instantly, privately and without intermediaries. Welcome to the financial layer of Bitcoin.*
+

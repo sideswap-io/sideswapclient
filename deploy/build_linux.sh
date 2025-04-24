@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y --no-install-recommends \
+  autoconf automake autotools-dev pkg-config build-essential libtool \
+  python3{,-dev,-pip,-virtualenv} clang{,-format,-tidy} git curl cmake \
+  libssl-dev libtool-bin python-is-python3 lld libudev-dev protobuf-compiler \
+  ninja-build libgtk-3-dev liblzma-dev
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+ | sh -s -- --default-toolchain 1.86.0 -y
+. "$HOME/.cargo/env"
+
+cd "$(dirname "$0")/.."
+
+rm -rf deps
+mkdir deps
+
+pushd deps
+
+echo "Downloading Flutter. This may take some time..."
+curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.29.2-stable.tar.xz \
+ | tar -xJ -C ./
+chown -R "$(whoami)" ./flutter
+
+echo "Building GDK..."
+git clone https://github.com/sideswap-io/gdk
+pushd gdk
+git checkout sswp_0.75.1
+./tools/build.sh --clang --static --install ../install/gdk/linux
+popd
+
+echo "Building sideswap rust library..."
+git clone https://github.com/sideswap-io/sideswap_rust
+pushd sideswap_rust
+git checkout 21b46d22937e382c993846a5baa27ff28a432ab0
+export GDK_DIR=../install/gdk/linux/lib/x86_64-linux-gnu
+cargo build --release --package sideswap_client
+popd
+
+popd
+
+echo "Building sideswap flutter app..."
+./deps/flutter/bin/flutter clean
+./deps/flutter/bin/flutter build linux --release
+
+echo "Copying the binary to the output directory..."
+mkdir -p ./output
+rm -rf ./output/sideswap_linux
+cp -r ./build/linux/x64/release/bundle ./output/sideswap_linux
+cp ./deps/sideswap_rust/target/release/libsideswap_client.so ./output/sideswap_linux/lib
