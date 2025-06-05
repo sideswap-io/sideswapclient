@@ -10,5 +10,12 @@ analyzer:
     - lib/**.g.dart
     - lib/**.freezed.dart
   errors:
+    invalid_use_of_visible_for_testing_member: error
     invalid_annotation_target: ignore
-    collection_methods_unrelated_type: error
+
+linter:
+  rules:
+    - collection_methods_unrelated_type
+    - unawaited_futures
+    - unnecessary_async
+    - use_null_aware_elements

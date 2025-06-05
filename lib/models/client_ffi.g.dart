@@ -13,10 +13,9 @@ String _$libClientStateHash() => r'68046036a8364c09d0529d00d60bca1f86d089b4';
 final libClientStateProvider = Provider<LibClientState>.internal(
   libClientState,
   name: r'libClientStateProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$libClientStateHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$libClientStateHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -31,8 +30,9 @@ String _$libClientIdHash() => r'848a6c2450dd03273452115f644e9b17a604fda8';
 final libClientIdProvider = NotifierProvider<LibClientId, int>.internal(
   LibClientId.new,
   name: r'libClientIdProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$libClientIdHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$libClientIdHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

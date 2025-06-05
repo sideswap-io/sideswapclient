@@ -14,10 +14,9 @@ final isCopyEnabledProvider =
     AutoDisposeNotifierProvider<IsCopyEnabled, bool>.internal(
       IsCopyEnabled.new,
       name: r'isCopyEnabledProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$isCopyEnabledHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$isCopyEnabledHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

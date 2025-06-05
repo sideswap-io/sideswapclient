@@ -7,7 +7,6 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
@@ -21,30 +20,27 @@ import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DAssetInfo extends HookConsumerWidget {
-  const DAssetInfo({required this.accountAsset, super.key});
+  const DAssetInfo({required this.asset, super.key});
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
       ref
           .read(tokenMarketNotifierProvider.notifier)
-          .requestAssetDetails(assetId: accountAsset.assetId);
+          .requestAssetDetails(assetId: asset.assetId);
 
       return;
     }, const []);
 
-    final asset = ref.watch(
-      assetsStateProvider.select((value) => value[accountAsset.assetId]),
-    );
     final assetPrecision = ref
         .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: asset?.assetId);
-    final details =
-        ref.watch(tokenMarketNotifierProvider)[accountAsset.assetId];
+        .getPrecisionForAssetId(assetId: asset.assetId);
+    final details = ref.watch(tokenMarketNotifierProvider)[asset.assetId];
     final issuedAmount = details?.stats?.issuedAmount ?? 0;
     final burnedAmount = details?.stats?.burnedAmount ?? 0;
     final circulatingAmount = issuedAmount - burnedAmount;
@@ -57,28 +53,22 @@ class DAssetInfo extends HookConsumerWidget {
     );
     final assetImagesBig = ref
         .watch(assetImageRepositoryProvider)
-        .getBigImage(asset?.assetId);
-    final accountBalance =
-        ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
+        .getBigImage(asset.assetId);
+    final assetBalance = ref.watch(assetBalanceProvider)[asset.assetId] ?? 0;
     final balanceStr = amountProvider.amountToString(
-      AmountToStringParameters(
-        amount: accountBalance,
-        precision: assetPrecision,
-      ),
+      AmountToStringParameters(amount: assetBalance, precision: assetPrecision),
     );
-    final balance = double.tryParse(balanceStr) ?? .0;
-    final defaultCurrencyAmount = ref.watch(
-      amountUsdInDefaultCurrencyProvider(asset?.assetId, balance),
+
+    final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
+    var defaultCurrencyAssetBalance = ref.watch(
+      assetBalanceInDefaultCurrencyStringProvider(asset),
     );
-    final defaultCurrencyTicker = ref.read(defaultCurrencyTickerProvider);
-    var defaultCurrencyConversion = '0.0';
-    defaultCurrencyConversion = defaultCurrencyAmount.toStringAsFixed(2);
-    defaultCurrencyConversion = replaceCharacterOnPosition(
-      input: defaultCurrencyConversion,
-      currencyChar: defaultCurrencyTicker,
+
+    defaultCurrencyAssetBalance = replaceCharacterOnPosition(
+      input: defaultCurrencyAssetBalance,
     );
     final visibleConversion = ref.watch(
-      isAmountUsdAvailableProvider(asset?.assetId),
+      isAmountUsdAvailableProvider(asset.assetId),
     );
 
     return DPopupWithClose(
@@ -104,7 +94,7 @@ class DAssetInfo extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        asset?.ticker ?? '',
+                        asset.ticker,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -112,21 +102,22 @@ class DAssetInfo extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        asset?.name ?? '',
+                        asset.name,
                         style: const TextStyle(color: SideSwapColors.halfBaked),
                       ),
                     ],
                   ),
                   const Spacer(),
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(balanceStr, style: const TextStyle(fontSize: 16)),
                       Text(
-                        visibleConversion ? '≈ $defaultCurrencyConversion' : '',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: SideSwapColors.halfBaked,
-                        ),
+                        visibleConversion
+                            ? '≈ $defaultCurrencyAssetBalance $defaultCurrencyTicker'
+                            : '',
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(color: SideSwapColors.halfBaked),
                       ),
                     ],
                   ),
@@ -144,60 +135,60 @@ class DAssetInfo extends HookConsumerWidget {
                   value: assetPrecision.toString(),
                 ),
                 const DAssetInfoSeparator(),
-                ...asset?.hasDomain() == true
+                ...asset.hasDomain() == true
                     ? [
-                      DAssetInfoField(
-                        name: 'Issuer Domain'.tr(),
-                        valueWidget: DHoverButton(
-                          cursor: SystemMouseCursors.click,
-                          builder: (context, states) {
-                            return Text(
-                              asset?.domain ?? '',
-                              style: const TextStyle(
-                                color: SideSwapColors.brightTurquoise,
-                                decoration: TextDecoration.underline,
-                              ),
-                            );
-                          },
-                          onPressed: () {
-                            openUrl('https://${asset?.domain ?? ''}');
-                          },
+                        DAssetInfoField(
+                          name: 'Issuer Domain'.tr(),
+                          valueWidget: DHoverButton(
+                            cursor: SystemMouseCursors.click,
+                            builder: (context, states) {
+                              return Text(
+                                asset.domain,
+                                style: const TextStyle(
+                                  color: SideSwapColors.brightTurquoise,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              );
+                            },
+                            onPressed: () {
+                              openUrl('https://${asset.domain}');
+                            },
+                          ),
                         ),
-                      ),
-                      const DAssetInfoSeparator(),
-                    ]
+                        const DAssetInfoSeparator(),
+                      ]
                     : [],
-                ...asset?.hasDomainAgentLink() == true
+                ...asset.hasDomainAgentLink() == true
                     ? [
-                      DAssetInfoField(
-                        name: 'Registration Agent'.tr(),
-                        valueWidget: DHoverButton(
-                          cursor: SystemMouseCursors.click,
-                          builder: (context, states) {
-                            return Text(
-                              asset?.domainAgentLink ?? '',
-                              style: const TextStyle(
-                                color: SideSwapColors.brightTurquoise,
-                                decoration: TextDecoration.underline,
-                              ),
-                            );
-                          },
-                          onPressed: () {
-                            openUrl(asset?.domainAgentLink ?? '');
-                          },
+                        DAssetInfoField(
+                          name: 'Registration Agent'.tr(),
+                          valueWidget: DHoverButton(
+                            cursor: SystemMouseCursors.click,
+                            builder: (context, states) {
+                              return Text(
+                                asset.domainAgentLink,
+                                style: const TextStyle(
+                                  color: SideSwapColors.brightTurquoise,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              );
+                            },
+                            onPressed: () {
+                              openUrl(asset.domainAgentLink);
+                            },
+                          ),
                         ),
-                      ),
-                      const DAssetInfoSeparator(),
-                    ]
+                        const DAssetInfoSeparator(),
+                      ]
                     : [],
                 ...circulatingAmount != 0
                     ? [
-                      DAssetInfoField(
-                        name: 'Circulating amount'.tr(),
-                        value: circulatingAmountStr,
-                      ),
-                      const DAssetInfoSeparator(),
-                    ]
+                        DAssetInfoField(
+                          name: 'Circulating amount'.tr(),
+                          value: circulatingAmountStr,
+                        ),
+                        const DAssetInfoSeparator(),
+                      ]
                     : [],
                 DAssetInfoField(
                   name: 'View in Explorer'.tr(),
@@ -223,10 +214,11 @@ class DAssetInfo extends HookConsumerWidget {
                       );
                     },
                     onPressed: () {
-                      final isTestnet =
-                          ref.read(envProvider.notifier).isTestnet();
+                      final isTestnet = ref
+                          .read(envProvider.notifier)
+                          .isTestnet();
                       final assetUrl = generateAssetUrl(
-                        assetId: accountAsset.assetId,
+                        assetId: asset.assetId,
                         testnet: isTestnet,
                       );
                       openUrl(assetUrl);
@@ -236,14 +228,10 @@ class DAssetInfo extends HookConsumerWidget {
                 DAssetInfoField(name: 'Asset ID'.tr(), value: ''),
                 Row(
                   children: [
-                    Expanded(child: Text(accountAsset.assetId ?? '')),
+                    Expanded(child: Text(asset.assetId)),
                     const SizedBox(width: 40),
                     IconButton(
-                      onPressed:
-                          () => copyToClipboard(
-                            context,
-                            accountAsset.assetId ?? '',
-                          ),
+                      onPressed: () => copyToClipboard(context, asset.assetId),
                       icon: SvgPicture.asset(
                         'assets/copy2.svg',
                         width: 22,
@@ -289,8 +277,8 @@ class DAssetInfo extends HookConsumerWidget {
                         ref.invalidate(createTxStateNotifierProvider);
                         Navigator.pop(context);
                         ref
-                            .read(sendAssetNotifierProvider.notifier)
-                            .setSendAsset(accountAsset);
+                            .read(sendAssetIdNotifierProvider.notifier)
+                            .setSendAsset(asset.assetId);
 
                         ref.read(desktopDialogProvider).showSendTx();
                       },
@@ -343,8 +331,9 @@ class CustomIconButton extends HookConsumerWidget {
           fontWeight: FontWeight.normal,
           color: Colors.white,
         ),
-        buttonBackground:
-            mouseHoover.value ? SideSwapColors.brightTurquoise : Colors.white,
+        buttonBackground: mouseHoover.value
+            ? SideSwapColors.brightTurquoise
+            : Colors.white,
         child: SvgPicture.asset(
           icon,
           width: 16,

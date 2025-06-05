@@ -11,7 +11,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -84,13 +83,7 @@ class CsvRepository {
       );
 
       final line = <String>[];
-      line.add(
-        AccountType.fromPb(transItem.account).isAmp
-            ? 'Amp'
-            : AccountType.fromPb(transItem.account).isRegular
-            ? 'Regular'
-            : 'Unknown',
-      );
+      line.add('Regular');
       line.add(transItem.tx.txid);
       line.add(transItemHelper.txTypeName());
       line.add(txDateCsvExport(transItem.createdAt.toInt()));
@@ -146,7 +139,7 @@ class CsvNotifier extends _$CsvNotifier {
   late CsvRepository _csvRepository;
 
   @override
-  FutureOr<bool> build() async {
+  FutureOr<bool> build() {
     _csvRepository = ref.watch(csvRepositoryProvider);
     return true;
   }
@@ -159,7 +152,7 @@ class CsvNotifier extends _$CsvNotifier {
       return path;
     });
 
-    csvPath.when(
+    await csvPath.when(
       loading: () {
         state = const AsyncValue.loading();
       },
@@ -191,7 +184,7 @@ class CsvNotifier extends _$CsvNotifier {
       return path;
     });
 
-    csvPath.when(
+    await csvPath.when(
       loading: () {
         state = const AsyncValue.loading();
       },
@@ -202,7 +195,8 @@ class CsvNotifier extends _$CsvNotifier {
 
         final csv = await _csvRepository.fetchStringData();
         await File(value).writeAsString(csv);
-        await Share.shareXFiles([XFile(value, mimeType: 'text/csv')]);
+        final filesToShare = [XFile(value, mimeType: 'text/csv')];
+        await SharePlus.instance.share(ShareParams(files: filesToShare));
 
         state = const AsyncValue.data(true);
       },

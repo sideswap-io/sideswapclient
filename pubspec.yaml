@@ -1,11 +1,11 @@
 name: sideswap
 description: Sideswap Client.
-version: 1.7.2+140
+version: 1.8.0+151
 publish_to: none
 
 environment:
-  sdk: ^3.7.0
-  flutter: ^3.29.2
+  sdk: ^3.8.1
+  flutter: ^3.32.1
 
 dependencies:
   # git related dependencies
@@ -56,7 +56,7 @@ dependencies:
   flutter_animate: ^4.5.2
   flutter_contacts: ^1.1.9+2
   flutter_hooks: ^0.21.2
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_local_notifications: ^19.0.0
   flutter_plugin_android_lifecycle: ^2.0.27
   flutter_spinkit: ^5.2.1
@@ -73,7 +73,7 @@ dependencies:
   logger: ^2.5.0
   marquee_plus: ^2.2.4
   matrix4_transform: ^4.0.1
-  mobile_scanner: ^6.0.7
+  mobile_scanner: ^7.0.0
   onboarding: ^4.0.2
   path_drawing: ^1.0.1
   path_provider: ^2.1.5
@@ -82,7 +82,7 @@ dependencies:
   riverpod_annotation: ^2.6.1
   rxdart: ^0.28.0
   screen_protector: 1.4.2+1
-  share_plus: ^10.1.4
+  share_plus: ^11.0.0
   shared_preferences: ^2.5.3
   shelf: ^1.4.2
   shelf_router: ^1.1.4
@@ -91,25 +91,24 @@ dependencies:
   tuple: ^2.0.2
   url_launcher: ^6.3.1
   uuid: ^4.5.1
-  vector_math: ^2.1.4
-  web_socket_channel: ^3.0.2
+  web_socket_channel: ^3.0.3
   websocket_universal: ^1.2.5
-  window_manager: ^0.4.3
+  window_manager: ^0.5.0
   xrange: ^2.0.0
   mocktail: ^1.0.4
   # sdk dependencies
   flutter:
     sdk: flutter
-  async: ^2.12.0
+  async: ^2.13.0
   flutter_cache_manager: ^3.4.1
 
 dev_dependencies:
   # normal dependencies
   build_runner: ^2.4.15
-  custom_lint: ^0.7.5
+  #  custom_lint: ^0.7.5
   freezed: ^3.0.6
   icons_launcher: ^3.0.1
-  json_serializable: ^6.9.4
+  json_serializable: ^6.9.5
   pubm: ^0.3.0+1
   riverpod_generator: ^2.6.5
   riverpod_lint: ^2.6.5

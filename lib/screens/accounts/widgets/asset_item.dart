@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class AccountItem extends StatelessWidget {
-  const AccountItem({
+class AssetItem extends StatelessWidget {
+  const AssetItem({
     super.key,
-    required this.accountAsset,
+    required this.asset,
     required this.onSelected,
     this.disabled = false,
     this.disabledBackgroundColor = const Color(0xFF034569),
     this.backgroundColor = SideSwapColors.chathamsBlue,
   });
 
-  final AccountAsset accountAsset;
-  final ValueChanged<AccountAsset> onSelected;
+  final Asset asset;
+  final ValueChanged<Asset> onSelected;
   final bool disabled;
   final Color disabledBackgroundColor;
   final Color backgroundColor;
@@ -30,7 +29,7 @@ class AccountItem extends StatelessWidget {
     final bgColor = disabled ? disabledBackgroundColor : backgroundColor;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(top: 8),
       child: SizedBox(
         height: 80,
         child: TextButton(
@@ -41,12 +40,11 @@ class AccountItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed:
-              disabled
-                  ? null
-                  : () {
-                    onSelected(accountAsset);
-                  },
+          onPressed: disabled
+              ? null
+              : () {
+                  onSelected(asset);
+                },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
@@ -58,7 +56,7 @@ class AccountItem extends StatelessWidget {
                     builder: (context, ref, child) {
                       final icon = ref
                           .watch(assetImageRepositoryProvider)
-                          .getBigImage(accountAsset.assetId);
+                          .getBigImage(asset.assetId);
                       return icon;
                     },
                   ),
@@ -76,37 +74,26 @@ class AccountItem extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Flexible(
-                                  child: Consumer(
-                                    builder: (context, ref, child) {
-                                      final asset = ref.watch(
-                                        assetsStateProvider.select(
-                                          (value) =>
-                                              value[accountAsset.assetId],
-                                        ),
-                                      );
-
-                                      return Text(
-                                        asset?.name ?? '',
-                                        overflow: TextOverflow.clip,
-                                        maxLines: 1,
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.normal,
-                                          color: textColor,
-                                        ),
-                                      );
-                                    },
+                                  child: Text(
+                                    asset.name,
+                                    overflow: TextOverflow.clip,
+                                    maxLines: 1,
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.normal,
+                                      color: textColor,
+                                    ),
                                   ),
                                 ),
-                                AccountItemAmount(
-                                  accountAsset: accountAsset,
+                                AssetItemAmount(
+                                  asset: asset,
                                   disabled: disabled,
                                 ),
                               ],
                             ),
                           ),
-                          AccountItemConversion(accountAsset: accountAsset),
+                          AccountItemConversion(asset: asset),
                         ],
                       ),
                     ),
@@ -122,9 +109,9 @@ class AccountItem extends StatelessWidget {
 }
 
 class AccountItemConversion extends StatelessWidget {
-  const AccountItemConversion({super.key, required this.accountAsset});
+  const AccountItemConversion({super.key, required this.asset});
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Widget build(BuildContext context) {
@@ -133,25 +120,15 @@ class AccountItemConversion extends StatelessWidget {
       children: [
         Row(
           children: [
-            Consumer(
-              builder: (context, ref, child) {
-                final asset = ref.watch(
-                  assetsStateProvider.select(
-                    (value) => value[accountAsset.assetId],
-                  ),
-                );
-
-                return Text(
-                  asset?.ticker ?? '',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                    color: Color(0xFF6B91A8),
-                  ),
-                );
-              },
+            Text(
+              asset.ticker,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.normal,
+                color: Color(0xFF6B91A8),
+              ),
             ),
-            if (accountAsset.account.isAmp)
+            if (asset.ampMarket)
               const AmpFlag(
                 textStyle: TextStyle(
                   color: Color(0xFF73A6C5),
@@ -164,13 +141,11 @@ class AccountItemConversion extends StatelessWidget {
         ),
         Consumer(
           builder: (context, ref, child) {
-            final defaultCurrencyAssetBalance = ref.watch(
-              accountAssetBalanceWithInputsInDefaultCurrencyStringProvider(
-                accountAsset,
-              ),
-            );
             final defaultCurrencyTicker = ref.watch(
               defaultCurrencyTickerProvider,
+            );
+            final defaultCurrencyAssetBalance = ref.watch(
+              assetBalanceInDefaultCurrencyStringProvider(asset),
             );
 
             return Text(
@@ -188,21 +163,19 @@ class AccountItemConversion extends StatelessWidget {
   }
 }
 
-class AccountItemAmount extends ConsumerWidget {
-  const AccountItemAmount({
+class AssetItemAmount extends ConsumerWidget {
+  const AssetItemAmount({
     super.key,
-    required this.accountAsset,
+    required this.asset,
     this.disabled = false,
   });
 
-  final AccountAsset accountAsset;
+  final Asset asset;
   final bool disabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetBalance = ref.watch(
-      balanceStringWithInputsForAccountAssetProvider(accountAsset),
-    );
+    final assetBalance = ref.watch(assetBalanceStringProvider(asset));
 
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
 

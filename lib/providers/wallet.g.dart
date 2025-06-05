@@ -13,8 +13,9 @@ String _$walletHash() => r'8a8da98b44c784b81fcd08503b964e1d09247afd';
 final walletProvider = Provider<SideswapWallet>.internal(
   wallet,
   name: r'walletProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$walletHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$walletHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -30,10 +31,9 @@ final syncCompleteStateProvider =
     NotifierProvider<SyncCompleteState, bool>.internal(
       SyncCompleteState.new,
       name: r'syncCompleteStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$syncCompleteStateHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$syncCompleteStateHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

@@ -35,7 +35,7 @@ class RoundedButtonWithLabel extends StatelessWidget {
       children: [
         RoundedButton(
           width: iconWidth,
-          heigh: iconHeight,
+          height: iconHeight,
           onTap: onTap,
           color: buttonBackground,
           borderRadius: iconBorderRadius,

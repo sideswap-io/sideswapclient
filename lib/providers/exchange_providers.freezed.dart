@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ExchangeSide {
 
- AccountAsset get accountAsset;
+ Asset get asset;
 /// Create a copy of ExchangeSide
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $ExchangeSideCopyWith<ExchangeSide> get copyWith => _$ExchangeSideCopyWithImpl<E
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeSide&&(identical(other.accountAsset, accountAsset) || other.accountAsset == accountAsset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeSide&&(identical(other.asset, asset) || other.asset == asset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,accountAsset);
+int get hashCode => Object.hash(runtimeType,asset);
 
 @override
 String toString() {
-  return 'ExchangeSide(accountAsset: $accountAsset)';
+  return 'ExchangeSide(asset: $asset)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $ExchangeSideCopyWith<$Res>  {
   factory $ExchangeSideCopyWith(ExchangeSide value, $Res Function(ExchangeSide) _then) = _$ExchangeSideCopyWithImpl;
 @useResult
 $Res call({
- AccountAsset accountAsset
+ Asset asset
 });
 
 
@@ -63,10 +63,10 @@ class _$ExchangeSideCopyWithImpl<$Res>
 
 /// Create a copy of ExchangeSide
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? accountAsset = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? asset = null,}) {
   return _then(_self.copyWith(
-accountAsset: null == accountAsset ? _self.accountAsset : accountAsset // ignore: cast_nullable_to_non_nullable
-as AccountAsset,
+asset: null == asset ? _self.asset : asset // ignore: cast_nullable_to_non_nullable
+as Asset,
   ));
 }
 
@@ -77,10 +77,10 @@ as AccountAsset,
 
 
 class ExchangeSideSell implements ExchangeSide {
-  const ExchangeSideSell(this.accountAsset);
+  const ExchangeSideSell(this.asset);
   
 
-@override final  AccountAsset accountAsset;
+@override final  Asset asset;
 
 /// Create a copy of ExchangeSide
 /// with the given fields replaced by the non-null parameter values.
@@ -92,16 +92,16 @@ $ExchangeSideSellCopyWith<ExchangeSideSell> get copyWith => _$ExchangeSideSellCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeSideSell&&(identical(other.accountAsset, accountAsset) || other.accountAsset == accountAsset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeSideSell&&(identical(other.asset, asset) || other.asset == asset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,accountAsset);
+int get hashCode => Object.hash(runtimeType,asset);
 
 @override
 String toString() {
-  return 'ExchangeSide.sell(accountAsset: $accountAsset)';
+  return 'ExchangeSide.sell(asset: $asset)';
 }
 
 
@@ -112,7 +112,7 @@ abstract mixin class $ExchangeSideSellCopyWith<$Res> implements $ExchangeSideCop
   factory $ExchangeSideSellCopyWith(ExchangeSideSell value, $Res Function(ExchangeSideSell) _then) = _$ExchangeSideSellCopyWithImpl;
 @override @useResult
 $Res call({
- AccountAsset accountAsset
+ Asset asset
 });
 
 
@@ -129,10 +129,10 @@ class _$ExchangeSideSellCopyWithImpl<$Res>
 
 /// Create a copy of ExchangeSide
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? accountAsset = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? asset = null,}) {
   return _then(ExchangeSideSell(
-null == accountAsset ? _self.accountAsset : accountAsset // ignore: cast_nullable_to_non_nullable
-as AccountAsset,
+null == asset ? _self.asset : asset // ignore: cast_nullable_to_non_nullable
+as Asset,
   ));
 }
 
@@ -143,10 +143,10 @@ as AccountAsset,
 
 
 class ExchangeSideBuy implements ExchangeSide {
-  const ExchangeSideBuy(this.accountAsset);
+  const ExchangeSideBuy(this.asset);
   
 
-@override final  AccountAsset accountAsset;
+@override final  Asset asset;
 
 /// Create a copy of ExchangeSide
 /// with the given fields replaced by the non-null parameter values.
@@ -158,16 +158,16 @@ $ExchangeSideBuyCopyWith<ExchangeSideBuy> get copyWith => _$ExchangeSideBuyCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeSideBuy&&(identical(other.accountAsset, accountAsset) || other.accountAsset == accountAsset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeSideBuy&&(identical(other.asset, asset) || other.asset == asset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,accountAsset);
+int get hashCode => Object.hash(runtimeType,asset);
 
 @override
 String toString() {
-  return 'ExchangeSide.buy(accountAsset: $accountAsset)';
+  return 'ExchangeSide.buy(asset: $asset)';
 }
 
 
@@ -178,7 +178,7 @@ abstract mixin class $ExchangeSideBuyCopyWith<$Res> implements $ExchangeSideCopy
   factory $ExchangeSideBuyCopyWith(ExchangeSideBuy value, $Res Function(ExchangeSideBuy) _then) = _$ExchangeSideBuyCopyWithImpl;
 @override @useResult
 $Res call({
- AccountAsset accountAsset
+ Asset asset
 });
 
 
@@ -195,170 +195,10 @@ class _$ExchangeSideBuyCopyWithImpl<$Res>
 
 /// Create a copy of ExchangeSide
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? accountAsset = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? asset = null,}) {
   return _then(ExchangeSideBuy(
-null == accountAsset ? _self.accountAsset : accountAsset // ignore: cast_nullable_to_non_nullable
-as AccountAsset,
-  ));
-}
-
-
-}
-
-/// @nodoc
-mixin _$ExchangeCustomError {
-
-
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeCustomError);
-}
-
-
-@override
-int get hashCode => runtimeType.hashCode;
-
-@override
-String toString() {
-  return 'ExchangeCustomError()';
-}
-
-
-}
-
-/// @nodoc
-class $ExchangeCustomErrorCopyWith<$Res>  {
-$ExchangeCustomErrorCopyWith(ExchangeCustomError _, $Res Function(ExchangeCustomError) __);
-}
-
-
-/// @nodoc
-
-
-class ExchangeCustomErrorEmpty implements ExchangeCustomError {
-  const ExchangeCustomErrorEmpty();
-  
-
-
-
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeCustomErrorEmpty);
-}
-
-
-@override
-int get hashCode => runtimeType.hashCode;
-
-@override
-String toString() {
-  return 'ExchangeCustomError.empty()';
-}
-
-
-}
-
-
-
-
-/// @nodoc
-
-
-class ExchangeCustomErrorBalanceExceeded implements ExchangeCustomError {
-  const ExchangeCustomErrorBalanceExceeded();
-  
-
-
-
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeCustomErrorBalanceExceeded);
-}
-
-
-@override
-int get hashCode => runtimeType.hashCode;
-
-@override
-String toString() {
-  return 'ExchangeCustomError.balanceExceeded()';
-}
-
-
-}
-
-
-
-
-/// @nodoc
-
-
-class ExchangeCustomErrorDeliverExceeded implements ExchangeCustomError {
-  const ExchangeCustomErrorDeliverExceeded({this.maxDeliverAmount});
-  
-
- final  String? maxDeliverAmount;
-
-/// Create a copy of ExchangeCustomError
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ExchangeCustomErrorDeliverExceededCopyWith<ExchangeCustomErrorDeliverExceeded> get copyWith => _$ExchangeCustomErrorDeliverExceededCopyWithImpl<ExchangeCustomErrorDeliverExceeded>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExchangeCustomErrorDeliverExceeded&&(identical(other.maxDeliverAmount, maxDeliverAmount) || other.maxDeliverAmount == maxDeliverAmount));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,maxDeliverAmount);
-
-@override
-String toString() {
-  return 'ExchangeCustomError.deliverExceeded(maxDeliverAmount: $maxDeliverAmount)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $ExchangeCustomErrorDeliverExceededCopyWith<$Res> implements $ExchangeCustomErrorCopyWith<$Res> {
-  factory $ExchangeCustomErrorDeliverExceededCopyWith(ExchangeCustomErrorDeliverExceeded value, $Res Function(ExchangeCustomErrorDeliverExceeded) _then) = _$ExchangeCustomErrorDeliverExceededCopyWithImpl;
-@useResult
-$Res call({
- String? maxDeliverAmount
-});
-
-
-
-
-}
-/// @nodoc
-class _$ExchangeCustomErrorDeliverExceededCopyWithImpl<$Res>
-    implements $ExchangeCustomErrorDeliverExceededCopyWith<$Res> {
-  _$ExchangeCustomErrorDeliverExceededCopyWithImpl(this._self, this._then);
-
-  final ExchangeCustomErrorDeliverExceeded _self;
-  final $Res Function(ExchangeCustomErrorDeliverExceeded) _then;
-
-/// Create a copy of ExchangeCustomError
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? maxDeliverAmount = freezed,}) {
-  return _then(ExchangeCustomErrorDeliverExceeded(
-maxDeliverAmount: freezed == maxDeliverAmount ? _self.maxDeliverAmount : maxDeliverAmount // ignore: cast_nullable_to_non_nullable
-as String?,
+null == asset ? _self.asset : asset // ignore: cast_nullable_to_non_nullable
+as Asset,
   ));
 }
 

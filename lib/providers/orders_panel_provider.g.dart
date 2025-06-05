@@ -14,10 +14,9 @@ final internalUiOrdersProvider =
     AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
       internalUiOrders,
       name: r'internalUiOrdersProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$internalUiOrdersHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$internalUiOrdersHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -32,10 +31,9 @@ String _$maxOrderAmountHash() => r'8770516371abd8eb6549673fffc2342454aac366';
 final maxOrderAmountProvider = AutoDisposeProvider<Decimal>.internal(
   maxOrderAmount,
   name: r'maxOrderAmountProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$maxOrderAmountHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$maxOrderAmountHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -51,10 +49,9 @@ final ordersBidsProvider =
     AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
       ordersBids,
       name: r'ordersBidsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ordersBidsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ordersBidsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -70,10 +67,9 @@ final ordersAsksProvider =
     AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
       ordersAsks,
       name: r'ordersAsksProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ordersAsksHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ordersAsksHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -164,10 +160,9 @@ class MapRangeProvider extends AutoDisposeProvider<Decimal> {
             mapRange(ref as MapRangeRef, value, inMin, inMax, outMin, outMax),
         from: mapRangeProvider,
         name: r'mapRangeProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$mapRangeHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$mapRangeHash,
         dependencies: MapRangeFamily._dependencies,
         allTransitiveDependencies: MapRangeFamily._allTransitiveDependencies,
         value: value,
@@ -288,10 +283,9 @@ final ordersPanelBidsProvider =
     AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
       ordersPanelBids,
       name: r'ordersPanelBidsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ordersPanelBidsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ordersPanelBidsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -307,10 +301,9 @@ final ordersPanelAsksProvider =
     AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
       ordersPanelAsks,
       name: r'ordersPanelAsksProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ordersPanelAsksHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ordersPanelAsksHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -323,19 +316,19 @@ String _$requestOrderSortFlagNotifierHash() =>
 
 /// See also [RequestOrderSortFlagNotifier].
 @ProviderFor(RequestOrderSortFlagNotifier)
-final requestOrderSortFlagNotifierProvider = AutoDisposeNotifierProvider<
-  RequestOrderSortFlagNotifier,
-  RequestOrderSortFlag
->.internal(
-  RequestOrderSortFlagNotifier.new,
-  name: r'requestOrderSortFlagNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final requestOrderSortFlagNotifierProvider =
+    AutoDisposeNotifierProvider<
+      RequestOrderSortFlagNotifier,
+      RequestOrderSortFlag
+    >.internal(
+      RequestOrderSortFlagNotifier.new,
+      name: r'requestOrderSortFlagNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$requestOrderSortFlagNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$RequestOrderSortFlagNotifier =
     AutoDisposeNotifier<RequestOrderSortFlag>;

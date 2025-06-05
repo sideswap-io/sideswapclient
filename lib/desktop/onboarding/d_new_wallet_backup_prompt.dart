@@ -75,7 +75,7 @@ class DNewWalletBackupPrompt extends HookConsumerWidget {
                   height: 49,
                   child: Text('NOT NOW'.tr()),
                   onPressed: () async {
-                    Navigator.of(
+                    await Navigator.of(
                       context,
                     ).pushNamed('/newWalletBackupSkipPrompt');
                   },

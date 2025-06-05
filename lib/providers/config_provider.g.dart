@@ -13,10 +13,9 @@ String _$sharedPreferencesHash() => r'1a6250efdc19e86c923ceb598a77ff74d64378e6';
 final sharedPreferencesProvider = Provider<SharedPreferences>.internal(
   sharedPreferences,
   name: r'sharedPreferencesProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sharedPreferencesHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sharedPreferencesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -24,7 +23,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SharedPreferencesRef = ProviderRef<SharedPreferences>;
-String _$configurationHash() => r'5da99d8c62cb16ef2c673c8c9379b3f57bca5037';
+String _$configurationHash() => r'e358636798b62f3c44a7131480044e472aa79c1d';
 
 /// See also [Configuration].
 @ProviderFor(Configuration)
@@ -32,10 +31,9 @@ final configurationProvider =
     AutoDisposeNotifierProvider<Configuration, SideswapSettings>.internal(
       Configuration.new,
       name: r'configurationProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$configurationHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$configurationHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

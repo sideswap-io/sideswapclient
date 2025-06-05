@@ -12,7 +12,7 @@ bool isBiometricEnabled(Ref ref) {
 }
 
 @riverpod
-FutureOr<bool> isBiometricAvailable(Ref ref) async {
+FutureOr<bool> isBiometricAvailable(Ref ref) {
   final isJadeWallet = ref.watch(isJadeWalletProvider);
   if (isJadeWallet) {
     return false;

@@ -57,14 +57,13 @@ class EurxAssetIdState extends _$EurxAssetIdState {
   }
 }
 
-@riverpod
-class AmpAssetsNotifier extends _$AmpAssetsNotifier {
+@Riverpod(keepAlive: true)
+class AmpAssetIdsNotifier extends _$AmpAssetIdsNotifier {
   @override
   List<String> build() {
-    ref.keepAlive();
     final ampAccounts = ref.watch(ampVisibleAccountAssetsProvider);
     return ampAccounts
-        .where((e) => e.account.isAmp && e.assetId != null)
+        .where((e) => e.account == Account.AMP_ && e.assetId != null)
         .map((e) => e.assetId!)
         .toList();
   }
@@ -368,10 +367,30 @@ class SelectedWalletAccountAssetNotifier
     extends _$SelectedWalletAccountAssetNotifier {
   @override
   AccountAsset? build() {
-    return null;
+    throw Exception('SelectedWalletAccountAssetNotifier should not be used');
   }
 
   void setAccountAsset(AccountAsset accountAsset) {
     state = accountAsset;
+    throw Exception('SelectedWalletAccountAssetNotifier should not be used');
+  }
+}
+
+@Riverpod(keepAlive: true)
+class SelectedWalletAssetNotifier extends _$SelectedWalletAssetNotifier {
+  @override
+  Option<Asset> build() {
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    final assetsState = ref.watch(assetsStateProvider);
+    final asset = assetsState[liquidAssetId];
+    if (asset == null) {
+      return Option.none();
+    }
+
+    return Option.of(asset);
+  }
+
+  void setState(Asset asset) {
+    state = Option.of(asset);
   }
 }

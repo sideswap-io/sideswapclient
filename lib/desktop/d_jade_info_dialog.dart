@@ -23,10 +23,8 @@ class DJadeInfoDialog extends HookConsumerWidget {
     );
     final showAmpOnboarding =
         ref.watch(configurationProvider).showAmpOnboarding;
-    final optionQuoteSuccess = ref.watch(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
-    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
+    final orderTtlState = ref.watch(orderTtlNotifierProvider);
+    final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     useEffect(() {
       if (jadeStatus != const JadeStatusMasterBlindingKey()) {
@@ -114,38 +112,33 @@ class DJadeInfoDialog extends HookConsumerWidget {
                             return Column(
                               children: [
                                 Text(statusText),
-                                optionQuoteSuccess.match(
-                                  () {
-                                    return SizedBox();
-                                  },
-                                  (quoteSuccess) {
-                                    return Column(
-                                      children: [
-                                        SizedBox(height: 8),
-                                        SizedBox(
-                                          width: 120,
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                'Time-to-live'.tr(),
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleSmall
-                                                    ?.copyWith(
-                                                      color:
-                                                          SideSwapColors
-                                                              .brightTurquoise,
-                                                    ),
+                                switch (orderTtlState) {
+                                  OrderTtlStateEmpty() => const SizedBox(),
+                                  _ => Column(
+                                    children: [
+                                      SizedBox(height: 8),
+                                      SizedBox(
+                                        width: 120,
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              'Time-to-live'.tr(),
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.titleSmall?.copyWith(
+                                                color:
+                                                    SideSwapColors
+                                                        .brightTurquoise,
                                               ),
-                                              Spacer(),
-                                              Text('$previewOrderTtl s.'),
-                                            ],
-                                          ),
+                                            ),
+                                            Spacer(),
+                                            Text('$orderSignTtl s.'),
+                                          ],
                                         ),
-                                      ],
-                                    );
-                                  },
-                                ),
+                                      ),
+                                    ],
+                                  ),
+                                },
                               ],
                             );
                           },

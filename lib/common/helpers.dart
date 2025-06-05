@@ -64,10 +64,10 @@ double convertToNewRange({
   required double newMin,
   required double newMax,
 }) {
-  final converted = ((((value - minValue) * (newMax - newMin)) /
-              (maxValue - minValue)) +
-          newMin)
-      .toStringAsFixed(2);
+  final converted =
+      ((((value - minValue) * (newMax - newMin)) / (maxValue - minValue)) +
+              newMin)
+          .toStringAsFixed(2);
   return double.tryParse(converted) ?? 0;
 }
 
@@ -168,14 +168,19 @@ Future<void> copyToClipboard(
   String? suffix,
 }) async {
   if (displaySnackbar) {
-    final displayString =
-        suffix != null ? '${'Copied'.tr()}: $suffix' : 'Copied'.tr();
+    final displayString = suffix != null
+        ? '${'Copied'.tr()}: $suffix'
+        : 'Copied'.tr();
     final flushbar = Flushbar<void>(
       messageText: Text(displayString),
       duration: const Duration(seconds: 3),
       backgroundColor: SideSwapColors.chathamsBlue,
+      icon: const Icon(Icons.check_circle, color: Colors.white),
+      onTap: (flushbar) {
+        flushbar.dismiss();
+      },
     );
-    flushbar.show(context);
+    await flushbar.show(context);
   }
 
   await Clipboard.setData(ClipboardData(text: text));
@@ -218,15 +223,13 @@ String generateTxidUrl(
 }) {
   String baseUrl;
   if (!testnet) {
-    baseUrl =
-        isLiquid
-            ? 'https://blockstream.info/liquid'
-            : 'https://blockstream.info';
+    baseUrl = isLiquid
+        ? 'https://blockstream.info/liquid'
+        : 'https://blockstream.info';
   } else {
-    baseUrl =
-        isLiquid
-            ? 'https://blockstream.info/liquidtestnet'
-            : 'https://blockstream.info/testnet';
+    baseUrl = isLiquid
+        ? 'https://blockstream.info/liquidtestnet'
+        : 'https://blockstream.info/testnet';
   }
 
   var url = '$baseUrl/tx/$txid';
@@ -238,28 +241,26 @@ String generateTxidUrl(
 }
 
 String generateAssetUrl({required String? assetId, required bool testnet}) {
-  final baseUrl =
-      testnet
-          ? 'https://blockstream.info/liquidtestnet'
-          : 'https://blockstream.info/liquid';
+  final baseUrl = testnet
+      ? 'https://blockstream.info/liquidtestnet'
+      : 'https://blockstream.info/liquid';
   return '$baseUrl/asset/${assetId ?? ''}';
 }
 
 String generateAddressUrl({required String? address, required bool testnet}) {
-  final baseUrl =
-      testnet
-          ? 'https://blockstream.info/liquidtestnet'
-          : 'https://blockstream.info/liquid';
+  final baseUrl = testnet
+      ? 'https://blockstream.info/liquidtestnet'
+      : 'https://blockstream.info/liquid';
   return '$baseUrl/address/${address ?? ''}';
 }
 
 Future<void> shareTxid(String txid) async {
-  await Share.share(txid);
+  await SharePlus.instance.share(ShareParams(text: txid));
 }
 
 Future<void> shareAddress(String address) async {
   logger.d('Sharing address: $address');
-  await Share.share(address);
+  await SharePlus.instance.share(ShareParams(text: address));
 }
 
 enum CurrencyCharAlignment { begin, end }
@@ -352,8 +353,9 @@ List<TransItem> selectTransactions(
 Future<void> shareLogFile(String name, RenderBox box) async {
   final dir = (await getApplicationSupportDirectory()).path;
   final path = '$dir/$name';
+  final filesToShare = [XFile(path, mimeType: "text/plain")];
   try {
-    await Share.shareXFiles([XFile(path, mimeType: "text/plain")]);
+    await SharePlus.instance.share(ShareParams(files: filesToShare));
   } on PlatformException {
     logger.e('share log failed');
   }

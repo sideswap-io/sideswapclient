@@ -7,17 +7,16 @@ part of 'app_releases_provider.dart';
 // **************************************************************************
 
 String _$showNewReleaseFutureHash() =>
-    r'35140aae6136e6cc91ed81f4fc87f0c966def38c';
+    r'9f5f5c328bb3e59e319286f3e5489b6c8464df77';
 
 /// See also [showNewReleaseFuture].
 @ProviderFor(showNewReleaseFuture)
 final showNewReleaseFutureProvider = AutoDisposeFutureProvider<bool>.internal(
   showNewReleaseFuture,
   name: r'showNewReleaseFutureProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$showNewReleaseFutureHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$showNewReleaseFutureHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -30,19 +29,19 @@ String _$appReleasesStateNotifierHash() =>
 
 /// See also [AppReleasesStateNotifier].
 @ProviderFor(AppReleasesStateNotifier)
-final appReleasesStateNotifierProvider = AutoDisposeAsyncNotifierProvider<
-  AppReleasesStateNotifier,
-  AppReleasesModelState
->.internal(
-  AppReleasesStateNotifier.new,
-  name: r'appReleasesStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final appReleasesStateNotifierProvider =
+    AutoDisposeAsyncNotifierProvider<
+      AppReleasesStateNotifier,
+      AppReleasesModelState
+    >.internal(
+      AppReleasesStateNotifier.new,
+      name: r'appReleasesStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$appReleasesStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AppReleasesStateNotifier =
     AutoDisposeAsyncNotifier<AppReleasesModelState>;

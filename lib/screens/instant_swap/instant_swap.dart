@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,7 +10,6 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/exchange_providers.dart';
-import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/instant_swap/listeners/instant_swap_listener.dart';
 import 'package:sideswap/screens/instant_swap/widgets/dropdown_amount_text_field.dart';
@@ -20,48 +20,59 @@ class InstantSwap extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const InstantSwapListener(),
-        const SizedBox(height: 18),
-        InstantSwapTitle(),
-        const SizedBox(height: 16),
-        InstantSwapTopDropdownAmountTextField(),
-        const SizedBox(height: 6),
-        InstantSwapDivider(),
-        ColoredBox(
-          color: SideSwapColors.blumine,
-          child: Column(
-            children: [
-              const SizedBox(height: 6),
-              InstantSwapBottomDropdownAmountTextField(disabledAmount: false),
-            ],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        final currentFocus = FocusScope.of(context);
+
+        if (!currentFocus.hasPrimaryFocus &&
+            currentFocus.focusedChild != null) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const InstantSwapListener(),
+          const SizedBox(height: 18),
+          InstantSwapTitle(),
+          const SizedBox(height: 16),
+          InstantSwapTopDropdownAmountTextField(),
+          const SizedBox(height: 6),
+          InstantSwapDivider(),
+          ColoredBox(
+            color: SideSwapColors.blumine,
+            child: Column(
+              children: [
+                const SizedBox(height: 6),
+                InstantSwapBottomDropdownAmountTextField(disabledAmount: false),
+              ],
+            ),
           ),
-        ),
-        Flexible(
-          child: Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(8),
-                    bottomRight: Radius.circular(8),
+          Flexible(
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8),
+                    ),
+                    color: SideSwapColors.blumine,
                   ),
-                  color: SideSwapColors.blumine,
                 ),
-              ),
-              Column(
-                children: [
-                  Spacer(),
-                  InstantSwapButton(),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ],
+                Column(
+                  children: [
+                    Spacer(),
+                    InstantSwapButton(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -96,15 +107,15 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
     final optionError = ref.watch(instantSwapTopDropdownErrorProvider);
     errorText.value = optionError.match(() => null, (error) => error);
 
-    final optionTopAccountAsset = ref.watch(exchangeTopAssetProvider);
+    final optionTopAsset = ref.watch(exchangeTopAssetProvider);
 
-    return optionTopAccountAsset.match(
+    return optionTopAsset.match(
       () {
         return SizedBox();
       },
-      (topAccountAsset) {
+      (topAsset) {
         final topAssetSatoshiBalance = ref.watch(
-          maxAvailableBalanceForAccountAssetProvider(topAccountAsset),
+          availableBalanceForAssetIdProvider(topAsset.assetId),
         );
 
         final topAssets = ref.watch(exchangeTopAssetListProvider);
@@ -141,16 +152,13 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
             } else {
               optionTopAsset.match(() {}, (topAsset) {
                 final topBalance = ref.read(
-                  maxAvailableBalanceForAccountAssetProvider(topAsset),
+                  availableBalanceForAssetIdProvider(topAsset.assetId),
                 );
                 final topSatoshiAmount = ref.read(
                   exchangeTopSatoshiAmountProvider,
                 );
 
                 if (topSatoshiAmount > topBalance) {
-                  ref
-                      .read(exchangeCustomErrorNotifierProvider.notifier)
-                      .setState(ExchangeCustomError.balanceExceeded());
                   ref.invalidate(exchangeBottomAmountProvider);
                 }
 
@@ -201,53 +209,17 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
               ),
             ),
             errorText: errorText.value,
-            accountAssets: topAssets,
-            accountAsset: topAccountAsset,
+            availableAssets: topAssets.map((e) => e.assetId).toList(),
+            selectedAssetId: topAsset.assetId,
             onMaxPressed: () {
-              final optionTopAccountAsset = ref.read(exchangeTopAssetProvider);
+              final optionTopAsset = ref.read(exchangeTopAssetProvider);
               final optionAsset = ref.read(
-                assetFromAssetIdProvider(topAccountAsset.assetId),
+                assetFromAssetIdProvider(topAsset.assetId),
               );
 
               optionAsset.match(() {}, (asset) {
-                final customError = ref.read(
-                  exchangeCustomErrorNotifierProvider,
-                );
-
-                // set Max Amount as max deliver from error
-                if (customError is ExchangeCustomErrorDeliverExceeded &&
-                    customError.maxDeliverAmount != null) {
-                  final satoshiDeliverAmount = ref
-                      .read(satoshiRepositoryProvider)
-                      .satoshiForAmount(
-                        assetId: topAccountAsset.assetId,
-                        amount: customError.maxDeliverAmount!,
-                      );
-
-                  final newAmount = ref
-                      .read(amountToStringProvider)
-                      .amountToString(
-                        AmountToStringParameters(
-                          amount: satoshiDeliverAmount,
-                          trailingZeroes: false,
-                          precision: asset.precision,
-                        ),
-                      );
-
-                  ref
-                      .read(exchangeTopAmountProvider.notifier)
-                      .setState(newAmount);
-                  ref
-                      .read(exchangeCurrentEditAssetProvider.notifier)
-                      .setState(optionTopAccountAsset);
-                  return;
-                }
-
-                // set Max Amount as max asset wallet balance (total)
                 final balance = ref.read(
-                  totalMaxAvailableBalanceForAssetProvider(
-                    topAccountAsset.assetId,
-                  ),
+                  availableBalanceForAssetIdProvider(topAsset.assetId),
                 );
 
                 final newAmount = ref
@@ -265,17 +237,22 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
                     .setState(newAmount);
                 ref
                     .read(exchangeCurrentEditAssetProvider.notifier)
-                    .setState(optionTopAccountAsset);
+                    .setState(optionTopAsset);
               });
             },
-            onAccountAssetChanged: (value) {
+            onAssetChanged: (value) {
               // get old top and bottom assets
               final optionTopAsset = ref.read(exchangeTopAssetProvider);
               final optionBottomAsset = ref.read(exchangeBottomAssetProvider);
 
               // replace top asset
-              if (topAssets.any((e) => e == value)) {
-                ref.read(exchangeTopAssetProvider.notifier).setState(value);
+              if (topAssets.any((e) => e.assetId == value.assetId)) {
+                final asset = topAssets.firstWhereOrNull(
+                  (e) => e.assetId == value.assetId,
+                );
+                if (asset != null) {
+                  ref.read(exchangeTopAssetProvider.notifier).setState(asset);
+                }
               } else {
                 return;
               }
@@ -305,7 +282,7 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
               ref.read(exchangeTopAmountProvider.notifier).setState(value);
               ref
                   .read(exchangeCurrentEditAssetProvider.notifier)
-                  .setState(optionTopAccountAsset);
+                  .setState(optionTopAsset);
               if (value.isEmpty) {
                 ref.invalidate(exchangeBottomAmountProvider);
               }
@@ -383,22 +360,6 @@ class InstantSwapBottomDropdownAmountTextField extends HookConsumerWidget {
     });
 
     final errorText = useState<String?>(null);
-    ref.watch(exchangeCustomErrorNotifierProvider);
-
-    ref.listen(exchangeCustomErrorNotifierProvider, (_, customError) {
-      final optionBottomAsset = ref.read(exchangeBottomAssetProvider);
-      final optionCurrentEditAsset = ref.read(exchangeCurrentEditAssetProvider);
-
-      if (optionBottomAsset != optionCurrentEditAsset) {
-        errorText.value = null;
-        return;
-      }
-
-      errorText.value = switch (customError) {
-        ExchangeCustomErrorBalanceExceeded() => 'Balance exceeded'.tr(),
-        _ => null,
-      };
-    });
 
     return optionBottomAsset.match(
       () => const SizedBox(),
@@ -416,13 +377,16 @@ class InstantSwapBottomDropdownAmountTextField extends HookConsumerWidget {
               color: SideSwapColors.brightTurquoise,
             ),
           ),
-          accountAssets: bottomAssetList,
-          accountAsset: bottomAsset,
+          availableAssets: bottomAssetList.map((e) => e.assetId).toList(),
+          selectedAssetId: bottomAsset.assetId,
           onMaxPressed: () {},
-          onAccountAssetChanged: (value) {
-            ref
-                .read(exchangeBottomAssetProvider.notifier)
-                .setState(bottomAssetList.firstWhere((e) => e == value));
+          onAssetChanged: (value) {
+            final asset = bottomAssetList.firstWhereOrNull(
+              (e) => e.assetId == value.assetId,
+            );
+            if (asset != null) {
+              ref.read(exchangeBottomAssetProvider.notifier).setState(asset);
+            }
           },
           onChanged: (value) {
             ref.read(exchangeBottomAmountProvider.notifier).setState(value);
@@ -457,14 +421,13 @@ class InstantSwapButton extends ConsumerWidget {
         width: double.infinity,
         height: 54,
         backgroundColor: SideSwapColors.brightTurquoise,
-        onPressed:
-            enabled
-                ? () {
-                  exchangeQuoteNotifier.acceptQuote(
-                    optionQuoteSuccess: optionQuoteSuccess,
-                  );
-                }
-                : null,
+        onPressed: enabled
+            ? () {
+                exchangeQuoteNotifier.acceptQuote(
+                  optionQuoteSuccess: optionQuoteSuccess,
+                );
+              }
+            : null,
         child: Stack(
           alignment: Alignment.center,
           children: [

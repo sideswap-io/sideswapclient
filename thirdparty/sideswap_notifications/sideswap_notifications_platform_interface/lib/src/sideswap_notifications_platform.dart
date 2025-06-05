@@ -23,7 +23,7 @@ abstract class SideswapNotificationsPlatformInterface
     _instance = instance;
   }
 
-  Future<void> firebaseInitializeApp() async {
+  Future<void> firebaseInitializeApp() {
     throw UnimplementedError(
       'firebaseInitializeApp() has not been implemented',
     );
@@ -32,7 +32,7 @@ abstract class SideswapNotificationsPlatformInterface
   Future<void> notificationsInitialize({
     required TNotificationBackgroundHandler notificationBackgroundHandler,
     THandleIncomingNotification? handleIncomingNotification,
-  }) async {
+  }) {
     throw UnimplementedError(
       'notificationServiceProviderInit() has not been implemented',
     );
@@ -40,7 +40,7 @@ abstract class SideswapNotificationsPlatformInterface
 
   Future<void> firebaseRefreshToken({
     TRefreshTokenCallback? refreshTokenCallback,
-  }) async {
+  }) {
     throw UnimplementedError('firebaseRefreshToken() has not been implemented');
   }
 

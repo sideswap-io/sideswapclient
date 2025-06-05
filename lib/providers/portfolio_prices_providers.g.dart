@@ -15,10 +15,9 @@ final requestPortfolioPricesProvider =
     NotifierProvider<RequestPortfolioPrices, void>.internal(
       RequestPortfolioPrices.new,
       name: r'requestPortfolioPricesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$requestPortfolioPricesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$requestPortfolioPricesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -33,10 +32,9 @@ final portfolioPricesNotifierProvider =
     NotifierProvider<PortfolioPricesNotifier, Map<String, double>>.internal(
       PortfolioPricesNotifier.new,
       name: r'portfolioPricesNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$portfolioPricesNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$portfolioPricesNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

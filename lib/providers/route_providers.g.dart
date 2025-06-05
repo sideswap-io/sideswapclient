@@ -13,10 +13,9 @@ String _$mobileRoutePageHash() => r'bec0fb75602f6f485668fb0bafb448167a6174c0';
 final mobileRoutePageProvider = Provider<MobileRoutePage>.internal(
   mobileRoutePage,
   name: r'mobileRoutePageProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$mobileRoutePageHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$mobileRoutePageHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -31,10 +30,9 @@ String _$desktopRoutePageHash() => r'dc2105bd83ef4c0dd526f9f39cbced88da80cd3c';
 final desktopRoutePageProvider = Provider<DesktopRoutePage>.internal(
   desktopRoutePage,
   name: r'desktopRoutePageProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$desktopRoutePageHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$desktopRoutePageHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

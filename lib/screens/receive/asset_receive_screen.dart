@@ -9,7 +9,8 @@ import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
-import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
+import 'package:sideswap/screens/receive/widgets/qr_receive_address.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class AssetReceiveScreen extends HookConsumerWidget {
   const AssetReceiveScreen({super.key});
@@ -50,7 +51,7 @@ class AssetReceiveScreen extends HookConsumerWidget {
         child: Consumer(
           builder: (context, ref, child) {
             final receiveAddress = ref.watch(currentReceiveAddressProvider);
-            final isAmp = receiveAddress.accountType.isAmp;
+            final isAmp = receiveAddress.account == Account.AMP_;
             return Column(
               children: [
                 Padding(
@@ -58,9 +59,9 @@ class AssetReceiveScreen extends HookConsumerWidget {
                   child: Text(
                     isAmp
                         ? 'Address for AMP Securities wallet successfully generated'
-                            .tr()
+                              .tr()
                         : 'Address for regular wallet successfully generated'
-                            .tr(),
+                              .tr(),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,
@@ -68,7 +69,18 @@ class AssetReceiveScreen extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                AssetReceiveWidget(key: Key(isAmp.toString())),
+                ...switch (receiveAddress.recvAddress.isEmpty) {
+                  true => [
+                    const SizedBox(
+                      width: 32,
+                      height: 100,
+                      child: Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                  false => [QrReceiveAddress()],
+                },
               ],
             );
           },

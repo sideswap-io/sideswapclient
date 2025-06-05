@@ -45,8 +45,9 @@ class AppReleasesStateNotifier extends _$AppReleasesStateNotifier {
   }
 
   bool newDesktopReleaseAvailable() {
-    final knownNewReleaseBuild =
-        ref.read(configurationProvider).knownNewReleaseBuild;
+    final knownNewReleaseBuild = ref
+        .read(configurationProvider)
+        .knownNewReleaseBuild;
 
     return switch (state) {
       AsyncValue(hasValue: true, value: AppReleasesModelState modelState)
@@ -75,9 +76,10 @@ class AppReleasesStateNotifier extends _$AppReleasesStateNotifier {
 }
 
 @riverpod
-FutureOr<bool> showNewReleaseFuture(Ref ref) async {
-  final knownNewReleaseBuild =
-      ref.watch(configurationProvider).knownNewReleaseBuild;
+FutureOr<bool> showNewReleaseFuture(Ref ref) {
+  final knownNewReleaseBuild = ref
+      .watch(configurationProvider)
+      .knownNewReleaseBuild;
 
   final appReleasesState = ref.watch(appReleasesStateNotifierProvider);
 

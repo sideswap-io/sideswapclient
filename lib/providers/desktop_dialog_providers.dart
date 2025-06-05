@@ -5,7 +5,7 @@ import 'package:sideswap/desktop/main/d_asset_info.dart';
 import 'package:sideswap/desktop/main/d_export_tx_success.dart';
 import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
 import 'package:sideswap/desktop/main/d_open_tx_import.dart';
-import 'package:sideswap/desktop/main/d_recv_popup.dart';
+import 'package:sideswap/desktop/main/d_recv_address_dialog.dart';
 import 'package:sideswap/desktop/main/d_select_inputs_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
@@ -14,7 +14,6 @@ import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/desktop/markets/widgets/d_accept_quote_error_dialog.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -37,7 +36,7 @@ class DesktopDialog {
     showDialog<void>(
       context: _context,
       builder: (context) {
-        return const DReceivePopup();
+        return const DReceiveAddressDialog();
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );
@@ -157,11 +156,11 @@ class DesktopDialog {
     );
   }
 
-  void openAccount(AccountAsset accountAsset) {
+  void showAssetInfoDialog(Asset asset) {
     showDialog<void>(
       context: _context,
       builder: (context) {
-        return DAssetInfo(accountAsset: accountAsset);
+        return DAssetInfo(asset: asset);
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );

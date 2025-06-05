@@ -25,8 +25,9 @@ sealed class StokrSettingsModel with _$StokrSettingsModel {
 class StokrSettingsNotifier extends _$StokrSettingsNotifier {
   @override
   StokrSettingsModel build() {
-    final stokrSettingsModel =
-        ref.watch(configurationProvider).stokrSettingsModel;
+    final stokrSettingsModel = ref
+        .watch(configurationProvider)
+        .stokrSettingsModel;
     return stokrSettingsModel ?? const StokrSettingsModel();
   }
 
@@ -42,7 +43,7 @@ class StokrSettingsNotifier extends _$StokrSettingsNotifier {
 @riverpod
 class StokrBlockedCountries extends _$StokrBlockedCountries {
   @override
-  FutureOr<List<CountryCode>> build() async {
+  FutureOr<List<CountryCode>> build() {
     final baseAsset = ref.watch(marketSubscribedBaseAssetProvider);
     return baseAsset.match(
       () {
@@ -61,10 +62,9 @@ class StokrBlockedCountries extends _$StokrBlockedCountries {
             () {
               final newList = [...countryList];
               newList.retainWhere(
-                (element) =>
-                    !allowedCountries.any(
-                      (allowed) => element.iso3Code == allowed,
-                    ),
+                (element) => !allowedCountries.any(
+                  (allowed) => element.iso3Code == allowed,
+                ),
               );
               newList.sort(
                 (a, b) => a.english?.compareTo(b.english ?? '') ?? 0,
@@ -79,10 +79,7 @@ class StokrBlockedCountries extends _$StokrBlockedCountries {
 }
 
 @riverpod
-FutureOr<List<CountryCode>> stokrCountryBlacklistSearch(
-  Ref ref,
-  String value,
-) async {
+FutureOr<List<CountryCode>> stokrCountryBlacklistSearch(Ref ref, String value) {
   final stokrCountryBlacklist = ref.watch(stokrBlockedCountriesProvider);
 
   return switch (stokrCountryBlacklist) {

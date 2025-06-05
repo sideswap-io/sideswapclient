@@ -59,11 +59,10 @@ class PegxGaidNotifier extends _$PegxGaidNotifier {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class PegxRegisterFailedNotifier extends _$PegxRegisterFailedNotifier {
   @override
   String build() {
-    ref.keepAlive();
     return '';
   }
 
@@ -112,7 +111,7 @@ class PegxWebsocketClient {
       };
 
       logger.d('Pegx API endpoint: $apiUrl');
-      WebSocket.connect(apiUrl)
+      await WebSocket.connect(apiUrl)
           .then((ws) {
             ws.pingInterval = Duration(seconds: _heartbeatInterval);
             _client = IOWebSocketChannel(ws);
@@ -163,7 +162,7 @@ class PegxWebsocketClient {
     );
   }
 
-  void handleNotif(Notif notif) async {
+  void handleNotif(Notif notif) {
     switch (notif.whichBody()) {
       case Notif_Body.loginOrRegisterFailed:
         // logger.d('Pegx <= $notif');

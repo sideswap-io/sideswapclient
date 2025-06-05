@@ -6,15 +6,16 @@ part of 'swap_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$swapTypeHash() => r'4df2fd34f08febfb7ebc7a60c6b098fada89b184';
+String _$swapTypeHash() => r'59ee6b630e8102d5ff83150c375b4d08d1663775';
 
 /// See also [swapType].
 @ProviderFor(swapType)
 final swapTypeProvider = AutoDisposeProvider<SwapType>.internal(
   swapType,
   name: r'swapTypeProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$swapTypeHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapTypeHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -29,10 +30,9 @@ String _$swapTypeStringHash() => r'60046dd90d0247e5d78a6884065850e80b69d6a5';
 final swapTypeStringProvider = AutoDisposeProvider<String>.internal(
   swapTypeString,
   name: r'swapTypeStringProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapTypeStringHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapTypeStringHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -47,8 +47,9 @@ String _$swapAddrTypeHash() => r'26832a85824a3f5cd10728fa3471802e75d266ad';
 final swapAddrTypeProvider = AutoDisposeProvider<AddrType>.internal(
   swapAddrType,
   name: r'swapAddrTypeProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$swapAddrTypeHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapAddrTypeHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -63,10 +64,9 @@ String _$addrTypeStringHash() => r'2f0072df5bb36b5d7fe7de00d0967f1ecf069028';
 final addrTypeStringProvider = AutoDisposeProvider<String>.internal(
   addrTypeString,
   name: r'addrTypeStringProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$addrTypeStringHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$addrTypeStringHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -74,38 +74,35 @@ final addrTypeStringProvider = AutoDisposeProvider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AddrTypeStringRef = AutoDisposeProviderRef<String>;
-String _$swapDeliverAccountAssetListHash() =>
-    r'11dc1cfa88eadcf948a40d127bf75c19d2b87828';
+String _$swapDeliverAssetIdListHash() =>
+    r'fc8536a64938b03f5f852792b9dd919c79ae57b8';
 
-/// See also [swapDeliverAccountAssetList].
-@ProviderFor(swapDeliverAccountAssetList)
-final swapDeliverAccountAssetListProvider =
-    AutoDisposeProvider<List<AccountAsset>>.internal(
-      swapDeliverAccountAssetList,
-      name: r'swapDeliverAccountAssetListProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapDeliverAccountAssetListHash,
+/// See also [swapDeliverAssetIdList].
+@ProviderFor(swapDeliverAssetIdList)
+final swapDeliverAssetIdListProvider =
+    AutoDisposeProvider<Iterable<String>>.internal(
+      swapDeliverAssetIdList,
+      name: r'swapDeliverAssetIdListProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapDeliverAssetIdListHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SwapDeliverAccountAssetListRef =
-    AutoDisposeProviderRef<List<AccountAsset>>;
-String _$swapDeliverAssetHash() => r'c398c52d3e3aae17ffb68189b1a70601051944b7';
+typedef SwapDeliverAssetIdListRef = AutoDisposeProviderRef<Iterable<String>>;
+String _$swapDeliverAssetHash() => r'9945611a6aa1bbc0c443ed793aa3ba3e3933e813';
 
 /// See also [swapDeliverAsset].
 @ProviderFor(swapDeliverAsset)
 final swapDeliverAssetProvider = AutoDisposeProvider<SwapAsset>.internal(
   swapDeliverAsset,
   name: r'swapDeliverAssetProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapDeliverAssetHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapDeliverAssetHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -113,38 +110,35 @@ final swapDeliverAssetProvider = AutoDisposeProvider<SwapAsset>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SwapDeliverAssetRef = AutoDisposeProviderRef<SwapAsset>;
-String _$swapReceiveAccountAssetListHash() =>
-    r'd383afa238f7f7ae618642c687db3e974c8520c0';
+String _$swapReceiveAssetIdListHash() =>
+    r'd2dbc791d6660e7a86396a4c00c58e3c334c15c6';
 
-/// See also [swapReceiveAccountAssetList].
-@ProviderFor(swapReceiveAccountAssetList)
-final swapReceiveAccountAssetListProvider =
-    AutoDisposeProvider<List<AccountAsset>>.internal(
-      swapReceiveAccountAssetList,
-      name: r'swapReceiveAccountAssetListProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapReceiveAccountAssetListHash,
+/// See also [swapReceiveAssetIdList].
+@ProviderFor(swapReceiveAssetIdList)
+final swapReceiveAssetIdListProvider =
+    AutoDisposeProvider<Iterable<String>>.internal(
+      swapReceiveAssetIdList,
+      name: r'swapReceiveAssetIdListProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapReceiveAssetIdListHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SwapReceiveAccountAssetListRef =
-    AutoDisposeProviderRef<List<AccountAsset>>;
-String _$swapReceiveAssetHash() => r'11bcdc6c1cb19864e6d952da2df3b008f7b6c260';
+typedef SwapReceiveAssetIdListRef = AutoDisposeProviderRef<Iterable<String>>;
+String _$swapReceiveAssetHash() => r'1aa5244d6ae56ded3c5d6a46c246185894c137ca';
 
 /// See also [swapReceiveAsset].
 @ProviderFor(swapReceiveAsset)
 final swapReceiveAssetProvider = AutoDisposeProvider<SwapAsset>.internal(
   swapReceiveAsset,
   name: r'swapReceiveAssetProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapReceiveAssetHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapReceiveAssetHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -159,10 +153,9 @@ String _$swapSendWalletHash() => r'cf582d33f771960232dbb8bd41f031659c674395';
 final swapSendWalletProvider = AutoDisposeProvider<SwapWallet>.internal(
   swapSendWallet,
   name: r'swapSendWalletProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapSendWalletHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapSendWalletHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -177,10 +170,9 @@ String _$swapRecvWalletHash() => r'feb95d04ef6fb308bd25a432732d215943bcfd46';
 final swapRecvWalletProvider = AutoDisposeProvider<SwapWallet>.internal(
   swapRecvWallet,
   name: r'swapRecvWalletProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapRecvWalletHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapRecvWalletHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -188,17 +180,16 @@ final swapRecvWalletProvider = AutoDisposeProvider<SwapWallet>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SwapRecvWalletRef = AutoDisposeProviderRef<SwapWallet>;
-String _$swapPriceStringHash() => r'3777a3609a454f145f8d2c1b39084eadadcb4a71';
+String _$swapPriceStringHash() => r'9442d9f3f47a64bcfd8ac797f0b087dee8387cc6';
 
 /// See also [swapPriceString].
 @ProviderFor(swapPriceString)
 final swapPriceStringProvider = AutoDisposeProvider<String>.internal(
   swapPriceString,
   name: r'swapPriceStringProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapPriceStringHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapPriceStringHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -277,10 +268,9 @@ class BitcoinFeeRateDescriptionProvider extends AutoDisposeProvider<String> {
         ),
         from: bitcoinFeeRateDescriptionProvider,
         name: r'bitcoinFeeRateDescriptionProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$bitcoinFeeRateDescriptionHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$bitcoinFeeRateDescriptionHash,
         dependencies: BitcoinFeeRateDescriptionFamily._dependencies,
         allTransitiveDependencies:
             BitcoinFeeRateDescriptionFamily._allTransitiveDependencies,
@@ -354,17 +344,16 @@ class _BitcoinFeeRateDescriptionProviderElement
 }
 
 String _$swapSendSatoshiAmountHash() =>
-    r'eb8054f71158aa01880df624dfff09e04f7624a4';
+    r'23feba8454f5028ccadb0a6ec7d578a409d74d45';
 
 /// See also [swapSendSatoshiAmount].
 @ProviderFor(swapSendSatoshiAmount)
 final swapSendSatoshiAmountProvider = AutoDisposeProvider<int>.internal(
   swapSendSatoshiAmount,
   name: r'swapSendSatoshiAmountProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapSendSatoshiAmountHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapSendSatoshiAmountHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -373,17 +362,16 @@ final swapSendSatoshiAmountProvider = AutoDisposeProvider<int>.internal(
 // ignore: unused_element
 typedef SwapSendSatoshiAmountRef = AutoDisposeProviderRef<int>;
 String _$swapRecvSatoshiAmountHash() =>
-    r'0c258567e888b963e3108e94607bcb5527002a36';
+    r'154970ff545eac195da995112422de3e61af184e';
 
 /// See also [swapRecvSatoshiAmount].
 @ProviderFor(swapRecvSatoshiAmount)
 final swapRecvSatoshiAmountProvider = AutoDisposeProvider<int>.internal(
   swapRecvSatoshiAmount,
   name: r'swapRecvSatoshiAmountProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapRecvSatoshiAmountHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapRecvSatoshiAmountHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -392,17 +380,16 @@ final swapRecvSatoshiAmountProvider = AutoDisposeProvider<int>.internal(
 // ignore: unused_element
 typedef SwapRecvSatoshiAmountRef = AutoDisposeProviderRef<int>;
 String _$showInsufficientFundsHash() =>
-    r'df4810b6cc3e90d9bb64c5d824b196016cd0bd49';
+    r'9aaf0c1cbe64d2cd513d0615800e71cc5f415e76';
 
 /// See also [showInsufficientFunds].
 @ProviderFor(showInsufficientFunds)
 final showInsufficientFundsProvider = AutoDisposeProvider<bool>.internal(
   showInsufficientFunds,
   name: r'showInsufficientFundsProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$showInsufficientFundsHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$showInsufficientFundsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -411,7 +398,7 @@ final showInsufficientFundsProvider = AutoDisposeProvider<bool>.internal(
 // ignore: unused_element
 typedef ShowInsufficientFundsRef = AutoDisposeProviderRef<bool>;
 String _$recvAmountPriceStreamWatcherHash() =>
-    r'9a5734424ae6c1061a12a0f0281cd0709d4f6167';
+    r'099f7580d1c6cb28977044b492a7f5846845d3a9';
 
 /// See also [recvAmountPriceStreamWatcher].
 @ProviderFor(recvAmountPriceStreamWatcher)
@@ -419,10 +406,9 @@ final recvAmountPriceStreamWatcherProvider =
     AutoDisposeProvider<SwapRecvAmountPriceStream>.internal(
       recvAmountPriceStreamWatcher,
       name: r'recvAmountPriceStreamWatcherProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$recvAmountPriceStreamWatcherHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$recvAmountPriceStreamWatcherHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -432,7 +418,7 @@ final recvAmountPriceStreamWatcherProvider =
 typedef RecvAmountPriceStreamWatcherRef =
     AutoDisposeProviderRef<SwapRecvAmountPriceStream>;
 String _$sendAmountPriceStreamWatcherHash() =>
-    r'acdd1c01ab9091610af7dd64becf826c7003b637';
+    r'c9f10bc8eac2551dc510e7a9751c685e26a2ddff';
 
 /// See also [sendAmountPriceStreamWatcher].
 @ProviderFor(sendAmountPriceStreamWatcher)
@@ -440,10 +426,9 @@ final sendAmountPriceStreamWatcherProvider =
     AutoDisposeProvider<SwapSendAmountPriceStream>.internal(
       sendAmountPriceStreamWatcher,
       name: r'sendAmountPriceStreamWatcherProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$sendAmountPriceStreamWatcherHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$sendAmountPriceStreamWatcherHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -452,17 +437,16 @@ final sendAmountPriceStreamWatcherProvider =
 // ignore: unused_element
 typedef SendAmountPriceStreamWatcherRef =
     AutoDisposeProviderRef<SwapSendAmountPriceStream>;
-String _$swapPriceTextHash() => r'40d7ebc2d07fb9f2fb95d5771ed92be44d075c56';
+String _$swapPriceTextHash() => r'4b9ada8c71d564820c19ac1383935bf7f1ea30b9';
 
 /// See also [swapPriceText].
 @ProviderFor(swapPriceText)
 final swapPriceTextProvider = AutoDisposeProvider<Option<String>>.internal(
   swapPriceText,
   name: r'swapPriceTextProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapPriceTextHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapPriceTextHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -477,10 +461,9 @@ String _$swapAddressErrorHash() => r'4065a91910abc6d0868d642eb392e0bcb56beff2';
 final swapAddressErrorProvider = AutoDisposeProvider<String?>.internal(
   swapAddressError,
   name: r'swapAddressErrorProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapAddressErrorHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapAddressErrorHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -495,10 +478,9 @@ String _$showAddressLabelHash() => r'a7848d8fb8db54f91cb3d22e36949ca0d9eb1abe';
 final showAddressLabelProvider = AutoDisposeProvider<bool>.internal(
   showAddressLabel,
   name: r'showAddressLabelProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$showAddressLabelHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$showAddressLabelHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -513,10 +495,9 @@ String _$swapEnabledStateHash() => r'e32e2b6595d5569f95b4dcdfa53fa0c782e9febc';
 final swapEnabledStateProvider = AutoDisposeProvider<bool>.internal(
   swapEnabledState,
   name: r'swapEnabledStateProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$swapEnabledStateHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapEnabledStateHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -531,8 +512,9 @@ String _$swapHelperHash() => r'9ab2c52427f4dc44f2f1791818dd4df9bd93570e';
 final swapHelperProvider = AutoDisposeProvider<SwapHelper>.internal(
   swapHelper,
   name: r'swapHelperProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$swapHelperHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$swapHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -540,42 +522,40 @@ final swapHelperProvider = AutoDisposeProvider<SwapHelper>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SwapHelperRef = AutoDisposeProviderRef<SwapHelper>;
-String _$swapSendAssetNotifierHash() =>
-    r'310f808814ac619ce0cec21d7c9ff45767ba98ac';
+String _$swapSendAssetIdNotifierHash() =>
+    r'58b1a61d12e8142a2e17bfea45486a96a4a268d2';
 
-/// See also [SwapSendAssetNotifier].
-@ProviderFor(SwapSendAssetNotifier)
-final swapSendAssetNotifierProvider =
-    NotifierProvider<SwapSendAssetNotifier, AccountAsset>.internal(
-      SwapSendAssetNotifier.new,
-      name: r'swapSendAssetNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapSendAssetNotifierHash,
+/// See also [SwapSendAssetIdNotifier].
+@ProviderFor(SwapSendAssetIdNotifier)
+final swapSendAssetIdNotifierProvider =
+    NotifierProvider<SwapSendAssetIdNotifier, String>.internal(
+      SwapSendAssetIdNotifier.new,
+      name: r'swapSendAssetIdNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapSendAssetIdNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$SwapSendAssetNotifier = Notifier<AccountAsset>;
-String _$swapRecvAssetNotifierHash() =>
-    r'b5c38e425d1dc1f186e6e8f913183715279363b7';
+typedef _$SwapSendAssetIdNotifier = Notifier<String>;
+String _$swapRecvAssetIdNotifierHash() =>
+    r'db1828f96ff73080fdec699514571b5f3e6dc784';
 
-/// See also [SwapRecvAssetNotifier].
-@ProviderFor(SwapRecvAssetNotifier)
-final swapRecvAssetNotifierProvider =
-    AutoDisposeNotifierProvider<SwapRecvAssetNotifier, AccountAsset>.internal(
-      SwapRecvAssetNotifier.new,
-      name: r'swapRecvAssetNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapRecvAssetNotifierHash,
+/// See also [SwapRecvAssetIdNotifier].
+@ProviderFor(SwapRecvAssetIdNotifier)
+final swapRecvAssetIdNotifierProvider =
+    AutoDisposeNotifierProvider<SwapRecvAssetIdNotifier, String>.internal(
+      SwapRecvAssetIdNotifier.new,
+      name: r'swapRecvAssetIdNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapRecvAssetIdNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$SwapRecvAssetNotifier = AutoDisposeNotifier<AccountAsset>;
+typedef _$SwapRecvAssetIdNotifier = AutoDisposeNotifier<String>;
 String _$swapPegNotifierHash() => r'd1af7d71a915248da446d150d4eb99e4cc09d6ed';
 
 /// See also [SwapPegNotifier].
@@ -584,10 +564,9 @@ final swapPegNotifierProvider =
     NotifierProvider<SwapPegNotifier, bool>.internal(
       SwapPegNotifier.new,
       name: r'swapPegNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapPegNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapPegNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -598,19 +577,19 @@ String _$swapRecvAddressExternalNotifierHash() =>
 
 /// See also [SwapRecvAddressExternalNotifier].
 @ProviderFor(SwapRecvAddressExternalNotifier)
-final swapRecvAddressExternalNotifierProvider = AutoDisposeNotifierProvider<
-  SwapRecvAddressExternalNotifier,
-  String
->.internal(
-  SwapRecvAddressExternalNotifier.new,
-  name: r'swapRecvAddressExternalNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final swapRecvAddressExternalNotifierProvider =
+    AutoDisposeNotifierProvider<
+      SwapRecvAddressExternalNotifier,
+      String
+    >.internal(
+      SwapRecvAddressExternalNotifier.new,
+      name: r'swapRecvAddressExternalNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$swapRecvAddressExternalNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SwapRecvAddressExternalNotifier = AutoDisposeNotifier<String>;
 String _$swapPegAddressServerNotifierHash() =>
@@ -622,10 +601,9 @@ final swapPegAddressServerNotifierProvider =
     NotifierProvider<SwapPegAddressServerNotifier, String?>.internal(
       SwapPegAddressServerNotifier.new,
       name: r'swapPegAddressServerNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapPegAddressServerNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapPegAddressServerNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -636,40 +614,40 @@ String _$swapPriceSubscribeNotifierHash() =>
 
 /// See also [SwapPriceSubscribeNotifier].
 @ProviderFor(SwapPriceSubscribeNotifier)
-final swapPriceSubscribeNotifierProvider = AutoDisposeNotifierProvider<
-  SwapPriceSubscribeNotifier,
-  SwapPriceSubscribeState
->.internal(
-  SwapPriceSubscribeNotifier.new,
-  name: r'swapPriceSubscribeNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final swapPriceSubscribeNotifierProvider =
+    AutoDisposeNotifierProvider<
+      SwapPriceSubscribeNotifier,
+      SwapPriceSubscribeState
+    >.internal(
+      SwapPriceSubscribeNotifier.new,
+      name: r'swapPriceSubscribeNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$swapPriceSubscribeNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SwapPriceSubscribeNotifier =
     AutoDisposeNotifier<SwapPriceSubscribeState>;
 String _$bitcoinCurrentFeeRateNotifierHash() =>
-    r'8ba2e3e34880ce5f0332367e26806f2319bf09fc';
+    r'dce2e213fb9576f7a95fbdfb797b00cee062b358';
 
 /// See also [BitcoinCurrentFeeRateNotifier].
 @ProviderFor(BitcoinCurrentFeeRateNotifier)
-final bitcoinCurrentFeeRateNotifierProvider = AutoDisposeNotifierProvider<
-  BitcoinCurrentFeeRateNotifier,
-  Option<FeeRate>
->.internal(
-  BitcoinCurrentFeeRateNotifier.new,
-  name: r'bitcoinCurrentFeeRateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final bitcoinCurrentFeeRateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      BitcoinCurrentFeeRateNotifier,
+      Option<FeeRate>
+    >.internal(
+      BitcoinCurrentFeeRateNotifier.new,
+      name: r'bitcoinCurrentFeeRateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$bitcoinCurrentFeeRateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$BitcoinCurrentFeeRateNotifier = AutoDisposeNotifier<Option<FeeRate>>;
 String _$swapSendTextAmountNotifierHash() =>
@@ -681,10 +659,9 @@ final swapSendTextAmountNotifierProvider =
     AutoDisposeNotifierProvider<SwapSendTextAmountNotifier, String>.internal(
       SwapSendTextAmountNotifier.new,
       name: r'swapSendTextAmountNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapSendTextAmountNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapSendTextAmountNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -699,10 +676,9 @@ final swapRecvTextAmountNotifierProvider =
     AutoDisposeNotifierProvider<SwapRecvTextAmountNotifier, String>.internal(
       SwapRecvTextAmountNotifier.new,
       name: r'swapRecvTextAmountNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapRecvTextAmountNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapRecvTextAmountNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -717,10 +693,9 @@ final satoshiRecvAmountStateNotifierProvider =
     AutoDisposeNotifierProvider<SatoshiRecvAmountStateNotifier, int>.internal(
       SatoshiRecvAmountStateNotifier.new,
       name: r'satoshiRecvAmountStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$satoshiRecvAmountStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$satoshiRecvAmountStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -735,10 +710,9 @@ final satoshiSendAmountStateNotifierProvider =
     AutoDisposeNotifierProvider<SatoshiSendAmountStateNotifier, int>.internal(
       SatoshiSendAmountStateNotifier.new,
       name: r'satoshiSendAmountStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$satoshiSendAmountStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$satoshiSendAmountStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -752,17 +726,16 @@ final swapStateNotifierProvider =
     AutoDisposeNotifierProvider<SwapStateNotifier, SwapState>.internal(
       SwapStateNotifier.new,
       name: r'swapStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 typedef _$SwapStateNotifier = AutoDisposeNotifier<SwapState>;
 String _$swapNetworkErrorNotifierHash() =>
-    r'db71f6aa2fae519291d6e328010c2499cddbdfad';
+    r'26c54c618e931cbde57c2a7d2b4a64a83a5daec5';
 
 /// See also [SwapNetworkErrorNotifier].
 @ProviderFor(SwapNetworkErrorNotifier)
@@ -770,32 +743,13 @@ final swapNetworkErrorNotifierProvider =
     AutoDisposeNotifierProvider<SwapNetworkErrorNotifier, String>.internal(
       SwapNetworkErrorNotifier.new,
       name: r'swapNetworkErrorNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapNetworkErrorNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$swapNetworkErrorNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 typedef _$SwapNetworkErrorNotifier = AutoDisposeNotifier<String>;
-String _$swapPriceStateNotifierHash() =>
-    r'644cd0b473e021809f48c64ca99b7b5b9e71b60e';
-
-/// See also [SwapPriceStateNotifier].
-@ProviderFor(SwapPriceStateNotifier)
-final swapPriceStateNotifierProvider =
-    AutoDisposeNotifierProvider<SwapPriceStateNotifier, double?>.internal(
-      SwapPriceStateNotifier.new,
-      name: r'swapPriceStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$swapPriceStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$SwapPriceStateNotifier = AutoDisposeNotifier<double?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

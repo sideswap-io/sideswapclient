@@ -14,10 +14,9 @@ String _$isBiometricEnabledHash() =>
 final isBiometricEnabledProvider = AutoDisposeProvider<bool>.internal(
   isBiometricEnabled,
   name: r'isBiometricEnabledProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$isBiometricEnabledHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isBiometricEnabledHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -26,17 +25,16 @@ final isBiometricEnabledProvider = AutoDisposeProvider<bool>.internal(
 // ignore: unused_element
 typedef IsBiometricEnabledRef = AutoDisposeProviderRef<bool>;
 String _$isBiometricAvailableHash() =>
-    r'baf6e6817e47eb67ae1dce88dcac48bf60c06c72';
+    r'91ba42175574e67b306813c475e0a435844cc8b4';
 
 /// See also [isBiometricAvailable].
 @ProviderFor(isBiometricAvailable)
 final isBiometricAvailableProvider = AutoDisposeFutureProvider<bool>.internal(
   isBiometricAvailable,
   name: r'isBiometricAvailableProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$isBiometricAvailableHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isBiometricAvailableHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

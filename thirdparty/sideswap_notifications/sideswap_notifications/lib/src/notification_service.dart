@@ -17,7 +17,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     title: message.notification?.title,
     data: message.data,
   );
-  _notificationBackgroundHandler?.call(fcmRemoteMessage);
+  await _notificationBackgroundHandler?.call(fcmRemoteMessage);
 }
 
 class NotificationService {

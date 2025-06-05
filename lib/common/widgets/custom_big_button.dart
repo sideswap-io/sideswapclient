@@ -105,7 +105,9 @@ class CustomBigButton extends StatelessWidget {
                     opacity: enabled ? 1.0 : 0.5,
                     child: child,
                   ),
-                  _ => Text(text ?? '', overflow: TextOverflow.fade),
+                  _ => Center(
+                    child: Text(text ?? '', overflow: TextOverflow.fade),
+                  ),
                 },
               );
             },

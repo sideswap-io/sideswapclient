@@ -191,7 +191,7 @@ class ProductGroupHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Color(0xFF084366),
+      color: SideSwapColors.ataneoBlue,
       alignment: Alignment.center,
       child: Column(
         children: [

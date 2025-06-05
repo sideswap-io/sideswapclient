@@ -266,4 +266,196 @@ as String?,
 
 }
 
+/// @nodoc
+mixin _$JadeVerifyAddressState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeVerifyAddressState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeVerifyAddressState()';
+}
+
+
+}
+
+/// @nodoc
+class $JadeVerifyAddressStateCopyWith<$Res>  {
+$JadeVerifyAddressStateCopyWith(JadeVerifyAddressState _, $Res Function(JadeVerifyAddressState) __);
+}
+
+
+/// @nodoc
+
+
+class JadeVerifyAddressStateIdle implements JadeVerifyAddressState {
+  const JadeVerifyAddressStateIdle();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeVerifyAddressStateIdle);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeVerifyAddressState.idle()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class JadeVerifyAddressStateVerifying implements JadeVerifyAddressState {
+  const JadeVerifyAddressStateVerifying();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeVerifyAddressStateVerifying);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeVerifyAddressState.verifying()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class JadeVerifyAddressStateSuccess implements JadeVerifyAddressState {
+  const JadeVerifyAddressStateSuccess();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeVerifyAddressStateSuccess);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'JadeVerifyAddressState.success()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class JadeVerifyAddressStateError implements JadeVerifyAddressState {
+  const JadeVerifyAddressStateError({this.message});
+  
+
+ final  String? message;
+
+/// Create a copy of JadeVerifyAddressState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JadeVerifyAddressStateErrorCopyWith<JadeVerifyAddressStateError> get copyWith => _$JadeVerifyAddressStateErrorCopyWithImpl<JadeVerifyAddressStateError>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JadeVerifyAddressStateError&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'JadeVerifyAddressState.error(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $JadeVerifyAddressStateErrorCopyWith<$Res> implements $JadeVerifyAddressStateCopyWith<$Res> {
+  factory $JadeVerifyAddressStateErrorCopyWith(JadeVerifyAddressStateError value, $Res Function(JadeVerifyAddressStateError) _then) = _$JadeVerifyAddressStateErrorCopyWithImpl;
+@useResult
+$Res call({
+ String? message
+});
+
+
+
+
+}
+/// @nodoc
+class _$JadeVerifyAddressStateErrorCopyWithImpl<$Res>
+    implements $JadeVerifyAddressStateErrorCopyWith<$Res> {
+  _$JadeVerifyAddressStateErrorCopyWithImpl(this._self, this._then);
+
+  final JadeVerifyAddressStateError _self;
+  final $Res Function(JadeVerifyAddressStateError) _then;
+
+/// Create a copy of JadeVerifyAddressState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = freezed,}) {
+  return _then(JadeVerifyAddressStateError(
+message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
 // dart format on

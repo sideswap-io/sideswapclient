@@ -25,7 +25,7 @@ class LaunchPageDeleteWalletListener extends ConsumerWidget {
         ref.invalidate(launchPageDeleteWalletNotifierProvider);
 
         if (ret == true) {
-          ref.read(walletProvider).deleteWalletAndCleanup();
+          await ref.read(walletProvider).deleteWalletAndCleanup();
         }
       }
     });
@@ -48,8 +48,9 @@ class DeleteWalletConfirmationDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
 
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 400, maxHeight: 250),

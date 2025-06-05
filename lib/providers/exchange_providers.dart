@@ -5,9 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/ref_debounce_extension.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
@@ -21,9 +19,9 @@ part 'exchange_providers.freezed.dart';
 
 @freezed
 sealed class ExchangeSide with _$ExchangeSide {
-  const factory ExchangeSide.sell(AccountAsset accountAsset) = ExchangeSideSell;
+  const factory ExchangeSide.sell(Asset asset) = ExchangeSideSell;
 
-  const factory ExchangeSide.buy(AccountAsset accountAsset) = ExchangeSideBuy;
+  const factory ExchangeSide.buy(Asset asset) = ExchangeSideBuy;
 }
 
 @riverpod
@@ -65,12 +63,12 @@ Option<ExchangeSide> exchangeSide(Ref ref) {
 @riverpod
 class ExchangeCurrentEditAsset extends _$ExchangeCurrentEditAsset {
   @override
-  Option<AccountAsset> build() {
+  Option<Asset> build() {
     return Option.none();
   }
 
-  void setState(Option<AccountAsset> optionAccountAsset) {
-    state = optionAccountAsset;
+  void setState(Option<Asset> optionAsset) {
+    state = optionAsset;
   }
 }
 
@@ -132,7 +130,7 @@ Option<MarketInfo> exchangeMarketInfo(Ref ref) {
 }
 
 @riverpod
-List<AccountAsset> exchangeTopAssetList(Ref ref) {
+List<Asset> exchangeTopAssetList(Ref ref) {
   final markets = ref.watch(stableMarketsProvider);
   final result = <Asset>{};
 
@@ -158,26 +156,26 @@ List<AccountAsset> exchangeTopAssetList(Ref ref) {
   final newList = result.toList();
   newList.sort((a, b) => a.ticker.compareTo(b.ticker));
 
-  return newList.map((e) => AccountAsset(AccountType.reg, e.assetId)).toList();
+  return newList;
 }
 
 @riverpod
 class ExchangeTopAsset extends _$ExchangeTopAsset {
   @override
-  Option<AccountAsset> build() {
+  Option<Asset> build() {
     final topAssetList = ref.watch(exchangeTopAssetListProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-    final defaultAccountAsset = topAssetList.firstWhereOrNull(
+    final defaultAsset = topAssetList.firstWhereOrNull(
       (e) => e.assetId == liquidAssetId,
     );
-    return switch (defaultAccountAsset) {
-      AccountAsset()? => Option.of(defaultAccountAsset),
+    return switch (defaultAsset) {
+      Asset()? => Option.of(defaultAsset),
       _ => topAssetList.firstOption,
     };
   }
 
-  void setState(AccountAsset value) {
+  void setState(Asset value) {
     final topAssetList = ref.read(exchangeTopAssetListProvider);
     if (topAssetList.any((e) => e == value)) {
       state = Option.of(value);
@@ -186,7 +184,7 @@ class ExchangeTopAsset extends _$ExchangeTopAsset {
 }
 
 @riverpod
-List<AccountAsset> exchangeBottomAssetList(Ref ref) {
+List<Asset> exchangeBottomAssetList(Ref ref) {
   final optionTopAsset = ref.watch(exchangeTopAssetProvider);
   final markets = ref.watch(stableMarketsProvider);
 
@@ -226,9 +224,7 @@ List<AccountAsset> exchangeBottomAssetList(Ref ref) {
       final newList = result.toList();
       newList.sort((a, b) => a.ticker.compareTo(b.ticker));
 
-      return newList
-          .map((e) => AccountAsset(AccountType.reg, e.assetId))
-          .toList();
+      return newList;
     },
   );
 }
@@ -236,23 +232,23 @@ List<AccountAsset> exchangeBottomAssetList(Ref ref) {
 @riverpod
 class ExchangeBottomAsset extends _$ExchangeBottomAsset {
   @override
-  Option<AccountAsset> build() {
+  Option<Asset> build() {
     final bottomAssetList = ref.watch(exchangeBottomAssetListProvider);
     final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
 
-    final defaultAccountAsset = bottomAssetList.firstWhereOrNull(
+    final defaultAsset = bottomAssetList.firstWhereOrNull(
       (e) => e.assetId == tetherAssetId,
     );
-    return switch (defaultAccountAsset) {
-      AccountAsset()? => Option.of(defaultAccountAsset),
+    return switch (defaultAsset) {
+      Asset()? => Option.of(defaultAsset),
       _ => bottomAssetList.firstOption,
     };
   }
 
-  void setState(AccountAsset accountAsset) {
+  void setState(Asset asset) {
     final bottomAssetList = ref.read(exchangeBottomAssetListProvider);
-    if (bottomAssetList.any((e) => e == accountAsset)) {
-      state = Option.of(accountAsset);
+    if (bottomAssetList.any((e) => e == asset)) {
+      state = Option.of(asset);
       return;
     }
 
@@ -492,7 +488,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
               assetPair: assetPair,
               assetType: assetType,
               tradeDir: TradeDir.SELL,
-              instantSwaps: true,
+              instantSwap: true,
             );
       }),
     );
@@ -521,7 +517,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
               assetType: assetType,
               amount: satoshiAmount,
               tradeDir: TradeDir.SELL,
-              instantSwaps: true,
+              instantSwap: true,
             );
       }),
     );
@@ -550,7 +546,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
               assetType: assetType,
               amount: satoshiAmount,
               tradeDir: TradeDir.BUY,
-              instantSwaps: true,
+              instantSwap: true,
             );
       }),
     );
@@ -569,10 +565,9 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
           var authorized = ref.read(jadeOneTimeAuthorizationProvider);
 
           if (!ref.read(jadeOneTimeAuthorizationProvider)) {
-            authorized =
-                await ref
-                    .read(jadeOneTimeAuthorizationProvider.notifier)
-                    .authorize();
+            authorized = await ref
+                .read(jadeOneTimeAuthorizationProvider.notifier)
+                .authorize();
           }
 
           if (!authorized) {
@@ -627,81 +622,6 @@ String exchangeSwapButtonText(Ref ref) {
   };
 }
 
-@freezed
-sealed class ExchangeCustomError with _$ExchangeCustomError {
-  const factory ExchangeCustomError.empty() = ExchangeCustomErrorEmpty;
-  const factory ExchangeCustomError.balanceExceeded() =
-      ExchangeCustomErrorBalanceExceeded;
-  const factory ExchangeCustomError.deliverExceeded({
-    String? maxDeliverAmount,
-  }) = ExchangeCustomErrorDeliverExceeded;
-}
-
-@riverpod
-class ExchangeCustomErrorNotifier extends _$ExchangeCustomErrorNotifier {
-  @override
-  ExchangeCustomError build() {
-    final optionQuoteLowBalance = ref.watch(exchangeLowBalanceErrorProvider);
-
-    if (optionQuoteLowBalance.isSome()) {
-      return ExchangeCustomError.empty();
-    }
-
-    final satoshiTopAmount = ref.watch(exchangeTopSatoshiAmountProvider);
-    final optionQuoteSuccess = ref.watch(exchangeQuoteSuccessProvider);
-    final topSatoshiAmount = ref.watch(exchangeTopSatoshiAmountProvider);
-    final optionTopAsset = ref.watch(exchangeTopAssetProvider);
-    final optionCurrentEditAsset = ref.watch(exchangeCurrentEditAssetProvider);
-
-    ref.listen(exchangeTopAssetProvider, (_, _) {
-      ref.invalidateSelf();
-    });
-
-    final topAsset = optionTopAsset.toNullable();
-    if (topAsset != null && optionTopAsset == optionCurrentEditAsset) {
-      final topBalance = ref.watch(
-        totalMaxAvailableBalanceForAssetProvider(topAsset.assetId),
-      );
-
-      if (topSatoshiAmount > topBalance) {
-        return ExchangeCustomError.balanceExceeded();
-      }
-    }
-
-    return optionQuoteSuccess.match(
-      () {
-        return ExchangeCustomError.empty();
-      },
-      (quoteSuccess) => quoteSuccess.deliverAsset.match(
-        () {
-          return ExchangeCustomError.empty();
-        },
-        (deliverAsset) {
-          final satoshiDeliverAmount = ref
-              .read(satoshiRepositoryProvider)
-              .satoshiForAmount(
-                assetId: deliverAsset.assetId,
-                amount: quoteSuccess.deliverAmount,
-              );
-
-          if (satoshiTopAmount > satoshiDeliverAmount &&
-              optionTopAsset == optionCurrentEditAsset) {
-            return ExchangeCustomError.deliverExceeded(
-              maxDeliverAmount: quoteSuccess.deliverAmount,
-            );
-          }
-
-          return ExchangeCustomError.empty();
-        },
-      ),
-    );
-  }
-
-  void setState(ExchangeCustomError customError) {
-    state = customError;
-  }
-}
-
 @riverpod
 Option<QuoteError> exchangeQuoteError(Ref ref) {
   final optionQuote = ref.watch(exchangeQuoteNotifierProvider);
@@ -731,26 +651,15 @@ Option<QuoteError> exchangeQuoteError(Ref ref) {
 @riverpod
 Option<String> instantSwapTopDropdownError(Ref ref) {
   final optionQuoteLowBalance = ref.watch(exchangeLowBalanceErrorProvider);
-
-  final optionTopAsset = ref.watch(exchangeTopAssetProvider);
-  final optionCurrentEditAsset = ref.watch(exchangeCurrentEditAssetProvider);
-  final customError = ref.watch(exchangeCustomErrorNotifierProvider);
   final optionQuoteError = ref.watch(exchangeQuoteErrorProvider);
 
-  return optionQuoteLowBalance.match(() {
-    return switch (customError) {
-      ExchangeCustomErrorDeliverExceeded()
-          when optionTopAsset == optionCurrentEditAsset =>
-        Option.of('Max: ${customError.maxDeliverAmount}'.tr()),
-      ExchangeCustomErrorBalanceExceeded() => Option.of(
-        'Balance exceeded'.tr(),
-      ),
-      _ => optionQuoteError.match(
-        () => Option.none(),
-        (quoteError) => Option.of(quoteError.error),
-      ),
-    };
-  }, (quoteLowBalance) => Option.of('Low balance'.tr()));
+  return optionQuoteLowBalance.match(
+    () => optionQuoteError.match(
+      () => Option.none(),
+      (quoteError) => Option.of(quoteError.error),
+    ),
+    (quoteLowBalance) => Option.of('Low balance'.tr()),
+  );
 }
 
 @riverpod
@@ -884,11 +793,6 @@ Option<QuoteSuccess> exchangeQuoteSuccess(Ref ref) {
 bool exchangeSwapButtonEnabled(Ref ref) {
   final acceptQuoteState = ref.watch(exchangeAccepQuoteStateNotifierProvider);
   if (acceptQuoteState is ExchangeAcceptQuoteStateInProgress) {
-    return false;
-  }
-
-  final customError = ref.watch(exchangeCustomErrorNotifierProvider);
-  if (customError != ExchangeCustomErrorEmpty()) {
     return false;
   }
 

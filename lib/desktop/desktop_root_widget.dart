@@ -10,6 +10,8 @@ import 'package:sideswap/listeners/desktop_route_listener.dart';
 import 'package:sideswap/listeners/endpoint_listener.dart';
 import 'package:sideswap/listeners/jade_status_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
+import 'package:sideswap/listeners/proxy_settings_listener.dart';
+import 'package:sideswap/listeners/send_asset_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
@@ -75,6 +77,8 @@ class DesktopRootWidget extends HookConsumerWidget {
 
     return Stack(
       children: [
+        const ProxySettingsListener(),
+        const SendAssetIdListener(),
         const ConversionRatesListener(),
         const PortfolioPricesListener(),
         const PinListener(),

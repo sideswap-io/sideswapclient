@@ -14,10 +14,9 @@ final pinKeyboardHelperProvider =
     AutoDisposeProvider<PinKeyboardHelper>.internal(
       pinKeyboardHelper,
       name: r'pinKeyboardHelperProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pinKeyboardHelperHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinKeyboardHelperHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

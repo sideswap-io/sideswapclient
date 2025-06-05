@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
-import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
@@ -23,25 +21,20 @@ class SwapReceiveAmount extends HookConsumerWidget {
     final swapRecvWallet = ref.watch(swapRecvWalletProvider);
     final precision = ref
         .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: swapRecvAsset.asset.assetId);
-    final swapRecvAccount = AccountAsset(
-      AccountType.reg,
-      swapRecvAsset.asset.assetId,
-    );
-    final balance = ref.watch(balancesNotifierProvider)[swapRecvAccount];
+        .getPrecisionForAssetId(assetId: swapRecvAsset.assetId);
+    final assetBalance = ref.watch(assetBalanceProvider)[swapRecvAsset.assetId];
     final amountProvider = ref.watch(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: balance ?? 0, precision: precision),
+      AmountToStringParameters(amount: assetBalance ?? 0, precision: precision),
     );
     final swapType = ref.watch(swapTypeProvider);
     final swapState = ref.watch(swapStateNotifierProvider);
 
     // Show error in one place only
     final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
-    final serverError =
-        subscribe != const SwapPriceSubscribeStateRecv()
-            ? ''
-            : ref.watch(swapNetworkErrorNotifierProvider);
+    final serverError = subscribe != const SwapPriceSubscribeStateRecv()
+        ? ''
+        : ref.watch(swapNetworkErrorNotifierProvider);
     final feeRates = ref.watch(bitcoinFeeRatesProvider);
     final addressErrorText = ref.watch(swapAddressErrorProvider);
     final showAddressLabel = ref.watch(showAddressLabelProvider);
@@ -92,9 +85,9 @@ class SwapReceiveAmount extends HookConsumerWidget {
       showHintText: swapType == const SwapType.atomic(),
       dropdownReadOnly:
           swapType == const SwapType.atomic() &&
-                  swapRecvAsset.assetList.length > 1
-              ? false
-              : true,
+              swapRecvAsset.assetList.length > 1
+          ? false
+          : true,
       onEditingCompleted: () {
         if (ref.read(swapEnabledStateProvider)) {
           ref.read(swapHelperProvider).swapAccept();
@@ -103,7 +96,7 @@ class SwapReceiveAmount extends HookConsumerWidget {
       feeRates: feeRates,
       visibleToggles: false,
       balance: balanceStr,
-      dropdownValue: swapRecvAsset.asset,
+      dropdownValue: swapRecvAsset.assetId,
       availableAssets: swapRecvAsset.assetList,
       labelGroupValue: swapRecvWallet,
       addressErrorText: addressErrorText,
@@ -120,11 +113,8 @@ class SwapReceiveAmount extends HookConsumerWidget {
         ref.read(swapRecvTextAmountNotifierProvider.notifier).setAmount(value);
 
         ref.read(swapPriceSubscribeNotifierProvider.notifier).setRecv();
-        ref
-            .read(subscribePriceStreamNotifierProvider.notifier)
-            .subscribeToPriceStream();
       },
-      onAddressEditingCompleted: () async {
+      onAddressEditingCompleted: () {
         ref
             .read(swapRecvAddressExternalNotifierProvider.notifier)
             .setState(swapAddressRecvController.text);

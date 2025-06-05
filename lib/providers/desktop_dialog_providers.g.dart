@@ -13,10 +13,9 @@ String _$desktopDialogHash() => r'01d3776a1fa006f0c0b70eaade62dceab6501450';
 final desktopDialogProvider = AutoDisposeProvider<DesktopDialog>.internal(
   desktopDialog,
   name: r'desktopDialogProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$desktopDialogHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$desktopDialogHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

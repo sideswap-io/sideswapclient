@@ -74,10 +74,9 @@ class ParseBIP21Provider
         (ref) => parseBIP21(ref as ParseBIP21Ref, address, addressType),
         from: parseBIP21Provider,
         name: r'parseBIP21Provider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$parseBIP21Hash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$parseBIP21Hash,
         dependencies: ParseBIP21Family._dependencies,
         allTransitiveDependencies: ParseBIP21Family._allTransitiveDependencies,
         address: address,

@@ -13,8 +13,9 @@ String _$pinHelperHash() => r'2173b7e267ee787b1d244e724a2b6f6abac0f519';
 final pinHelperProvider = AutoDisposeProvider<PinHelper>.internal(
   pinHelper,
   name: r'pinHelperProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$pinHelperHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$pinHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -30,10 +31,9 @@ final pinDataNotifierProvider =
     AutoDisposeNotifierProvider<PinDataNotifier, PinDataState>.internal(
       PinDataNotifier.new,
       name: r'pinDataNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pinDataNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinDataNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -44,19 +44,19 @@ String _$pinSetupCallerNotifierHash() =>
 
 /// See also [PinSetupCallerNotifier].
 @ProviderFor(PinSetupCallerNotifier)
-final pinSetupCallerNotifierProvider = AutoDisposeNotifierProvider<
-  PinSetupCallerNotifier,
-  PinSetupCallerState
->.internal(
-  PinSetupCallerNotifier.new,
-  name: r'pinSetupCallerNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final pinSetupCallerNotifierProvider =
+    AutoDisposeNotifierProvider<
+      PinSetupCallerNotifier,
+      PinSetupCallerState
+    >.internal(
+      PinSetupCallerNotifier.new,
+      name: r'pinSetupCallerNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$pinSetupCallerNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PinSetupCallerNotifier = AutoDisposeNotifier<PinSetupCallerState>;
 String _$pinSetupExitNotifierHash() =>
@@ -64,19 +64,19 @@ String _$pinSetupExitNotifierHash() =>
 
 /// See also [PinSetupExitNotifier].
 @ProviderFor(PinSetupExitNotifier)
-final pinSetupExitNotifierProvider = AutoDisposeNotifierProvider<
-  PinSetupExitNotifier,
-  PinSetupExitState
->.internal(
-  PinSetupExitNotifier.new,
-  name: r'pinSetupExitNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final pinSetupExitNotifierProvider =
+    AutoDisposeNotifierProvider<
+      PinSetupExitNotifier,
+      PinSetupExitState
+    >.internal(
+      PinSetupExitNotifier.new,
+      name: r'pinSetupExitNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$pinSetupExitNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PinSetupExitNotifier = AutoDisposeNotifier<PinSetupExitState>;
 String _$pinFieldStateNotifierHash() =>
@@ -88,10 +88,9 @@ final pinFieldStateNotifierProvider =
     AutoDisposeNotifierProvider<PinFieldStateNotifier, PinFieldState>.internal(
       PinFieldStateNotifier.new,
       name: r'pinFieldStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pinFieldStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinFieldStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -106,10 +105,9 @@ final pinSetupStateNotifierProvider =
     AutoDisposeNotifierProvider<PinSetupStateNotifier, PinSetupState>.internal(
       PinSetupStateNotifier.new,
       name: r'pinSetupStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pinSetupStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinSetupStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -123,10 +121,9 @@ final firstPinNotifierProvider =
     AutoDisposeNotifierProvider<FirstPinNotifier, String>.internal(
       FirstPinNotifier.new,
       name: r'firstPinNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$firstPinNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$firstPinNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -140,10 +137,9 @@ final secondPinNotifierProvider =
     AutoDisposeNotifierProvider<SecondPinNotifier, String>.internal(
       SecondPinNotifier.new,
       name: r'secondPinNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$secondPinNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$secondPinNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -157,10 +153,9 @@ final firstPinEnabledProvider =
     AutoDisposeNotifierProvider<FirstPinEnabled, bool>.internal(
       FirstPinEnabled.new,
       name: r'firstPinEnabledProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$firstPinEnabledHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$firstPinEnabledHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -174,10 +169,9 @@ final secondPinEnabledProvider =
     AutoDisposeNotifierProvider<SecondPinEnabled, bool>.internal(
       SecondPinEnabled.new,
       name: r'secondPinEnabledProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$secondPinEnabledHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$secondPinEnabledHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

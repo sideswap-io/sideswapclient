@@ -8,6 +8,8 @@ import 'package:sideswap/desktop/home/listeners/conversion_rates_listener.dart';
 import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
 import 'package:sideswap/listeners/jade_status_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
+import 'package:sideswap/listeners/proxy_settings_listener.dart';
+import 'package:sideswap/listeners/send_asset_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/universal_link_listener.dart';
@@ -200,6 +202,8 @@ class RootWidget extends HookConsumerWidget {
 
     return Stack(
       children: [
+        const ProxySettingsListener(),
+        const SendAssetIdListener(),
         const ConversionRatesListener(),
         const PortfolioPricesListener(),
         const PinListener(),

@@ -1,8 +1,6 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
-  plugins:
-    - custom_lint
   language:
     strict-casts: true
     strict-raw-types: true
@@ -14,5 +12,11 @@ analyzer:
     - lib/**.freezed.dart
   errors:
     invalid_use_of_visible_for_testing_member: error
-    collection_methods_unrelated_type: error
     invalid_annotation_target: ignore
+
+linter:
+  rules:
+    - collection_methods_unrelated_type
+    - unawaited_futures
+    - unnecessary_async
+    - use_null_aware_elements

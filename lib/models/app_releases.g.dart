@@ -21,12 +21,11 @@ Map<String, dynamic> _$AppReleasesDesktopToJson(_AppReleasesDesktop instance) =>
     };
 
 _AppReleasesModel _$AppReleasesModelFromJson(Map json) => _AppReleasesModel(
-  desktop:
-      json['desktop'] == null
-          ? null
-          : AppReleasesDesktop.fromJson(
-            Map<String, dynamic>.from(json['desktop'] as Map),
-          ),
+  desktop: json['desktop'] == null
+      ? null
+      : AppReleasesDesktop.fromJson(
+          Map<String, dynamic>.from(json['desktop'] as Map),
+        ),
 );
 
 Map<String, dynamic> _$AppReleasesModelToJson(_AppReleasesModel instance) =>

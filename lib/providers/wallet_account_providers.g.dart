@@ -7,7 +7,7 @@ part of 'wallet_account_providers.dart';
 // **************************************************************************
 
 String _$predefinedAccountAssetsHash() =>
-    r'89def1e915459b3f5172efeb81df8d2d5f4f8ba6';
+    r'7052a7e0b4cd517e5d97be91c20d62fc4e8fd175';
 
 /// See also [predefinedAccountAssets].
 @ProviderFor(predefinedAccountAssets)
@@ -15,10 +15,9 @@ final predefinedAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       predefinedAccountAssets,
       name: r'predefinedAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$predefinedAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$predefinedAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -26,8 +25,25 @@ final predefinedAccountAssetsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PredefinedAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
+String _$predefinedAssetsHash() => r'f1609f95d2335219b2d96671e17ded0f3f48bfcb';
+
+/// See also [predefinedAssets].
+@ProviderFor(predefinedAssets)
+final predefinedAssetsProvider = AutoDisposeProvider<Iterable<Asset>>.internal(
+  predefinedAssets,
+  name: r'predefinedAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$predefinedAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PredefinedAssetsRef = AutoDisposeProviderRef<Iterable<Asset>>;
 String _$allAlwaysShowAccountAssetsHash() =>
-    r'9a00b290a32fc4e82645b31ab971cfeaf7cb072a';
+    r'dd8174c09e4645b2e96a191269cdc76bde94451a';
 
 /// Needed by ui which want to display limited list of assets - ex. home page wallet
 ///
@@ -38,10 +54,9 @@ final allAlwaysShowAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       allAlwaysShowAccountAssets,
       name: r'allAlwaysShowAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$allAlwaysShowAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$allAlwaysShowAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -50,6 +65,25 @@ final allAlwaysShowAccountAssetsProvider =
 // ignore: unused_element
 typedef AllAlwaysShowAccountAssetsRef =
     AutoDisposeProviderRef<List<AccountAsset>>;
+String _$allAlwaysShowAssetsHash() =>
+    r'5903d2990b81b2b9372404ae1781992962918097';
+
+/// See also [allAlwaysShowAssets].
+@ProviderFor(allAlwaysShowAssets)
+final allAlwaysShowAssetsProvider =
+    AutoDisposeProvider<Iterable<Asset>>.internal(
+      allAlwaysShowAssets,
+      name: r'allAlwaysShowAssetsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$allAlwaysShowAssetsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AllAlwaysShowAssetsRef = AutoDisposeProviderRef<Iterable<Asset>>;
 String _$allVisibleAccountAssetsHash() =>
     r'd09469f54f23bc8d4cdc6572fbc5c801583ba04a';
 
@@ -59,10 +93,9 @@ final allVisibleAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       allVisibleAccountAssets,
       name: r'allVisibleAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$allVisibleAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$allVisibleAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -71,7 +104,7 @@ final allVisibleAccountAssetsProvider =
 // ignore: unused_element
 typedef AllVisibleAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$regularVisibleAccountAssetsHash() =>
-    r'c906223ee8517b45f91f4df7637b1326e79458f8';
+    r'89a34fda5d6e7d5557246980d4e0afd8c1b931c5';
 
 /// See also [regularVisibleAccountAssets].
 @ProviderFor(regularVisibleAccountAssets)
@@ -79,10 +112,9 @@ final regularVisibleAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       regularVisibleAccountAssets,
       name: r'regularVisibleAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$regularVisibleAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$regularVisibleAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -92,7 +124,7 @@ final regularVisibleAccountAssetsProvider =
 typedef RegularVisibleAccountAssetsRef =
     AutoDisposeProviderRef<List<AccountAsset>>;
 String _$ampVisibleAccountAssetsHash() =>
-    r'0c45ed5683b0c459a46d4096a873bcc3ac91f69a';
+    r'5b3811013db0325ab216fdbec125cf7e6ce995b6';
 
 /// See also [ampVisibleAccountAssets].
 @ProviderFor(ampVisibleAccountAssets)
@@ -100,10 +132,9 @@ final ampVisibleAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       ampVisibleAccountAssets,
       name: r'ampVisibleAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ampVisibleAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ampVisibleAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -111,7 +142,7 @@ final ampVisibleAccountAssetsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AmpVisibleAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
-String _$allAccountAssetsHash() => r'72b00df35b3f64ed728be763c8df386d1300bbde';
+String _$allAccountAssetsHash() => r'9e8cac327c050654d1ea7f4c20f73f2da7f4b014';
 
 /// Needed by ui parts which want to search assetid over all assets - ex. market
 ///
@@ -122,10 +153,9 @@ final allAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       allAccountAssets,
       name: r'allAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$allAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$allAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -134,7 +164,7 @@ final allAccountAssetsProvider =
 // ignore: unused_element
 typedef AllAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$regularAccountAssetsHash() =>
-    r'71f72fd60273c02755728eee5c840daa3416e40c';
+    r'7d2e3c2430b79e1a3d911ce2997e55e138a81acf';
 
 /// See also [regularAccountAssets].
 @ProviderFor(regularAccountAssets)
@@ -142,10 +172,9 @@ final regularAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       regularAccountAssets,
       name: r'regularAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$regularAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$regularAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -153,7 +182,7 @@ final regularAccountAssetsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef RegularAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
-String _$ampAccountAssetsHash() => r'8baaa9bb59511c43c0e820a1710ebf44b242be7f';
+String _$ampAccountAssetsHash() => r'c94a5ac43a8b4d7e91c394a65bb6099d18eea286';
 
 /// See also [ampAccountAssets].
 @ProviderFor(ampAccountAssets)
@@ -161,10 +190,9 @@ final ampAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
       ampAccountAssets,
       name: r'ampAccountAssetsProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ampAccountAssetsHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ampAccountAssetsHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -244,10 +272,9 @@ class MarketTypeForAccountAssetProvider
         ),
         from: marketTypeForAccountAssetProvider,
         name: r'marketTypeForAccountAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$marketTypeForAccountAssetHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$marketTypeForAccountAssetHash,
         dependencies: MarketTypeForAccountAssetFamily._dependencies,
         allTransitiveDependencies:
             MarketTypeForAccountAssetFamily._allTransitiveDependencies,
@@ -322,7 +349,7 @@ class _MarketTypeForAccountAssetProviderElement
 }
 
 String _$accountAssetFromAssetHash() =>
-    r'16448fc516a834a60875fd98cd887940e4f9d882';
+    r'0f9b4949cd07437c4d1ca07b13c827065c307ed7';
 
 /// See also [accountAssetFromAsset].
 @ProviderFor(accountAssetFromAsset)
@@ -368,10 +395,9 @@ class AccountAssetFromAssetProvider extends AutoDisposeProvider<AccountAsset> {
         (ref) => accountAssetFromAsset(ref as AccountAssetFromAssetRef, asset),
         from: accountAssetFromAssetProvider,
         name: r'accountAssetFromAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetFromAssetHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$accountAssetFromAssetHash,
         dependencies: AccountAssetFromAssetFamily._dependencies,
         allTransitiveDependencies:
             AccountAssetFromAssetFamily._allTransitiveDependencies,
@@ -443,6 +469,28 @@ class _AccountAssetFromAssetProviderElement
   Asset? get asset => (origin as AccountAssetFromAssetProvider).asset;
 }
 
+String _$allVisibleAssetsHash() => r'f784fdd88dc18c251acce20aefb9c0d00df3bdf5';
+
+/// Show assets which are:
+/// 1. predefined
+/// 2. have balance
+/// 3. have flag always show
+///
+/// Copied from [allVisibleAssets].
+@ProviderFor(allVisibleAssets)
+final allVisibleAssetsProvider = AutoDisposeProvider<Iterable<Asset>>.internal(
+  allVisibleAssets,
+  name: r'allVisibleAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allVisibleAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AllVisibleAssetsRef = AutoDisposeProviderRef<Iterable<Asset>>;
 String _$defaultAccountsStateHash() =>
     r'0a26ce887126dd07a2a2525def2d0665757d8c95';
 
@@ -452,10 +500,9 @@ final defaultAccountsStateProvider =
     NotifierProvider<DefaultAccountsState, Set<AccountAsset>>.internal(
       DefaultAccountsState.new,
       name: r'defaultAccountsStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$defaultAccountsStateHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$defaultAccountsStateHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

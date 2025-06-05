@@ -13,8 +13,9 @@ String _$jadeRescanHash() => r'da73b6728860af9534ebff1d6d4c84175bc540f7';
 final jadeRescanProvider = AutoDisposeProvider<void>.internal(
   jadeRescan,
   name: r'jadeRescanProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$jadeRescanHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$jadeRescanHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -31,10 +32,9 @@ final jadeRegistrationButtonEnabledProvider =
     AutoDisposeProvider<bool>.internal(
       jadeRegistrationButtonEnabled,
       name: r'jadeRegistrationButtonEnabledProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeRegistrationButtonEnabledHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeRegistrationButtonEnabledHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -49,8 +49,9 @@ String _$isJadeWalletHash() => r'f365756b4bcbe7b3823f16f1a733052aaaad5aaa';
 final isJadeWalletProvider = AutoDisposeProvider<bool>.internal(
   isJadeWallet,
   name: r'isJadeWalletProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$isJadeWalletHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isJadeWalletHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -67,10 +68,9 @@ final jadeLockRepositoryProvider =
     AutoDisposeProvider<AbstractJadeLockRepository>.internal(
       jadeLockRepository,
       name: r'jadeLockRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeLockRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeLockRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -91,10 +91,9 @@ final jadeBluetoothPermissionStateNotifierProvider =
     >.internal(
       JadeBluetoothPermissionStateNotifier.new,
       name: r'jadeBluetoothPermissionStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeBluetoothPermissionStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeBluetoothPermissionStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -110,10 +109,9 @@ final jadeDeviceNotifierProvider =
     NotifierProvider<JadeDeviceNotifier, JadeDevicesState>.internal(
       JadeDeviceNotifier.new,
       name: r'jadeDeviceNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeDeviceNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeDeviceNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -128,10 +126,9 @@ final jadeStatusNotifierProvider =
     AutoDisposeNotifierProvider<JadeStatusNotifier, JadeStatus>.internal(
       JadeStatusNotifier.new,
       name: r'jadeStatusNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeStatusNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeStatusNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -142,19 +139,19 @@ String _$jadeOnboardingRegistrationNotifierHash() =>
 
 /// See also [JadeOnboardingRegistrationNotifier].
 @ProviderFor(JadeOnboardingRegistrationNotifier)
-final jadeOnboardingRegistrationNotifierProvider = AutoDisposeNotifierProvider<
-  JadeOnboardingRegistrationNotifier,
-  JadeOnboardingRegistrationState
->.internal(
-  JadeOnboardingRegistrationNotifier.new,
-  name: r'jadeOnboardingRegistrationNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final jadeOnboardingRegistrationNotifierProvider =
+    AutoDisposeNotifierProvider<
+      JadeOnboardingRegistrationNotifier,
+      JadeOnboardingRegistrationState
+    >.internal(
+      JadeOnboardingRegistrationNotifier.new,
+      name: r'jadeOnboardingRegistrationNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$jadeOnboardingRegistrationNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$JadeOnboardingRegistrationNotifier =
     AutoDisposeNotifier<JadeOnboardingRegistrationState>;
@@ -163,19 +160,19 @@ String _$jadeInfoDialogNotifierHash() =>
 
 /// See also [JadeInfoDialogNotifier].
 @ProviderFor(JadeInfoDialogNotifier)
-final jadeInfoDialogNotifierProvider = AutoDisposeNotifierProvider<
-  JadeInfoDialogNotifier,
-  DialogRoute<dynamic>?
->.internal(
-  JadeInfoDialogNotifier.new,
-  name: r'jadeInfoDialogNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final jadeInfoDialogNotifierProvider =
+    AutoDisposeNotifierProvider<
+      JadeInfoDialogNotifier,
+      DialogRoute<dynamic>?
+    >.internal(
+      JadeInfoDialogNotifier.new,
+      name: r'jadeInfoDialogNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$jadeInfoDialogNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$JadeInfoDialogNotifier = AutoDisposeNotifier<DialogRoute<dynamic>?>;
 String _$jadeSelectedDeviceHash() =>
@@ -187,10 +184,9 @@ final jadeSelectedDeviceProvider =
     NotifierProvider<JadeSelectedDevice, From_JadePorts_Port?>.internal(
       JadeSelectedDevice.new,
       name: r'jadeSelectedDeviceProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeSelectedDeviceHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeSelectedDeviceHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -205,10 +201,9 @@ final jadeLockStateTimerNotifierProvider =
     AutoDisposeNotifierProvider<JadeLockStateTimerNotifier, void>.internal(
       JadeLockStateTimerNotifier.new,
       name: r'jadeLockStateTimerNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeLockStateTimerNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeLockStateTimerNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -223,10 +218,9 @@ final jadeLockStateNotifierProvider =
     AutoDisposeNotifierProvider<JadeLockStateNotifier, JadeLockState>.internal(
       JadeLockStateNotifier.new,
       name: r'jadeLockStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeLockStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeLockStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -241,10 +235,9 @@ final jadeOneTimeAuthorizationProvider =
     AutoDisposeNotifierProvider<JadeOneTimeAuthorization, bool>.internal(
       JadeOneTimeAuthorization.new,
       name: r'jadeOneTimeAuthorizationProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeOneTimeAuthorizationHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeOneTimeAuthorizationHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -259,14 +252,34 @@ final jadeAuthInProgressStateNotifierProvider =
     NotifierProvider<JadeAuthInProgressStateNotifier, bool>.internal(
       JadeAuthInProgressStateNotifier.new,
       name: r'jadeAuthInProgressStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$jadeAuthInProgressStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeAuthInProgressStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 typedef _$JadeAuthInProgressStateNotifier = Notifier<bool>;
+String _$jadeVerifyAddressStateNotifierHash() =>
+    r'a34f06b997d5a0630a4b36fc4688f30ce99b20b8';
+
+/// See also [JadeVerifyAddressStateNotifier].
+@ProviderFor(JadeVerifyAddressStateNotifier)
+final jadeVerifyAddressStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      JadeVerifyAddressStateNotifier,
+      JadeVerifyAddressState
+    >.internal(
+      JadeVerifyAddressStateNotifier.new,
+      name: r'jadeVerifyAddressStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$jadeVerifyAddressStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$JadeVerifyAddressStateNotifier =
+    AutoDisposeNotifier<JadeVerifyAddressState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

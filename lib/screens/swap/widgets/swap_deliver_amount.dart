@@ -6,7 +6,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
-import 'package:sideswap/providers/subscribe_price_providers.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
@@ -20,23 +20,22 @@ class SwapDeliverAmount extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
 
-    final balance =
-        ref.watch(balancesNotifierProvider)[swapDeliverAsset.asset] ?? 0;
+    final assetBalance =
+        ref.watch(assetBalanceProvider)[swapDeliverAsset.assetId] ?? 0;
     final precision = ref
         .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: swapDeliverAsset.asset.assetId);
+        .getPrecisionForAssetId(assetId: swapDeliverAsset.assetId);
     final amountProvider = ref.watch(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: balance, precision: precision),
+      AmountToStringParameters(amount: assetBalance, precision: precision),
     );
     final swapSendWallet = ref.watch(swapSendWalletProvider);
     final swapState = ref.watch(swapStateNotifierProvider);
     final swapType = ref.watch(swapTypeProvider);
     final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
-    final serverError =
-        subscribe == const SwapPriceSubscribeState.recv()
-            ? ''
-            : ref.watch(swapNetworkErrorNotifierProvider);
+    final serverError = subscribe == const SwapPriceSubscribeState.recv()
+        ? ''
+        : ref.watch(swapNetworkErrorNotifierProvider);
     final showInsufficientFunds = ref.watch(showInsufficientFundsProvider);
 
     final swapSendAmountController = useTextEditingController();
@@ -52,15 +51,14 @@ class SwapDeliverAmount extends HookConsumerWidget {
     final showDeliverDefaultCurrencyConversion =
         swapType == const SwapType.pegOut();
 
-    final defaultCurrencyConversion2 =
-        showDeliverDefaultCurrencyConversion
-            ? ref.watch(
-              defaultCurrencyConversionFromStringProvider(
-                swapDeliverAsset.asset.assetId,
-                swapSendAmountController.text,
-              ),
-            )
-            : null;
+    final defaultCurrencyConversion2 = showDeliverDefaultCurrencyConversion
+        ? ref.watch(
+            defaultCurrencyConversionFromStringProvider(
+              swapDeliverAsset.assetId,
+              swapSendAmountController.text,
+            ),
+          )
+        : null;
 
     return SwapSideAmount(
       text: 'Deliver'.tr(),
@@ -80,7 +78,7 @@ class SwapDeliverAmount extends HookConsumerWidget {
       hintText: '0.0',
       showHintText: true,
       visibleToggles: false,
-      dropdownValue: swapDeliverAsset.asset,
+      dropdownValue: swapDeliverAsset.assetId,
       availableAssets: swapDeliverAsset.assetList,
       labelGroupValue: swapSendWallet,
       defaultCurrencyConversion2: defaultCurrencyConversion2,
@@ -95,9 +93,8 @@ class SwapDeliverAmount extends HookConsumerWidget {
         ref.read(swapSendTextAmountNotifierProvider.notifier).setAmount(value);
 
         ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
-        ref
-            .read(subscribePriceStreamNotifierProvider.notifier)
-            .subscribeToPriceStream();
+        final pegRepository = ref.read(pegRepositoryProvider);
+        pegRepository.getPegOutAmount();
       },
       onMaxPressed: ref.read(swapHelperProvider).onMaxSendPressed,
       showAccountsInPopup: true,

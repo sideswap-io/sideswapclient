@@ -13,6 +13,11 @@ class DSideSwapScrollBehavior extends MaterialScrollBehavior {
     PointerDeviceKind.touch,
     PointerDeviceKind.mouse,
   };
+
+  // Override behavior methods and getters like multitouchDragStrategy
+  @override
+  MultitouchDragStrategy getMultitouchDragStrategy(BuildContext context) =>
+      MultitouchDragStrategy.sumAllPointers;
 }
 
 class DesktopAppMain extends StatelessWidget {

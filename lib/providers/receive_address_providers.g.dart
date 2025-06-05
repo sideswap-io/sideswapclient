@@ -7,7 +7,7 @@ part of 'receive_address_providers.dart';
 // **************************************************************************
 
 String _$currentReceiveAddressHash() =>
-    r'6db1d83036f23bfd25a5012f4283bbd09f3459d0';
+    r'd7ab7f67e48fa1a6e0f7bdf213e2231da6fbcc5a';
 
 /// See also [CurrentReceiveAddress].
 @ProviderFor(CurrentReceiveAddress)
@@ -15,17 +15,16 @@ final currentReceiveAddressProvider =
     NotifierProvider<CurrentReceiveAddress, ReceiveAddress>.internal(
       CurrentReceiveAddress.new,
       name: r'currentReceiveAddressProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$currentReceiveAddressHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$currentReceiveAddressHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 typedef _$CurrentReceiveAddress = Notifier<ReceiveAddress>;
 String _$regularAccountAddressesHash() =>
-    r'9d8fc691c03a5316337375f3a9bcc967b26bb84b';
+    r'63cf3a137312498d1d3d334d228a022a65160f22';
 
 /// See also [RegularAccountAddresses].
 @ProviderFor(RegularAccountAddresses)
@@ -33,10 +32,9 @@ final regularAccountAddressesProvider =
     NotifierProvider<RegularAccountAddresses, List<ReceiveAddress>>.internal(
       RegularAccountAddresses.new,
       name: r'regularAccountAddressesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$regularAccountAddressesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$regularAccountAddressesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

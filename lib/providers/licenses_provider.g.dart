@@ -14,10 +14,9 @@ String _$licensesLoaderFutureHash() =>
 final licensesLoaderFutureProvider = AutoDisposeFutureProvider<bool>.internal(
   licensesLoaderFuture,
   name: r'licensesLoaderFutureProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$licensesLoaderFutureHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$licensesLoaderFutureHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -33,10 +32,9 @@ final licensesEntriesProvider =
     AutoDisposeFutureProvider<List<LicensesData>>.internal(
       licensesEntries,
       name: r'licensesEntriesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$licensesEntriesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$licensesEntriesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

@@ -78,10 +78,10 @@ String toString() {
 
 
 class EICreateTransactionData implements EICreateTransaction {
-   EICreateTransactionData({required this.accountAsset, required this.address, required this.amount});
+   EICreateTransactionData({required this.assetId, required this.address, required this.amount});
   
 
- final  AccountAsset accountAsset;
+ final  String assetId;
  final  String address;
  final  String amount;
 
@@ -95,16 +95,16 @@ $EICreateTransactionDataCopyWith<EICreateTransactionData> get copyWith => _$EICr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EICreateTransactionData&&(identical(other.accountAsset, accountAsset) || other.accountAsset == accountAsset)&&(identical(other.address, address) || other.address == address)&&(identical(other.amount, amount) || other.amount == amount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EICreateTransactionData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.address, address) || other.address == address)&&(identical(other.amount, amount) || other.amount == amount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,accountAsset,address,amount);
+int get hashCode => Object.hash(runtimeType,assetId,address,amount);
 
 @override
 String toString() {
-  return 'EICreateTransaction.data(accountAsset: $accountAsset, address: $address, amount: $amount)';
+  return 'EICreateTransaction.data(assetId: $assetId, address: $address, amount: $amount)';
 }
 
 
@@ -115,7 +115,7 @@ abstract mixin class $EICreateTransactionDataCopyWith<$Res> implements $EICreate
   factory $EICreateTransactionDataCopyWith(EICreateTransactionData value, $Res Function(EICreateTransactionData) _then) = _$EICreateTransactionDataCopyWithImpl;
 @useResult
 $Res call({
- AccountAsset accountAsset, String address, String amount
+ String assetId, String address, String amount
 });
 
 
@@ -132,10 +132,10 @@ class _$EICreateTransactionDataCopyWithImpl<$Res>
 
 /// Create a copy of EICreateTransaction
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? accountAsset = null,Object? address = null,Object? amount = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? assetId = null,Object? address = null,Object? amount = null,}) {
   return _then(EICreateTransactionData(
-accountAsset: null == accountAsset ? _self.accountAsset : accountAsset // ignore: cast_nullable_to_non_nullable
-as AccountAsset,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+assetId: null == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
+as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as String,
   ));

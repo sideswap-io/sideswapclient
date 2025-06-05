@@ -11,19 +11,19 @@ String _$inputsWalletTypeFlagNotifierHash() =>
 
 /// See also [InputsWalletTypeFlagNotifier].
 @ProviderFor(InputsWalletTypeFlagNotifier)
-final inputsWalletTypeFlagNotifierProvider = AutoDisposeNotifierProvider<
-  InputsWalletTypeFlagNotifier,
-  InputsWalletTypeFlag
->.internal(
-  InputsWalletTypeFlagNotifier.new,
-  name: r'inputsWalletTypeFlagNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final inputsWalletTypeFlagNotifierProvider =
+    AutoDisposeNotifierProvider<
+      InputsWalletTypeFlagNotifier,
+      InputsWalletTypeFlag
+    >.internal(
+      InputsWalletTypeFlagNotifier.new,
+      name: r'inputsWalletTypeFlagNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$inputsWalletTypeFlagNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$InputsWalletTypeFlagNotifier =
     AutoDisposeNotifier<InputsWalletTypeFlag>;
@@ -35,10 +35,9 @@ final inputsNotifierProvider =
     AutoDisposeNotifierProvider<InputsNotifier, List<InputsItem>>.internal(
       InputsNotifier.new,
       name: r'inputsNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$inputsNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$inputsNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -49,19 +48,19 @@ String _$selectedInputsNotifierHash() =>
 
 /// See also [SelectedInputsNotifier].
 @ProviderFor(SelectedInputsNotifier)
-final selectedInputsNotifierProvider = AutoDisposeNotifierProvider<
-  SelectedInputsNotifier,
-  List<InputsTxItem>
->.internal(
-  SelectedInputsNotifier.new,
-  name: r'selectedInputsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final selectedInputsNotifierProvider =
+    AutoDisposeNotifierProvider<
+      SelectedInputsNotifier,
+      List<InputsTxItem>
+    >.internal(
+      SelectedInputsNotifier.new,
+      name: r'selectedInputsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$selectedInputsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SelectedInputsNotifier = AutoDisposeNotifier<List<InputsTxItem>>;
 // ignore_for_file: type=lint

@@ -6,17 +6,16 @@ part of 'payment_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$paymentHelperHash() => r'8af8c56ffeb270d46e4eead279c6163f1d84719f';
+String _$paymentHelperHash() => r'b3c9aa5cedd6bef767e15c18a01c29f5c0d32bbb';
 
 /// See also [paymentHelper].
 @ProviderFor(paymentHelper)
 final paymentHelperProvider = AutoDisposeProvider<PaymentHelper>.internal(
   paymentHelper,
   name: r'paymentHelperProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentHelperHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$paymentHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -91,10 +90,9 @@ class CreatedTxHelperProvider extends AutoDisposeProvider<CreatedTxHelper> {
         (ref) => createdTxHelper(ref as CreatedTxHelperRef, createdTx),
         from: createdTxHelperProvider,
         name: r'createdTxHelperProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$createdTxHelperHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$createdTxHelperHash,
         dependencies: CreatedTxHelperFamily._dependencies,
         allTransitiveDependencies:
             CreatedTxHelperFamily._allTransitiveDependencies,
@@ -175,10 +173,9 @@ final createTxStateNotifierProvider =
     NotifierProvider<CreateTxStateNotifier, CreateTxState>.internal(
       CreateTxStateNotifier.new,
       name: r'createTxStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$createTxStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$createTxStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -193,10 +190,9 @@ final sendTxStateNotifierProvider =
     NotifierProvider<SendTxStateNotifier, SendTxState>.internal(
       SendTxStateNotifier.new,
       name: r'sendTxStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$sendTxStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$sendTxStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -211,10 +207,9 @@ final paymentInsufficientFundsNotifierProvider =
     NotifierProvider<PaymentInsufficientFundsNotifier, bool>.internal(
       PaymentInsufficientFundsNotifier.new,
       name: r'paymentInsufficientFundsNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$paymentInsufficientFundsNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$paymentInsufficientFundsNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -229,10 +224,9 @@ final paymentSendAddressParsedNotifierProvider =
     NotifierProvider<PaymentSendAddressParsedNotifier, String>.internal(
       PaymentSendAddressParsedNotifier.new,
       name: r'paymentSendAddressParsedNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$paymentSendAddressParsedNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$paymentSendAddressParsedNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -247,10 +241,9 @@ final paymentSendAmountParsedNotifierProvider =
     NotifierProvider<PaymentSendAmountParsedNotifier, int>.internal(
       PaymentSendAmountParsedNotifier.new,
       name: r'paymentSendAmountParsedNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$paymentSendAmountParsedNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$paymentSendAmountParsedNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -261,19 +254,19 @@ String _$paymentAmountPageArgumentsNotifierHash() =>
 
 /// See also [PaymentAmountPageArgumentsNotifier].
 @ProviderFor(PaymentAmountPageArgumentsNotifier)
-final paymentAmountPageArgumentsNotifierProvider = NotifierProvider<
-  PaymentAmountPageArgumentsNotifier,
-  PaymentAmountPageArguments
->.internal(
-  PaymentAmountPageArgumentsNotifier.new,
-  name: r'paymentAmountPageArgumentsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final paymentAmountPageArgumentsNotifierProvider =
+    NotifierProvider<
+      PaymentAmountPageArgumentsNotifier,
+      PaymentAmountPageArguments
+    >.internal(
+      PaymentAmountPageArgumentsNotifier.new,
+      name: r'paymentAmountPageArgumentsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$paymentAmountPageArgumentsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PaymentAmountPageArgumentsNotifier =
     Notifier<PaymentAmountPageArguments>;

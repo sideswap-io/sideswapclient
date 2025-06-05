@@ -9,7 +9,7 @@ import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/csv_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-class DTopOverviewToolbar extends ConsumerWidget {
+class DTopOverviewToolbar extends HookConsumerWidget {
   const DTopOverviewToolbar({super.key});
 
   @override
@@ -34,13 +34,12 @@ class DTopOverviewToolbar extends ConsumerWidget {
             if (ampId.isNotEmpty) {
               return AmpIdPanel(
                 ampId: ampId,
-                prefixTextStyle: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
+                prefixTextStyle: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
                 onTap: () {
                   ref
                       .read(pageStatusNotifierProvider.notifier)
@@ -55,10 +54,9 @@ class DTopOverviewToolbar extends ConsumerWidget {
         const SizedBox(width: 16),
         Consumer(
           builder: (context, ref, child) {
-            final buttonStyle =
-                ref
-                    .watch(desktopAppThemeNotifierProvider)
-                    .mainBottomNavigationBarButtonStyle;
+            final buttonStyle = ref
+                .watch(desktopAppThemeNotifierProvider)
+                .mainBottomNavigationBarButtonStyle;
 
             final csvNotifier = ref.watch(csvNotifierProvider);
             final disabled = switch (csvNotifier) {
@@ -72,12 +70,11 @@ class DTopOverviewToolbar extends ConsumerWidget {
               height: 32,
               child: DButton(
                 style: buttonStyle,
-                onPressed:
-                    disabled
-                        ? null
-                        : () async {
-                          await ref.read(csvNotifierProvider.notifier).save();
-                        },
+                onPressed: disabled
+                    ? null
+                    : () async {
+                        await ref.read(csvNotifierProvider.notifier).save();
+                      },
                 child: Center(
                   child: SvgPicture.asset(
                     'assets/export.svg',

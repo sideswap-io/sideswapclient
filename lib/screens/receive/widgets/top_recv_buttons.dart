@@ -5,6 +5,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class TopRecvButtons extends StatelessWidget {
   const TopRecvButtons({
@@ -32,7 +33,7 @@ class TopRecvButtons extends StatelessWidget {
       child: Consumer(
         builder: (context, ref, _) {
           final receiveAddress = ref.watch(currentReceiveAddressProvider);
-          final isAmp = receiveAddress.accountType.isAmp;
+          final isAmp = receiveAddress.account == Account.AMP_;
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

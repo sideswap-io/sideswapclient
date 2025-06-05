@@ -14,10 +14,9 @@ final countriesFutureProvider =
     AutoDisposeFutureProvider<List<CountryCode>>.internal(
       countriesFuture,
       name: r'countriesFutureProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$countriesFutureHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$countriesFutureHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -37,10 +36,9 @@ final defaultSystemCountryAsyncNotifierProvider =
     >.internal(
       DefaultSystemCountryAsyncNotifier.new,
       name: r'defaultSystemCountryAsyncNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$defaultSystemCountryAsyncNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$defaultSystemCountryAsyncNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

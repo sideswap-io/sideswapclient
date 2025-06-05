@@ -14,10 +14,9 @@ String _$assetsPrecacheFutureHash() =>
 final assetsPrecacheFutureProvider = AutoDisposeFutureProvider<bool>.internal(
   assetsPrecacheFuture,
   name: r'assetsPrecacheFutureProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$assetsPrecacheFutureHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$assetsPrecacheFutureHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

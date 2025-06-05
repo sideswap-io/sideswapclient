@@ -11,19 +11,19 @@ String _$selectedMarketTypeButtonNotifierHash() =>
 
 /// See also [SelectedMarketTypeButtonNotifier].
 @ProviderFor(SelectedMarketTypeButtonNotifier)
-final selectedMarketTypeButtonNotifierProvider = NotifierProvider<
-  SelectedMarketTypeButtonNotifier,
-  SelectedMarketTypeButtonEnum
->.internal(
-  SelectedMarketTypeButtonNotifier.new,
-  name: r'selectedMarketTypeButtonNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final selectedMarketTypeButtonNotifierProvider =
+    NotifierProvider<
+      SelectedMarketTypeButtonNotifier,
+      SelectedMarketTypeButtonEnum
+    >.internal(
+      SelectedMarketTypeButtonNotifier.new,
+      name: r'selectedMarketTypeButtonNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$selectedMarketTypeButtonNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SelectedMarketTypeButtonNotifier =
     Notifier<SelectedMarketTypeButtonEnum>;

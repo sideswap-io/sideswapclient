@@ -11,19 +11,19 @@ String _$pegxLoginStateNotifierHash() =>
 
 /// See also [PegxLoginStateNotifier].
 @ProviderFor(PegxLoginStateNotifier)
-final pegxLoginStateNotifierProvider = AutoDisposeNotifierProvider<
-  PegxLoginStateNotifier,
-  PegxLoginState
->.internal(
-  PegxLoginStateNotifier.new,
-  name: r'pegxLoginStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final pegxLoginStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      PegxLoginStateNotifier,
+      PegxLoginState
+    >.internal(
+      PegxLoginStateNotifier.new,
+      name: r'pegxLoginStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$pegxLoginStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PegxLoginStateNotifier = AutoDisposeNotifier<PegxLoginState>;
 String _$pegxGaidNotifierHash() => r'664deec870ded7b5d5a7079f293bc851fb85008a';
@@ -34,32 +34,30 @@ final pegxGaidNotifierProvider =
     NotifierProvider<PegxGaidNotifier, PegxGaidState>.internal(
       PegxGaidNotifier.new,
       name: r'pegxGaidNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegxGaidNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegxGaidNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 typedef _$PegxGaidNotifier = Notifier<PegxGaidState>;
 String _$pegxRegisterFailedNotifierHash() =>
-    r'97f867718eb8db0729c3d85585dd2fdfcc26ed70';
+    r'244183a1847376e84eca93daabd7bf0d89f3afd1';
 
 /// See also [PegxRegisterFailedNotifier].
 @ProviderFor(PegxRegisterFailedNotifier)
 final pegxRegisterFailedNotifierProvider =
-    AutoDisposeNotifierProvider<PegxRegisterFailedNotifier, String>.internal(
+    NotifierProvider<PegxRegisterFailedNotifier, String>.internal(
       PegxRegisterFailedNotifier.new,
       name: r'pegxRegisterFailedNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegxRegisterFailedNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegxRegisterFailedNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$PegxRegisterFailedNotifier = AutoDisposeNotifier<String>;
+typedef _$PegxRegisterFailedNotifier = Notifier<String>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

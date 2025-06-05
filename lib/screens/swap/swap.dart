@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
-import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_background.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_button.dart';
@@ -26,29 +25,14 @@ class SwapMain extends HookConsumerWidget {
         FocusManager.instance.primaryFocus?.unfocus();
       }
     });
-    ref.listen(swapSendTextAmountNotifierProvider, (_, __) {});
-    ref.listen(swapRecvTextAmountNotifierProvider, (_, __) {});
-    ref.listen(satoshiSendAmountStateNotifierProvider, (_, __) {});
-    ref.listen(satoshiRecvAmountStateNotifierProvider, (_, __) {});
+    ref.listen(swapSendTextAmountNotifierProvider, (_, _) {});
+    ref.listen(swapRecvTextAmountNotifierProvider, (_, _) {});
+    ref.listen(satoshiSendAmountStateNotifierProvider, (_, _) {});
+    ref.listen(satoshiRecvAmountStateNotifierProvider, (_, _) {});
     ref.listen<String>(swapNetworkErrorNotifierProvider, (_, next) {
       if (next.isNotEmpty) {
         ref.invalidate(swapStateNotifierProvider);
       }
-    });
-    ref.listen(subscribePriceStreamNotifierProvider, (_, next) {
-      next.maybeWhen(
-        data: (From_UpdatePriceStream priceStream) {
-          if (priceStream.hasPrice()) {
-            final swapState = ref.read(swapStateNotifierProvider);
-            if (swapState == const SwapState.idle()) {
-              ref
-                  .read(swapPriceStateNotifierProvider.notifier)
-                  .setPrice(priceStream.price);
-            }
-          }
-        },
-        orElse: () {},
-      );
     });
 
     ref.listen<SwapRecvAmountPriceStream>(
@@ -61,6 +45,7 @@ class SwapMain extends HookConsumerWidget {
         }
       },
     );
+
     ref.listen<SwapSendAmountPriceStream>(
       sendAmountPriceStreamWatcherProvider,
       (_, next) {
@@ -97,9 +82,8 @@ class SwapMain extends HookConsumerWidget {
     }, [swapType, pegInInfoDisplayed, pegOutInfoDisplayed]);
 
     useEffect(() {
-      ref
-          .read(subscribePriceStreamNotifierProvider.notifier)
-          .subscribeToPriceStream();
+      final pegRepository = ref.read(pegRepositoryProvider);
+      pegRepository.getPegOutAmount();
 
       return;
     }, const []);

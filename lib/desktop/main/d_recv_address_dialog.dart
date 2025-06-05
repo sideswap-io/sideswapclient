@@ -4,20 +4,21 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
+import 'package:sideswap/desktop/main/widgets/d_qr_recv_address.dart';
 import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class DReceivePopup extends HookConsumerWidget {
-  const DReceivePopup({super.key});
+class DReceiveAddressDialog extends HookConsumerWidget {
+  const DReceiveAddressDialog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
     final receiveAddress = ref.watch(currentReceiveAddressProvider);
 
-    final isAmp = selectedAccountType.isAmp;
+    final isAmp = selectedAccountType == Account.AMP_;
 
     useEffect(() {
       ref.read(walletProvider).toggleRecvAddrType(selectedAccountType);
@@ -71,18 +72,15 @@ class DReceivePopup extends HookConsumerWidget {
                               Text(
                                 isAmp
                                     ? 'Address for AMP Securities wallet successfully generated'
-                                        .tr()
+                                          .tr()
                                     : "Address for regular wallet successfully generated"
-                                        .tr(),
+                                          .tr(),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.normal,
                                 ),
                               ),
-                              AssetReceiveWidget(
-                                key: Key(isAmp.toString()),
-                                showShare: false,
-                              ),
+                              DQrRecvAddress(),
                             ],
                           ),
                         ),

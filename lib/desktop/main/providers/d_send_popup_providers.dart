@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -6,7 +5,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
@@ -53,16 +51,16 @@ class SendPopupAddressNotifier extends _$SendPopupAddressNotifier {
 }
 
 @Riverpod(keepAlive: true)
-class SendPopupSelectedAccountAssetNotifier
-    extends _$SendPopupSelectedAccountAssetNotifier {
+class SendPopupSelectedAssetIdNotifier
+    extends _$SendPopupSelectedAssetIdNotifier {
   @override
-  AccountAsset build() {
-    final accountAsset = ref.watch(sendAssetNotifierProvider);
-    return accountAsset;
+  String build() {
+    final assetId = ref.watch(sendAssetIdNotifierProvider);
+    return assetId;
   }
 
-  void setSelectedAsset(AccountAsset accountAsset) {
-    state = accountAsset;
+  void setState(String assetId) {
+    state = assetId;
   }
 }
 
@@ -71,15 +69,10 @@ class SendPopupReceiveConversionNotifier
     extends _$SendPopupReceiveConversionNotifier {
   @override
   String build() {
-    final selectedAccountAsset = ref.watch(
-      sendPopupSelectedAccountAssetNotifierProvider,
-    );
+    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdNotifierProvider);
     final amount = ref.watch(sendPopupAmountNotifierProvider);
     final conversion = ref.watch(
-      defaultCurrencyConversionFromStringProvider(
-        selectedAccountAsset.assetId,
-        amount,
-      ),
+      defaultCurrencyConversionFromStringProvider(selectedAssetId, amount),
     );
     return conversion;
   }
@@ -209,12 +202,8 @@ class SendPopupAddressResult {
     return 'SendPopupAddressResult(address: $address, addressType: $addressType, amount: $amount, assetId: $assetId)';
   }
 
-  (String, BIP21AddressTypeEnum, double, String) _equality() => (
-    address,
-    addressType,
-    amount,
-    assetId,
-  );
+  (String, BIP21AddressTypeEnum, double, String) _equality() =>
+      (address, addressType, amount, assetId);
 
   @override
   bool operator ==(covariant SendPopupAddressResult other) {

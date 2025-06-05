@@ -4,7 +4,7 @@ class DFlexesRow extends StatelessWidget {
   const DFlexesRow({
     super.key,
     required this.children,
-    this.flexes = const [183, 97, 137, 210, 210, 122, 46],
+    this.flexes = const [183, 97, 210, 210, 122, 46],
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
   });

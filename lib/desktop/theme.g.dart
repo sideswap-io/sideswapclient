@@ -11,19 +11,19 @@ String _$desktopAppThemeNotifierHash() =>
 
 /// See also [DesktopAppThemeNotifier].
 @ProviderFor(DesktopAppThemeNotifier)
-final desktopAppThemeNotifierProvider = AutoDisposeNotifierProvider<
-  DesktopAppThemeNotifier,
-  DesktopAppTheme
->.internal(
-  DesktopAppThemeNotifier.new,
-  name: r'desktopAppThemeNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final desktopAppThemeNotifierProvider =
+    AutoDisposeNotifierProvider<
+      DesktopAppThemeNotifier,
+      DesktopAppTheme
+    >.internal(
+      DesktopAppThemeNotifier.new,
+      name: r'desktopAppThemeNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$desktopAppThemeNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$DesktopAppThemeNotifier = AutoDisposeNotifier<DesktopAppTheme>;
 // ignore_for_file: type=lint

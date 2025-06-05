@@ -117,7 +117,7 @@ sealed class SideswapSettings with _$SideswapSettings {
 class Configuration extends _$Configuration {
   @override
   SideswapSettings build() {
-    listenSelf((_, __) async {
+    listenSelf((_, _) async {
       final prefs = ref.read(sharedPreferencesProvider);
       await _saveSettings(prefs);
     });
@@ -311,16 +311,16 @@ class Configuration extends _$Configuration {
   }
 
   Uint8List _mnemonicEncrypted(SharedPreferences prefs) {
-    return base64.decode(
-      prefs.getString(SideswapSettings.mnemonicEncryptedField) ?? '',
-    );
+    final encryptedMnemonic =
+        prefs.getString(SideswapSettings.mnemonicEncryptedField) ?? '';
+    return base64.decode(encryptedMnemonic);
   }
 
   Future<void> _setMnemonicEncrypted(
     SharedPreferences prefs,
     Uint8List mnemonicEncrypted,
   ) async {
-    return switch (mnemonicEncrypted.isEmpty) {
+    return await switch (mnemonicEncrypted.isEmpty) {
       true => () async {
         await prefs.remove(SideswapSettings.mnemonicEncryptedField);
       }(),
@@ -464,7 +464,7 @@ class Configuration extends _$Configuration {
     SharedPreferences prefs,
     PinDataState? pinData,
   ) async {
-    return switch (pinData) {
+    return await switch (pinData) {
       PinDataStateData(
         salt: final salt,
         encryptedData: final encryptedData,
@@ -581,7 +581,7 @@ class Configuration extends _$Configuration {
     SharedPreferences prefs,
     NetworkSettingsModel? model,
   ) async {
-    return switch (model) {
+    return await switch (model) {
       final model? => () async {
         final encoded = jsonEncode(model.toJson());
         await prefs.setString(
@@ -625,7 +625,7 @@ class Configuration extends _$Configuration {
     SharedPreferences prefs,
     StokrSettingsModel? model,
   ) async {
-    return switch (model) {
+    return await switch (model) {
       final model? => () async {
         final encoded = jsonEncode(model.toJson());
         await prefs.setString(
@@ -696,7 +696,7 @@ class Configuration extends _$Configuration {
     SharedPreferences prefs,
     ProxySettings? proxySettings,
   ) async {
-    return switch (proxySettings) {
+    return await switch (proxySettings) {
       ProxySettings(host: String host, port: int port) => () async {
         await prefs.setString(SideswapSettings.proxyHostField, host);
         await prefs.setInt(SideswapSettings.proxyPortField, port);

@@ -49,11 +49,13 @@ class PasteMnemonicAction extends Action<PasteMnemonicIntent> {
     await ref
         .read(mnemonicWordItemsNotifierProvider.notifier)
         .validateAllItems();
-    final index =
-        ref.read(mnemonicWordItemsNotifierProvider.notifier).maxIndex();
+    final index = ref
+        .read(mnemonicWordItemsNotifierProvider.notifier)
+        .maxIndex();
     ref.read(currentMnemonicIndexNotifierProvider.notifier).setIndex(index);
-    final mnemonicIsValid =
-        ref.watch(mnemonicWordItemsNotifierProvider.notifier).mnemonicIsValid();
+    final mnemonicIsValid = ref
+        .watch(mnemonicWordItemsNotifierProvider.notifier)
+        .mnemonicIsValid();
     if (mnemonicIsValid) {
       ref.read(mnemonicWordItemsNotifierProvider.notifier).importMnemonic();
     }
@@ -67,7 +69,7 @@ class DWalletImport extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final focusNode = useFocusNode(skipTraversal: true);
 
-    ref.listen(mnemonicWordsCounterNotifierProvider, (_, __) {
+    ref.listen(mnemonicWordsCounterNotifierProvider, (_, _) {
       focusNode.requestFocus();
     });
     final mnemonicCounter = ref.watch(mnemonicWordsCounterNotifierProvider);
@@ -81,11 +83,10 @@ class DWalletImport extends HookConsumerWidget {
       shortcuts: <LogicalKeySet, Intent>{
         if (Platform.isLinux || Platform.isFuchsia) ...{
           LogicalKeySet(
-                LogicalKeyboardKey.control,
-                LogicalKeyboardKey.shift,
-                LogicalKeyboardKey.keyV,
-              ):
-              const PasteMnemonicIntent(),
+            LogicalKeyboardKey.control,
+            LogicalKeyboardKey.shift,
+            LogicalKeyboardKey.keyV,
+          ): const PasteMnemonicIntent(),
         },
         if (Platform.isWindows) ...{
           LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyV):
@@ -169,12 +170,9 @@ class DWalletImport extends HookConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 19),
                         child: DMnemonicTable(
-                          itemsCount:
-                              ref
-                                  .read(
-                                    mnemonicWordItemsNotifierProvider.notifier,
-                                  )
-                                  .length(),
+                          itemsCount: ref
+                              .read(mnemonicWordItemsNotifierProvider.notifier)
+                              .length(),
                           itemSelected: currentItem,
                           onPressed: (index) async {
                             await ref
@@ -241,21 +239,19 @@ class DWalletImport extends HookConsumerWidget {
             Center(
               child: Consumer(
                 builder: ((context, ref, child) {
-                  final mnemonicIsValid =
-                      ref
-                          .watch(mnemonicWordItemsNotifierProvider.notifier)
-                          .mnemonicIsValid();
+                  final mnemonicIsValid = ref
+                      .watch(mnemonicWordItemsNotifierProvider.notifier)
+                      .mnemonicIsValid();
                   return DCustomFilledBigButton(
-                    onPressed:
-                        mnemonicIsValid
-                            ? () {
-                              ref
-                                  .read(
-                                    mnemonicWordItemsNotifierProvider.notifier,
-                                  )
-                                  .importMnemonic();
-                            }
-                            : null,
+                    onPressed: mnemonicIsValid
+                        ? () {
+                            ref
+                                .read(
+                                  mnemonicWordItemsNotifierProvider.notifier,
+                                )
+                                .importMnemonic();
+                          }
+                        : null,
                     width: 460,
                     height: 49,
                     child: Text(

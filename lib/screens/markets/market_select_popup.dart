@@ -24,16 +24,13 @@ class MarketSelectPopup extends StatelessWidget {
         },
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 24),
-          child: MobileProductColumns(
-            onMarketSelected: () {
-              if (onAssetSelected != null) {
-                onAssetSelected!();
-              }
-              popup(context);
-            },
-          ),
+        child: MobileProductColumns(
+          onMarketSelected: () {
+            if (onAssetSelected != null) {
+              onAssetSelected!();
+            }
+            popup(context);
+          },
         ),
       ),
     );

@@ -1,16 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'selected_account_provider.g.dart';
 
+// TODO (malcolmpl): new wallets - remove this?
 @Riverpod(keepAlive: true)
 class SelectedAccountTypeNotifier extends _$SelectedAccountTypeNotifier {
   @override
-  AccountType build() {
-    return AccountType.reg;
+  Account build() {
+    return Account.REG;
   }
 
-  void setAccountType(AccountType value) {
+  void setAccountType(Account value) {
     state = value;
   }
 }

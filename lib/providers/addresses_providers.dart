@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
@@ -25,14 +24,14 @@ sealed class UtxosItem with _$UtxosItem {
     int? amount,
     bool? isInternal,
     bool? isConfidential,
-    int? account,
+    Account? account,
   }) = _UtxosItem;
 }
 
 @freezed
 sealed class AddressesItem with _$AddressesItem {
   const factory AddressesItem({
-    int? account,
+    Account? account,
     String? address,
     String? unconfidentialAddress,
     int? index,
@@ -120,14 +119,14 @@ class AddressesAsyncNotifier extends _$AddressesAsyncNotifier {
               amount: f.amount.toInt(),
               isInternal: f.isInternal,
               isConfidential: f.isConfidential,
-              account: account.id,
+              account: account,
             ),
           );
         }
 
         addressesItemList.add(
           AddressesItem(
-            account: account.id,
+            account: account,
             address: a.address,
             unconfidentialAddress: a.unconfidentialAddress,
             index: a.index,
@@ -156,9 +155,7 @@ class AddressesAsyncNotifier extends _$AddressesAsyncNotifier {
 
 @riverpod
 AsyncValue<AddressesModel> regularAddressesModelAsync(Ref ref) {
-  final regularModel = ref.watch(
-    addressesAsyncNotifierProvider(Account(id: 0)),
-  );
+  final regularModel = ref.watch(addressesAsyncNotifierProvider(Account.REG));
 
   return switch (regularModel) {
     AsyncValue(hasValue: true, value: AddressesModel addressesModel) =>
@@ -169,7 +166,7 @@ AsyncValue<AddressesModel> regularAddressesModelAsync(Ref ref) {
 
 @riverpod
 AsyncValue<AddressesModel> ampAdressesModelAsync(Ref ref) {
-  final ampModel = ref.watch(addressesAsyncNotifierProvider(Account(id: 1)));
+  final ampModel = ref.watch(addressesAsyncNotifierProvider(Account.AMP_));
 
   return switch (ampModel) {
     AsyncValue(hasValue: true, value: AddressesModel addressesModel) =>
@@ -225,10 +222,10 @@ AsyncValue<AddressesModel> filteredAddressesAsync(Ref ref) {
   addresses =
       switch (walletTypeFlag) {
         AddressesWalletTypeFlagRegular() => addresses.where(
-          (element) => element.account == 0,
+          (element) => element.account == Account.REG,
         ),
         AddressesWalletTypeFlagAmp() => addresses.where(
-          (element) => element.account == 1,
+          (element) => element.account == Account.AMP_,
         ),
         _ => addresses,
       }.toList();
@@ -290,7 +287,7 @@ class AddressesItemHelper {
   AddressesItemHelper({required this.ref, required this.addressesItem});
 
   bool isRegular() {
-    return addressesItem.account == 0;
+    return addressesItem.account == Account.REG;
   }
 
   bool isInternal() {
@@ -453,8 +450,8 @@ AsyncValue<AddressesModel> inputsAddressesAsync(Ref ref) {
   final walletTypeFlag = ref.watch(inputsWalletTypeFlagNotifierProvider);
 
   final accountId = switch (walletTypeFlag) {
-    InputsWalletTypeFlagRegular() => 0,
-    _ => 1,
+    InputsWalletTypeFlagRegular() => Account.REG,
+    _ => Account.AMP_,
   };
 
   final newAddresses =
@@ -699,12 +696,8 @@ class SelectedInputsHelper {
       return const SizedBox();
     }
 
-    if (utxo!.account! > 1) {
-      logger.e('Unhandled account type in select inputs!');
-    }
-
-    return switch (utxo.account) {
-      1 => const AmpFlag(),
+    return switch (utxo!.account) {
+      Account.AMP_ => const AmpFlag(),
       _ => const SizedBox(),
     };
   }

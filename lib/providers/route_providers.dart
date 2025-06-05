@@ -331,8 +331,11 @@ class DesktopRoutePage {
         RouteName.first,
         (route) => false,
       ),
-      Status.noWallet || Status.selectEnv => await navigator
-          .pushNamedAndRemoveUntil(RouteName.noWallet, (route) => false),
+      Status.noWallet ||
+      Status.selectEnv => await navigator.pushNamedAndRemoveUntil(
+        RouteName.noWallet,
+        (route) => false,
+      ),
       Status.reviewLicense => await navigator.pushNamedAndRemoveUntil(
         RouteName.reviewLicense,
         (route) => false,
@@ -346,7 +349,7 @@ class DesktopRoutePage {
         (route) => false,
       ),
       Status.importWalletSuccess => () async {
-        ref.read(walletProvider).setImportWalletBiometricPrompt();
+        await ref.read(walletProvider).setImportWalletBiometricPrompt();
         await navigator.pushNamedAndRemoveUntil(
           RouteName.registered,
           (route) => false,
@@ -399,16 +402,16 @@ class DesktopRoutePage {
         RouteName.newWalletBackupCheck,
         (route) => false,
       ),
-      Status.newWalletBackupCheckFailed => await navigator
-          .pushNamedAndRemoveUntil(
-            RouteName.newWalletBackupCheckFailed,
-            (route) => false,
-          ),
-      Status.newWalletBackupCheckSucceed => await navigator
-          .pushNamedAndRemoveUntil(
-            RouteName.newWalletBackupCheckSucceed,
-            (route) => false,
-          ),
+      Status.newWalletBackupCheckFailed =>
+        await navigator.pushNamedAndRemoveUntil(
+          RouteName.newWalletBackupCheckFailed,
+          (route) => false,
+        ),
+      Status.newWalletBackupCheckSucceed =>
+        await navigator.pushNamedAndRemoveUntil(
+          RouteName.newWalletBackupCheckSucceed,
+          (route) => false,
+        ),
       Status.registered => () async {
         if (Navigator.canPop(context)) {
           navigator.popUntil((route) => route.isFirst);
@@ -541,40 +544,40 @@ class DesktopRoutePage {
           when firstLaunchState != const FirstLaunchStateEmpty() =>
         DesktopPageRoute(builder: (_) => const DPinSetup(), settings: settings),
       RouteName.pinSetup => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DPinSetup(),
+        pageBuilder: (_, _, _) => const DPinSetup(),
         settings: settings,
       ),
       RouteName.registered => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DesktopWalletMain(),
+        pageBuilder: (_, _, _) => const DesktopWalletMain(),
         settings: settings,
       ),
       RouteName.settingsPage => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettings(),
+        pageBuilder: (_, _, _) => const DSettings(),
         settings: settings,
       ),
       RouteName.settingsBackup => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettingsViewBackup(),
+        pageBuilder: (_, _, _) => const DSettingsViewBackup(),
         settings: settings,
       ),
       RouteName.settingsAboutUs => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettingsAboutUs(),
+        pageBuilder: (_, _, _) => const DSettingsAboutUs(),
         settings: settings,
       ),
       RouteName.settingsLogs => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettingsLogs(),
+        pageBuilder: (_, _, _) => const DSettingsLogs(),
         settings: settings,
       ),
       RouteName.pinSuccess => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettingsPinSuccess(),
+        pageBuilder: (_, _, _) => const DSettingsPinSuccess(),
         settings: settings,
       ),
       RouteName.settingsNetwork => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettingsNetworkAccess(),
+        pageBuilder: (_, _, _) => const DSettingsNetworkAccess(),
         settings: settings,
       ),
       RouteName.stokrLogin => RawDialogRoute<Widget>(
-        pageBuilder:
-            (_, __, ___) => const DAmpLogin(ampLoginEnum: AmpLoginEnum.stokr),
+        pageBuilder: (_, _, _) =>
+            const DAmpLogin(ampLoginEnum: AmpLoginEnum.stokr),
         settings: settings,
       ),
       RouteName.ampRegister => DesktopPageRoute<Widget>(
@@ -582,38 +585,38 @@ class DesktopRoutePage {
         settings: settings,
       ),
       RouteName.pegxRegister => RawDialogRoute<Widget>(
-        pageBuilder:
-            (_, __, ___) => const DAmpLogin(ampLoginEnum: AmpLoginEnum.pegx),
+        pageBuilder: (_, _, _) =>
+            const DAmpLogin(ampLoginEnum: AmpLoginEnum.pegx),
         settings: settings,
       ),
       RouteName.pegxSubmitAmp => RawDialogRoute(
-        pageBuilder: (_, __, ___) => const DPegxSubmitAmp(),
+        pageBuilder: (_, _, _) => const DPegxSubmitAmp(),
         settings: settings,
       ),
       RouteName.pegxSubmitFinish => RawDialogRoute(
-        pageBuilder: (_, __, ___) => const DPegxSubmitFinishDialog(),
+        pageBuilder: (_, _, _) => const DPegxSubmitFinishDialog(),
         settings: settings,
       ),
       RouteName.jadeImport => RawDialogRoute(
-        pageBuilder: (_, __, ___) => const DJadeImport(),
+        pageBuilder: (_, _, _) => const DJadeImport(),
         settings: settings,
       ),
       RouteName.jadeInfoDialog => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DJadeInfoDialog(),
+        pageBuilder: (_, _, _) => const DJadeInfoDialog(),
         settings: settings,
       ),
       RouteName.settingsFiat => RawDialogRoute<Widget>(
-        pageBuilder: (_, __, ___) => const DSettingsDefaultCurrency(),
+        pageBuilder: (_, _, _) => const DSettingsDefaultCurrency(),
         settings: settings,
       ),
       RouteName.stokrRestrictionsInfo => RawDialogRoute<Widget>(
         barrierDismissible: false,
-        pageBuilder: (_, __, ___) => const DStokrCountryRestrictionsInfoPopup(),
+        pageBuilder: (_, _, _) => const DStokrCountryRestrictionsInfoPopup(),
         settings: settings,
       ),
       RouteName.stokrNeedRegister => RawDialogRoute<Widget>(
         barrierDismissible: false,
-        pageBuilder: (_, __, ___) => const DStokrNeedRegisterPopup(),
+        pageBuilder: (_, _, _) => const DStokrNeedRegisterPopup(),
         settings: settings,
       ),
       _ => errorRoute(settings),

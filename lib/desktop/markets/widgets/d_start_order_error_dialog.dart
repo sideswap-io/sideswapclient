@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
+import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
@@ -49,28 +50,27 @@ class DStartOrderErrorDialog extends ConsumerWidget {
       content: SizedBox(
         width: 450,
         height: 260,
-        child:
-            optionStartOrderError.match(
-              () => () {
-                return SizedBox();
-              },
-              (startOrderError) => () {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DErrorIcon(),
-                    SizedBox(height: 24),
-                    Text(startOrderError.error),
-                    Spacer(),
-                    DCustomFilledBigButton(
-                      onPressed: onClose,
-                      child: Text('Close'.tr()),
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                );
-              },
-            )(),
+        child: optionStartOrderError.match(
+          () => () {
+            return SizedBox();
+          },
+          (startOrderError) => () {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DErrorIcon(),
+                SizedBox(height: 24),
+                Text(startOrderError.error),
+                Spacer(),
+                DCustomFilledBigButton(
+                  onPressed: onClose,
+                  child: Text('Close'.tr()),
+                ),
+                SizedBox(height: 16),
+              ],
+            );
+          },
+        )(),
       ),
     );
   }
@@ -114,28 +114,91 @@ class DStartOrderQuoteErrorDialog extends ConsumerWidget {
       content: SizedBox(
         width: 450,
         height: 260,
-        child:
-            optionStartOrderQuoteError.match(
-              () => () {
-                return SizedBox();
-              },
-              (quoteError) => () {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DErrorIcon(),
-                    SizedBox(height: 24),
-                    Text(quoteError.error),
-                    Spacer(),
-                    DCustomFilledBigButton(
-                      onPressed: onClose,
-                      child: Text('Close'.tr()),
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                );
-              },
-            )(),
+        child: optionStartOrderQuoteError.match(
+          () => () {
+            return SizedBox();
+          },
+          (quoteError) => () {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DErrorIcon(),
+                SizedBox(height: 24),
+                Text(quoteError.error),
+                Spacer(),
+                DCustomFilledBigButton(
+                  onPressed: onClose,
+                  child: Text('Close'.tr()),
+                ),
+                SizedBox(height: 16),
+              ],
+            );
+          },
+        )(),
+      ),
+    );
+  }
+}
+
+class DStartOrderUnregisteredGaidDialog extends ConsumerWidget {
+  const DStartOrderUnregisteredGaidDialog({
+    required this.optionStartOrderUnregisteredGaid,
+    required this.onClose,
+    super.key,
+  });
+
+  final void Function() onClose;
+  final Option<QuoteUnregisteredGaid> optionStartOrderUnregisteredGaid;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .dialogTheme
+        .merge(
+          const DContentDialogThemeData(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              color: SideSwapColors.blumine,
+            ),
+          ),
+        );
+
+    return DContentDialog(
+      constraints: const BoxConstraints(maxWidth: 450, maxHeight: 360),
+      style: defaultDialogTheme,
+      title: DContentDialogTitle(
+        content: Text(
+          'Unregistered AMP ID'.tr(),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        onClose: onClose,
+      ),
+      content: SizedBox(
+        width: 450,
+        height: 260,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DErrorIcon(),
+            SizedBox(height: 24),
+            Text('Please register your AMP ID at'.tr()),
+            const SizedBox(height: 8),
+            optionStartOrderUnregisteredGaid.match(
+              () => const SizedBox(),
+              (unregisteredGaid) =>
+                  DUrlLink(text: 'https://${unregisteredGaid.domainAgent}'),
+            ),
+
+            const SizedBox(height: 20),
+            Spacer(),
+            DCustomFilledBigButton(
+              onPressed: onClose,
+              child: Text('Close'.tr()),
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -165,13 +228,13 @@ class DStartOrderLowBalanceErrorDialog extends ConsumerWidget {
           ),
         );
 
-    final rowTheme = Theme.of(
-      context,
-    ).extension<MarketAssetRowStyle>()!.copyWith(
-      errorLabelStyle: Theme.of(context).textTheme.titleSmall!,
-      errorAmountStyle: Theme.of(context).textTheme.titleSmall!,
-      errorTickerStyle: Theme.of(context).textTheme.titleSmall!,
-    );
+    final rowTheme = Theme.of(context)
+        .extension<MarketAssetRowStyle>()!
+        .copyWith(
+          errorLabelStyle: Theme.of(context).textTheme.titleSmall!,
+          errorAmountStyle: Theme.of(context).textTheme.titleSmall!,
+          errorTickerStyle: Theme.of(context).textTheme.titleSmall!,
+        );
 
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 450, maxHeight: 400),
@@ -186,89 +249,86 @@ class DStartOrderLowBalanceErrorDialog extends ConsumerWidget {
       content: SizedBox(
         width: 450,
         height: 300,
-        child:
-            optionStartOrderQuoteLowBalance.match(
-              () => () {
-                return SizedBox();
-              },
-              (lowBalance) => () {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DErrorIcon(),
-                    SizedBox(height: 24),
-                    DefaultTextStyle(
-                      style: Theme.of(context).textTheme.titleSmall!,
-                      child: Column(
-                        children: [
-                          SizedBox(height: 10),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: SideSwapColors.darkCerulean,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+        child: optionStartOrderQuoteLowBalance.match(
+          () => () {
+            return SizedBox();
+          },
+          (lowBalance) => () {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DErrorIcon(),
+                SizedBox(height: 24),
+                DefaultTextStyle(
+                  style: Theme.of(context).textTheme.titleSmall!,
+                  child: Column(
+                    children: [
+                      SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: SideSwapColors.darkCerulean,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            children: [
+                              SizedBox(height: 10),
+                              MarketDeliverRow(
+                                deliverAsset: lowBalance.deliverAsset,
+                                deliverAmount: lowBalance.deliverAmount,
+                                isError: true,
+                                theme: rowTheme,
                               ),
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 10),
-                                  MarketDeliverRow(
-                                    deliverAsset: lowBalance.deliverAsset,
-                                    deliverAmount: lowBalance.deliverAmount,
-                                    isError: true,
-                                    theme: rowTheme,
-                                  ),
-                                  SizedBox(height: 4),
-                                  Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: SideSwapColors.glacier.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  MarketReceiveRow(
-                                    receiveAsset: lowBalance.receiveAsset,
-                                    receiveAmount: lowBalance.receiveAmount,
-                                    isError: true,
-                                    theme: rowTheme,
-                                  ),
-                                  SizedBox(height: 4),
-                                  Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: SideSwapColors.glacier.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  MarketAssetRow(
-                                    asset: lowBalance.deliverAsset,
-                                    amount: lowBalance.availableAmount,
-                                    isError: true,
-                                    label: 'Available'.tr(),
-                                    theme: rowTheme,
-                                  ),
-                                  SizedBox(height: 10),
-                                ],
+                              SizedBox(height: 4),
+                              Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: SideSwapColors.glacier.withValues(
+                                  alpha: 0.4,
+                                ),
                               ),
-                            ),
+                              SizedBox(height: 4),
+                              MarketReceiveRow(
+                                receiveAsset: lowBalance.receiveAsset,
+                                receiveAmount: lowBalance.receiveAmount,
+                                isError: true,
+                                theme: rowTheme,
+                              ),
+                              SizedBox(height: 4),
+                              Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: SideSwapColors.glacier.withValues(
+                                  alpha: 0.4,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              MarketAssetRow(
+                                asset: lowBalance.deliverAsset,
+                                amount: lowBalance.availableAmount,
+                                isError: true,
+                                label: 'Available'.tr(),
+                                theme: rowTheme,
+                              ),
+                              SizedBox(height: 10),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    Spacer(),
-                    DCustomFilledBigButton(
-                      onPressed: onClose,
-                      child: Text('Close'.tr()),
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                );
-              },
-            )(),
+                    ],
+                  ),
+                ),
+                Spacer(),
+                DCustomFilledBigButton(
+                  onPressed: onClose,
+                  child: Text('Close'.tr()),
+                ),
+                SizedBox(height: 16),
+              ],
+            );
+          },
+        )(),
       ),
     );
   }

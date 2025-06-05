@@ -15,10 +15,9 @@ final pageStatusNotifierProvider =
     NotifierProvider<PageStatusNotifier, Status>.internal(
       PageStatusNotifier.new,
       name: r'pageStatusNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pageStatusNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pageStatusNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

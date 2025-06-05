@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
@@ -9,6 +8,8 @@ import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:sideswap_websocket/sideswap_endpoint.dart';
 
 part 'endpoint_provider.g.dart';
@@ -64,7 +65,7 @@ class EndpointServerProvider {
     (
       switch (request.type) {
         EndpointRequestType.newAddress => () {
-          ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
+          ref.read(walletProvider).toggleRecvAddrType(Account.REG);
           // wait a bit for backend reply
           // TODO (malcolmpl): fix this - make listener for received address and then call endpoint function
           Future.delayed(const Duration(seconds: 3), () {
@@ -93,10 +94,11 @@ class EndpointServerProvider {
               amount: final amount?,
             ) =>
               () {
-                final accountAsset = AccountAsset(AccountType.reg, assetId);
-                final balance =
-                    ref.read(balancesNotifierProvider)[accountAsset] ?? 0;
-                if (balance == 0) {
+                final assetBalance = ref.read(
+                  availableBalanceForAssetIdProvider(assetId),
+                );
+
+                if (assetBalance == 0) {
                   logger.w(
                     'Unable to execute endpoint request. Balance for $assetId is zero',
                   );
@@ -104,20 +106,28 @@ class EndpointServerProvider {
                 }
 
                 final createTransactionData = EICreateTransactionData(
-                  accountAsset: accountAsset,
+                  assetId: assetId,
                   address: address,
                   amount: amount,
                 );
-                ref
-                    .read(eiCreateTransactionNotifierProvider.notifier)
-                    .setState(createTransactionData);
+                final optionAsset = ref.read(assetFromAssetIdProvider(assetId));
+                optionAsset.match(
+                  () {
+                    logger.e('$assetId not found');
+                  },
+                  (asset) {
+                    ref
+                        .read(eiCreateTransactionNotifierProvider.notifier)
+                        .setState(createTransactionData);
 
-                ref.invalidate(createTxStateNotifierProvider);
-                ref
-                    .read(paymentHelperProvider)
-                    .selectPaymentSend(amount, accountAsset, address: address);
-                ref.read(desktopDialogProvider).closePopups();
-                ref.read(desktopDialogProvider).showSendTx();
+                    ref.invalidate(createTxStateNotifierProvider);
+                    ref
+                        .read(paymentHelperProvider)
+                        .selectPaymentSend(amount, asset, address: address);
+                    ref.read(desktopDialogProvider).closePopups();
+                    ref.read(desktopDialogProvider).showSendTx();
+                  },
+                );
               }(),
             _ => () {
               logger.w('Invalid request data: $request');

@@ -13,8 +13,9 @@ String _$navigatorKeyHash() => r'e98ea9b83a531ebfa207927a585fc0549744a9c1';
 final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>.internal(
   navigatorKey,
   name: r'navigatorKeyProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$navigatorKeyHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$navigatorKeyHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -30,10 +31,9 @@ final warmupAppProvider =
     AsyncNotifierProvider<WarmupApp, WarmupAppState>.internal(
       WarmupApp.new,
       name: r'warmupAppProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$warmupAppHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$warmupAppHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

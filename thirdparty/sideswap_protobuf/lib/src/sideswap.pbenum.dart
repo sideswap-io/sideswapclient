@@ -13,6 +13,36 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
+class Account extends $pb.ProtobufEnum {
+  static const Account REG = Account._(1, _omitEnumNames ? '' : 'REG');
+  static const Account AMP_ = Account._(2, _omitEnumNames ? '' : 'AMP_');
+
+  static const $core.List<Account> values = <Account> [
+    REG,
+    AMP_,
+  ];
+
+  static final $core.Map<$core.int, Account> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static Account? valueOf($core.int value) => _byValue[value];
+
+  const Account._($core.int v, $core.String n) : super(v, n);
+}
+
+class ScriptType extends $pb.ProtobufEnum {
+  static const ScriptType P2WPKH = ScriptType._(1, _omitEnumNames ? '' : 'P2WPKH');
+  static const ScriptType P2SH = ScriptType._(2, _omitEnumNames ? '' : 'P2SH');
+
+  static const $core.List<ScriptType> values = <ScriptType> [
+    P2WPKH,
+    P2SH,
+  ];
+
+  static final $core.Map<$core.int, ScriptType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static ScriptType? valueOf($core.int value) => _byValue[value];
+
+  const ScriptType._($core.int v, $core.String n) : super(v, n);
+}
+
 class ActivePage extends $pb.ProtobufEnum {
   static const ActivePage OTHER = ActivePage._(0, _omitEnumNames ? '' : 'OTHER');
   static const ActivePage PEG_IN = ActivePage._(1, _omitEnumNames ? '' : 'PEG_IN');

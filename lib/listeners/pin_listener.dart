@@ -9,7 +9,7 @@ class PinListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(pinSetupCallerNotifierProvider, (_, __) {});
+    ref.listen(pinSetupCallerNotifierProvider, (_, _) {});
     ref.listen<PinSetupExitState>(pinSetupExitNotifierProvider, (_, next) {
       final caller = ref.read(pinSetupCallerNotifierProvider);
 

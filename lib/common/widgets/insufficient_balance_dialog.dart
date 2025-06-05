@@ -106,7 +106,7 @@ void showInsufficientBalanceDialog(
                     height: 54,
                     text: 'CANCEL'.tr(),
                     backgroundColor: Colors.transparent,
-                    onPressed: () async {
+                    onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop();
                     },
                   ),

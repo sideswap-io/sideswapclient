@@ -26,7 +26,7 @@ class SideswapNotificationsAndroidPlugin
     THandleIncomingNotification? handleIncomingNotification,
   }) async {
     notificationService ??= NotificationService();
-    notificationService!.init(
+    await notificationService!.init(
       notificationBackgroundHandler: notificationBackgroundHandler,
       handleIncomingNotification: handleIncomingNotification,
     );
@@ -40,7 +40,7 @@ class SideswapNotificationsAndroidPlugin
       return;
     }
 
-    notificationService!.refreshToken(
+    await notificationService!.refreshToken(
       refreshTokenCallback: refreshTokenCallback,
     );
   }

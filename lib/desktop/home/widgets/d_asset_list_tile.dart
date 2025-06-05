@@ -6,21 +6,21 @@ import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/home/widgets/d_asset_list_tile_amount.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DAssetListTile extends ConsumerWidget {
-  const DAssetListTile({super.key, required this.accountAsset});
+  const DAssetListTile({super.key, required this.asset});
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonWithoutBorderStyle;
 
     return DButton(
       style: buttonStyle?.merge(
@@ -33,7 +33,7 @@ class DAssetListTile extends ConsumerWidget {
         ),
       ),
       onPressed: () {
-        ref.read(desktopDialogProvider).openAccount(accountAsset);
+        ref.read(desktopDialogProvider).showAssetInfoDialog(asset);
       },
       child: SizedBox(
         height: 53,
@@ -49,7 +49,7 @@ class DAssetListTile extends ConsumerWidget {
                       final icon = ref
                           .watch(assetImageRepositoryProvider)
                           .getCustomImage(
-                            accountAsset.assetId,
+                            asset.assetId,
                             width: 24,
                             height: 24,
                             filterQuality: FilterQuality.medium,
@@ -59,33 +59,32 @@ class DAssetListTile extends ConsumerWidget {
                     },
                   ),
                   const SizedBox(width: 8),
-                  SizedBox(
-                    width: 72,
-                    child: Consumer(
-                      builder: (context, ref, child) {
-                        final asset = ref.watch(
-                          assetsStateProvider.select(
-                            (value) => value[accountAsset.assetId],
-                          ),
-                        );
-
-                        return Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            asset?.ticker ?? '',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(fontWeight: FontWeight.w500),
-                          ),
-                        );
-                      },
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          asset.ticker,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          asset.name,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: SideSwapColors.airSuperiorityBlue,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
-                  switch (accountAsset.account.isAmp) {
-                    true => const AmpFlag(margin: EdgeInsets.zero),
-                    false => const SizedBox(),
-                  },
                   const Spacer(),
-                  DAssetListTileAmount(accountAsset: accountAsset),
+                  switch (asset.ampMarket) {
+                    true => const AmpFlag(margin: EdgeInsets.zero),
+                    _ => const SizedBox(),
+                  },
+                  DAssetListTileAmount(asset: asset),
                 ],
               ),
               const Spacer(),

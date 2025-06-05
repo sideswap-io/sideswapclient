@@ -12,6 +12,8 @@ const marketStartOrderErrorRouteName = '/startOrderErrorDialog';
 const marketStartOrderQuoteErrorRouteName = '/startOrderQuoteErrorDialog';
 const marketStartOrderLowBalanceErrorRouteName =
     '/startOrderLowBalanceErrorDialog';
+const marketStartOrderUnregisteredGaidRouteName =
+    '/startOrderUnregisteredGaidDialog';
 
 class MarketStartOrderErrorDialog extends HookConsumerWidget {
   const MarketStartOrderErrorDialog({super.key});
@@ -68,6 +70,7 @@ class MarketStartOrderLowBalanceErrorDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final closeCallback = useCallback(() {
+      ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != marketStartOrderLowBalanceErrorRouteName;
       });
@@ -76,6 +79,30 @@ class MarketStartOrderLowBalanceErrorDialog extends HookConsumerWidget {
     return DStartOrderLowBalanceErrorDialog(
       onClose: closeCallback,
       optionStartOrderQuoteLowBalance: optionStartOrderQuoteLowBalance,
+    );
+  }
+}
+
+class MarketStartOrderUnregisteredGaidDialog extends HookConsumerWidget {
+  const MarketStartOrderUnregisteredGaidDialog({
+    required this.optionStartOrderUnregisteredGaid,
+    super.key,
+  });
+
+  final Option<QuoteUnregisteredGaid> optionStartOrderUnregisteredGaid;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final closeCallback = useCallback(() {
+      ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+      Navigator.of(context, rootNavigator: false).popUntil((route) {
+        return route.settings.name != marketStartOrderUnregisteredGaidRouteName;
+      });
+    });
+
+    return DStartOrderUnregisteredGaidDialog(
+      onClose: closeCallback,
+      optionStartOrderUnregisteredGaid: optionStartOrderUnregisteredGaid,
     );
   }
 }

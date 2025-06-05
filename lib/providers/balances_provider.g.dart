@@ -6,29 +6,25 @@ part of 'balances_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$balanceUniqueAccountTypesHash() =>
-    r'2317a468288b9ff3170fa25613eadc0206317323';
+String _$assetBalanceHash() => r'089ae9d40352354b2c199984b1b22a841bb77730';
 
-/// See also [balanceUniqueAccountTypes].
-@ProviderFor(balanceUniqueAccountTypes)
-final balanceUniqueAccountTypesProvider =
-    AutoDisposeProvider<List<AccountType>>.internal(
-      balanceUniqueAccountTypes,
-      name: r'balanceUniqueAccountTypesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$balanceUniqueAccountTypesHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+/// See also [assetBalance].
+@ProviderFor(assetBalance)
+final assetBalanceProvider = AutoDisposeProvider<Map<String, int>>.internal(
+  assetBalance,
+  name: r'assetBalanceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$assetBalanceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef BalanceUniqueAccountTypesRef =
-    AutoDisposeProviderRef<List<AccountType>>;
+typedef AssetBalanceRef = AutoDisposeProviderRef<Map<String, int>>;
 String _$outputsBalanceForAssetHash() =>
-    r'dab3956f01c619538b25b5f5a374fdd4ffd89ea4';
+    r'1c61a5a92c676282fc232d153cdfe7b103376d34';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -61,15 +57,15 @@ class OutputsBalanceForAssetFamily extends Family<int> {
   const OutputsBalanceForAssetFamily();
 
   /// See also [outputsBalanceForAsset].
-  OutputsBalanceForAssetProvider call(AccountAsset accountAsset) {
-    return OutputsBalanceForAssetProvider(accountAsset);
+  OutputsBalanceForAssetProvider call(String assetId) {
+    return OutputsBalanceForAssetProvider(assetId);
   }
 
   @override
   OutputsBalanceForAssetProvider getProviderOverride(
     covariant OutputsBalanceForAssetProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.assetId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -90,22 +86,19 @@ class OutputsBalanceForAssetFamily extends Family<int> {
 /// See also [outputsBalanceForAsset].
 class OutputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
   /// See also [outputsBalanceForAsset].
-  OutputsBalanceForAssetProvider(AccountAsset accountAsset)
+  OutputsBalanceForAssetProvider(String assetId)
     : this._internal(
-        (ref) => outputsBalanceForAsset(
-          ref as OutputsBalanceForAssetRef,
-          accountAsset,
-        ),
+        (ref) =>
+            outputsBalanceForAsset(ref as OutputsBalanceForAssetRef, assetId),
         from: outputsBalanceForAssetProvider,
         name: r'outputsBalanceForAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$outputsBalanceForAssetHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$outputsBalanceForAssetHash,
         dependencies: OutputsBalanceForAssetFamily._dependencies,
         allTransitiveDependencies:
             OutputsBalanceForAssetFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
+        assetId: assetId,
       );
 
   OutputsBalanceForAssetProvider._internal(
@@ -115,10 +108,10 @@ class OutputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.assetId,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final String assetId;
 
   @override
   Override overrideWith(
@@ -133,7 +126,7 @@ class OutputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        assetId: assetId,
       ),
     );
   }
@@ -145,14 +138,13 @@ class OutputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
 
   @override
   bool operator ==(Object other) {
-    return other is OutputsBalanceForAssetProvider &&
-        other.accountAsset == accountAsset;
+    return other is OutputsBalanceForAssetProvider && other.assetId == assetId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -161,8 +153,8 @@ class OutputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin OutputsBalanceForAssetRef on AutoDisposeProviderRef<int> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+  /// The parameter `assetId` of this provider.
+  String get assetId;
 }
 
 class _OutputsBalanceForAssetProviderElement
@@ -171,12 +163,11 @@ class _OutputsBalanceForAssetProviderElement
   _OutputsBalanceForAssetProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as OutputsBalanceForAssetProvider).accountAsset;
+  String get assetId => (origin as OutputsBalanceForAssetProvider).assetId;
 }
 
 String _$selectedInputsBalanceForAssetHash() =>
-    r'945158eba82d4e779856db35789c6a2c52070bf3';
+    r'55e10582efde34d0a3a4166f58912bd0b26231ed';
 
 /// Inputs related providers
 ///
@@ -197,15 +188,15 @@ class SelectedInputsBalanceForAssetFamily extends Family<int> {
   /// Inputs related providers
   ///
   /// Copied from [selectedInputsBalanceForAsset].
-  SelectedInputsBalanceForAssetProvider call(AccountAsset accountAsset) {
-    return SelectedInputsBalanceForAssetProvider(accountAsset);
+  SelectedInputsBalanceForAssetProvider call(String assetId) {
+    return SelectedInputsBalanceForAssetProvider(assetId);
   }
 
   @override
   SelectedInputsBalanceForAssetProvider getProviderOverride(
     covariant SelectedInputsBalanceForAssetProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.assetId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -230,22 +221,21 @@ class SelectedInputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
   /// Inputs related providers
   ///
   /// Copied from [selectedInputsBalanceForAsset].
-  SelectedInputsBalanceForAssetProvider(AccountAsset accountAsset)
+  SelectedInputsBalanceForAssetProvider(String assetId)
     : this._internal(
         (ref) => selectedInputsBalanceForAsset(
           ref as SelectedInputsBalanceForAssetRef,
-          accountAsset,
+          assetId,
         ),
         from: selectedInputsBalanceForAssetProvider,
         name: r'selectedInputsBalanceForAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$selectedInputsBalanceForAssetHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$selectedInputsBalanceForAssetHash,
         dependencies: SelectedInputsBalanceForAssetFamily._dependencies,
         allTransitiveDependencies:
             SelectedInputsBalanceForAssetFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
+        assetId: assetId,
       );
 
   SelectedInputsBalanceForAssetProvider._internal(
@@ -255,10 +245,10 @@ class SelectedInputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.assetId,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final String assetId;
 
   @override
   Override overrideWith(
@@ -273,7 +263,7 @@ class SelectedInputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        assetId: assetId,
       ),
     );
   }
@@ -286,13 +276,13 @@ class SelectedInputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
   @override
   bool operator ==(Object other) {
     return other is SelectedInputsBalanceForAssetProvider &&
-        other.accountAsset == accountAsset;
+        other.assetId == assetId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -301,8 +291,8 @@ class SelectedInputsBalanceForAssetProvider extends AutoDisposeProvider<int> {
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin SelectedInputsBalanceForAssetRef on AutoDisposeProviderRef<int> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+  /// The parameter `assetId` of this provider.
+  String get assetId;
 }
 
 class _SelectedInputsBalanceForAssetProviderElement
@@ -311,755 +301,31 @@ class _SelectedInputsBalanceForAssetProviderElement
   _SelectedInputsBalanceForAssetProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as SelectedInputsBalanceForAssetProvider).accountAsset;
+  String get assetId =>
+      (origin as SelectedInputsBalanceForAssetProvider).assetId;
 }
 
-String _$maxAvailableBalanceWithInputsForAccountAssetHash() =>
-    r'1b7f4e2c413a3b58bd42bc6e7b2d004b74be84f1';
+String _$maxAvailableBalanceWithInputsForAssetHash() =>
+    r'2c4366e31f865bfb944e4e0789e5aedeeac616b3';
 
-/// See also [maxAvailableBalanceWithInputsForAccountAsset].
-@ProviderFor(maxAvailableBalanceWithInputsForAccountAsset)
-const maxAvailableBalanceWithInputsForAccountAssetProvider =
-    MaxAvailableBalanceWithInputsForAccountAssetFamily();
+/// See also [maxAvailableBalanceWithInputsForAsset].
+@ProviderFor(maxAvailableBalanceWithInputsForAsset)
+const maxAvailableBalanceWithInputsForAssetProvider =
+    MaxAvailableBalanceWithInputsForAssetFamily();
 
-/// See also [maxAvailableBalanceWithInputsForAccountAsset].
-class MaxAvailableBalanceWithInputsForAccountAssetFamily extends Family<int> {
-  /// See also [maxAvailableBalanceWithInputsForAccountAsset].
-  const MaxAvailableBalanceWithInputsForAccountAssetFamily();
+/// See also [maxAvailableBalanceWithInputsForAsset].
+class MaxAvailableBalanceWithInputsForAssetFamily extends Family<int> {
+  /// See also [maxAvailableBalanceWithInputsForAsset].
+  const MaxAvailableBalanceWithInputsForAssetFamily();
 
-  /// See also [maxAvailableBalanceWithInputsForAccountAsset].
-  MaxAvailableBalanceWithInputsForAccountAssetProvider call(
-    AccountAsset accountAsset,
-  ) {
-    return MaxAvailableBalanceWithInputsForAccountAssetProvider(accountAsset);
+  /// See also [maxAvailableBalanceWithInputsForAsset].
+  MaxAvailableBalanceWithInputsForAssetProvider call(String assetId) {
+    return MaxAvailableBalanceWithInputsForAssetProvider(assetId);
   }
 
   @override
-  MaxAvailableBalanceWithInputsForAccountAssetProvider getProviderOverride(
-    covariant MaxAvailableBalanceWithInputsForAccountAssetProvider provider,
-  ) {
-    return call(provider.accountAsset);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'maxAvailableBalanceWithInputsForAccountAssetProvider';
-}
-
-/// See also [maxAvailableBalanceWithInputsForAccountAsset].
-class MaxAvailableBalanceWithInputsForAccountAssetProvider
-    extends AutoDisposeProvider<int> {
-  /// See also [maxAvailableBalanceWithInputsForAccountAsset].
-  MaxAvailableBalanceWithInputsForAccountAssetProvider(
-    AccountAsset accountAsset,
-  ) : this._internal(
-        (ref) => maxAvailableBalanceWithInputsForAccountAsset(
-          ref as MaxAvailableBalanceWithInputsForAccountAssetRef,
-          accountAsset,
-        ),
-        from: maxAvailableBalanceWithInputsForAccountAssetProvider,
-        name: r'maxAvailableBalanceWithInputsForAccountAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$maxAvailableBalanceWithInputsForAccountAssetHash,
-        dependencies:
-            MaxAvailableBalanceWithInputsForAccountAssetFamily._dependencies,
-        allTransitiveDependencies:
-            MaxAvailableBalanceWithInputsForAccountAssetFamily
-                ._allTransitiveDependencies,
-        accountAsset: accountAsset,
-      );
-
-  MaxAvailableBalanceWithInputsForAccountAssetProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.accountAsset,
-  }) : super.internal();
-
-  final AccountAsset accountAsset;
-
-  @override
-  Override overrideWith(
-    int Function(MaxAvailableBalanceWithInputsForAccountAssetRef provider)
-    create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: MaxAvailableBalanceWithInputsForAccountAssetProvider._internal(
-        (ref) => create(ref as MaxAvailableBalanceWithInputsForAccountAssetRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<int> createElement() {
-    return _MaxAvailableBalanceWithInputsForAccountAssetProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is MaxAvailableBalanceWithInputsForAccountAssetProvider &&
-        other.accountAsset == accountAsset;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin MaxAvailableBalanceWithInputsForAccountAssetRef
-    on AutoDisposeProviderRef<int> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
-}
-
-class _MaxAvailableBalanceWithInputsForAccountAssetProviderElement
-    extends AutoDisposeProviderElement<int>
-    with MaxAvailableBalanceWithInputsForAccountAssetRef {
-  _MaxAvailableBalanceWithInputsForAccountAssetProviderElement(super.provider);
-
-  @override
-  AccountAsset get accountAsset =>
-      (origin as MaxAvailableBalanceWithInputsForAccountAssetProvider)
-          .accountAsset;
-}
-
-String _$balanceWithInputsForAccountAssetHash() =>
-    r'f6d7ad5599145973b520ee2ef13dce2e07b823a4';
-
-/// See also [balanceWithInputsForAccountAsset].
-@ProviderFor(balanceWithInputsForAccountAsset)
-const balanceWithInputsForAccountAssetProvider =
-    BalanceWithInputsForAccountAssetFamily();
-
-/// See also [balanceWithInputsForAccountAsset].
-class BalanceWithInputsForAccountAssetFamily extends Family<int> {
-  /// See also [balanceWithInputsForAccountAsset].
-  const BalanceWithInputsForAccountAssetFamily();
-
-  /// See also [balanceWithInputsForAccountAsset].
-  BalanceWithInputsForAccountAssetProvider call(AccountAsset accountAsset) {
-    return BalanceWithInputsForAccountAssetProvider(accountAsset);
-  }
-
-  @override
-  BalanceWithInputsForAccountAssetProvider getProviderOverride(
-    covariant BalanceWithInputsForAccountAssetProvider provider,
-  ) {
-    return call(provider.accountAsset);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'balanceWithInputsForAccountAssetProvider';
-}
-
-/// See also [balanceWithInputsForAccountAsset].
-class BalanceWithInputsForAccountAssetProvider
-    extends AutoDisposeProvider<int> {
-  /// See also [balanceWithInputsForAccountAsset].
-  BalanceWithInputsForAccountAssetProvider(AccountAsset accountAsset)
-    : this._internal(
-        (ref) => balanceWithInputsForAccountAsset(
-          ref as BalanceWithInputsForAccountAssetRef,
-          accountAsset,
-        ),
-        from: balanceWithInputsForAccountAssetProvider,
-        name: r'balanceWithInputsForAccountAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$balanceWithInputsForAccountAssetHash,
-        dependencies: BalanceWithInputsForAccountAssetFamily._dependencies,
-        allTransitiveDependencies:
-            BalanceWithInputsForAccountAssetFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
-      );
-
-  BalanceWithInputsForAccountAssetProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.accountAsset,
-  }) : super.internal();
-
-  final AccountAsset accountAsset;
-
-  @override
-  Override overrideWith(
-    int Function(BalanceWithInputsForAccountAssetRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: BalanceWithInputsForAccountAssetProvider._internal(
-        (ref) => create(ref as BalanceWithInputsForAccountAssetRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<int> createElement() {
-    return _BalanceWithInputsForAccountAssetProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is BalanceWithInputsForAccountAssetProvider &&
-        other.accountAsset == accountAsset;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin BalanceWithInputsForAccountAssetRef on AutoDisposeProviderRef<int> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
-}
-
-class _BalanceWithInputsForAccountAssetProviderElement
-    extends AutoDisposeProviderElement<int>
-    with BalanceWithInputsForAccountAssetRef {
-  _BalanceWithInputsForAccountAssetProviderElement(super.provider);
-
-  @override
-  AccountAsset get accountAsset =>
-      (origin as BalanceWithInputsForAccountAssetProvider).accountAsset;
-}
-
-String _$balanceStringWithInputsForAccountAssetHash() =>
-    r'0c88e688c3e18edd862702c5c8aaee9eb85c21e0';
-
-/// See also [balanceStringWithInputsForAccountAsset].
-@ProviderFor(balanceStringWithInputsForAccountAsset)
-const balanceStringWithInputsForAccountAssetProvider =
-    BalanceStringWithInputsForAccountAssetFamily();
-
-/// See also [balanceStringWithInputsForAccountAsset].
-class BalanceStringWithInputsForAccountAssetFamily extends Family<String> {
-  /// See also [balanceStringWithInputsForAccountAsset].
-  const BalanceStringWithInputsForAccountAssetFamily();
-
-  /// See also [balanceStringWithInputsForAccountAsset].
-  BalanceStringWithInputsForAccountAssetProvider call(
-    AccountAsset accountAsset,
-  ) {
-    return BalanceStringWithInputsForAccountAssetProvider(accountAsset);
-  }
-
-  @override
-  BalanceStringWithInputsForAccountAssetProvider getProviderOverride(
-    covariant BalanceStringWithInputsForAccountAssetProvider provider,
-  ) {
-    return call(provider.accountAsset);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'balanceStringWithInputsForAccountAssetProvider';
-}
-
-/// See also [balanceStringWithInputsForAccountAsset].
-class BalanceStringWithInputsForAccountAssetProvider
-    extends AutoDisposeProvider<String> {
-  /// See also [balanceStringWithInputsForAccountAsset].
-  BalanceStringWithInputsForAccountAssetProvider(AccountAsset accountAsset)
-    : this._internal(
-        (ref) => balanceStringWithInputsForAccountAsset(
-          ref as BalanceStringWithInputsForAccountAssetRef,
-          accountAsset,
-        ),
-        from: balanceStringWithInputsForAccountAssetProvider,
-        name: r'balanceStringWithInputsForAccountAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$balanceStringWithInputsForAccountAssetHash,
-        dependencies:
-            BalanceStringWithInputsForAccountAssetFamily._dependencies,
-        allTransitiveDependencies:
-            BalanceStringWithInputsForAccountAssetFamily
-                ._allTransitiveDependencies,
-        accountAsset: accountAsset,
-      );
-
-  BalanceStringWithInputsForAccountAssetProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.accountAsset,
-  }) : super.internal();
-
-  final AccountAsset accountAsset;
-
-  @override
-  Override overrideWith(
-    String Function(BalanceStringWithInputsForAccountAssetRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: BalanceStringWithInputsForAccountAssetProvider._internal(
-        (ref) => create(ref as BalanceStringWithInputsForAccountAssetRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<String> createElement() {
-    return _BalanceStringWithInputsForAccountAssetProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is BalanceStringWithInputsForAccountAssetProvider &&
-        other.accountAsset == accountAsset;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin BalanceStringWithInputsForAccountAssetRef
-    on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
-}
-
-class _BalanceStringWithInputsForAccountAssetProviderElement
-    extends AutoDisposeProviderElement<String>
-    with BalanceStringWithInputsForAccountAssetRef {
-  _BalanceStringWithInputsForAccountAssetProviderElement(super.provider);
-
-  @override
-  AccountAsset get accountAsset =>
-      (origin as BalanceStringWithInputsForAccountAssetProvider).accountAsset;
-}
-
-String _$balanceStringWithInputsHash() =>
-    r'444fa19c578e94f34ed631a54c9493c7db574c28';
-
-/// See also [balanceStringWithInputs].
-@ProviderFor(balanceStringWithInputs)
-final balanceStringWithInputsProvider = AutoDisposeProvider<String>.internal(
-  balanceStringWithInputs,
-  name: r'balanceStringWithInputsProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$balanceStringWithInputsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BalanceStringWithInputsRef = AutoDisposeProviderRef<String>;
-String _$accountAssetBalanceWithInputsInDefaultCurrencyHash() =>
-    r'fbfb44e1a4470345aafd51f2f263f4f99529ca59';
-
-/// See also [accountAssetBalanceWithInputsInDefaultCurrency].
-@ProviderFor(accountAssetBalanceWithInputsInDefaultCurrency)
-const accountAssetBalanceWithInputsInDefaultCurrencyProvider =
-    AccountAssetBalanceWithInputsInDefaultCurrencyFamily();
-
-/// See also [accountAssetBalanceWithInputsInDefaultCurrency].
-class AccountAssetBalanceWithInputsInDefaultCurrencyFamily
-    extends Family<Decimal> {
-  /// See also [accountAssetBalanceWithInputsInDefaultCurrency].
-  const AccountAssetBalanceWithInputsInDefaultCurrencyFamily();
-
-  /// See also [accountAssetBalanceWithInputsInDefaultCurrency].
-  AccountAssetBalanceWithInputsInDefaultCurrencyProvider call(
-    AccountAsset accountAsset,
-  ) {
-    return AccountAssetBalanceWithInputsInDefaultCurrencyProvider(accountAsset);
-  }
-
-  @override
-  AccountAssetBalanceWithInputsInDefaultCurrencyProvider getProviderOverride(
-    covariant AccountAssetBalanceWithInputsInDefaultCurrencyProvider provider,
-  ) {
-    return call(provider.accountAsset);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'accountAssetBalanceWithInputsInDefaultCurrencyProvider';
-}
-
-/// See also [accountAssetBalanceWithInputsInDefaultCurrency].
-class AccountAssetBalanceWithInputsInDefaultCurrencyProvider
-    extends AutoDisposeProvider<Decimal> {
-  /// See also [accountAssetBalanceWithInputsInDefaultCurrency].
-  AccountAssetBalanceWithInputsInDefaultCurrencyProvider(
-    AccountAsset accountAsset,
-  ) : this._internal(
-        (ref) => accountAssetBalanceWithInputsInDefaultCurrency(
-          ref as AccountAssetBalanceWithInputsInDefaultCurrencyRef,
-          accountAsset,
-        ),
-        from: accountAssetBalanceWithInputsInDefaultCurrencyProvider,
-        name: r'accountAssetBalanceWithInputsInDefaultCurrencyProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceWithInputsInDefaultCurrencyHash,
-        dependencies:
-            AccountAssetBalanceWithInputsInDefaultCurrencyFamily._dependencies,
-        allTransitiveDependencies:
-            AccountAssetBalanceWithInputsInDefaultCurrencyFamily
-                ._allTransitiveDependencies,
-        accountAsset: accountAsset,
-      );
-
-  AccountAssetBalanceWithInputsInDefaultCurrencyProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.accountAsset,
-  }) : super.internal();
-
-  final AccountAsset accountAsset;
-
-  @override
-  Override overrideWith(
-    Decimal Function(AccountAssetBalanceWithInputsInDefaultCurrencyRef provider)
-    create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override:
-          AccountAssetBalanceWithInputsInDefaultCurrencyProvider._internal(
-            (ref) => create(
-              ref as AccountAssetBalanceWithInputsInDefaultCurrencyRef,
-            ),
-            from: from,
-            name: null,
-            dependencies: null,
-            allTransitiveDependencies: null,
-            debugGetCreateSourceHash: null,
-            accountAsset: accountAsset,
-          ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<Decimal> createElement() {
-    return _AccountAssetBalanceWithInputsInDefaultCurrencyProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is AccountAssetBalanceWithInputsInDefaultCurrencyProvider &&
-        other.accountAsset == accountAsset;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin AccountAssetBalanceWithInputsInDefaultCurrencyRef
-    on AutoDisposeProviderRef<Decimal> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
-}
-
-class _AccountAssetBalanceWithInputsInDefaultCurrencyProviderElement
-    extends AutoDisposeProviderElement<Decimal>
-    with AccountAssetBalanceWithInputsInDefaultCurrencyRef {
-  _AccountAssetBalanceWithInputsInDefaultCurrencyProviderElement(
-    super.provider,
-  );
-
-  @override
-  AccountAsset get accountAsset =>
-      (origin as AccountAssetBalanceWithInputsInDefaultCurrencyProvider)
-          .accountAsset;
-}
-
-String _$accountAssetBalanceWithInputsInDefaultCurrencyStringHash() =>
-    r'331723fd15b0a0987ea8a8843ff4e5806dce838a';
-
-/// See also [accountAssetBalanceWithInputsInDefaultCurrencyString].
-@ProviderFor(accountAssetBalanceWithInputsInDefaultCurrencyString)
-const accountAssetBalanceWithInputsInDefaultCurrencyStringProvider =
-    AccountAssetBalanceWithInputsInDefaultCurrencyStringFamily();
-
-/// See also [accountAssetBalanceWithInputsInDefaultCurrencyString].
-class AccountAssetBalanceWithInputsInDefaultCurrencyStringFamily
-    extends Family<String> {
-  /// See also [accountAssetBalanceWithInputsInDefaultCurrencyString].
-  const AccountAssetBalanceWithInputsInDefaultCurrencyStringFamily();
-
-  /// See also [accountAssetBalanceWithInputsInDefaultCurrencyString].
-  AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider call(
-    AccountAsset accountAsset,
-  ) {
-    return AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider(
-      accountAsset,
-    );
-  }
-
-  @override
-  AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider
-  getProviderOverride(
-    covariant AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider
-    provider,
-  ) {
-    return call(provider.accountAsset);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name =>
-      r'accountAssetBalanceWithInputsInDefaultCurrencyStringProvider';
-}
-
-/// See also [accountAssetBalanceWithInputsInDefaultCurrencyString].
-class AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider
-    extends AutoDisposeProvider<String> {
-  /// See also [accountAssetBalanceWithInputsInDefaultCurrencyString].
-  AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider(
-    AccountAsset accountAsset,
-  ) : this._internal(
-        (ref) => accountAssetBalanceWithInputsInDefaultCurrencyString(
-          ref as AccountAssetBalanceWithInputsInDefaultCurrencyStringRef,
-          accountAsset,
-        ),
-        from: accountAssetBalanceWithInputsInDefaultCurrencyStringProvider,
-        name: r'accountAssetBalanceWithInputsInDefaultCurrencyStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceWithInputsInDefaultCurrencyStringHash,
-        dependencies:
-            AccountAssetBalanceWithInputsInDefaultCurrencyStringFamily
-                ._dependencies,
-        allTransitiveDependencies:
-            AccountAssetBalanceWithInputsInDefaultCurrencyStringFamily
-                ._allTransitiveDependencies,
-        accountAsset: accountAsset,
-      );
-
-  AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.accountAsset,
-  }) : super.internal();
-
-  final AccountAsset accountAsset;
-
-  @override
-  Override overrideWith(
-    String Function(
-      AccountAssetBalanceWithInputsInDefaultCurrencyStringRef provider,
-    )
-    create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override:
-          AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider._internal(
-            (ref) => create(
-              ref as AccountAssetBalanceWithInputsInDefaultCurrencyStringRef,
-            ),
-            from: from,
-            name: null,
-            dependencies: null,
-            allTransitiveDependencies: null,
-            debugGetCreateSourceHash: null,
-            accountAsset: accountAsset,
-          ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetBalanceWithInputsInDefaultCurrencyStringProviderElement(
-      this,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other
-            is AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider &&
-        other.accountAsset == accountAsset;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin AccountAssetBalanceWithInputsInDefaultCurrencyStringRef
-    on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
-}
-
-class _AccountAssetBalanceWithInputsInDefaultCurrencyStringProviderElement
-    extends AutoDisposeProviderElement<String>
-    with AccountAssetBalanceWithInputsInDefaultCurrencyStringRef {
-  _AccountAssetBalanceWithInputsInDefaultCurrencyStringProviderElement(
-    super.provider,
-  );
-
-  @override
-  AccountAsset get accountAsset =>
-      (origin as AccountAssetBalanceWithInputsInDefaultCurrencyStringProvider)
-          .accountAsset;
-}
-
-String _$totalMaxAvailableBalanceForAssetHash() =>
-    r'7ce7f14878122884d13c6e436e419a84f02ac5fd';
-
-/// Balance providers without inputs
-///
-/// Copied from [totalMaxAvailableBalanceForAsset].
-@ProviderFor(totalMaxAvailableBalanceForAsset)
-const totalMaxAvailableBalanceForAssetProvider =
-    TotalMaxAvailableBalanceForAssetFamily();
-
-/// Balance providers without inputs
-///
-/// Copied from [totalMaxAvailableBalanceForAsset].
-class TotalMaxAvailableBalanceForAssetFamily extends Family<int> {
-  /// Balance providers without inputs
-  ///
-  /// Copied from [totalMaxAvailableBalanceForAsset].
-  const TotalMaxAvailableBalanceForAssetFamily();
-
-  /// Balance providers without inputs
-  ///
-  /// Copied from [totalMaxAvailableBalanceForAsset].
-  TotalMaxAvailableBalanceForAssetProvider call(String? assetId) {
-    return TotalMaxAvailableBalanceForAssetProvider(assetId);
-  }
-
-  @override
-  TotalMaxAvailableBalanceForAssetProvider getProviderOverride(
-    covariant TotalMaxAvailableBalanceForAssetProvider provider,
+  MaxAvailableBalanceWithInputsForAssetProvider getProviderOverride(
+    covariant MaxAvailableBalanceWithInputsForAssetProvider provider,
   ) {
     return call(provider.assetId);
   }
@@ -1076,36 +342,31 @@ class TotalMaxAvailableBalanceForAssetFamily extends Family<int> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'totalMaxAvailableBalanceForAssetProvider';
+  String? get name => r'maxAvailableBalanceWithInputsForAssetProvider';
 }
 
-/// Balance providers without inputs
-///
-/// Copied from [totalMaxAvailableBalanceForAsset].
-class TotalMaxAvailableBalanceForAssetProvider
+/// See also [maxAvailableBalanceWithInputsForAsset].
+class MaxAvailableBalanceWithInputsForAssetProvider
     extends AutoDisposeProvider<int> {
-  /// Balance providers without inputs
-  ///
-  /// Copied from [totalMaxAvailableBalanceForAsset].
-  TotalMaxAvailableBalanceForAssetProvider(String? assetId)
+  /// See also [maxAvailableBalanceWithInputsForAsset].
+  MaxAvailableBalanceWithInputsForAssetProvider(String assetId)
     : this._internal(
-        (ref) => totalMaxAvailableBalanceForAsset(
-          ref as TotalMaxAvailableBalanceForAssetRef,
+        (ref) => maxAvailableBalanceWithInputsForAsset(
+          ref as MaxAvailableBalanceWithInputsForAssetRef,
           assetId,
         ),
-        from: totalMaxAvailableBalanceForAssetProvider,
-        name: r'totalMaxAvailableBalanceForAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$totalMaxAvailableBalanceForAssetHash,
-        dependencies: TotalMaxAvailableBalanceForAssetFamily._dependencies,
-        allTransitiveDependencies:
-            TotalMaxAvailableBalanceForAssetFamily._allTransitiveDependencies,
+        from: maxAvailableBalanceWithInputsForAssetProvider,
+        name: r'maxAvailableBalanceWithInputsForAssetProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$maxAvailableBalanceWithInputsForAssetHash,
+        dependencies: MaxAvailableBalanceWithInputsForAssetFamily._dependencies,
+        allTransitiveDependencies: MaxAvailableBalanceWithInputsForAssetFamily
+            ._allTransitiveDependencies,
         assetId: assetId,
       );
 
-  TotalMaxAvailableBalanceForAssetProvider._internal(
+  MaxAvailableBalanceWithInputsForAssetProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -1115,16 +376,16 @@ class TotalMaxAvailableBalanceForAssetProvider
     required this.assetId,
   }) : super.internal();
 
-  final String? assetId;
+  final String assetId;
 
   @override
   Override overrideWith(
-    int Function(TotalMaxAvailableBalanceForAssetRef provider) create,
+    int Function(MaxAvailableBalanceWithInputsForAssetRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: TotalMaxAvailableBalanceForAssetProvider._internal(
-        (ref) => create(ref as TotalMaxAvailableBalanceForAssetRef),
+      override: MaxAvailableBalanceWithInputsForAssetProvider._internal(
+        (ref) => create(ref as MaxAvailableBalanceWithInputsForAssetRef),
         from: from,
         name: null,
         dependencies: null,
@@ -1137,12 +398,12 @@ class TotalMaxAvailableBalanceForAssetProvider
 
   @override
   AutoDisposeProviderElement<int> createElement() {
-    return _TotalMaxAvailableBalanceForAssetProviderElement(this);
+    return _MaxAvailableBalanceWithInputsForAssetProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is TotalMaxAvailableBalanceForAssetProvider &&
+    return other is MaxAvailableBalanceWithInputsForAssetProvider &&
         other.assetId == assetId;
   }
 
@@ -1157,44 +418,43 @@ class TotalMaxAvailableBalanceForAssetProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin TotalMaxAvailableBalanceForAssetRef on AutoDisposeProviderRef<int> {
+mixin MaxAvailableBalanceWithInputsForAssetRef on AutoDisposeProviderRef<int> {
   /// The parameter `assetId` of this provider.
-  String? get assetId;
+  String get assetId;
 }
 
-class _TotalMaxAvailableBalanceForAssetProviderElement
+class _MaxAvailableBalanceWithInputsForAssetProviderElement
     extends AutoDisposeProviderElement<int>
-    with TotalMaxAvailableBalanceForAssetRef {
-  _TotalMaxAvailableBalanceForAssetProviderElement(super.provider);
+    with MaxAvailableBalanceWithInputsForAssetRef {
+  _MaxAvailableBalanceWithInputsForAssetProviderElement(super.provider);
 
   @override
-  String? get assetId =>
-      (origin as TotalMaxAvailableBalanceForAssetProvider).assetId;
+  String get assetId =>
+      (origin as MaxAvailableBalanceWithInputsForAssetProvider).assetId;
 }
 
-String _$maxAvailableBalanceForAccountAssetHash() =>
-    r'e56090abdc65b60f517bcaf6d23ca5badb3dc83f';
+String _$balanceWithInputsForAssetHash() =>
+    r'52852c0bbf84423f8c9fac318381f843d0476433';
 
-/// See also [maxAvailableBalanceForAccountAsset].
-@ProviderFor(maxAvailableBalanceForAccountAsset)
-const maxAvailableBalanceForAccountAssetProvider =
-    MaxAvailableBalanceForAccountAssetFamily();
+/// See also [balanceWithInputsForAsset].
+@ProviderFor(balanceWithInputsForAsset)
+const balanceWithInputsForAssetProvider = BalanceWithInputsForAssetFamily();
 
-/// See also [maxAvailableBalanceForAccountAsset].
-class MaxAvailableBalanceForAccountAssetFamily extends Family<int> {
-  /// See also [maxAvailableBalanceForAccountAsset].
-  const MaxAvailableBalanceForAccountAssetFamily();
+/// See also [balanceWithInputsForAsset].
+class BalanceWithInputsForAssetFamily extends Family<int> {
+  /// See also [balanceWithInputsForAsset].
+  const BalanceWithInputsForAssetFamily();
 
-  /// See also [maxAvailableBalanceForAccountAsset].
-  MaxAvailableBalanceForAccountAssetProvider call(AccountAsset accountAsset) {
-    return MaxAvailableBalanceForAccountAssetProvider(accountAsset);
+  /// See also [balanceWithInputsForAsset].
+  BalanceWithInputsForAssetProvider call(String assetId) {
+    return BalanceWithInputsForAssetProvider(assetId);
   }
 
   @override
-  MaxAvailableBalanceForAccountAssetProvider getProviderOverride(
-    covariant MaxAvailableBalanceForAccountAssetProvider provider,
+  BalanceWithInputsForAssetProvider getProviderOverride(
+    covariant BalanceWithInputsForAssetProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.assetId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -1209,76 +469,74 @@ class MaxAvailableBalanceForAccountAssetFamily extends Family<int> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'maxAvailableBalanceForAccountAssetProvider';
+  String? get name => r'balanceWithInputsForAssetProvider';
 }
 
-/// See also [maxAvailableBalanceForAccountAsset].
-class MaxAvailableBalanceForAccountAssetProvider
-    extends AutoDisposeProvider<int> {
-  /// See also [maxAvailableBalanceForAccountAsset].
-  MaxAvailableBalanceForAccountAssetProvider(AccountAsset accountAsset)
+/// See also [balanceWithInputsForAsset].
+class BalanceWithInputsForAssetProvider extends AutoDisposeProvider<int> {
+  /// See also [balanceWithInputsForAsset].
+  BalanceWithInputsForAssetProvider(String assetId)
     : this._internal(
-        (ref) => maxAvailableBalanceForAccountAsset(
-          ref as MaxAvailableBalanceForAccountAssetRef,
-          accountAsset,
+        (ref) => balanceWithInputsForAsset(
+          ref as BalanceWithInputsForAssetRef,
+          assetId,
         ),
-        from: maxAvailableBalanceForAccountAssetProvider,
-        name: r'maxAvailableBalanceForAccountAssetProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$maxAvailableBalanceForAccountAssetHash,
-        dependencies: MaxAvailableBalanceForAccountAssetFamily._dependencies,
+        from: balanceWithInputsForAssetProvider,
+        name: r'balanceWithInputsForAssetProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$balanceWithInputsForAssetHash,
+        dependencies: BalanceWithInputsForAssetFamily._dependencies,
         allTransitiveDependencies:
-            MaxAvailableBalanceForAccountAssetFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
+            BalanceWithInputsForAssetFamily._allTransitiveDependencies,
+        assetId: assetId,
       );
 
-  MaxAvailableBalanceForAccountAssetProvider._internal(
+  BalanceWithInputsForAssetProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.assetId,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final String assetId;
 
   @override
   Override overrideWith(
-    int Function(MaxAvailableBalanceForAccountAssetRef provider) create,
+    int Function(BalanceWithInputsForAssetRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: MaxAvailableBalanceForAccountAssetProvider._internal(
-        (ref) => create(ref as MaxAvailableBalanceForAccountAssetRef),
+      override: BalanceWithInputsForAssetProvider._internal(
+        (ref) => create(ref as BalanceWithInputsForAssetRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        assetId: assetId,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<int> createElement() {
-    return _MaxAvailableBalanceForAccountAssetProviderElement(this);
+    return _BalanceWithInputsForAssetProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is MaxAvailableBalanceForAccountAssetProvider &&
-        other.accountAsset == accountAsset;
+    return other is BalanceWithInputsForAssetProvider &&
+        other.assetId == assetId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -1286,19 +544,566 @@ class MaxAvailableBalanceForAccountAssetProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin MaxAvailableBalanceForAccountAssetRef on AutoDisposeProviderRef<int> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+mixin BalanceWithInputsForAssetRef on AutoDisposeProviderRef<int> {
+  /// The parameter `assetId` of this provider.
+  String get assetId;
 }
 
-class _MaxAvailableBalanceForAccountAssetProviderElement
+class _BalanceWithInputsForAssetProviderElement
     extends AutoDisposeProviderElement<int>
-    with MaxAvailableBalanceForAccountAssetRef {
-  _MaxAvailableBalanceForAccountAssetProviderElement(super.provider);
+    with BalanceWithInputsForAssetRef {
+  _BalanceWithInputsForAssetProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as MaxAvailableBalanceForAccountAssetProvider).accountAsset;
+  String get assetId => (origin as BalanceWithInputsForAssetProvider).assetId;
+}
+
+String _$balanceStringWithInputsForAssetHash() =>
+    r'a70aa70fc1b458398d9046ee93f3db0a51eb4a44';
+
+/// See also [balanceStringWithInputsForAsset].
+@ProviderFor(balanceStringWithInputsForAsset)
+const balanceStringWithInputsForAssetProvider =
+    BalanceStringWithInputsForAssetFamily();
+
+/// See also [balanceStringWithInputsForAsset].
+class BalanceStringWithInputsForAssetFamily extends Family<String> {
+  /// See also [balanceStringWithInputsForAsset].
+  const BalanceStringWithInputsForAssetFamily();
+
+  /// See also [balanceStringWithInputsForAsset].
+  BalanceStringWithInputsForAssetProvider call(String assetId) {
+    return BalanceStringWithInputsForAssetProvider(assetId);
+  }
+
+  @override
+  BalanceStringWithInputsForAssetProvider getProviderOverride(
+    covariant BalanceStringWithInputsForAssetProvider provider,
+  ) {
+    return call(provider.assetId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'balanceStringWithInputsForAssetProvider';
+}
+
+/// See also [balanceStringWithInputsForAsset].
+class BalanceStringWithInputsForAssetProvider
+    extends AutoDisposeProvider<String> {
+  /// See also [balanceStringWithInputsForAsset].
+  BalanceStringWithInputsForAssetProvider(String assetId)
+    : this._internal(
+        (ref) => balanceStringWithInputsForAsset(
+          ref as BalanceStringWithInputsForAssetRef,
+          assetId,
+        ),
+        from: balanceStringWithInputsForAssetProvider,
+        name: r'balanceStringWithInputsForAssetProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$balanceStringWithInputsForAssetHash,
+        dependencies: BalanceStringWithInputsForAssetFamily._dependencies,
+        allTransitiveDependencies:
+            BalanceStringWithInputsForAssetFamily._allTransitiveDependencies,
+        assetId: assetId,
+      );
+
+  BalanceStringWithInputsForAssetProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String assetId;
+
+  @override
+  Override overrideWith(
+    String Function(BalanceStringWithInputsForAssetRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: BalanceStringWithInputsForAssetProvider._internal(
+        (ref) => create(ref as BalanceStringWithInputsForAssetRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<String> createElement() {
+    return _BalanceStringWithInputsForAssetProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BalanceStringWithInputsForAssetProvider &&
+        other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin BalanceStringWithInputsForAssetRef on AutoDisposeProviderRef<String> {
+  /// The parameter `assetId` of this provider.
+  String get assetId;
+}
+
+class _BalanceStringWithInputsForAssetProviderElement
+    extends AutoDisposeProviderElement<String>
+    with BalanceStringWithInputsForAssetRef {
+  _BalanceStringWithInputsForAssetProviderElement(super.provider);
+
+  @override
+  String get assetId =>
+      (origin as BalanceStringWithInputsForAssetProvider).assetId;
+}
+
+String _$balanceStringWithInputsHash() =>
+    r'c6c78eb546bb37ae0adc3e9a11a462d32c35c09a';
+
+/// See also [balanceStringWithInputs].
+@ProviderFor(balanceStringWithInputs)
+final balanceStringWithInputsProvider = AutoDisposeProvider<String>.internal(
+  balanceStringWithInputs,
+  name: r'balanceStringWithInputsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$balanceStringWithInputsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef BalanceStringWithInputsRef = AutoDisposeProviderRef<String>;
+String _$assetBalanceWithInputsInDefaultCurrencyHash() =>
+    r'09815675cc64e1a1726942ef42b00316113140d8';
+
+/// See also [assetBalanceWithInputsInDefaultCurrency].
+@ProviderFor(assetBalanceWithInputsInDefaultCurrency)
+const assetBalanceWithInputsInDefaultCurrencyProvider =
+    AssetBalanceWithInputsInDefaultCurrencyFamily();
+
+/// See also [assetBalanceWithInputsInDefaultCurrency].
+class AssetBalanceWithInputsInDefaultCurrencyFamily extends Family<Decimal> {
+  /// See also [assetBalanceWithInputsInDefaultCurrency].
+  const AssetBalanceWithInputsInDefaultCurrencyFamily();
+
+  /// See also [assetBalanceWithInputsInDefaultCurrency].
+  AssetBalanceWithInputsInDefaultCurrencyProvider call(String assetId) {
+    return AssetBalanceWithInputsInDefaultCurrencyProvider(assetId);
+  }
+
+  @override
+  AssetBalanceWithInputsInDefaultCurrencyProvider getProviderOverride(
+    covariant AssetBalanceWithInputsInDefaultCurrencyProvider provider,
+  ) {
+    return call(provider.assetId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'assetBalanceWithInputsInDefaultCurrencyProvider';
+}
+
+/// See also [assetBalanceWithInputsInDefaultCurrency].
+class AssetBalanceWithInputsInDefaultCurrencyProvider
+    extends AutoDisposeProvider<Decimal> {
+  /// See also [assetBalanceWithInputsInDefaultCurrency].
+  AssetBalanceWithInputsInDefaultCurrencyProvider(String assetId)
+    : this._internal(
+        (ref) => assetBalanceWithInputsInDefaultCurrency(
+          ref as AssetBalanceWithInputsInDefaultCurrencyRef,
+          assetId,
+        ),
+        from: assetBalanceWithInputsInDefaultCurrencyProvider,
+        name: r'assetBalanceWithInputsInDefaultCurrencyProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceWithInputsInDefaultCurrencyHash,
+        dependencies:
+            AssetBalanceWithInputsInDefaultCurrencyFamily._dependencies,
+        allTransitiveDependencies: AssetBalanceWithInputsInDefaultCurrencyFamily
+            ._allTransitiveDependencies,
+        assetId: assetId,
+      );
+
+  AssetBalanceWithInputsInDefaultCurrencyProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String assetId;
+
+  @override
+  Override overrideWith(
+    Decimal Function(AssetBalanceWithInputsInDefaultCurrencyRef provider)
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AssetBalanceWithInputsInDefaultCurrencyProvider._internal(
+        (ref) => create(ref as AssetBalanceWithInputsInDefaultCurrencyRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<Decimal> createElement() {
+    return _AssetBalanceWithInputsInDefaultCurrencyProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssetBalanceWithInputsInDefaultCurrencyProvider &&
+        other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AssetBalanceWithInputsInDefaultCurrencyRef
+    on AutoDisposeProviderRef<Decimal> {
+  /// The parameter `assetId` of this provider.
+  String get assetId;
+}
+
+class _AssetBalanceWithInputsInDefaultCurrencyProviderElement
+    extends AutoDisposeProviderElement<Decimal>
+    with AssetBalanceWithInputsInDefaultCurrencyRef {
+  _AssetBalanceWithInputsInDefaultCurrencyProviderElement(super.provider);
+
+  @override
+  String get assetId =>
+      (origin as AssetBalanceWithInputsInDefaultCurrencyProvider).assetId;
+}
+
+String _$assetBalanceWithInputsInDefaultCurrencyStringHash() =>
+    r'694a49cd1bf9770aef7e95c0be1f47060fc46ed1';
+
+/// See also [assetBalanceWithInputsInDefaultCurrencyString].
+@ProviderFor(assetBalanceWithInputsInDefaultCurrencyString)
+const assetBalanceWithInputsInDefaultCurrencyStringProvider =
+    AssetBalanceWithInputsInDefaultCurrencyStringFamily();
+
+/// See also [assetBalanceWithInputsInDefaultCurrencyString].
+class AssetBalanceWithInputsInDefaultCurrencyStringFamily
+    extends Family<String> {
+  /// See also [assetBalanceWithInputsInDefaultCurrencyString].
+  const AssetBalanceWithInputsInDefaultCurrencyStringFamily();
+
+  /// See also [assetBalanceWithInputsInDefaultCurrencyString].
+  AssetBalanceWithInputsInDefaultCurrencyStringProvider call(String assetId) {
+    return AssetBalanceWithInputsInDefaultCurrencyStringProvider(assetId);
+  }
+
+  @override
+  AssetBalanceWithInputsInDefaultCurrencyStringProvider getProviderOverride(
+    covariant AssetBalanceWithInputsInDefaultCurrencyStringProvider provider,
+  ) {
+    return call(provider.assetId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'assetBalanceWithInputsInDefaultCurrencyStringProvider';
+}
+
+/// See also [assetBalanceWithInputsInDefaultCurrencyString].
+class AssetBalanceWithInputsInDefaultCurrencyStringProvider
+    extends AutoDisposeProvider<String> {
+  /// See also [assetBalanceWithInputsInDefaultCurrencyString].
+  AssetBalanceWithInputsInDefaultCurrencyStringProvider(String assetId)
+    : this._internal(
+        (ref) => assetBalanceWithInputsInDefaultCurrencyString(
+          ref as AssetBalanceWithInputsInDefaultCurrencyStringRef,
+          assetId,
+        ),
+        from: assetBalanceWithInputsInDefaultCurrencyStringProvider,
+        name: r'assetBalanceWithInputsInDefaultCurrencyStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceWithInputsInDefaultCurrencyStringHash,
+        dependencies:
+            AssetBalanceWithInputsInDefaultCurrencyStringFamily._dependencies,
+        allTransitiveDependencies:
+            AssetBalanceWithInputsInDefaultCurrencyStringFamily
+                ._allTransitiveDependencies,
+        assetId: assetId,
+      );
+
+  AssetBalanceWithInputsInDefaultCurrencyStringProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String assetId;
+
+  @override
+  Override overrideWith(
+    String Function(AssetBalanceWithInputsInDefaultCurrencyStringRef provider)
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AssetBalanceWithInputsInDefaultCurrencyStringProvider._internal(
+        (ref) =>
+            create(ref as AssetBalanceWithInputsInDefaultCurrencyStringRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<String> createElement() {
+    return _AssetBalanceWithInputsInDefaultCurrencyStringProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssetBalanceWithInputsInDefaultCurrencyStringProvider &&
+        other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AssetBalanceWithInputsInDefaultCurrencyStringRef
+    on AutoDisposeProviderRef<String> {
+  /// The parameter `assetId` of this provider.
+  String get assetId;
+}
+
+class _AssetBalanceWithInputsInDefaultCurrencyStringProviderElement
+    extends AutoDisposeProviderElement<String>
+    with AssetBalanceWithInputsInDefaultCurrencyStringRef {
+  _AssetBalanceWithInputsInDefaultCurrencyStringProviderElement(super.provider);
+
+  @override
+  String get assetId =>
+      (origin as AssetBalanceWithInputsInDefaultCurrencyStringProvider).assetId;
+}
+
+String _$availableBalanceForAssetIdHash() =>
+    r'549bf9ece9f30ab63ac70d93508b66f1a0909904';
+
+/// Balance providers without inputs
+///
+/// Copied from [availableBalanceForAssetId].
+@ProviderFor(availableBalanceForAssetId)
+const availableBalanceForAssetIdProvider = AvailableBalanceForAssetIdFamily();
+
+/// Balance providers without inputs
+///
+/// Copied from [availableBalanceForAssetId].
+class AvailableBalanceForAssetIdFamily extends Family<int> {
+  /// Balance providers without inputs
+  ///
+  /// Copied from [availableBalanceForAssetId].
+  const AvailableBalanceForAssetIdFamily();
+
+  /// Balance providers without inputs
+  ///
+  /// Copied from [availableBalanceForAssetId].
+  AvailableBalanceForAssetIdProvider call(String assetId) {
+    return AvailableBalanceForAssetIdProvider(assetId);
+  }
+
+  @override
+  AvailableBalanceForAssetIdProvider getProviderOverride(
+    covariant AvailableBalanceForAssetIdProvider provider,
+  ) {
+    return call(provider.assetId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'availableBalanceForAssetIdProvider';
+}
+
+/// Balance providers without inputs
+///
+/// Copied from [availableBalanceForAssetId].
+class AvailableBalanceForAssetIdProvider extends AutoDisposeProvider<int> {
+  /// Balance providers without inputs
+  ///
+  /// Copied from [availableBalanceForAssetId].
+  AvailableBalanceForAssetIdProvider(String assetId)
+    : this._internal(
+        (ref) => availableBalanceForAssetId(
+          ref as AvailableBalanceForAssetIdRef,
+          assetId,
+        ),
+        from: availableBalanceForAssetIdProvider,
+        name: r'availableBalanceForAssetIdProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$availableBalanceForAssetIdHash,
+        dependencies: AvailableBalanceForAssetIdFamily._dependencies,
+        allTransitiveDependencies:
+            AvailableBalanceForAssetIdFamily._allTransitiveDependencies,
+        assetId: assetId,
+      );
+
+  AvailableBalanceForAssetIdProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String assetId;
+
+  @override
+  Override overrideWith(
+    int Function(AvailableBalanceForAssetIdRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AvailableBalanceForAssetIdProvider._internal(
+        (ref) => create(ref as AvailableBalanceForAssetIdRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<int> createElement() {
+    return _AvailableBalanceForAssetIdProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AvailableBalanceForAssetIdProvider &&
+        other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AvailableBalanceForAssetIdRef on AutoDisposeProviderRef<int> {
+  /// The parameter `assetId` of this provider.
+  String get assetId;
+}
+
+class _AvailableBalanceForAssetIdProviderElement
+    extends AutoDisposeProviderElement<int>
+    with AvailableBalanceForAssetIdRef {
+  _AvailableBalanceForAssetIdProviderElement(super.provider);
+
+  @override
+  String get assetId => (origin as AvailableBalanceForAssetIdProvider).assetId;
 }
 
 String _$amountUsdInDefaultCurrencyHash() =>
@@ -1352,10 +1157,9 @@ class AmountUsdInDefaultCurrencyProvider extends AutoDisposeProvider<Decimal> {
         ),
         from: amountUsdInDefaultCurrencyProvider,
         name: r'amountUsdInDefaultCurrencyProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$amountUsdInDefaultCurrencyHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$amountUsdInDefaultCurrencyHash,
         dependencies: AmountUsdInDefaultCurrencyFamily._dependencies,
         allTransitiveDependencies:
             AmountUsdInDefaultCurrencyFamily._allTransitiveDependencies,
@@ -1483,10 +1287,9 @@ class AmountUsdProvider extends AutoDisposeProvider<Decimal> {
         (ref) => amountUsd(ref as AmountUsdRef, assetId, amount),
         from: amountUsdProvider,
         name: r'amountUsdProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$amountUsdHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$amountUsdHash,
         dependencies: AmountUsdFamily._dependencies,
         allTransitiveDependencies: AmountUsdFamily._allTransitiveDependencies,
         assetId: assetId,
@@ -1613,10 +1416,9 @@ class IsAmountUsdAvailableProvider extends AutoDisposeProvider<bool> {
         (ref) => isAmountUsdAvailable(ref as IsAmountUsdAvailableRef, assetId),
         from: isAmountUsdAvailableProvider,
         name: r'isAmountUsdAvailableProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$isAmountUsdAvailableHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$isAmountUsdAvailableHash,
         dependencies: IsAmountUsdAvailableFamily._dependencies,
         allTransitiveDependencies:
             IsAmountUsdAvailableFamily._allTransitiveDependencies,
@@ -1739,10 +1541,9 @@ class DefaultCurrencyConversionProvider extends AutoDisposeProvider<String> {
         ),
         from: defaultCurrencyConversionProvider,
         name: r'defaultCurrencyConversionProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$defaultCurrencyConversionHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$defaultCurrencyConversionHash,
         dependencies: DefaultCurrencyConversionFamily._dependencies,
         allTransitiveDependencies:
             DefaultCurrencyConversionFamily._allTransitiveDependencies,
@@ -1882,14 +1683,12 @@ class DefaultCurrencyConversionWithTickerProvider
         ),
         from: defaultCurrencyConversionWithTickerProvider,
         name: r'defaultCurrencyConversionWithTickerProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$defaultCurrencyConversionWithTickerHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$defaultCurrencyConversionWithTickerHash,
         dependencies: DefaultCurrencyConversionWithTickerFamily._dependencies,
-        allTransitiveDependencies:
-            DefaultCurrencyConversionWithTickerFamily
-                ._allTransitiveDependencies,
+        allTransitiveDependencies: DefaultCurrencyConversionWithTickerFamily
+            ._allTransitiveDependencies,
         assetId: assetId,
         amount: amount,
       );
@@ -2028,14 +1827,12 @@ class DefaultCurrencyConversionFromStringProvider
         ),
         from: defaultCurrencyConversionFromStringProvider,
         name: r'defaultCurrencyConversionFromStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$defaultCurrencyConversionFromStringHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$defaultCurrencyConversionFromStringHash,
         dependencies: DefaultCurrencyConversionFromStringFamily._dependencies,
-        allTransitiveDependencies:
-            DefaultCurrencyConversionFromStringFamily
-                ._allTransitiveDependencies,
+        allTransitiveDependencies: DefaultCurrencyConversionFromStringFamily
+            ._allTransitiveDependencies,
         assetId: assetId,
         amount: amount,
       );
@@ -2118,37 +1915,36 @@ class _DefaultCurrencyConversionFromStringProviderElement
       (origin as DefaultCurrencyConversionFromStringProvider).amount;
 }
 
-String _$accountAssetsTotalLbtcBalanceHash() =>
-    r'cd9b41b9d82dc7e7157226cffd4c2029151cc489';
+String _$assetsTotalLbtcBalanceHash() =>
+    r'16487b0a459f6e32e6bb10f1b305e28907d71021';
 
 /// Total LBTC ============
 ///
-/// Copied from [accountAssetsTotalLbtcBalance].
-@ProviderFor(accountAssetsTotalLbtcBalance)
-const accountAssetsTotalLbtcBalanceProvider =
-    AccountAssetsTotalLbtcBalanceFamily();
+/// Copied from [assetsTotalLbtcBalance].
+@ProviderFor(assetsTotalLbtcBalance)
+const assetsTotalLbtcBalanceProvider = AssetsTotalLbtcBalanceFamily();
 
 /// Total LBTC ============
 ///
-/// Copied from [accountAssetsTotalLbtcBalance].
-class AccountAssetsTotalLbtcBalanceFamily extends Family<String> {
+/// Copied from [assetsTotalLbtcBalance].
+class AssetsTotalLbtcBalanceFamily extends Family<String> {
   /// Total LBTC ============
   ///
-  /// Copied from [accountAssetsTotalLbtcBalance].
-  const AccountAssetsTotalLbtcBalanceFamily();
+  /// Copied from [assetsTotalLbtcBalance].
+  const AssetsTotalLbtcBalanceFamily();
 
   /// Total LBTC ============
   ///
-  /// Copied from [accountAssetsTotalLbtcBalance].
-  AccountAssetsTotalLbtcBalanceProvider call(List<AccountAsset> accountAssets) {
-    return AccountAssetsTotalLbtcBalanceProvider(accountAssets);
+  /// Copied from [assetsTotalLbtcBalance].
+  AssetsTotalLbtcBalanceProvider call(Iterable<Asset> assets) {
+    return AssetsTotalLbtcBalanceProvider(assets);
   }
 
   @override
-  AccountAssetsTotalLbtcBalanceProvider getProviderOverride(
-    covariant AccountAssetsTotalLbtcBalanceProvider provider,
+  AssetsTotalLbtcBalanceProvider getProviderOverride(
+    covariant AssetsTotalLbtcBalanceProvider provider,
   ) {
-    return call(provider.accountAssets);
+    return call(provider.assets);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2163,80 +1959,75 @@ class AccountAssetsTotalLbtcBalanceFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'accountAssetsTotalLbtcBalanceProvider';
+  String? get name => r'assetsTotalLbtcBalanceProvider';
 }
 
 /// Total LBTC ============
 ///
-/// Copied from [accountAssetsTotalLbtcBalance].
-class AccountAssetsTotalLbtcBalanceProvider
-    extends AutoDisposeProvider<String> {
+/// Copied from [assetsTotalLbtcBalance].
+class AssetsTotalLbtcBalanceProvider extends AutoDisposeProvider<String> {
   /// Total LBTC ============
   ///
-  /// Copied from [accountAssetsTotalLbtcBalance].
-  AccountAssetsTotalLbtcBalanceProvider(List<AccountAsset> accountAssets)
+  /// Copied from [assetsTotalLbtcBalance].
+  AssetsTotalLbtcBalanceProvider(Iterable<Asset> assets)
     : this._internal(
-        (ref) => accountAssetsTotalLbtcBalance(
-          ref as AccountAssetsTotalLbtcBalanceRef,
-          accountAssets,
-        ),
-        from: accountAssetsTotalLbtcBalanceProvider,
-        name: r'accountAssetsTotalLbtcBalanceProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetsTotalLbtcBalanceHash,
-        dependencies: AccountAssetsTotalLbtcBalanceFamily._dependencies,
+        (ref) =>
+            assetsTotalLbtcBalance(ref as AssetsTotalLbtcBalanceRef, assets),
+        from: assetsTotalLbtcBalanceProvider,
+        name: r'assetsTotalLbtcBalanceProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetsTotalLbtcBalanceHash,
+        dependencies: AssetsTotalLbtcBalanceFamily._dependencies,
         allTransitiveDependencies:
-            AccountAssetsTotalLbtcBalanceFamily._allTransitiveDependencies,
-        accountAssets: accountAssets,
+            AssetsTotalLbtcBalanceFamily._allTransitiveDependencies,
+        assets: assets,
       );
 
-  AccountAssetsTotalLbtcBalanceProvider._internal(
+  AssetsTotalLbtcBalanceProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAssets,
+    required this.assets,
   }) : super.internal();
 
-  final List<AccountAsset> accountAssets;
+  final Iterable<Asset> assets;
 
   @override
   Override overrideWith(
-    String Function(AccountAssetsTotalLbtcBalanceRef provider) create,
+    String Function(AssetsTotalLbtcBalanceRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: AccountAssetsTotalLbtcBalanceProvider._internal(
-        (ref) => create(ref as AccountAssetsTotalLbtcBalanceRef),
+      override: AssetsTotalLbtcBalanceProvider._internal(
+        (ref) => create(ref as AssetsTotalLbtcBalanceRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAssets: accountAssets,
+        assets: assets,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetsTotalLbtcBalanceProviderElement(this);
+    return _AssetsTotalLbtcBalanceProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AccountAssetsTotalLbtcBalanceProvider &&
-        other.accountAssets == accountAssets;
+    return other is AssetsTotalLbtcBalanceProvider && other.assets == assets;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAssets.hashCode);
+    hash = _SystemHash.combine(hash, assets.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -2244,54 +2035,52 @@ class AccountAssetsTotalLbtcBalanceProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AccountAssetsTotalLbtcBalanceRef on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAssets` of this provider.
-  List<AccountAsset> get accountAssets;
+mixin AssetsTotalLbtcBalanceRef on AutoDisposeProviderRef<String> {
+  /// The parameter `assets` of this provider.
+  Iterable<Asset> get assets;
 }
 
-class _AccountAssetsTotalLbtcBalanceProviderElement
+class _AssetsTotalLbtcBalanceProviderElement
     extends AutoDisposeProviderElement<String>
-    with AccountAssetsTotalLbtcBalanceRef {
-  _AccountAssetsTotalLbtcBalanceProviderElement(super.provider);
+    with AssetsTotalLbtcBalanceRef {
+  _AssetsTotalLbtcBalanceProviderElement(super.provider);
 
   @override
-  List<AccountAsset> get accountAssets =>
-      (origin as AccountAssetsTotalLbtcBalanceProvider).accountAssets;
+  Iterable<Asset> get assets =>
+      (origin as AssetsTotalLbtcBalanceProvider).assets;
 }
 
-String _$accountAssetsTotalUsdBalanceStringHash() =>
-    r'00d3641b6c1cad465f9fd784a5fcd9cbd834e190';
+String _$assetsTotalUsdBalanceStringHash() =>
+    r'068b4d330301da9e7b9d8f1991800dc46ba08f16';
 
 /// USD currency converters ============
 ///
-/// Copied from [_accountAssetsTotalUsdBalanceString].
-@ProviderFor(_accountAssetsTotalUsdBalanceString)
-const _accountAssetsTotalUsdBalanceStringProvider =
-    _AccountAssetsTotalUsdBalanceStringFamily();
+/// Copied from [_assetsTotalUsdBalanceString].
+@ProviderFor(_assetsTotalUsdBalanceString)
+const _assetsTotalUsdBalanceStringProvider =
+    _AssetsTotalUsdBalanceStringFamily();
 
 /// USD currency converters ============
 ///
-/// Copied from [_accountAssetsTotalUsdBalanceString].
-class _AccountAssetsTotalUsdBalanceStringFamily extends Family<String> {
+/// Copied from [_assetsTotalUsdBalanceString].
+class _AssetsTotalUsdBalanceStringFamily extends Family<String> {
   /// USD currency converters ============
   ///
-  /// Copied from [_accountAssetsTotalUsdBalanceString].
-  const _AccountAssetsTotalUsdBalanceStringFamily();
+  /// Copied from [_assetsTotalUsdBalanceString].
+  const _AssetsTotalUsdBalanceStringFamily();
 
   /// USD currency converters ============
   ///
-  /// Copied from [_accountAssetsTotalUsdBalanceString].
-  _AccountAssetsTotalUsdBalanceStringProvider call(
-    List<AccountAsset> accountAssets,
-  ) {
-    return _AccountAssetsTotalUsdBalanceStringProvider(accountAssets);
+  /// Copied from [_assetsTotalUsdBalanceString].
+  _AssetsTotalUsdBalanceStringProvider call(Iterable<Asset> assets) {
+    return _AssetsTotalUsdBalanceStringProvider(assets);
   }
 
   @override
-  _AccountAssetsTotalUsdBalanceStringProvider getProviderOverride(
-    covariant _AccountAssetsTotalUsdBalanceStringProvider provider,
+  _AssetsTotalUsdBalanceStringProvider getProviderOverride(
+    covariant _AssetsTotalUsdBalanceStringProvider provider,
   ) {
-    return call(provider.accountAssets);
+    return call(provider.assets);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2306,81 +2095,78 @@ class _AccountAssetsTotalUsdBalanceStringFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'_accountAssetsTotalUsdBalanceStringProvider';
+  String? get name => r'_assetsTotalUsdBalanceStringProvider';
 }
 
 /// USD currency converters ============
 ///
-/// Copied from [_accountAssetsTotalUsdBalanceString].
-class _AccountAssetsTotalUsdBalanceStringProvider
-    extends AutoDisposeProvider<String> {
+/// Copied from [_assetsTotalUsdBalanceString].
+class _AssetsTotalUsdBalanceStringProvider extends AutoDisposeProvider<String> {
   /// USD currency converters ============
   ///
-  /// Copied from [_accountAssetsTotalUsdBalanceString].
-  _AccountAssetsTotalUsdBalanceStringProvider(List<AccountAsset> accountAssets)
+  /// Copied from [_assetsTotalUsdBalanceString].
+  _AssetsTotalUsdBalanceStringProvider(Iterable<Asset> assets)
     : this._internal(
-        (ref) => _accountAssetsTotalUsdBalanceString(
-          ref as _AccountAssetsTotalUsdBalanceStringRef,
-          accountAssets,
+        (ref) => _assetsTotalUsdBalanceString(
+          ref as _AssetsTotalUsdBalanceStringRef,
+          assets,
         ),
-        from: _accountAssetsTotalUsdBalanceStringProvider,
-        name: r'_accountAssetsTotalUsdBalanceStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetsTotalUsdBalanceStringHash,
-        dependencies: _AccountAssetsTotalUsdBalanceStringFamily._dependencies,
+        from: _assetsTotalUsdBalanceStringProvider,
+        name: r'_assetsTotalUsdBalanceStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetsTotalUsdBalanceStringHash,
+        dependencies: _AssetsTotalUsdBalanceStringFamily._dependencies,
         allTransitiveDependencies:
-            _AccountAssetsTotalUsdBalanceStringFamily
-                ._allTransitiveDependencies,
-        accountAssets: accountAssets,
+            _AssetsTotalUsdBalanceStringFamily._allTransitiveDependencies,
+        assets: assets,
       );
 
-  _AccountAssetsTotalUsdBalanceStringProvider._internal(
+  _AssetsTotalUsdBalanceStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAssets,
+    required this.assets,
   }) : super.internal();
 
-  final List<AccountAsset> accountAssets;
+  final Iterable<Asset> assets;
 
   @override
   Override overrideWith(
-    String Function(_AccountAssetsTotalUsdBalanceStringRef provider) create,
+    String Function(_AssetsTotalUsdBalanceStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: _AccountAssetsTotalUsdBalanceStringProvider._internal(
-        (ref) => create(ref as _AccountAssetsTotalUsdBalanceStringRef),
+      override: _AssetsTotalUsdBalanceStringProvider._internal(
+        (ref) => create(ref as _AssetsTotalUsdBalanceStringRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAssets: accountAssets,
+        assets: assets,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetsTotalUsdBalanceStringProviderElement(this);
+    return _AssetsTotalUsdBalanceStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is _AccountAssetsTotalUsdBalanceStringProvider &&
-        other.accountAssets == accountAssets;
+    return other is _AssetsTotalUsdBalanceStringProvider &&
+        other.assets == assets;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAssets.hashCode);
+    hash = _SystemHash.combine(hash, assets.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -2388,44 +2174,43 @@ class _AccountAssetsTotalUsdBalanceStringProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin _AccountAssetsTotalUsdBalanceStringRef on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAssets` of this provider.
-  List<AccountAsset> get accountAssets;
+mixin _AssetsTotalUsdBalanceStringRef on AutoDisposeProviderRef<String> {
+  /// The parameter `assets` of this provider.
+  Iterable<Asset> get assets;
 }
 
-class _AccountAssetsTotalUsdBalanceStringProviderElement
+class _AssetsTotalUsdBalanceStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with _AccountAssetsTotalUsdBalanceStringRef {
-  _AccountAssetsTotalUsdBalanceStringProviderElement(super.provider);
+    with _AssetsTotalUsdBalanceStringRef {
+  _AssetsTotalUsdBalanceStringProviderElement(super.provider);
 
   @override
-  List<AccountAsset> get accountAssets =>
-      (origin as _AccountAssetsTotalUsdBalanceStringProvider).accountAssets;
+  Iterable<Asset> get assets =>
+      (origin as _AssetsTotalUsdBalanceStringProvider).assets;
 }
 
-String _$accountAssetsTotalUsdBalanceHash() =>
-    r'd5570c942da0eaa4671c69df81a870a50b5bb278';
+String _$assetsTotalUsdBalanceHash() =>
+    r'5917299bf7d2437a39861d495878b1dc712957bb';
 
-/// See also [_accountAssetsTotalUsdBalance].
-@ProviderFor(_accountAssetsTotalUsdBalance)
-const _accountAssetsTotalUsdBalanceProvider =
-    _AccountAssetsTotalUsdBalanceFamily();
+/// See also [_assetsTotalUsdBalance].
+@ProviderFor(_assetsTotalUsdBalance)
+const _assetsTotalUsdBalanceProvider = _AssetsTotalUsdBalanceFamily();
 
-/// See also [_accountAssetsTotalUsdBalance].
-class _AccountAssetsTotalUsdBalanceFamily extends Family<Decimal> {
-  /// See also [_accountAssetsTotalUsdBalance].
-  const _AccountAssetsTotalUsdBalanceFamily();
+/// See also [_assetsTotalUsdBalance].
+class _AssetsTotalUsdBalanceFamily extends Family<Decimal> {
+  /// See also [_assetsTotalUsdBalance].
+  const _AssetsTotalUsdBalanceFamily();
 
-  /// See also [_accountAssetsTotalUsdBalance].
-  _AccountAssetsTotalUsdBalanceProvider call(List<AccountAsset> accountAssets) {
-    return _AccountAssetsTotalUsdBalanceProvider(accountAssets);
+  /// See also [_assetsTotalUsdBalance].
+  _AssetsTotalUsdBalanceProvider call(Iterable<Asset> assets) {
+    return _AssetsTotalUsdBalanceProvider(assets);
   }
 
   @override
-  _AccountAssetsTotalUsdBalanceProvider getProviderOverride(
-    covariant _AccountAssetsTotalUsdBalanceProvider provider,
+  _AssetsTotalUsdBalanceProvider getProviderOverride(
+    covariant _AssetsTotalUsdBalanceProvider provider,
   ) {
-    return call(provider.accountAssets);
+    return call(provider.assets);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2440,76 +2225,71 @@ class _AccountAssetsTotalUsdBalanceFamily extends Family<Decimal> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'_accountAssetsTotalUsdBalanceProvider';
+  String? get name => r'_assetsTotalUsdBalanceProvider';
 }
 
-/// See also [_accountAssetsTotalUsdBalance].
-class _AccountAssetsTotalUsdBalanceProvider
-    extends AutoDisposeProvider<Decimal> {
-  /// See also [_accountAssetsTotalUsdBalance].
-  _AccountAssetsTotalUsdBalanceProvider(List<AccountAsset> accountAssets)
+/// See also [_assetsTotalUsdBalance].
+class _AssetsTotalUsdBalanceProvider extends AutoDisposeProvider<Decimal> {
+  /// See also [_assetsTotalUsdBalance].
+  _AssetsTotalUsdBalanceProvider(Iterable<Asset> assets)
     : this._internal(
-        (ref) => _accountAssetsTotalUsdBalance(
-          ref as _AccountAssetsTotalUsdBalanceRef,
-          accountAssets,
-        ),
-        from: _accountAssetsTotalUsdBalanceProvider,
-        name: r'_accountAssetsTotalUsdBalanceProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetsTotalUsdBalanceHash,
-        dependencies: _AccountAssetsTotalUsdBalanceFamily._dependencies,
+        (ref) =>
+            _assetsTotalUsdBalance(ref as _AssetsTotalUsdBalanceRef, assets),
+        from: _assetsTotalUsdBalanceProvider,
+        name: r'_assetsTotalUsdBalanceProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetsTotalUsdBalanceHash,
+        dependencies: _AssetsTotalUsdBalanceFamily._dependencies,
         allTransitiveDependencies:
-            _AccountAssetsTotalUsdBalanceFamily._allTransitiveDependencies,
-        accountAssets: accountAssets,
+            _AssetsTotalUsdBalanceFamily._allTransitiveDependencies,
+        assets: assets,
       );
 
-  _AccountAssetsTotalUsdBalanceProvider._internal(
+  _AssetsTotalUsdBalanceProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAssets,
+    required this.assets,
   }) : super.internal();
 
-  final List<AccountAsset> accountAssets;
+  final Iterable<Asset> assets;
 
   @override
   Override overrideWith(
-    Decimal Function(_AccountAssetsTotalUsdBalanceRef provider) create,
+    Decimal Function(_AssetsTotalUsdBalanceRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: _AccountAssetsTotalUsdBalanceProvider._internal(
-        (ref) => create(ref as _AccountAssetsTotalUsdBalanceRef),
+      override: _AssetsTotalUsdBalanceProvider._internal(
+        (ref) => create(ref as _AssetsTotalUsdBalanceRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAssets: accountAssets,
+        assets: assets,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<Decimal> createElement() {
-    return _AccountAssetsTotalUsdBalanceProviderElement(this);
+    return _AssetsTotalUsdBalanceProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is _AccountAssetsTotalUsdBalanceProvider &&
-        other.accountAssets == accountAssets;
+    return other is _AssetsTotalUsdBalanceProvider && other.assets == assets;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAssets.hashCode);
+    hash = _SystemHash.combine(hash, assets.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -2517,43 +2297,42 @@ class _AccountAssetsTotalUsdBalanceProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin _AccountAssetsTotalUsdBalanceRef on AutoDisposeProviderRef<Decimal> {
-  /// The parameter `accountAssets` of this provider.
-  List<AccountAsset> get accountAssets;
+mixin _AssetsTotalUsdBalanceRef on AutoDisposeProviderRef<Decimal> {
+  /// The parameter `assets` of this provider.
+  Iterable<Asset> get assets;
 }
 
-class _AccountAssetsTotalUsdBalanceProviderElement
+class _AssetsTotalUsdBalanceProviderElement
     extends AutoDisposeProviderElement<Decimal>
-    with _AccountAssetsTotalUsdBalanceRef {
-  _AccountAssetsTotalUsdBalanceProviderElement(super.provider);
+    with _AssetsTotalUsdBalanceRef {
+  _AssetsTotalUsdBalanceProviderElement(super.provider);
 
   @override
-  List<AccountAsset> get accountAssets =>
-      (origin as _AccountAssetsTotalUsdBalanceProvider).accountAssets;
+  Iterable<Asset> get assets =>
+      (origin as _AssetsTotalUsdBalanceProvider).assets;
 }
 
-String _$accountAssetBalanceInUsdHash() =>
-    r'ed7f93bb9be6ea609f73487699521f8be39af6e4';
+String _$assetBalanceInUsdHash() => r'91b0ef21bb616aebbab8eb82961e7228395648c1';
 
-/// See also [_accountAssetBalanceInUsd].
-@ProviderFor(_accountAssetBalanceInUsd)
-const _accountAssetBalanceInUsdProvider = _AccountAssetBalanceInUsdFamily();
+/// See also [_assetBalanceInUsd].
+@ProviderFor(_assetBalanceInUsd)
+const _assetBalanceInUsdProvider = _AssetBalanceInUsdFamily();
 
-/// See also [_accountAssetBalanceInUsd].
-class _AccountAssetBalanceInUsdFamily extends Family<Decimal> {
-  /// See also [_accountAssetBalanceInUsd].
-  const _AccountAssetBalanceInUsdFamily();
+/// See also [_assetBalanceInUsd].
+class _AssetBalanceInUsdFamily extends Family<Decimal> {
+  /// See also [_assetBalanceInUsd].
+  const _AssetBalanceInUsdFamily();
 
-  /// See also [_accountAssetBalanceInUsd].
-  _AccountAssetBalanceInUsdProvider call(AccountAsset accountAsset) {
-    return _AccountAssetBalanceInUsdProvider(accountAsset);
+  /// See also [_assetBalanceInUsd].
+  _AssetBalanceInUsdProvider call(Asset asset) {
+    return _AssetBalanceInUsdProvider(asset);
   }
 
   @override
-  _AccountAssetBalanceInUsdProvider getProviderOverride(
-    covariant _AccountAssetBalanceInUsdProvider provider,
+  _AssetBalanceInUsdProvider getProviderOverride(
+    covariant _AssetBalanceInUsdProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.asset);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2568,75 +2347,70 @@ class _AccountAssetBalanceInUsdFamily extends Family<Decimal> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'_accountAssetBalanceInUsdProvider';
+  String? get name => r'_assetBalanceInUsdProvider';
 }
 
-/// See also [_accountAssetBalanceInUsd].
-class _AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<Decimal> {
-  /// See also [_accountAssetBalanceInUsd].
-  _AccountAssetBalanceInUsdProvider(AccountAsset accountAsset)
+/// See also [_assetBalanceInUsd].
+class _AssetBalanceInUsdProvider extends AutoDisposeProvider<Decimal> {
+  /// See also [_assetBalanceInUsd].
+  _AssetBalanceInUsdProvider(Asset asset)
     : this._internal(
-        (ref) => _accountAssetBalanceInUsd(
-          ref as _AccountAssetBalanceInUsdRef,
-          accountAsset,
-        ),
-        from: _accountAssetBalanceInUsdProvider,
-        name: r'_accountAssetBalanceInUsdProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceInUsdHash,
-        dependencies: _AccountAssetBalanceInUsdFamily._dependencies,
+        (ref) => _assetBalanceInUsd(ref as _AssetBalanceInUsdRef, asset),
+        from: _assetBalanceInUsdProvider,
+        name: r'_assetBalanceInUsdProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceInUsdHash,
+        dependencies: _AssetBalanceInUsdFamily._dependencies,
         allTransitiveDependencies:
-            _AccountAssetBalanceInUsdFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
+            _AssetBalanceInUsdFamily._allTransitiveDependencies,
+        asset: asset,
       );
 
-  _AccountAssetBalanceInUsdProvider._internal(
+  _AssetBalanceInUsdProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.asset,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Override overrideWith(
-    Decimal Function(_AccountAssetBalanceInUsdRef provider) create,
+    Decimal Function(_AssetBalanceInUsdRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: _AccountAssetBalanceInUsdProvider._internal(
-        (ref) => create(ref as _AccountAssetBalanceInUsdRef),
+      override: _AssetBalanceInUsdProvider._internal(
+        (ref) => create(ref as _AssetBalanceInUsdRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        asset: asset,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<Decimal> createElement() {
-    return _AccountAssetBalanceInUsdProviderElement(this);
+    return _AssetBalanceInUsdProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is _AccountAssetBalanceInUsdProvider &&
-        other.accountAsset == accountAsset;
+    return other is _AssetBalanceInUsdProvider && other.asset == asset;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -2644,44 +2418,42 @@ class _AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<Decimal> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin _AccountAssetBalanceInUsdRef on AutoDisposeProviderRef<Decimal> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+mixin _AssetBalanceInUsdRef on AutoDisposeProviderRef<Decimal> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
 }
 
-class _AccountAssetBalanceInUsdProviderElement
+class _AssetBalanceInUsdProviderElement
     extends AutoDisposeProviderElement<Decimal>
-    with _AccountAssetBalanceInUsdRef {
-  _AccountAssetBalanceInUsdProviderElement(super.provider);
+    with _AssetBalanceInUsdRef {
+  _AssetBalanceInUsdProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as _AccountAssetBalanceInUsdProvider).accountAsset;
+  Asset get asset => (origin as _AssetBalanceInUsdProvider).asset;
 }
 
-String _$accountAssetBalanceInUsdStringHash() =>
-    r'484be1350c799130cba281bd839cf0965514815a';
+String _$assetBalanceInUsdStringHash() =>
+    r'4917857463ca2aff9d1ad3f693daeccf4aa61e29';
 
-/// See also [_accountAssetBalanceInUsdString].
-@ProviderFor(_accountAssetBalanceInUsdString)
-const _accountAssetBalanceInUsdStringProvider =
-    _AccountAssetBalanceInUsdStringFamily();
+/// See also [_assetBalanceInUsdString].
+@ProviderFor(_assetBalanceInUsdString)
+const _assetBalanceInUsdStringProvider = _AssetBalanceInUsdStringFamily();
 
-/// See also [_accountAssetBalanceInUsdString].
-class _AccountAssetBalanceInUsdStringFamily extends Family<String> {
-  /// See also [_accountAssetBalanceInUsdString].
-  const _AccountAssetBalanceInUsdStringFamily();
+/// See also [_assetBalanceInUsdString].
+class _AssetBalanceInUsdStringFamily extends Family<String> {
+  /// See also [_assetBalanceInUsdString].
+  const _AssetBalanceInUsdStringFamily();
 
-  /// See also [_accountAssetBalanceInUsdString].
-  _AccountAssetBalanceInUsdStringProvider call(AccountAsset accountAsset) {
-    return _AccountAssetBalanceInUsdStringProvider(accountAsset);
+  /// See also [_assetBalanceInUsdString].
+  _AssetBalanceInUsdStringProvider call(Asset asset) {
+    return _AssetBalanceInUsdStringProvider(asset);
   }
 
   @override
-  _AccountAssetBalanceInUsdStringProvider getProviderOverride(
-    covariant _AccountAssetBalanceInUsdStringProvider provider,
+  _AssetBalanceInUsdStringProvider getProviderOverride(
+    covariant _AssetBalanceInUsdStringProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.asset);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2696,76 +2468,71 @@ class _AccountAssetBalanceInUsdStringFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'_accountAssetBalanceInUsdStringProvider';
+  String? get name => r'_assetBalanceInUsdStringProvider';
 }
 
-/// See also [_accountAssetBalanceInUsdString].
-class _AccountAssetBalanceInUsdStringProvider
-    extends AutoDisposeProvider<String> {
-  /// See also [_accountAssetBalanceInUsdString].
-  _AccountAssetBalanceInUsdStringProvider(AccountAsset accountAsset)
+/// See also [_assetBalanceInUsdString].
+class _AssetBalanceInUsdStringProvider extends AutoDisposeProvider<String> {
+  /// See also [_assetBalanceInUsdString].
+  _AssetBalanceInUsdStringProvider(Asset asset)
     : this._internal(
-        (ref) => _accountAssetBalanceInUsdString(
-          ref as _AccountAssetBalanceInUsdStringRef,
-          accountAsset,
-        ),
-        from: _accountAssetBalanceInUsdStringProvider,
-        name: r'_accountAssetBalanceInUsdStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceInUsdStringHash,
-        dependencies: _AccountAssetBalanceInUsdStringFamily._dependencies,
+        (ref) =>
+            _assetBalanceInUsdString(ref as _AssetBalanceInUsdStringRef, asset),
+        from: _assetBalanceInUsdStringProvider,
+        name: r'_assetBalanceInUsdStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceInUsdStringHash,
+        dependencies: _AssetBalanceInUsdStringFamily._dependencies,
         allTransitiveDependencies:
-            _AccountAssetBalanceInUsdStringFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
+            _AssetBalanceInUsdStringFamily._allTransitiveDependencies,
+        asset: asset,
       );
 
-  _AccountAssetBalanceInUsdStringProvider._internal(
+  _AssetBalanceInUsdStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.asset,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Override overrideWith(
-    String Function(_AccountAssetBalanceInUsdStringRef provider) create,
+    String Function(_AssetBalanceInUsdStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: _AccountAssetBalanceInUsdStringProvider._internal(
-        (ref) => create(ref as _AccountAssetBalanceInUsdStringRef),
+      override: _AssetBalanceInUsdStringProvider._internal(
+        (ref) => create(ref as _AssetBalanceInUsdStringRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        asset: asset,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetBalanceInUsdStringProviderElement(this);
+    return _AssetBalanceInUsdStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is _AccountAssetBalanceInUsdStringProvider &&
-        other.accountAsset == accountAsset;
+    return other is _AssetBalanceInUsdStringProvider && other.asset == asset;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -2773,57 +2540,51 @@ class _AccountAssetBalanceInUsdStringProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin _AccountAssetBalanceInUsdStringRef on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+mixin _AssetBalanceInUsdStringRef on AutoDisposeProviderRef<String> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
 }
 
-class _AccountAssetBalanceInUsdStringProviderElement
+class _AssetBalanceInUsdStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with _AccountAssetBalanceInUsdStringRef {
-  _AccountAssetBalanceInUsdStringProviderElement(super.provider);
+    with _AssetBalanceInUsdStringRef {
+  _AssetBalanceInUsdStringProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as _AccountAssetBalanceInUsdStringProvider).accountAsset;
+  Asset get asset => (origin as _AssetBalanceInUsdStringProvider).asset;
 }
 
-String _$accountAssetsTotalDefaultCurrencyBalanceStringHash() =>
-    r'bd4cbef90f7ce495d300c3f8fdc954e0bfae0a57';
+String _$assetsTotalDefaultCurrencyBalanceStringHash() =>
+    r'29324c093e8671a56041e2018d44e2854f6ae83f';
 
 /// Default currency converters ============
 ///
-/// Copied from [accountAssetsTotalDefaultCurrencyBalanceString].
-@ProviderFor(accountAssetsTotalDefaultCurrencyBalanceString)
-const accountAssetsTotalDefaultCurrencyBalanceStringProvider =
-    AccountAssetsTotalDefaultCurrencyBalanceStringFamily();
+/// Copied from [assetsTotalDefaultCurrencyBalanceString].
+@ProviderFor(assetsTotalDefaultCurrencyBalanceString)
+const assetsTotalDefaultCurrencyBalanceStringProvider =
+    AssetsTotalDefaultCurrencyBalanceStringFamily();
 
 /// Default currency converters ============
 ///
-/// Copied from [accountAssetsTotalDefaultCurrencyBalanceString].
-class AccountAssetsTotalDefaultCurrencyBalanceStringFamily
-    extends Family<String> {
+/// Copied from [assetsTotalDefaultCurrencyBalanceString].
+class AssetsTotalDefaultCurrencyBalanceStringFamily extends Family<String> {
   /// Default currency converters ============
   ///
-  /// Copied from [accountAssetsTotalDefaultCurrencyBalanceString].
-  const AccountAssetsTotalDefaultCurrencyBalanceStringFamily();
+  /// Copied from [assetsTotalDefaultCurrencyBalanceString].
+  const AssetsTotalDefaultCurrencyBalanceStringFamily();
 
   /// Default currency converters ============
   ///
-  /// Copied from [accountAssetsTotalDefaultCurrencyBalanceString].
-  AccountAssetsTotalDefaultCurrencyBalanceStringProvider call(
-    List<AccountAsset> accountAssets,
-  ) {
-    return AccountAssetsTotalDefaultCurrencyBalanceStringProvider(
-      accountAssets,
-    );
+  /// Copied from [assetsTotalDefaultCurrencyBalanceString].
+  AssetsTotalDefaultCurrencyBalanceStringProvider call(Iterable<Asset> assets) {
+    return AssetsTotalDefaultCurrencyBalanceStringProvider(assets);
   }
 
   @override
-  AccountAssetsTotalDefaultCurrencyBalanceStringProvider getProviderOverride(
-    covariant AccountAssetsTotalDefaultCurrencyBalanceStringProvider provider,
+  AssetsTotalDefaultCurrencyBalanceStringProvider getProviderOverride(
+    covariant AssetsTotalDefaultCurrencyBalanceStringProvider provider,
   ) {
-    return call(provider.accountAssets);
+    return call(provider.assets);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2838,87 +2599,80 @@ class AccountAssetsTotalDefaultCurrencyBalanceStringFamily
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'accountAssetsTotalDefaultCurrencyBalanceStringProvider';
+  String? get name => r'assetsTotalDefaultCurrencyBalanceStringProvider';
 }
 
 /// Default currency converters ============
 ///
-/// Copied from [accountAssetsTotalDefaultCurrencyBalanceString].
-class AccountAssetsTotalDefaultCurrencyBalanceStringProvider
+/// Copied from [assetsTotalDefaultCurrencyBalanceString].
+class AssetsTotalDefaultCurrencyBalanceStringProvider
     extends AutoDisposeProvider<String> {
   /// Default currency converters ============
   ///
-  /// Copied from [accountAssetsTotalDefaultCurrencyBalanceString].
-  AccountAssetsTotalDefaultCurrencyBalanceStringProvider(
-    List<AccountAsset> accountAssets,
-  ) : this._internal(
-        (ref) => accountAssetsTotalDefaultCurrencyBalanceString(
-          ref as AccountAssetsTotalDefaultCurrencyBalanceStringRef,
-          accountAssets,
+  /// Copied from [assetsTotalDefaultCurrencyBalanceString].
+  AssetsTotalDefaultCurrencyBalanceStringProvider(Iterable<Asset> assets)
+    : this._internal(
+        (ref) => assetsTotalDefaultCurrencyBalanceString(
+          ref as AssetsTotalDefaultCurrencyBalanceStringRef,
+          assets,
         ),
-        from: accountAssetsTotalDefaultCurrencyBalanceStringProvider,
-        name: r'accountAssetsTotalDefaultCurrencyBalanceStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetsTotalDefaultCurrencyBalanceStringHash,
+        from: assetsTotalDefaultCurrencyBalanceStringProvider,
+        name: r'assetsTotalDefaultCurrencyBalanceStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetsTotalDefaultCurrencyBalanceStringHash,
         dependencies:
-            AccountAssetsTotalDefaultCurrencyBalanceStringFamily._dependencies,
-        allTransitiveDependencies:
-            AccountAssetsTotalDefaultCurrencyBalanceStringFamily
-                ._allTransitiveDependencies,
-        accountAssets: accountAssets,
+            AssetsTotalDefaultCurrencyBalanceStringFamily._dependencies,
+        allTransitiveDependencies: AssetsTotalDefaultCurrencyBalanceStringFamily
+            ._allTransitiveDependencies,
+        assets: assets,
       );
 
-  AccountAssetsTotalDefaultCurrencyBalanceStringProvider._internal(
+  AssetsTotalDefaultCurrencyBalanceStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAssets,
+    required this.assets,
   }) : super.internal();
 
-  final List<AccountAsset> accountAssets;
+  final Iterable<Asset> assets;
 
   @override
   Override overrideWith(
-    String Function(AccountAssetsTotalDefaultCurrencyBalanceStringRef provider)
-    create,
+    String Function(AssetsTotalDefaultCurrencyBalanceStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override:
-          AccountAssetsTotalDefaultCurrencyBalanceStringProvider._internal(
-            (ref) => create(
-              ref as AccountAssetsTotalDefaultCurrencyBalanceStringRef,
-            ),
-            from: from,
-            name: null,
-            dependencies: null,
-            allTransitiveDependencies: null,
-            debugGetCreateSourceHash: null,
-            accountAssets: accountAssets,
-          ),
+      override: AssetsTotalDefaultCurrencyBalanceStringProvider._internal(
+        (ref) => create(ref as AssetsTotalDefaultCurrencyBalanceStringRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assets: assets,
+      ),
     );
   }
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetsTotalDefaultCurrencyBalanceStringProviderElement(this);
+    return _AssetsTotalDefaultCurrencyBalanceStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AccountAssetsTotalDefaultCurrencyBalanceStringProvider &&
-        other.accountAssets == accountAssets;
+    return other is AssetsTotalDefaultCurrencyBalanceStringProvider &&
+        other.assets == assets;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAssets.hashCode);
+    hash = _SystemHash.combine(hash, assets.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -2926,50 +2680,45 @@ class AccountAssetsTotalDefaultCurrencyBalanceStringProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AccountAssetsTotalDefaultCurrencyBalanceStringRef
+mixin AssetsTotalDefaultCurrencyBalanceStringRef
     on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAssets` of this provider.
-  List<AccountAsset> get accountAssets;
+  /// The parameter `assets` of this provider.
+  Iterable<Asset> get assets;
 }
 
-class _AccountAssetsTotalDefaultCurrencyBalanceStringProviderElement
+class _AssetsTotalDefaultCurrencyBalanceStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with AccountAssetsTotalDefaultCurrencyBalanceStringRef {
-  _AccountAssetsTotalDefaultCurrencyBalanceStringProviderElement(
-    super.provider,
-  );
+    with AssetsTotalDefaultCurrencyBalanceStringRef {
+  _AssetsTotalDefaultCurrencyBalanceStringProviderElement(super.provider);
 
   @override
-  List<AccountAsset> get accountAssets =>
-      (origin as AccountAssetsTotalDefaultCurrencyBalanceStringProvider)
-          .accountAssets;
+  Iterable<Asset> get assets =>
+      (origin as AssetsTotalDefaultCurrencyBalanceStringProvider).assets;
 }
 
-String _$accountAssetsTotalDefaultCurrencyBalanceHash() =>
-    r'33f66fbbc89474535b4f132399b25ae6aabf25b2';
+String _$assetsTotalDefaultCurrencyBalanceHash() =>
+    r'f457c6ab7d96ae62263bd46a3df6785c093d259b';
 
-/// See also [accountAssetsTotalDefaultCurrencyBalance].
-@ProviderFor(accountAssetsTotalDefaultCurrencyBalance)
-const accountAssetsTotalDefaultCurrencyBalanceProvider =
-    AccountAssetsTotalDefaultCurrencyBalanceFamily();
+/// See also [assetsTotalDefaultCurrencyBalance].
+@ProviderFor(assetsTotalDefaultCurrencyBalance)
+const assetsTotalDefaultCurrencyBalanceProvider =
+    AssetsTotalDefaultCurrencyBalanceFamily();
 
-/// See also [accountAssetsTotalDefaultCurrencyBalance].
-class AccountAssetsTotalDefaultCurrencyBalanceFamily extends Family<Decimal> {
-  /// See also [accountAssetsTotalDefaultCurrencyBalance].
-  const AccountAssetsTotalDefaultCurrencyBalanceFamily();
+/// See also [assetsTotalDefaultCurrencyBalance].
+class AssetsTotalDefaultCurrencyBalanceFamily extends Family<Decimal> {
+  /// See also [assetsTotalDefaultCurrencyBalance].
+  const AssetsTotalDefaultCurrencyBalanceFamily();
 
-  /// See also [accountAssetsTotalDefaultCurrencyBalance].
-  AccountAssetsTotalDefaultCurrencyBalanceProvider call(
-    List<AccountAsset> accountAssets,
-  ) {
-    return AccountAssetsTotalDefaultCurrencyBalanceProvider(accountAssets);
+  /// See also [assetsTotalDefaultCurrencyBalance].
+  AssetsTotalDefaultCurrencyBalanceProvider call(Iterable<Asset> assets) {
+    return AssetsTotalDefaultCurrencyBalanceProvider(assets);
   }
 
   @override
-  AccountAssetsTotalDefaultCurrencyBalanceProvider getProviderOverride(
-    covariant AccountAssetsTotalDefaultCurrencyBalanceProvider provider,
+  AssetsTotalDefaultCurrencyBalanceProvider getProviderOverride(
+    covariant AssetsTotalDefaultCurrencyBalanceProvider provider,
   ) {
-    return call(provider.accountAssets);
+    return call(provider.assets);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -2984,212 +2733,75 @@ class AccountAssetsTotalDefaultCurrencyBalanceFamily extends Family<Decimal> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'accountAssetsTotalDefaultCurrencyBalanceProvider';
+  String? get name => r'assetsTotalDefaultCurrencyBalanceProvider';
 }
 
-/// See also [accountAssetsTotalDefaultCurrencyBalance].
-class AccountAssetsTotalDefaultCurrencyBalanceProvider
+/// See also [assetsTotalDefaultCurrencyBalance].
+class AssetsTotalDefaultCurrencyBalanceProvider
     extends AutoDisposeProvider<Decimal> {
-  /// See also [accountAssetsTotalDefaultCurrencyBalance].
-  AccountAssetsTotalDefaultCurrencyBalanceProvider(
-    List<AccountAsset> accountAssets,
-  ) : this._internal(
-        (ref) => accountAssetsTotalDefaultCurrencyBalance(
-          ref as AccountAssetsTotalDefaultCurrencyBalanceRef,
-          accountAssets,
-        ),
-        from: accountAssetsTotalDefaultCurrencyBalanceProvider,
-        name: r'accountAssetsTotalDefaultCurrencyBalanceProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetsTotalDefaultCurrencyBalanceHash,
-        dependencies:
-            AccountAssetsTotalDefaultCurrencyBalanceFamily._dependencies,
-        allTransitiveDependencies:
-            AccountAssetsTotalDefaultCurrencyBalanceFamily
-                ._allTransitiveDependencies,
-        accountAssets: accountAssets,
-      );
-
-  AccountAssetsTotalDefaultCurrencyBalanceProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.accountAssets,
-  }) : super.internal();
-
-  final List<AccountAsset> accountAssets;
-
-  @override
-  Override overrideWith(
-    Decimal Function(AccountAssetsTotalDefaultCurrencyBalanceRef provider)
-    create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: AccountAssetsTotalDefaultCurrencyBalanceProvider._internal(
-        (ref) => create(ref as AccountAssetsTotalDefaultCurrencyBalanceRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        accountAssets: accountAssets,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<Decimal> createElement() {
-    return _AccountAssetsTotalDefaultCurrencyBalanceProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is AccountAssetsTotalDefaultCurrencyBalanceProvider &&
-        other.accountAssets == accountAssets;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAssets.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin AccountAssetsTotalDefaultCurrencyBalanceRef
-    on AutoDisposeProviderRef<Decimal> {
-  /// The parameter `accountAssets` of this provider.
-  List<AccountAsset> get accountAssets;
-}
-
-class _AccountAssetsTotalDefaultCurrencyBalanceProviderElement
-    extends AutoDisposeProviderElement<Decimal>
-    with AccountAssetsTotalDefaultCurrencyBalanceRef {
-  _AccountAssetsTotalDefaultCurrencyBalanceProviderElement(super.provider);
-
-  @override
-  List<AccountAsset> get accountAssets =>
-      (origin as AccountAssetsTotalDefaultCurrencyBalanceProvider)
-          .accountAssets;
-}
-
-String _$accountAssetBalanceInDefaultCurrencyHash() =>
-    r'242928ec2f959389c7676bb22824e55cec9c7454';
-
-/// See also [accountAssetBalanceInDefaultCurrency].
-@ProviderFor(accountAssetBalanceInDefaultCurrency)
-const accountAssetBalanceInDefaultCurrencyProvider =
-    AccountAssetBalanceInDefaultCurrencyFamily();
-
-/// See also [accountAssetBalanceInDefaultCurrency].
-class AccountAssetBalanceInDefaultCurrencyFamily extends Family<Decimal> {
-  /// See also [accountAssetBalanceInDefaultCurrency].
-  const AccountAssetBalanceInDefaultCurrencyFamily();
-
-  /// See also [accountAssetBalanceInDefaultCurrency].
-  AccountAssetBalanceInDefaultCurrencyProvider call(AccountAsset accountAsset) {
-    return AccountAssetBalanceInDefaultCurrencyProvider(accountAsset);
-  }
-
-  @override
-  AccountAssetBalanceInDefaultCurrencyProvider getProviderOverride(
-    covariant AccountAssetBalanceInDefaultCurrencyProvider provider,
-  ) {
-    return call(provider.accountAsset);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'accountAssetBalanceInDefaultCurrencyProvider';
-}
-
-/// See also [accountAssetBalanceInDefaultCurrency].
-class AccountAssetBalanceInDefaultCurrencyProvider
-    extends AutoDisposeProvider<Decimal> {
-  /// See also [accountAssetBalanceInDefaultCurrency].
-  AccountAssetBalanceInDefaultCurrencyProvider(AccountAsset accountAsset)
+  /// See also [assetsTotalDefaultCurrencyBalance].
+  AssetsTotalDefaultCurrencyBalanceProvider(Iterable<Asset> assets)
     : this._internal(
-        (ref) => accountAssetBalanceInDefaultCurrency(
-          ref as AccountAssetBalanceInDefaultCurrencyRef,
-          accountAsset,
+        (ref) => assetsTotalDefaultCurrencyBalance(
+          ref as AssetsTotalDefaultCurrencyBalanceRef,
+          assets,
         ),
-        from: accountAssetBalanceInDefaultCurrencyProvider,
-        name: r'accountAssetBalanceInDefaultCurrencyProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceInDefaultCurrencyHash,
-        dependencies: AccountAssetBalanceInDefaultCurrencyFamily._dependencies,
+        from: assetsTotalDefaultCurrencyBalanceProvider,
+        name: r'assetsTotalDefaultCurrencyBalanceProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetsTotalDefaultCurrencyBalanceHash,
+        dependencies: AssetsTotalDefaultCurrencyBalanceFamily._dependencies,
         allTransitiveDependencies:
-            AccountAssetBalanceInDefaultCurrencyFamily
-                ._allTransitiveDependencies,
-        accountAsset: accountAsset,
+            AssetsTotalDefaultCurrencyBalanceFamily._allTransitiveDependencies,
+        assets: assets,
       );
 
-  AccountAssetBalanceInDefaultCurrencyProvider._internal(
+  AssetsTotalDefaultCurrencyBalanceProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.assets,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final Iterable<Asset> assets;
 
   @override
   Override overrideWith(
-    Decimal Function(AccountAssetBalanceInDefaultCurrencyRef provider) create,
+    Decimal Function(AssetsTotalDefaultCurrencyBalanceRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: AccountAssetBalanceInDefaultCurrencyProvider._internal(
-        (ref) => create(ref as AccountAssetBalanceInDefaultCurrencyRef),
+      override: AssetsTotalDefaultCurrencyBalanceProvider._internal(
+        (ref) => create(ref as AssetsTotalDefaultCurrencyBalanceRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        assets: assets,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<Decimal> createElement() {
-    return _AccountAssetBalanceInDefaultCurrencyProviderElement(this);
+    return _AssetsTotalDefaultCurrencyBalanceProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AccountAssetBalanceInDefaultCurrencyProvider &&
-        other.accountAsset == accountAsset;
+    return other is AssetsTotalDefaultCurrencyBalanceProvider &&
+        other.assets == assets;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, assets.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -3197,47 +2809,44 @@ class AccountAssetBalanceInDefaultCurrencyProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AccountAssetBalanceInDefaultCurrencyRef
-    on AutoDisposeProviderRef<Decimal> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+mixin AssetsTotalDefaultCurrencyBalanceRef on AutoDisposeProviderRef<Decimal> {
+  /// The parameter `assets` of this provider.
+  Iterable<Asset> get assets;
 }
 
-class _AccountAssetBalanceInDefaultCurrencyProviderElement
+class _AssetsTotalDefaultCurrencyBalanceProviderElement
     extends AutoDisposeProviderElement<Decimal>
-    with AccountAssetBalanceInDefaultCurrencyRef {
-  _AccountAssetBalanceInDefaultCurrencyProviderElement(super.provider);
+    with AssetsTotalDefaultCurrencyBalanceRef {
+  _AssetsTotalDefaultCurrencyBalanceProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as AccountAssetBalanceInDefaultCurrencyProvider).accountAsset;
+  Iterable<Asset> get assets =>
+      (origin as AssetsTotalDefaultCurrencyBalanceProvider).assets;
 }
 
-String _$accountAssetBalanceInDefaultCurrencyStringHash() =>
-    r'2ec82442e62bc85b3df3af3a6aa9568ec958a549';
+String _$assetBalanceInDefaultCurrencyHash() =>
+    r'9cf3bad57732a85a70ba41a706da245b9995bade';
 
-/// See also [accountAssetBalanceInDefaultCurrencyString].
-@ProviderFor(accountAssetBalanceInDefaultCurrencyString)
-const accountAssetBalanceInDefaultCurrencyStringProvider =
-    AccountAssetBalanceInDefaultCurrencyStringFamily();
+/// See also [assetBalanceInDefaultCurrency].
+@ProviderFor(assetBalanceInDefaultCurrency)
+const assetBalanceInDefaultCurrencyProvider =
+    AssetBalanceInDefaultCurrencyFamily();
 
-/// See also [accountAssetBalanceInDefaultCurrencyString].
-class AccountAssetBalanceInDefaultCurrencyStringFamily extends Family<String> {
-  /// See also [accountAssetBalanceInDefaultCurrencyString].
-  const AccountAssetBalanceInDefaultCurrencyStringFamily();
+/// See also [assetBalanceInDefaultCurrency].
+class AssetBalanceInDefaultCurrencyFamily extends Family<Decimal> {
+  /// See also [assetBalanceInDefaultCurrency].
+  const AssetBalanceInDefaultCurrencyFamily();
 
-  /// See also [accountAssetBalanceInDefaultCurrencyString].
-  AccountAssetBalanceInDefaultCurrencyStringProvider call(
-    AccountAsset accountAsset,
-  ) {
-    return AccountAssetBalanceInDefaultCurrencyStringProvider(accountAsset);
+  /// See also [assetBalanceInDefaultCurrency].
+  AssetBalanceInDefaultCurrencyProvider call(Asset asset) {
+    return AssetBalanceInDefaultCurrencyProvider(asset);
   }
 
   @override
-  AccountAssetBalanceInDefaultCurrencyStringProvider getProviderOverride(
-    covariant AccountAssetBalanceInDefaultCurrencyStringProvider provider,
+  AssetBalanceInDefaultCurrencyProvider getProviderOverride(
+    covariant AssetBalanceInDefaultCurrencyProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.asset);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -3252,79 +2861,202 @@ class AccountAssetBalanceInDefaultCurrencyStringFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'accountAssetBalanceInDefaultCurrencyStringProvider';
+  String? get name => r'assetBalanceInDefaultCurrencyProvider';
 }
 
-/// See also [accountAssetBalanceInDefaultCurrencyString].
-class AccountAssetBalanceInDefaultCurrencyStringProvider
+/// See also [assetBalanceInDefaultCurrency].
+class AssetBalanceInDefaultCurrencyProvider
+    extends AutoDisposeProvider<Decimal> {
+  /// See also [assetBalanceInDefaultCurrency].
+  AssetBalanceInDefaultCurrencyProvider(Asset asset)
+    : this._internal(
+        (ref) => assetBalanceInDefaultCurrency(
+          ref as AssetBalanceInDefaultCurrencyRef,
+          asset,
+        ),
+        from: assetBalanceInDefaultCurrencyProvider,
+        name: r'assetBalanceInDefaultCurrencyProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceInDefaultCurrencyHash,
+        dependencies: AssetBalanceInDefaultCurrencyFamily._dependencies,
+        allTransitiveDependencies:
+            AssetBalanceInDefaultCurrencyFamily._allTransitiveDependencies,
+        asset: asset,
+      );
+
+  AssetBalanceInDefaultCurrencyProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.asset,
+  }) : super.internal();
+
+  final Asset asset;
+
+  @override
+  Override overrideWith(
+    Decimal Function(AssetBalanceInDefaultCurrencyRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AssetBalanceInDefaultCurrencyProvider._internal(
+        (ref) => create(ref as AssetBalanceInDefaultCurrencyRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        asset: asset,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<Decimal> createElement() {
+    return _AssetBalanceInDefaultCurrencyProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssetBalanceInDefaultCurrencyProvider &&
+        other.asset == asset;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AssetBalanceInDefaultCurrencyRef on AutoDisposeProviderRef<Decimal> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
+}
+
+class _AssetBalanceInDefaultCurrencyProviderElement
+    extends AutoDisposeProviderElement<Decimal>
+    with AssetBalanceInDefaultCurrencyRef {
+  _AssetBalanceInDefaultCurrencyProviderElement(super.provider);
+
+  @override
+  Asset get asset => (origin as AssetBalanceInDefaultCurrencyProvider).asset;
+}
+
+String _$assetBalanceInDefaultCurrencyStringHash() =>
+    r'74bd4ccf9655efd315bef50a019d70eb6f6e6287';
+
+/// See also [assetBalanceInDefaultCurrencyString].
+@ProviderFor(assetBalanceInDefaultCurrencyString)
+const assetBalanceInDefaultCurrencyStringProvider =
+    AssetBalanceInDefaultCurrencyStringFamily();
+
+/// See also [assetBalanceInDefaultCurrencyString].
+class AssetBalanceInDefaultCurrencyStringFamily extends Family<String> {
+  /// See also [assetBalanceInDefaultCurrencyString].
+  const AssetBalanceInDefaultCurrencyStringFamily();
+
+  /// See also [assetBalanceInDefaultCurrencyString].
+  AssetBalanceInDefaultCurrencyStringProvider call(Asset asset) {
+    return AssetBalanceInDefaultCurrencyStringProvider(asset);
+  }
+
+  @override
+  AssetBalanceInDefaultCurrencyStringProvider getProviderOverride(
+    covariant AssetBalanceInDefaultCurrencyStringProvider provider,
+  ) {
+    return call(provider.asset);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'assetBalanceInDefaultCurrencyStringProvider';
+}
+
+/// See also [assetBalanceInDefaultCurrencyString].
+class AssetBalanceInDefaultCurrencyStringProvider
     extends AutoDisposeProvider<String> {
-  /// See also [accountAssetBalanceInDefaultCurrencyString].
-  AccountAssetBalanceInDefaultCurrencyStringProvider(AccountAsset accountAsset)
+  /// See also [assetBalanceInDefaultCurrencyString].
+  AssetBalanceInDefaultCurrencyStringProvider(Asset asset)
     : this._internal(
-        (ref) => accountAssetBalanceInDefaultCurrencyString(
-          ref as AccountAssetBalanceInDefaultCurrencyStringRef,
-          accountAsset,
+        (ref) => assetBalanceInDefaultCurrencyString(
+          ref as AssetBalanceInDefaultCurrencyStringRef,
+          asset,
         ),
-        from: accountAssetBalanceInDefaultCurrencyStringProvider,
-        name: r'accountAssetBalanceInDefaultCurrencyStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceInDefaultCurrencyStringHash,
-        dependencies:
-            AccountAssetBalanceInDefaultCurrencyStringFamily._dependencies,
-        allTransitiveDependencies:
-            AccountAssetBalanceInDefaultCurrencyStringFamily
-                ._allTransitiveDependencies,
-        accountAsset: accountAsset,
+        from: assetBalanceInDefaultCurrencyStringProvider,
+        name: r'assetBalanceInDefaultCurrencyStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceInDefaultCurrencyStringHash,
+        dependencies: AssetBalanceInDefaultCurrencyStringFamily._dependencies,
+        allTransitiveDependencies: AssetBalanceInDefaultCurrencyStringFamily
+            ._allTransitiveDependencies,
+        asset: asset,
       );
 
-  AccountAssetBalanceInDefaultCurrencyStringProvider._internal(
+  AssetBalanceInDefaultCurrencyStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.asset,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Override overrideWith(
-    String Function(AccountAssetBalanceInDefaultCurrencyStringRef provider)
-    create,
+    String Function(AssetBalanceInDefaultCurrencyStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: AccountAssetBalanceInDefaultCurrencyStringProvider._internal(
-        (ref) => create(ref as AccountAssetBalanceInDefaultCurrencyStringRef),
+      override: AssetBalanceInDefaultCurrencyStringProvider._internal(
+        (ref) => create(ref as AssetBalanceInDefaultCurrencyStringRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        asset: asset,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetBalanceInDefaultCurrencyStringProviderElement(this);
+    return _AssetBalanceInDefaultCurrencyStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AccountAssetBalanceInDefaultCurrencyStringProvider &&
-        other.accountAsset == accountAsset;
+    return other is AssetBalanceInDefaultCurrencyStringProvider &&
+        other.asset == asset;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -3332,53 +3064,51 @@ class AccountAssetBalanceInDefaultCurrencyStringProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AccountAssetBalanceInDefaultCurrencyStringRef
-    on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+mixin AssetBalanceInDefaultCurrencyStringRef on AutoDisposeProviderRef<String> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
 }
 
-class _AccountAssetBalanceInDefaultCurrencyStringProviderElement
+class _AssetBalanceInDefaultCurrencyStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with AccountAssetBalanceInDefaultCurrencyStringRef {
-  _AccountAssetBalanceInDefaultCurrencyStringProviderElement(super.provider);
+    with AssetBalanceInDefaultCurrencyStringRef {
+  _AssetBalanceInDefaultCurrencyStringProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as AccountAssetBalanceInDefaultCurrencyStringProvider)
-          .accountAsset;
+  Asset get asset =>
+      (origin as AssetBalanceInDefaultCurrencyStringProvider).asset;
 }
 
-String _$accountAssetBalanceStringHash() =>
-    r'0795ce0ab43464b2e1ad302a3414d293f4ffe59c';
+String _$assetBalanceStringHash() =>
+    r'e380490b0208128e3e34a2f56612b784ca04ef69';
 
 /// Asset balance ============
 ///
-/// Copied from [accountAssetBalanceString].
-@ProviderFor(accountAssetBalanceString)
-const accountAssetBalanceStringProvider = AccountAssetBalanceStringFamily();
+/// Copied from [assetBalanceString].
+@ProviderFor(assetBalanceString)
+const assetBalanceStringProvider = AssetBalanceStringFamily();
 
 /// Asset balance ============
 ///
-/// Copied from [accountAssetBalanceString].
-class AccountAssetBalanceStringFamily extends Family<String> {
+/// Copied from [assetBalanceString].
+class AssetBalanceStringFamily extends Family<String> {
   /// Asset balance ============
   ///
-  /// Copied from [accountAssetBalanceString].
-  const AccountAssetBalanceStringFamily();
+  /// Copied from [assetBalanceString].
+  const AssetBalanceStringFamily();
 
   /// Asset balance ============
   ///
-  /// Copied from [accountAssetBalanceString].
-  AccountAssetBalanceStringProvider call(AccountAsset accountAsset) {
-    return AccountAssetBalanceStringProvider(accountAsset);
+  /// Copied from [assetBalanceString].
+  AssetBalanceStringProvider call(Asset asset) {
+    return AssetBalanceStringProvider(asset);
   }
 
   @override
-  AccountAssetBalanceStringProvider getProviderOverride(
-    covariant AccountAssetBalanceStringProvider provider,
+  AssetBalanceStringProvider getProviderOverride(
+    covariant AssetBalanceStringProvider provider,
   ) {
-    return call(provider.accountAsset);
+    return call(provider.asset);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -3393,79 +3123,74 @@ class AccountAssetBalanceStringFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'accountAssetBalanceStringProvider';
+  String? get name => r'assetBalanceStringProvider';
 }
 
 /// Asset balance ============
 ///
-/// Copied from [accountAssetBalanceString].
-class AccountAssetBalanceStringProvider extends AutoDisposeProvider<String> {
+/// Copied from [assetBalanceString].
+class AssetBalanceStringProvider extends AutoDisposeProvider<String> {
   /// Asset balance ============
   ///
-  /// Copied from [accountAssetBalanceString].
-  AccountAssetBalanceStringProvider(AccountAsset accountAsset)
+  /// Copied from [assetBalanceString].
+  AssetBalanceStringProvider(Asset asset)
     : this._internal(
-        (ref) => accountAssetBalanceString(
-          ref as AccountAssetBalanceStringRef,
-          accountAsset,
-        ),
-        from: accountAssetBalanceStringProvider,
-        name: r'accountAssetBalanceStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$accountAssetBalanceStringHash,
-        dependencies: AccountAssetBalanceStringFamily._dependencies,
+        (ref) => assetBalanceString(ref as AssetBalanceStringRef, asset),
+        from: assetBalanceStringProvider,
+        name: r'assetBalanceStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceStringHash,
+        dependencies: AssetBalanceStringFamily._dependencies,
         allTransitiveDependencies:
-            AccountAssetBalanceStringFamily._allTransitiveDependencies,
-        accountAsset: accountAsset,
+            AssetBalanceStringFamily._allTransitiveDependencies,
+        asset: asset,
       );
 
-  AccountAssetBalanceStringProvider._internal(
+  AssetBalanceStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.accountAsset,
+    required this.asset,
   }) : super.internal();
 
-  final AccountAsset accountAsset;
+  final Asset asset;
 
   @override
   Override overrideWith(
-    String Function(AccountAssetBalanceStringRef provider) create,
+    String Function(AssetBalanceStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: AccountAssetBalanceStringProvider._internal(
-        (ref) => create(ref as AccountAssetBalanceStringRef),
+      override: AssetBalanceStringProvider._internal(
+        (ref) => create(ref as AssetBalanceStringRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        accountAsset: accountAsset,
+        asset: asset,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _AccountAssetBalanceStringProviderElement(this);
+    return _AssetBalanceStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AccountAssetBalanceStringProvider &&
-        other.accountAsset == accountAsset;
+    return other is AssetBalanceStringProvider && other.asset == asset;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -3473,42 +3198,283 @@ class AccountAssetBalanceStringProvider extends AutoDisposeProvider<String> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin AccountAssetBalanceStringRef on AutoDisposeProviderRef<String> {
-  /// The parameter `accountAsset` of this provider.
-  AccountAsset get accountAsset;
+mixin AssetBalanceStringRef on AutoDisposeProviderRef<String> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
 }
 
-class _AccountAssetBalanceStringProviderElement
+class _AssetBalanceStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with AccountAssetBalanceStringRef {
-  _AccountAssetBalanceStringProviderElement(super.provider);
+    with AssetBalanceStringRef {
+  _AssetBalanceStringProviderElement(super.provider);
 
   @override
-  AccountAsset get accountAsset =>
-      (origin as AccountAssetBalanceStringProvider).accountAsset;
+  Asset get asset => (origin as AssetBalanceStringProvider).asset;
 }
 
-String _$totalMaxAvailableBalanceForAssetAsStringHash() =>
-    r'013b010f7f9191b0eec2512097b03b4b4f4eb675';
+String _$assetBalanceDecimalHash() =>
+    r'bfa57a470604bab66c4a58d53681bdde0f147a69';
 
-/// See also [totalMaxAvailableBalanceForAssetAsString].
-@ProviderFor(totalMaxAvailableBalanceForAssetAsString)
-const totalMaxAvailableBalanceForAssetAsStringProvider =
-    TotalMaxAvailableBalanceForAssetAsStringFamily();
+/// See also [assetBalanceDecimal].
+@ProviderFor(assetBalanceDecimal)
+const assetBalanceDecimalProvider = AssetBalanceDecimalFamily();
 
-/// See also [totalMaxAvailableBalanceForAssetAsString].
-class TotalMaxAvailableBalanceForAssetAsStringFamily extends Family<String> {
-  /// See also [totalMaxAvailableBalanceForAssetAsString].
-  const TotalMaxAvailableBalanceForAssetAsStringFamily();
+/// See also [assetBalanceDecimal].
+class AssetBalanceDecimalFamily extends Family<Decimal> {
+  /// See also [assetBalanceDecimal].
+  const AssetBalanceDecimalFamily();
 
-  /// See also [totalMaxAvailableBalanceForAssetAsString].
-  TotalMaxAvailableBalanceForAssetAsStringProvider call(String? assetId) {
-    return TotalMaxAvailableBalanceForAssetAsStringProvider(assetId);
+  /// See also [assetBalanceDecimal].
+  AssetBalanceDecimalProvider call(Asset asset) {
+    return AssetBalanceDecimalProvider(asset);
   }
 
   @override
-  TotalMaxAvailableBalanceForAssetAsStringProvider getProviderOverride(
-    covariant TotalMaxAvailableBalanceForAssetAsStringProvider provider,
+  AssetBalanceDecimalProvider getProviderOverride(
+    covariant AssetBalanceDecimalProvider provider,
+  ) {
+    return call(provider.asset);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'assetBalanceDecimalProvider';
+}
+
+/// See also [assetBalanceDecimal].
+class AssetBalanceDecimalProvider extends AutoDisposeProvider<Decimal> {
+  /// See also [assetBalanceDecimal].
+  AssetBalanceDecimalProvider(Asset asset)
+    : this._internal(
+        (ref) => assetBalanceDecimal(ref as AssetBalanceDecimalRef, asset),
+        from: assetBalanceDecimalProvider,
+        name: r'assetBalanceDecimalProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceDecimalHash,
+        dependencies: AssetBalanceDecimalFamily._dependencies,
+        allTransitiveDependencies:
+            AssetBalanceDecimalFamily._allTransitiveDependencies,
+        asset: asset,
+      );
+
+  AssetBalanceDecimalProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.asset,
+  }) : super.internal();
+
+  final Asset asset;
+
+  @override
+  Override overrideWith(
+    Decimal Function(AssetBalanceDecimalRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AssetBalanceDecimalProvider._internal(
+        (ref) => create(ref as AssetBalanceDecimalRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        asset: asset,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<Decimal> createElement() {
+    return _AssetBalanceDecimalProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssetBalanceDecimalProvider && other.asset == asset;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AssetBalanceDecimalRef on AutoDisposeProviderRef<Decimal> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
+}
+
+class _AssetBalanceDecimalProviderElement
+    extends AutoDisposeProviderElement<Decimal>
+    with AssetBalanceDecimalRef {
+  _AssetBalanceDecimalProviderElement(super.provider);
+
+  @override
+  Asset get asset => (origin as AssetBalanceDecimalProvider).asset;
+}
+
+String _$assetBalanceDoubleHash() =>
+    r'c692732f9d94f63ac2955155c2b153abfafaeb48';
+
+/// See also [assetBalanceDouble].
+@ProviderFor(assetBalanceDouble)
+const assetBalanceDoubleProvider = AssetBalanceDoubleFamily();
+
+/// See also [assetBalanceDouble].
+class AssetBalanceDoubleFamily extends Family<double> {
+  /// See also [assetBalanceDouble].
+  const AssetBalanceDoubleFamily();
+
+  /// See also [assetBalanceDouble].
+  AssetBalanceDoubleProvider call(Asset asset) {
+    return AssetBalanceDoubleProvider(asset);
+  }
+
+  @override
+  AssetBalanceDoubleProvider getProviderOverride(
+    covariant AssetBalanceDoubleProvider provider,
+  ) {
+    return call(provider.asset);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'assetBalanceDoubleProvider';
+}
+
+/// See also [assetBalanceDouble].
+class AssetBalanceDoubleProvider extends AutoDisposeProvider<double> {
+  /// See also [assetBalanceDouble].
+  AssetBalanceDoubleProvider(Asset asset)
+    : this._internal(
+        (ref) => assetBalanceDouble(ref as AssetBalanceDoubleRef, asset),
+        from: assetBalanceDoubleProvider,
+        name: r'assetBalanceDoubleProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetBalanceDoubleHash,
+        dependencies: AssetBalanceDoubleFamily._dependencies,
+        allTransitiveDependencies:
+            AssetBalanceDoubleFamily._allTransitiveDependencies,
+        asset: asset,
+      );
+
+  AssetBalanceDoubleProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.asset,
+  }) : super.internal();
+
+  final Asset asset;
+
+  @override
+  Override overrideWith(
+    double Function(AssetBalanceDoubleRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AssetBalanceDoubleProvider._internal(
+        (ref) => create(ref as AssetBalanceDoubleRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        asset: asset,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<double> createElement() {
+    return _AssetBalanceDoubleProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssetBalanceDoubleProvider && other.asset == asset;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AssetBalanceDoubleRef on AutoDisposeProviderRef<double> {
+  /// The parameter `asset` of this provider.
+  Asset get asset;
+}
+
+class _AssetBalanceDoubleProviderElement
+    extends AutoDisposeProviderElement<double>
+    with AssetBalanceDoubleRef {
+  _AssetBalanceDoubleProviderElement(super.provider);
+
+  @override
+  Asset get asset => (origin as AssetBalanceDoubleProvider).asset;
+}
+
+String _$availableBalanceForAssetIdAsStringHash() =>
+    r'a4fd4f97c08b789e86ec107bf004dbf38029e358';
+
+/// See also [availableBalanceForAssetIdAsString].
+@ProviderFor(availableBalanceForAssetIdAsString)
+const availableBalanceForAssetIdAsStringProvider =
+    AvailableBalanceForAssetIdAsStringFamily();
+
+/// See also [availableBalanceForAssetIdAsString].
+class AvailableBalanceForAssetIdAsStringFamily extends Family<String> {
+  /// See also [availableBalanceForAssetIdAsString].
+  const AvailableBalanceForAssetIdAsStringFamily();
+
+  /// See also [availableBalanceForAssetIdAsString].
+  AvailableBalanceForAssetIdAsStringProvider call(String? assetId) {
+    return AvailableBalanceForAssetIdAsStringProvider(assetId);
+  }
+
+  @override
+  AvailableBalanceForAssetIdAsStringProvider getProviderOverride(
+    covariant AvailableBalanceForAssetIdAsStringProvider provider,
   ) {
     return call(provider.assetId);
   }
@@ -3525,34 +3491,31 @@ class TotalMaxAvailableBalanceForAssetAsStringFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'totalMaxAvailableBalanceForAssetAsStringProvider';
+  String? get name => r'availableBalanceForAssetIdAsStringProvider';
 }
 
-/// See also [totalMaxAvailableBalanceForAssetAsString].
-class TotalMaxAvailableBalanceForAssetAsStringProvider
+/// See also [availableBalanceForAssetIdAsString].
+class AvailableBalanceForAssetIdAsStringProvider
     extends AutoDisposeProvider<String> {
-  /// See also [totalMaxAvailableBalanceForAssetAsString].
-  TotalMaxAvailableBalanceForAssetAsStringProvider(String? assetId)
+  /// See also [availableBalanceForAssetIdAsString].
+  AvailableBalanceForAssetIdAsStringProvider(String? assetId)
     : this._internal(
-        (ref) => totalMaxAvailableBalanceForAssetAsString(
-          ref as TotalMaxAvailableBalanceForAssetAsStringRef,
+        (ref) => availableBalanceForAssetIdAsString(
+          ref as AvailableBalanceForAssetIdAsStringRef,
           assetId,
         ),
-        from: totalMaxAvailableBalanceForAssetAsStringProvider,
-        name: r'totalMaxAvailableBalanceForAssetAsStringProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$totalMaxAvailableBalanceForAssetAsStringHash,
-        dependencies:
-            TotalMaxAvailableBalanceForAssetAsStringFamily._dependencies,
+        from: availableBalanceForAssetIdAsStringProvider,
+        name: r'availableBalanceForAssetIdAsStringProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$availableBalanceForAssetIdAsStringHash,
+        dependencies: AvailableBalanceForAssetIdAsStringFamily._dependencies,
         allTransitiveDependencies:
-            TotalMaxAvailableBalanceForAssetAsStringFamily
-                ._allTransitiveDependencies,
+            AvailableBalanceForAssetIdAsStringFamily._allTransitiveDependencies,
         assetId: assetId,
       );
 
-  TotalMaxAvailableBalanceForAssetAsStringProvider._internal(
+  AvailableBalanceForAssetIdAsStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -3566,13 +3529,12 @@ class TotalMaxAvailableBalanceForAssetAsStringProvider
 
   @override
   Override overrideWith(
-    String Function(TotalMaxAvailableBalanceForAssetAsStringRef provider)
-    create,
+    String Function(AvailableBalanceForAssetIdAsStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: TotalMaxAvailableBalanceForAssetAsStringProvider._internal(
-        (ref) => create(ref as TotalMaxAvailableBalanceForAssetAsStringRef),
+      override: AvailableBalanceForAssetIdAsStringProvider._internal(
+        (ref) => create(ref as AvailableBalanceForAssetIdAsStringRef),
         from: from,
         name: null,
         dependencies: null,
@@ -3585,12 +3547,12 @@ class TotalMaxAvailableBalanceForAssetAsStringProvider
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _TotalMaxAvailableBalanceForAssetAsStringProviderElement(this);
+    return _AvailableBalanceForAssetIdAsStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is TotalMaxAvailableBalanceForAssetAsStringProvider &&
+    return other is AvailableBalanceForAssetIdAsStringProvider &&
         other.assetId == assetId;
   }
 
@@ -3605,20 +3567,19 @@ class TotalMaxAvailableBalanceForAssetAsStringProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin TotalMaxAvailableBalanceForAssetAsStringRef
-    on AutoDisposeProviderRef<String> {
+mixin AvailableBalanceForAssetIdAsStringRef on AutoDisposeProviderRef<String> {
   /// The parameter `assetId` of this provider.
   String? get assetId;
 }
 
-class _TotalMaxAvailableBalanceForAssetAsStringProviderElement
+class _AvailableBalanceForAssetIdAsStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with TotalMaxAvailableBalanceForAssetAsStringRef {
-  _TotalMaxAvailableBalanceForAssetAsStringProviderElement(super.provider);
+    with AvailableBalanceForAssetIdAsStringRef {
+  _AvailableBalanceForAssetIdAsStringProviderElement(super.provider);
 
   @override
   String? get assetId =>
-      (origin as TotalMaxAvailableBalanceForAssetAsStringProvider).assetId;
+      (origin as AvailableBalanceForAssetIdAsStringProvider).assetId;
 }
 
 String _$defaultCurrencyTickerHash() =>
@@ -3629,10 +3590,9 @@ String _$defaultCurrencyTickerHash() =>
 final defaultCurrencyTickerProvider = AutoDisposeProvider<String>.internal(
   defaultCurrencyTicker,
   name: r'defaultCurrencyTickerProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$defaultCurrencyTickerHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$defaultCurrencyTickerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -3640,7 +3600,7 @@ final defaultCurrencyTickerProvider = AutoDisposeProvider<String>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef DefaultCurrencyTickerRef = AutoDisposeProviderRef<String>;
-String _$balancesNotifierHash() => r'cacedc41b0ad8a5ec7822c318f388b72d228005b';
+String _$balancesNotifierHash() => r'ed70ac2f9f3052422ba6a16cdd70b1e4c4cbd373';
 
 /// See also [BalancesNotifier].
 @ProviderFor(BalancesNotifier)
@@ -3648,10 +3608,9 @@ final balancesNotifierProvider =
     NotifierProvider<BalancesNotifier, Map<AccountAsset, int>>.internal(
       BalancesNotifier.new,
       name: r'balancesNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$balancesNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$balancesNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

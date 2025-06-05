@@ -15,7 +15,6 @@ import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/accounts/widgets/assets_header.dart';
-import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'package:sideswap/common/widgets/custom_back_button.dart';
@@ -84,36 +83,40 @@ class AssetDetailsTransactionsPanel extends HookConsumerWidget {
     final maximizedPadding = MediaQuery.of(context).padding.top + 70;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final selectedWalletAccountAsset = ref.watch(
-      selectedWalletAccountAssetNotifierProvider,
-    );
-    final allAssets = ref.watch(accountAssetTransactionsProvider);
-    final assetList = allAssets[selectedWalletAccountAsset] ?? <TxItem>[];
+    final allAssets = ref.watch(assetTransactionsProvider);
     final hightPercentController = ref.watch(heightPercentControllerProvider);
 
-    return SlidingUpPanel(
-      controller: panelController,
-      backdropEnabled: false,
-      parallaxEnabled: false,
-      isDraggable: assetList.isEmpty ? false : true,
-      minHeight: minExtent * screenHeight - minimizedPadding,
-      maxHeight: maxExtent * screenHeight - maximizedPadding,
-      onPanelSlide: (position) {
-        ref
-            .read(panelPositionNotifierProvider.notifier)
-            .setPanelPosition(position);
-        hightPercentController.add(1 - position);
-      },
-      color: SideSwapColors.chathamsBlue,
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(16),
-        topRight: Radius.circular(16),
-      ),
-      header: AssetDetailsSlidingPanelHeader(panelController: panelController),
-      panelBuilder: (sc) {
-        return const AssetDetailsPanelBuilder();
-      },
-    );
+    final optionSelectedAsset = ref.watch(selectedWalletAssetNotifierProvider);
+
+    return optionSelectedAsset.match(() => const SizedBox(), (asset) {
+      final txItemList = allAssets[asset.assetId] ?? <TxItem>[];
+
+      return SlidingUpPanel(
+        controller: panelController,
+        backdropEnabled: false,
+        parallaxEnabled: false,
+        isDraggable: txItemList.isEmpty ? false : true,
+        minHeight: minExtent * screenHeight - minimizedPadding,
+        maxHeight: maxExtent * screenHeight - maximizedPadding,
+        onPanelSlide: (position) {
+          ref
+              .read(panelPositionNotifierProvider.notifier)
+              .setPanelPosition(position);
+          hightPercentController.add(1 - position);
+        },
+        color: SideSwapColors.chathamsBlue,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+        header: AssetDetailsSlidingPanelHeader(
+          panelController: panelController,
+        ),
+        panelBuilder: (sc) {
+          return const AssetDetailsPanelBuilder();
+        },
+      );
+    });
   }
 }
 
@@ -122,25 +125,21 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedWalletAccountAsset = ref.watch(
-      selectedWalletAccountAssetNotifierProvider,
-    );
-    final asset = ref.watch(
-      assetsStateProvider.select(
-        (value) => value[selectedWalletAccountAsset?.assetId],
-      ),
-    );
+    final optionSelectedAsset = ref.watch(selectedWalletAssetNotifierProvider);
 
     useEffect(() {
-      ref
-          .read(tokenMarketNotifierProvider.notifier)
-          .requestAssetDetails(assetId: asset?.assetId);
+      optionSelectedAsset.match(() {}, (asset) {
+        ref
+            .read(tokenMarketNotifierProvider.notifier)
+            .requestAssetDetails(assetId: asset.assetId);
+      });
 
       return;
-    }, [asset]);
+    }, [optionSelectedAsset]);
 
-    return switch (asset) {
-      Asset asset => Padding(
+    return optionSelectedAsset.match(
+      () => const SizedBox(),
+      (asset) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,7 +160,7 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
             AssetDetailsText(text: 'Asset'.tr()),
             Consumer(
               builder: (context, ref, child) {
-                final isTestnet = ref.read(envProvider.notifier).isTestnet();
+                final isTestnet = ref.watch(envProvider.notifier).isTestnet();
                 final assetUrl = generateAssetUrl(
                   assetId: asset.assetId,
                   testnet: isTestnet,
@@ -187,23 +186,17 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
               _ => [const SizedBox()],
             },
             AssetDetailsText(text: 'Precision'.tr()),
-            Consumer(
-              builder: (context, ref, child) {
-                final assetPrecision = ref
-                    .watch(assetUtilsProvider)
-                    .getPrecisionForAssetId(assetId: asset.assetId);
-                return AssetDetailsText(
-                  text: '$assetPrecision',
-                  padding: 16,
-                  color: Colors.white,
-                  useSelectable: true,
-                );
-              },
+            AssetDetailsText(
+              text: '${asset.precision}',
+              padding: 16,
+              color: Colors.white,
+              useSelectable: true,
             ),
             Consumer(
               builder: (context, ref, child) {
-                final details =
-                    ref.watch(tokenMarketNotifierProvider)[asset.assetId];
+                final details = ref.watch(
+                  tokenMarketNotifierProvider,
+                )[asset.assetId];
                 final issuedAmount = details?.stats?.issuedAmount ?? 0;
                 final burnedAmount = details?.stats?.burnedAmount ?? 0;
                 final circulatingAmount = issuedAmount - burnedAmount;
@@ -245,8 +238,7 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
           ],
         ),
       ),
-      _ => const SizedBox(),
-    };
+    );
   }
 }
 
@@ -446,18 +438,22 @@ class AssetDetailsTopHeader extends HookConsumerWidget {
                 padding: EdgeInsets.only(top: logoPadding),
                 child: Consumer(
                   builder: (context, ref, child) {
-                    final selectedWalletAccountAsset = ref.watch(
-                      selectedWalletAccountAssetNotifierProvider,
+                    final optionSelectedAsset = ref.watch(
+                      selectedWalletAssetNotifierProvider,
                     );
-                    final assetId = selectedWalletAccountAsset?.assetId;
-                    final icon = ref
-                        .watch(assetImageRepositoryProvider)
-                        .getBigImage(assetId);
-                    return SizedBox(
-                      width: logoHeight,
-                      height: logoHeight,
-                      child: icon,
-                    );
+
+                    return optionSelectedAsset.match(() => const SizedBox(), (
+                      asset,
+                    ) {
+                      final icon = ref
+                          .watch(assetImageRepositoryProvider)
+                          .getBigImage(asset.assetId);
+                      return SizedBox(
+                        width: logoHeight,
+                        height: logoHeight,
+                        child: icon,
+                      );
+                    });
                   },
                 ),
               ),

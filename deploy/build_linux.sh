@@ -5,8 +5,8 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y --no-install-recommends \
   autoconf automake autotools-dev pkg-config build-essential libtool \
-  python3{,-dev,-pip,-virtualenv} clang{,-format,-tidy} git curl cmake \
-  libssl-dev libtool-bin python-is-python3 lld libudev-dev protobuf-compiler \
+  clang git curl cmake ca-certificates \
+  libssl-dev libtool-bin  lld libudev-dev protobuf-compiler \
   ninja-build libgtk-3-dev liblzma-dev
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
@@ -21,22 +21,14 @@ mkdir deps
 pushd deps
 
 echo "Downloading Flutter. This may take some time..."
-curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.29.2-stable.tar.xz \
+curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.32.1-stable.tar.xz \
  | tar -xJ -C ./
 chown -R "$(whoami)" ./flutter
-
-echo "Building GDK..."
-git clone https://github.com/sideswap-io/gdk
-pushd gdk
-git checkout sswp_0.75.1
-./tools/build.sh --clang --static --install ../install/gdk/linux
-popd
 
 echo "Building sideswap rust library..."
 git clone https://github.com/sideswap-io/sideswap_rust
 pushd sideswap_rust
-git checkout 21b46d22937e382c993846a5baa27ff28a432ab0
-export GDK_DIR=../install/gdk/linux/lib/x86_64-linux-gnu
+git checkout 0ba7485f77c86d1a6ae64a0cfedba22afe4ed98a
 cargo build --release --package sideswap_client
 popd
 

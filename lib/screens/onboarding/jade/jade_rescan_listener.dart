@@ -7,7 +7,7 @@ class JadeRescanListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(jadeRescanProvider, (_, __) {});
+    ref.listen(jadeRescanProvider, (_, _) {});
     return Container();
   }
 }

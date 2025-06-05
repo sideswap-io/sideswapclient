@@ -15,10 +15,9 @@ final loginStateNotifierProvider =
     NotifierProvider<LoginStateNotifier, LoginState>.internal(
       LoginStateNotifier.new,
       name: r'loginStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$loginStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$loginStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

@@ -9,7 +9,6 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/markets/widgets/balance_line.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_button.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -183,26 +182,19 @@ class MarketSwapAmount extends HookConsumerWidget {
       Asset baseAsset,
       Asset quoteAsset,
     ) {
-      final asset =
-          marketSideState == MarketSideState.base() ? baseAsset : quoteAsset;
+      final asset = marketSideState == MarketSideState.base()
+          ? baseAsset
+          : quoteAsset;
 
-      /// * get amp balance for amp asset or instead get sum for all accounts
-      final balance =
-          asset.ampMarket
-              ? ref.read(
-                maxAvailableBalanceForAccountAssetProvider(
-                  AccountAsset(AccountType.amp, asset.assetId),
-                ),
-              )
-              : ref.read(
-                totalMaxAvailableBalanceForAssetProvider(asset.assetId),
-              );
+      final assetBalance = ref.read(
+        availableBalanceForAssetIdProvider(asset.assetId),
+      );
 
       amountController.text = ref
           .watch(amountToStringProvider)
           .amountToString(
             AmountToStringParameters(
-              amount: balance,
+              amount: assetBalance,
               trailingZeroes: false,
               precision: asset.precision,
             ),
@@ -217,10 +209,9 @@ class MarketSwapAmount extends HookConsumerWidget {
           children: [
             MarketAmountTextField(
               caption: 'Amount'.tr(),
-              asset:
-                  marketSideState == MarketSideState.base()
-                      ? baseAsset
-                      : quoteAsset,
+              asset: marketSideState == MarketSideState.base()
+                  ? baseAsset
+                  : quoteAsset,
               controller: amountController,
               autofocus: true,
               focusNode: amountFocusNode,
@@ -259,30 +250,34 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
     final optionQuoteSuccess = ref.watch(
       previewOrderQuoteSuccessNotifierProvider,
     );
-    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
+    final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     final closeCallback = useCallback(() {
-      ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+      // Jade wallet will cleanup the quote state on its own
+      final isJadeWallet = ref.read(isJadeWalletProvider);
+      if (!isJadeWallet) {
+        ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+      }
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != mobileOrderPreviewRouteName;
       });
     });
 
     useEffect(() {
-      if (previewOrderTtl != 0) {
+      if (orderSignTtl != 0) {
         return;
       }
 
-      closeCallback();
+      Future.microtask(() => closeCallback());
 
       return;
-    }, [previewOrderTtl]);
+    }, [orderSignTtl]);
 
     return SideSwapScaffold(
       backgroundColor: SideSwapColors.chathamsBlue,
       sideSwapBackground: false,
       appBar: CustomAppBar(
-        title: 'New order'.tr(),
+        title: 'Swap proposal'.tr(),
         onPressed: () {
           closeCallback();
         },
@@ -326,8 +321,9 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
                                     .notifier,
                               )
                               .setState(true);
-                          final authSucceed =
-                              await ref.read(walletProvider).isAuthenticated();
+                          final authSucceed = await ref
+                              .read(walletProvider)
+                              .isAuthenticated();
                           ref.invalidate(
                             jadeAuthInProgressStateNotifierProvider,
                           );

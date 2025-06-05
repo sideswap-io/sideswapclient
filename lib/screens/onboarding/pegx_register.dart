@@ -24,7 +24,7 @@ class PegxRegister extends HookConsumerWidget {
     ref.listen(pegxWebsocketClientProvider, (previous, next) {});
 
     ref.listen(pegxLoginStateNotifierProvider, (previous, next) async {
-      (switch (next) {
+      await (switch (next) {
         PegxLoginStateLogin(requestId: String requestId) => () async {
           await openUrl(
             '$pegxIntraAutheIdUrl$requestId',
@@ -39,20 +39,19 @@ class PegxRegister extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () =>
-            (switch (pegxLoginState) {
-              PegxLoginStateLogged() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxSubmitAmp);
-              },
-              PegxLoginStateGaidAdded() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxSubmitAmp);
-              },
-              _ => () {},
-            }()),
+        () => (switch (pegxLoginState) {
+          PegxLoginStateLogged() => () {
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.pegxSubmitAmp);
+          },
+          PegxLoginStateGaidAdded() => () {
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.pegxSubmitAmp);
+          },
+          _ => () {},
+        }()),
       );
 
       return;

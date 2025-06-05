@@ -14,10 +14,9 @@ final pegRepositoryProvider =
     AutoDisposeProvider<AbstractPegRepository>.internal(
       pegRepository,
       name: r'pegRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -32,8 +31,9 @@ String _$allPegsByIdHash() => r'a8dab04c1e70e6dedf0735de4d297102ccb18238';
 final allPegsByIdProvider = Provider<Map<String, TransItem>>.internal(
   allPegsById,
   name: r'allPegsByIdProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$allPegsByIdHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allPegsByIdHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -49,10 +49,9 @@ final allPegsNotifierProvider =
     NotifierProvider<AllPegsNotifier, Map<String, List<TransItem>>>.internal(
       AllPegsNotifier.new,
       name: r'allPegsNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$allPegsNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$allPegsNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -67,10 +66,9 @@ final pegSubscribedValueNotifierProvider =
     NotifierProvider<PegSubscribedValueNotifier, PegSubscribedValues>.internal(
       PegSubscribedValueNotifier.new,
       name: r'pegSubscribedValueNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegSubscribedValueNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegSubscribedValueNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

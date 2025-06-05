@@ -11,11 +11,11 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/swap_providers.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
@@ -36,7 +36,7 @@ class SwapSideAmount extends HookConsumerWidget {
     this.onSelectInputs,
     required this.dropdownValue,
     required this.availableAssets,
-    this.disabledAssets = const <AccountAsset>[],
+    this.disabledAssets = const <String>[],
     this.labelGroupValue = const SwapWallet.local(),
     this.localLabelOnChanged,
     this.externalLabelOnChanged,
@@ -71,13 +71,13 @@ class SwapSideAmount extends HookConsumerWidget {
   final String text;
   final TextEditingController? controller;
   final TextEditingController? addressController;
-  final ValueChanged<AccountAsset>? onDropdownChanged;
+  final ValueChanged<String>? onDropdownChanged;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onMaxPressed;
   final VoidCallback? onSelectInputs;
-  final AccountAsset dropdownValue;
-  final List<AccountAsset> availableAssets;
-  final List<AccountAsset> disabledAssets;
+  final String dropdownValue;
+  final Iterable<String> availableAssets;
+  final Iterable<String> disabledAssets;
   final SwapWallet labelGroupValue;
   final ValueChanged<SwapWallet>? localLabelOnChanged;
   final ValueChanged<SwapWallet>? externalLabelOnChanged;
@@ -141,269 +141,285 @@ class SwapSideAmount extends HookConsumerWidget {
       return;
     }, [result]);
 
-    final isAmp = dropdownValue.account.isAmp;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: padding,
-          child: SizedBox(
-            height: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: 122,
-                  child: Row(
-                    children: [
-                      Text(text, style: labelStyle),
-                      if (isAmp)
-                        const AmpFlag(
-                          textStyle: TextStyle(
-                            color: Color(0xFF73A6C5),
-                            fontSize: 10,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                if (showInsufficientFunds && !readOnly) ...[
-                  Text(
-                    'Insufficient funds'.tr(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: SideSwapColors.bitterSweet,
-                    ),
-                  ),
-                ] else ...[
-                  const SizedBox(),
-                ],
-                if (defaultCurrencyConversion2 != null &&
-                    defaultCurrencyConversion2!.isNotEmpty)
-                  Text(
-                    '≈ $defaultCurrencyConversion2',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.normal,
-                      color: SideSwapColors.halfBaked,
-                    ),
-                  ),
-                if (errorDescription.isNotEmpty && !readOnly) ...[
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        const textStyle = TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal,
-                          color: SideSwapColors.bitterSweet,
-                        );
-                        final renderParagraph = RenderParagraph(
-                          TextSpan(text: errorDescription, style: textStyle),
-                          textDirection: TextDirection.ltr,
-                          softWrap: false,
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                        );
-                        renderParagraph.layout(constraints);
-                        var textWidth = renderParagraph.textSize.width;
-                        var constraintsWidth =
-                            renderParagraph.constraints.maxWidth;
-                        return textWidth > constraintsWidth
-                            ? Marquee(
-                              text: errorDescription,
-                              style: textStyle,
-                              scrollAxis: Axis.horizontal,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              blankSpace: 200.0,
-                              velocity: 30.0,
-                              pauseAfterRound: const Duration(seconds: 3),
-                              showFadingOnlyWhenScrolling: true,
-                              fadingEdgeStartFraction: 0.1,
-                              fadingEdgeEndFraction: 0.1,
-                              startPadding: 100.0,
-                              accelerationDuration: const Duration(seconds: 3),
-                              accelerationCurve: Curves.linear,
-                              decelerationDuration: const Duration(
-                                milliseconds: 500,
-                              ),
-                              decelerationCurve: Curves.easeOut,
-                            )
-                            : Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(errorDescription, style: textStyle),
-                            );
-                      },
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 0),
-          child: Padding(
-            padding: padding,
-            child: SizedBox(
-              height: 43,
-              child: TickerAmountTextField(
-                readOnly: readOnly,
-                dropdownReadOnly: dropdownReadOnly,
-                showError: showInsufficientFunds || errorDescription.isNotEmpty,
-                controller: controller,
-                focusNode: focusNode ?? FocusNode(),
-                dropdownValue: dropdownValue,
-                availableAssets: availableAssets,
-                disabledAssets: disabledAssets,
-                onDropdownChanged: onDropdownChanged,
-                onChanged: onChanged,
-                hintText: hintText,
-                showHintText: showHintText,
-                onSubmitted: onSubmitted,
-                onEditingComplete: onEditingCompleted,
-                textInputAction: textInputAction,
-                showAccountsInPopup: showAccountsInPopup,
-              ),
-            ),
-          ),
-        ),
-        if (swapType != const SwapType.atomic() && visibleToggles) ...[
+    final optionAsset = ref.watch(assetFromAssetIdProvider(dropdownValue));
+
+    return optionAsset.match(
+      () => const SizedBox(),
+      (asset) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Padding(
-            padding: const EdgeInsets.only(top: 14),
+            padding: padding,
             child: SizedBox(
-              height: 18,
+              height: 20,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  LabeledRadio<SwapWallet>(
-                    label: 'Local wallet'.tr(),
-                    value: const SwapWallet.local(),
-                    groupValue: labelGroupValue,
-                    onChanged: localLabelOnChanged,
+                  SizedBox(
+                    width: 122,
+                    child: Row(
+                      children: [
+                        Text(text, style: labelStyle),
+                        if (asset.ampMarket)
+                          const AmpFlag(
+                            textStyle: TextStyle(
+                              color: Color(0xFF73A6C5),
+                              fontSize: 10,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                  LabeledRadio<SwapWallet>(
-                    label: 'External wallet'.tr(),
-                    value: const SwapWallet.extern(),
-                    groupValue: labelGroupValue,
-                    onChanged: externalLabelOnChanged,
-                  ),
+                  if (showInsufficientFunds && !readOnly) ...[
+                    Text(
+                      'Insufficient funds'.tr(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: SideSwapColors.bitterSweet,
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(),
+                  ],
+                  if (defaultCurrencyConversion2 != null &&
+                      defaultCurrencyConversion2!.isNotEmpty)
+                    Text(
+                      '≈ $defaultCurrencyConversion2',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.normal,
+                        color: SideSwapColors.halfBaked,
+                      ),
+                    ),
+                  if (errorDescription.isNotEmpty && !readOnly) ...[
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          const textStyle = TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                            color: SideSwapColors.bitterSweet,
+                          );
+                          final renderParagraph = RenderParagraph(
+                            TextSpan(text: errorDescription, style: textStyle),
+                            textDirection: TextDirection.ltr,
+                            softWrap: false,
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                          );
+                          renderParagraph.layout(constraints);
+                          var textWidth = renderParagraph.textSize.width;
+                          var constraintsWidth =
+                              renderParagraph.constraints.maxWidth;
+                          return textWidth > constraintsWidth
+                              ? Marquee(
+                                  text: errorDescription,
+                                  style: textStyle,
+                                  scrollAxis: Axis.horizontal,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  blankSpace: 200.0,
+                                  velocity: 30.0,
+                                  pauseAfterRound: const Duration(seconds: 3),
+                                  showFadingOnlyWhenScrolling: true,
+                                  fadingEdgeStartFraction: 0.1,
+                                  fadingEdgeEndFraction: 0.1,
+                                  startPadding: 100.0,
+                                  accelerationDuration: const Duration(
+                                    seconds: 3,
+                                  ),
+                                  accelerationCurve: Curves.linear,
+                                  decelerationDuration: const Duration(
+                                    milliseconds: 500,
+                                  ),
+                                  decelerationCurve: Curves.easeOut,
+                                )
+                              : Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    errorDescription,
+                                    style: textStyle,
+                                  ),
+                                );
+                        },
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
-        ],
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Padding(
-            padding: padding,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (swapType != const SwapType.atomic() &&
-                    !isMaxVisible &&
-                    !isAddressLabelVisible &&
-                    labelGroupValue == const SwapWallet.extern()) ...[
-                  Flexible(
-                    child: ShareCopyScanTextFormField(
-                      focusNode: receiveAddressFocusNode ?? FocusNode(),
-                      errorText: addressErrorText,
-                      controller: addressController ?? TextEditingController(),
-                      onChanged: onAddressChanged,
-                      onPasteTap:
-                          FlavorConfig.isDesktop && addressController != null
-                              ? () async {
+          Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: Padding(
+              padding: padding,
+              child: SizedBox(
+                height: 43,
+                child: TickerAmountTextField(
+                  readOnly: readOnly,
+                  dropdownReadOnly: dropdownReadOnly,
+                  showError:
+                      showInsufficientFunds || errorDescription.isNotEmpty,
+                  controller: controller,
+                  focusNode: focusNode ?? FocusNode(),
+                  dropdownValue: dropdownValue,
+                  availableAssets: availableAssets,
+                  disabledAssets: disabledAssets,
+                  onDropdownChanged: onDropdownChanged,
+                  onChanged: onChanged,
+                  hintText: hintText,
+                  showHintText: showHintText,
+                  onSubmitted: onSubmitted,
+                  onEditingComplete: onEditingCompleted,
+                  textInputAction: textInputAction,
+                  showAccountsInPopup: showAccountsInPopup,
+                ),
+              ),
+            ),
+          ),
+          if (swapType != const SwapType.atomic() && visibleToggles) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 14),
+              child: SizedBox(
+                height: 18,
+                child: Row(
+                  children: [
+                    LabeledRadio<SwapWallet>(
+                      label: 'Local wallet'.tr(),
+                      value: const SwapWallet.local(),
+                      groupValue: labelGroupValue,
+                      onChanged: localLabelOnChanged,
+                    ),
+                    LabeledRadio<SwapWallet>(
+                      label: 'External wallet'.tr(),
+                      value: const SwapWallet.extern(),
+                      groupValue: labelGroupValue,
+                      onChanged: externalLabelOnChanged,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Padding(
+              padding: padding,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (swapType != const SwapType.atomic() &&
+                      !isMaxVisible &&
+                      !isAddressLabelVisible &&
+                      labelGroupValue == const SwapWallet.extern()) ...[
+                    Flexible(
+                      child: ShareCopyScanTextFormField(
+                        focusNode: receiveAddressFocusNode ?? FocusNode(),
+                        errorText: addressErrorText,
+                        controller:
+                            addressController ?? TextEditingController(),
+                        onChanged: onAddressChanged,
+                        onPasteTap:
+                            FlavorConfig.isDesktop && addressController != null
+                            ? () async {
                                 await handlePasteSingleLine(addressController!);
                                 onAddressChanged?.call(addressController!.text);
                               }
-                              : null,
-                      onScanTap:
-                          FlavorConfig.isDesktop
-                              ? null
-                              : () async {
+                            : null,
+                        onScanTap: FlavorConfig.isDesktop
+                            ? null
+                            : () async {
                                 FocusManager.instance.primaryFocus?.unfocus();
                                 await Navigator.of(
                                   context,
                                   rootNavigator: true,
                                 ).push<void>(
                                   MaterialPageRoute(
-                                    builder:
-                                        (context) => getAddressQrScanner(
-                                          bitcoinAddress: true,
-                                        ),
+                                    builder: (context) => getAddressQrScanner(
+                                      bitcoinAddress: true,
+                                    ),
                                   ),
                                 );
                                 logger.d('Scanner Done');
                               },
-                      onEditingCompleted: onAddressEditingCompleted,
-                      addrType: AddrType.bitcoin,
-                    ),
-                  ),
-                ],
-                if (swapType == const SwapType.pegOut() &&
-                    labelGroupValue == const SwapWallet.extern() &&
-                    isAddressLabelVisible) ...[
-                  Flexible(
-                    child: SwapSideAmountPegOutAddressLabel(
-                      addressController: addressController,
-                      onAddressLabelClose: onAddressLabelClose,
-                    ),
-                  ),
-                ],
-                if (labelGroupValue == const SwapWallet.extern() &&
-                    swapType == const SwapType.atomic()) ...[
-                  Text('Balance: unknown'.tr(), style: balanceStyle).tr(),
-                ],
-                if (labelGroupValue == const SwapWallet.local() &&
-                    (swapType == const SwapType.atomic() ||
-                        swapType == const SwapType.pegOut())) ...[
-                  Text('Balance: {}'.tr(args: [balance]), style: balanceStyle),
-                ],
-                if (labelGroupValue == const SwapWallet.extern() &&
-                    swapType == const SwapType.pegIn()) ...[
-                  const Flexible(child: SwapSideAmountExternPegInDescription()),
-                ],
-                if (labelGroupValue == const SwapWallet.local() &&
-                    swapType == const SwapType.pegIn()) ...[
-                  const Flexible(child: SwapSideAmountLocalPegInDescription()),
-                ],
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        if (isInputsVisible &&
-                            labelGroupValue != const SwapWallet.extern()) ...[
-                          SwapSideAmountSelectInputsButton(
-                            onInputsSelected: onSelectInputs,
-                          ),
-                        ],
-                        if (isMaxVisible &&
-                            labelGroupValue != const SwapWallet.extern()) ...[
-                          SwapSideAmountMaxButton(onMaxPressed: onMaxPressed),
-                        ],
-                      ],
-                    ),
-                    if (defaultCurrencyConversion.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          '≈ $defaultCurrencyConversion',
-                          style: balanceStyle,
-                        ),
+                        onEditingCompleted: onAddressEditingCompleted,
+                        addrType: AddrType.bitcoin,
                       ),
-                    ],
+                    ),
                   ],
-                ),
-              ],
+                  if (swapType == const SwapType.pegOut() &&
+                      labelGroupValue == const SwapWallet.extern() &&
+                      isAddressLabelVisible) ...[
+                    Flexible(
+                      child: SwapSideAmountPegOutAddressLabel(
+                        addressController: addressController,
+                        onAddressLabelClose: onAddressLabelClose,
+                      ),
+                    ),
+                  ],
+                  if (labelGroupValue == const SwapWallet.extern() &&
+                      swapType == const SwapType.atomic()) ...[
+                    Text('Balance: unknown'.tr(), style: balanceStyle).tr(),
+                  ],
+                  if (labelGroupValue == const SwapWallet.local() &&
+                      (swapType == const SwapType.atomic() ||
+                          swapType == const SwapType.pegOut())) ...[
+                    Text(
+                      'Balance: {}'.tr(args: [balance]),
+                      style: balanceStyle,
+                    ),
+                  ],
+                  if (labelGroupValue == const SwapWallet.extern() &&
+                      swapType == const SwapType.pegIn()) ...[
+                    const Flexible(
+                      child: SwapSideAmountExternPegInDescription(),
+                    ),
+                  ],
+                  if (labelGroupValue == const SwapWallet.local() &&
+                      swapType == const SwapType.pegIn()) ...[
+                    const Flexible(
+                      child: SwapSideAmountLocalPegInDescription(),
+                    ),
+                  ],
+                  Column(
+                    children: [
+                      Row(
+                        children: [
+                          if (isInputsVisible &&
+                              labelGroupValue != const SwapWallet.extern()) ...[
+                            SwapSideAmountSelectInputsButton(
+                              onInputsSelected: onSelectInputs,
+                            ),
+                          ],
+                          if (isMaxVisible &&
+                              labelGroupValue != const SwapWallet.extern()) ...[
+                            SwapSideAmountMaxButton(onMaxPressed: onMaxPressed),
+                          ],
+                        ],
+                      ),
+                      if (defaultCurrencyConversion.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            '≈ $defaultCurrencyConversion',
+                            style: balanceStyle,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        if (swapType == const SwapType.pegOut() &&
-            labelGroupValue == const SwapWallet.extern())
-          SwapSideAmountFeeSuggestionsDropdown(padding: padding),
-      ],
+          if (swapType == const SwapType.pegOut() &&
+              labelGroupValue == const SwapWallet.extern())
+            SwapSideAmountFeeSuggestionsDropdown(padding: padding),
+        ],
+      ),
     );
   }
 }
@@ -630,20 +646,19 @@ class SwapSideAmountSelectInputsButton extends ConsumerWidget {
       children: [
         Container(
           height: 24,
-          decoration:
-              containsUtxo
-                  ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: SideSwapColors.turquoise,
-                  )
-                  : BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: SideSwapColors.brightTurquoise,
-                      width: 1,
-                      style: BorderStyle.solid,
-                    ),
+          decoration: containsUtxo
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: SideSwapColors.turquoise,
+                )
+              : BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: SideSwapColors.brightTurquoise,
+                    width: 1,
+                    style: BorderStyle.solid,
                   ),
+                ),
           child: TextButton(
             onPressed: onInputsSelected,
             style: TextButton.styleFrom(

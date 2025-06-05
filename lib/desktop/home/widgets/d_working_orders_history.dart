@@ -21,7 +21,7 @@ class DWorkingHistoryOrders extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loadMoreCallback = useCallback(({int skip = 0, int count = 20}) {
-      Future.microtask(() async {
+      Future.microtask(() {
         final msg = To();
         msg.loadHistory = To_LoadHistory(skip: skip, count: count);
 
@@ -107,8 +107,9 @@ class DWorkingHistoryOrderList extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final uiHistoryOrders = ref.watch(marketUiHistoryOrdersProvider);
     final totalHistoryOrders = ref.watch(marketHistoryTotalProvider);
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonWithoutBorderStyle;
 
     final scrollController = useScrollController();
 
@@ -139,10 +140,9 @@ class DWorkingHistoryOrderList extends HookConsumerWidget {
         controller: scrollController,
         slivers: [
           SliverList.builder(
-            itemCount:
-                uiHistoryOrders.length < totalHistoryOrders
-                    ? uiHistoryOrders.length + 1
-                    : totalHistoryOrders,
+            itemCount: uiHistoryOrders.length < totalHistoryOrders
+                ? uiHistoryOrders.length + 1
+                : totalHistoryOrders,
             itemBuilder: (context, index) {
               if (index == uiHistoryOrders.length) {
                 return SizedBox(

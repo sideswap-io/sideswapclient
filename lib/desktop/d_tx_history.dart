@@ -1,8 +1,12 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/desktop/widgets/d_transparent_button.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_amount.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
@@ -11,13 +15,12 @@ import 'package:sideswap/desktop/widgets/d_tx_history_header.dart';
 import 'package:sideswap/desktop/widgets/d_tx_blinded_url_icon_button.dart';
 import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
-import 'package:sideswap/desktop/widgets/d_tx_history_wallet.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
-class DTxHistory extends StatelessWidget {
+class DTxHistory extends HookConsumerWidget {
   const DTxHistory({
     super.key,
     this.horizontalPadding = 32,
@@ -28,7 +31,13 @@ class DTxHistory extends StatelessWidget {
   final bool newTxsOnly;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    useEffect(() {
+      ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+
+      return;
+    }, const []);
+
     return Column(
       children: [
         Padding(
@@ -39,7 +48,6 @@ class DTxHistory extends StatelessWidget {
           child: DFlexesRow(
             children: [
               DTxHistoryHeader(text: 'Date'.tr()),
-              DTxHistoryHeader(text: 'Wallet'.tr()),
               DTxHistoryHeader(text: 'Type'.tr()),
               DTxHistoryHeader(text: 'Sent'.tr()),
               DTxHistoryHeader(text: 'Received'.tr()),
@@ -48,11 +56,41 @@ class DTxHistory extends StatelessWidget {
             ],
           ),
         ),
-        Expanded(
-          child: DTxHistoryTransaction(
-            horizontalPadding: horizontalPadding,
-            newTxsOnly: newTxsOnly,
-          ),
+        HookConsumer(
+          builder: (context, ref, child) {
+            final loadTransactionsState = ref.watch(
+              loadTransactionsStateNotifierProvider,
+            );
+
+            useEffect(() {
+              logger.d(loadTransactionsState);
+
+              return;
+            }, [loadTransactionsState]);
+
+            return Flexible(
+              child: Stack(
+                children: [
+                  DTxHistoryTransaction(
+                    horizontalPadding: horizontalPadding,
+                    newTxsOnly: newTxsOnly,
+                  ),
+                  switch (loadTransactionsState) {
+                    LoadTransactionsStateLoading() => const Center(
+                      child: SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: CircularProgressIndicator(
+                          color: SideSwapColors.jellyBean,
+                        ),
+                      ),
+                    ),
+                    _ => const SizedBox(),
+                  },
+                ],
+              ),
+            );
+          },
         ),
       ],
     );
@@ -79,6 +117,36 @@ class DTxHistoryTransaction extends HookConsumerWidget {
     final allNewTxSorted = ref.watch(allNewTxsSortedProvider);
     final allTxSorted = ref.watch(allTxsSortedProvider);
     final txList = newTxsOnly ? allNewTxSorted : allTxSorted;
+    final loadTransactionsState = ref.watch(
+      loadTransactionsStateNotifierProvider,
+    );
+
+    useAsyncEffect(() async {
+      await (switch (loadTransactionsState) {
+        LoadTransactionsStateError() => () async {
+          if (loadTransactionsState.errorMsg != null) {
+            final flushbar = Flushbar<void>(
+              messageText: Text(
+                'Error loading transactions: {}'.tr(
+                  args: [loadTransactionsState.errorMsg!],
+                ),
+              ),
+              icon: const Icon(Icons.error, color: SideSwapColors.yellowOrange),
+              duration: const Duration(seconds: 3),
+              backgroundColor: SideSwapColors.chathamsBlue,
+              onTap: (flushbar) {
+                flushbar.dismiss();
+              },
+            );
+
+            await flushbar.show(context);
+          }
+        }(),
+        _ => () {}(),
+      });
+
+      return;
+    }, [loadTransactionsState]);
 
     if (txList.isEmpty) {
       return Column(
@@ -124,12 +192,6 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                         context,
                       ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                       timeTextStyle: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(fontSize: 14),
-                    ),
-                    DTxHistoryWallet(
-                      tx: transItem,
-                      textStyle: Theme.of(
                         context,
                       ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),

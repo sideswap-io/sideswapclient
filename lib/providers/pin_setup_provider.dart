@@ -229,7 +229,7 @@ class PinHelper {
     ref.invalidate(secondPinEnabledProvider);
   }
 
-  void onKeyEntered(PinKeyEnum key) async {
+  void onKeyEntered(PinKeyEnum key) {
     return switch (key) {
       PinKeyEnum.zero => _onNumber('0'),
       PinKeyEnum.one => _onNumber('1'),
@@ -313,7 +313,7 @@ class PinHelper {
     ref.read(secondPinNotifierProvider.notifier).setSecondPin(newSecondPin);
   }
 
-  void _onEnter() async {
+  void _onEnter() {
     final pinSetupState = ref.read(pinSetupStateNotifierProvider);
     if (pinSetupState == const PinSetupState.done()) {
       return;
@@ -403,7 +403,7 @@ class PinHelper {
         .setPinSetupState(const PinSetupState.done());
   }
 
-  void onPinData(PinDataState pinDataState) async {
+  void onPinData(PinDataState pinDataState) {
     logger.d(pinDataState);
 
     if (pinDataState is PinDataStateError) {

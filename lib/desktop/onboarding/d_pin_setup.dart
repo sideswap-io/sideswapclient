@@ -28,8 +28,9 @@ class DPinSetup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
 
     final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
 
@@ -98,7 +99,7 @@ class DPinSetupContent extends HookConsumerWidget {
       return;
     }, [pinKeyStream]);
 
-    ref.listen(pinKeyboardIndexProvider, (_, __) {});
+    ref.listen(pinKeyboardIndexProvider, (_, _) {});
 
     final pinFieldState = ref.watch(pinFieldStateNotifierProvider);
 
@@ -217,10 +218,9 @@ class DPinSetupContent extends HookConsumerWidget {
                   final pinSetupState = ref.watch(
                     pinSetupStateNotifierProvider,
                   );
-                  final errorMessage =
-                      (pinSetupState is PinSetupStateError)
-                          ? pinSetupState.message
-                          : '';
+                  final errorMessage = (pinSetupState is PinSetupStateError)
+                      ? pinSetupState.message
+                      : '';
 
                   return DPinTextField(
                     focusNode: secondPinFocusNode,

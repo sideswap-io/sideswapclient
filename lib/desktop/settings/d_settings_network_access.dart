@@ -29,8 +29,9 @@ class DSettingsNetworkAccess extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
 
     return PopScope(
       canPop: false,
@@ -250,24 +251,6 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             },
             content: const Text('Blockstream (Mainnet)'),
           ),
-          // const SizedBox(height: 10),
-          // DSettingsRadioButton(
-          //   checked:
-          //       networkSettingsModel.settingsNetworkType ==
-          //           SettingsNetworkType.blockstream &&
-          //       networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
-          //   onChanged: (value) {
-          //     ref
-          //         .read(networkSettingsNotifierProvider.notifier)
-          //         .setModel(
-          //           const NetworkSettingsModelApply(
-          //             settingsNetworkType: SettingsNetworkType.blockstream,
-          //             env: SIDESWAP_ENV_TESTNET,
-          //           ),
-          //         );
-          //   },
-          //   content: const Text('Blockstream (Testnet)'),
-          // ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
             checked:
@@ -286,24 +269,6 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             },
             content: const Text('SideSwap (Mainnet)'),
           ),
-          // const SizedBox(height: 10),
-          // DSettingsRadioButton(
-          //   checked:
-          //       networkSettingsModel.settingsNetworkType ==
-          //           SettingsNetworkType.sideswap &&
-          //       networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
-          //   onChanged: (value) {
-          //     ref
-          //         .read(networkSettingsNotifierProvider.notifier)
-          //         .setModel(
-          //           const NetworkSettingsModelApply(
-          //             settingsNetworkType: SettingsNetworkType.sideswap,
-          //             env: SIDESWAP_ENV_TESTNET,
-          //           ),
-          //         );
-          //   },
-          //   content: const Text('SideSwap (Testnet)'),
-          // ),
           const SizedBox(height: 10),
           DSettingsRadioButton(
             checked:
@@ -330,7 +295,7 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             onChanged: (value) async {
               await Navigator.of(context).pushAndRemoveUntil(
                 RawDialogRoute<Widget>(
-                  pageBuilder: (_, __, ___) => const DSettingsCustomHost(),
+                  pageBuilder: (_, _, _) => const DSettingsCustomHost(),
                 ),
                 (route) => route.isFirst,
               );

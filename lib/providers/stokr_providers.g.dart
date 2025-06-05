@@ -19,7 +19,7 @@ Map<String, dynamic> _$StokrSettingsModelToJson(_StokrSettingsModel instance) =>
 // **************************************************************************
 
 String _$stokrCountryBlacklistSearchHash() =>
-    r'2d7c3fa7b40d68a42fee449a01ec799a079ff980';
+    r'5df96682b522959e1398c9637f01414d4b5d4e73';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -91,10 +91,9 @@ class StokrCountryBlacklistSearchProvider
         ),
         from: stokrCountryBlacklistSearchProvider,
         name: r'stokrCountryBlacklistSearchProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$stokrCountryBlacklistSearchHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$stokrCountryBlacklistSearchHash,
         dependencies: StokrCountryBlacklistSearchFamily._dependencies,
         allTransitiveDependencies:
             StokrCountryBlacklistSearchFamily._allTransitiveDependencies,
@@ -175,39 +174,39 @@ String _$stokrSettingsNotifierHash() =>
 
 /// See also [StokrSettingsNotifier].
 @ProviderFor(StokrSettingsNotifier)
-final stokrSettingsNotifierProvider = AutoDisposeNotifierProvider<
-  StokrSettingsNotifier,
-  StokrSettingsModel
->.internal(
-  StokrSettingsNotifier.new,
-  name: r'stokrSettingsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final stokrSettingsNotifierProvider =
+    AutoDisposeNotifierProvider<
+      StokrSettingsNotifier,
+      StokrSettingsModel
+    >.internal(
+      StokrSettingsNotifier.new,
+      name: r'stokrSettingsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$stokrSettingsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$StokrSettingsNotifier = AutoDisposeNotifier<StokrSettingsModel>;
 String _$stokrBlockedCountriesHash() =>
-    r'0abee5718d749587a715a5a4d11d4502f26bbb35';
+    r'773a1bc3f808be7fc84a12dfcafc01282b5c3f8e';
 
 /// See also [StokrBlockedCountries].
 @ProviderFor(StokrBlockedCountries)
-final stokrBlockedCountriesProvider = AutoDisposeAsyncNotifierProvider<
-  StokrBlockedCountries,
-  List<CountryCode>
->.internal(
-  StokrBlockedCountries.new,
-  name: r'stokrBlockedCountriesProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final stokrBlockedCountriesProvider =
+    AutoDisposeAsyncNotifierProvider<
+      StokrBlockedCountries,
+      List<CountryCode>
+    >.internal(
+      StokrBlockedCountries.new,
+      name: r'stokrBlockedCountriesProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$stokrBlockedCountriesHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$StokrBlockedCountries = AutoDisposeAsyncNotifier<List<CountryCode>>;
 String _$stokrLastSelectedAssetNotifierHash() =>
@@ -219,10 +218,9 @@ final stokrLastSelectedAssetNotifierProvider =
     NotifierProvider<StokrLastSelectedAssetNotifier, Option<Asset>>.internal(
       StokrLastSelectedAssetNotifier.new,
       name: r'stokrLastSelectedAssetNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$stokrLastSelectedAssetNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$stokrLastSelectedAssetNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

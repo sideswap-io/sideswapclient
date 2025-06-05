@@ -79,8 +79,9 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
     if (pattern.isEmpty) {
       return <String>[];
     }
-    final suggestionList =
-        wordList.where((e) => e.startsWith(pattern)).toList();
+    final suggestionList = wordList
+        .where((e) => e.startsWith(pattern))
+        .toList();
     return suggestionList;
   }
 
@@ -286,19 +287,17 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
               return Padding(
                 padding: EdgeInsets.only(
                   left: index == 0 ? _textFieldLeftPadding : _textFieldPadding,
-                  right:
-                      index == widget.wordCount - 1
-                          ? _textFieldLeftPadding + 2 * _textFieldPadding
-                          : 0,
+                  right: index == widget.wordCount - 1
+                      ? _textFieldLeftPadding + 2 * _textFieldPadding
+                      : 0,
                 ),
                 child: Container(
                   width: _textFieldWidth,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color:
-                        _selectedItem == index
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.3),
+                    color: _selectedItem == index
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.3),
                   ),
                   child: TypeAheadFormField<String>(
                     hideOnEmpty: true,
@@ -314,10 +313,9 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                       controller: _textEditingControllerList[index],
                       focusNode: _focusNodeList[index],
                       textCapitalization: TextCapitalization.none,
-                      textInputAction:
-                          index == widget.wordCount - 1
-                              ? TextInputAction.done
-                              : TextInputAction.next,
+                      textInputAction: index == widget.wordCount - 1
+                          ? TextInputAction.done
+                          : TextInputAction.next,
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.normal,
@@ -380,7 +378,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                         }
                       },
                     ),
-                    suggestionsCallback: (pattern) async {
+                    suggestionsCallback: (pattern) {
                       return getSuggestions(pattern);
                     },
                     itemBuilder: (context, suggestion) {
@@ -455,78 +453,71 @@ class WalletImportState extends State<WalletImport> {
       appBar: CustomAppBar(title: 'Enter your recovery phrase'.tr()),
       body: SafeArea(
         child: LayoutBuilder(
-          builder:
-              (context, constraints) => SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: constraints.maxWidth,
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: IntrinsicHeight(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Container(
-                            width: double.maxFinite,
-                            height: 39,
-                            decoration: BoxDecoration(
-                              color: _colorToggleBackground,
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: SwapButton(
-                                    color:
-                                        shortMnemonic
-                                            ? _colorToggleOn
-                                            : _colorToggleBackground,
-                                    text: '12 words'.tr(),
-                                    textColor:
-                                        shortMnemonic
-                                            ? _colorToggleTextOn
-                                            : _colorToggleTextOff,
-                                    onPressed:
-                                        () => setState(() {
-                                          shortMnemonic = true;
-                                        }),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: SwapButton(
-                                    color:
-                                        !shortMnemonic
-                                            ? _colorToggleOn
-                                            : _colorToggleBackground,
-                                    text: '24 words'.tr(),
-                                    textColor:
-                                        !shortMnemonic
-                                            ? _colorToggleTextOn
-                                            : _colorToggleTextOff,
-                                    onPressed:
-                                        () => setState(() {
-                                          shortMnemonic = false;
-                                        }),
-                                  ),
-                                ),
-                              ],
-                            ),
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: constraints.maxWidth,
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        width: double.maxFinite,
+                        height: 39,
+                        decoration: BoxDecoration(
+                          color: _colorToggleBackground,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        WalletImportInputs(
-                          key: ValueKey(shortMnemonic),
-                          wordCount: shortMnemonic ? 12 : 24,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: SwapButton(
+                                color: shortMnemonic
+                                    ? _colorToggleOn
+                                    : _colorToggleBackground,
+                                text: '12 words'.tr(),
+                                textColor: shortMnemonic
+                                    ? _colorToggleTextOn
+                                    : _colorToggleTextOff,
+                                onPressed: () => setState(() {
+                                  shortMnemonic = true;
+                                }),
+                              ),
+                            ),
+                            Expanded(
+                              child: SwapButton(
+                                color: !shortMnemonic
+                                    ? _colorToggleOn
+                                    : _colorToggleBackground,
+                                text: '24 words'.tr(),
+                                textColor: !shortMnemonic
+                                    ? _colorToggleTextOn
+                                    : _colorToggleTextOff,
+                                onPressed: () => setState(() {
+                                  shortMnemonic = false;
+                                }),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+                    WalletImportInputs(
+                      key: ValueKey(shortMnemonic),
+                      wordCount: shortMnemonic ? 12 : 24,
+                    ),
+                  ],
                 ),
               ),
+            ),
+          ),
         ),
       ),
     );

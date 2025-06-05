@@ -36,7 +36,7 @@ class SettingsLogs extends HookWidget {
       ],
     );
 
-    (switch (result) {
+    await (switch (result) {
       1 => shareLogFile("sideswap.log", box),
       2 => shareLogFile("sideswap_prev.log", box),
       _ => () {}(),

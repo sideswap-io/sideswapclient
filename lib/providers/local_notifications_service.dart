@@ -136,41 +136,40 @@ class LocalNotificationService {
         ?.createNotificationChannel(signChannel);
 
     final plugin = SideswapNotificationsPlugin(
-      androidPlatform:
-          FlavorConfig.isFdroid
-              ? AndroidPlatformEnum.fdroid
-              : AndroidPlatformEnum.android,
+      androidPlatform: FlavorConfig.isFdroid
+          ? AndroidPlatformEnum.fdroid
+          : AndroidPlatformEnum.android,
     );
-    final initializationSettings =
-        plugin.getLocalNotificationsInitializationSettings();
+    final initializationSettings = plugin
+        .getLocalNotificationsInitializationSettings();
 
     // initialise the plugin.
     try {
       await _flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
-        onDidReceiveNotificationResponse: (
-          NotificationResponse response,
-        ) async {
-          if (FlavorConfig.isDesktop) {
-            logger.d('Desktop notification received');
-            WindowManager.instance.show();
-            return;
-          }
+        onDidReceiveNotificationResponse:
+            (NotificationResponse response) async {
+              if (FlavorConfig.isDesktop) {
+                logger.d('Desktop notification received');
+                await WindowManager.instance.show();
+                return;
+              }
 
-          if (response.payload == null) {
-            logger.w('Empty notification payload');
-            return;
-          }
+              if (response.payload == null) {
+                logger.w('Empty notification payload');
+                return;
+              }
 
-          try {
-            _selectedNotificationPayload = response.payload!;
-            final json = jsonDecode(response.payload!) as Map<String, dynamic>;
-            final fcmPayload = FCMPayload.fromJson(json);
-            selectNotificationSubject.add(fcmPayload);
-          } catch (e) {
-            logger.e('Cannot parse payload: $e');
-          }
-        },
+              try {
+                _selectedNotificationPayload = response.payload!;
+                final json =
+                    jsonDecode(response.payload!) as Map<String, dynamic>;
+                final fcmPayload = FCMPayload.fromJson(json);
+                selectNotificationSubject.add(fcmPayload);
+              } catch (e) {
+                logger.e('Cannot parse payload: $e');
+              }
+            },
       );
     } catch (e) {
       logger.e('Flutter local notification plugin isn\'t initialized: $e');

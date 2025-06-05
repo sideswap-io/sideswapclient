@@ -231,12 +231,12 @@ class JadeLockRepository implements AbstractJadeLockRepository {
 
   @override
   bool hasError() {
-    return _lockState == JadeLockStateError();
+    return _lockState is JadeLockStateError;
   }
 
   @override
   bool isUnlocked() {
-    return _lockState == JadeLockStateUnlocked();
+    return _lockState is JadeLockStateUnlocked;
   }
 
   @override
@@ -311,5 +311,28 @@ class JadeAuthInProgressStateNotifier
 
   void setState(bool value) {
     state = value;
+  }
+}
+
+@freezed
+sealed class JadeVerifyAddressState with _$JadeVerifyAddressState {
+  const factory JadeVerifyAddressState.idle() = JadeVerifyAddressStateIdle;
+  const factory JadeVerifyAddressState.verifying() =
+      JadeVerifyAddressStateVerifying;
+  const factory JadeVerifyAddressState.success() =
+      JadeVerifyAddressStateSuccess;
+  const factory JadeVerifyAddressState.error({String? message}) =
+      JadeVerifyAddressStateError;
+}
+
+@riverpod
+class JadeVerifyAddressStateNotifier extends _$JadeVerifyAddressStateNotifier {
+  @override
+  JadeVerifyAddressState build() {
+    return const JadeVerifyAddressState.idle();
+  }
+
+  void setState(JadeVerifyAddressState state) {
+    this.state = state;
   }
 }

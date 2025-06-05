@@ -16,6 +16,7 @@ import 'package:sideswap/desktop/common/d_typography.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/instant_swap/widgets/d_instant_swap_divider_button.dart';
 import 'package:sideswap/desktop/instant_swap/widgets/d_max_button.dart';
+import 'package:sideswap/desktop/markets/widgets/d_tracking_price.dart';
 import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
 
 part 'theme.g.dart';
@@ -705,7 +706,31 @@ class DesktopAppTheme {
       dMaxButtonStyle(),
       dInstantSwapDividerButtonStyle(),
       dCustomBigButtonStyle(),
+      dTrackingPriceStyle(),
+      coloredContainerStyle(),
     ];
+  }
+
+  ColoredContainerStyle coloredContainerStyle() {
+    return ColoredContainerStyle(
+      backgroundColor: SideSwapColors.chathamsBlue,
+      borderColor: SideSwapColors.chathamsBlue,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      borderWidth: 1,
+    );
+  }
+
+  DTrackingPriceStyle dTrackingPriceStyle() {
+    return DTrackingPriceStyle(
+      negativeColor: SideSwapColors.bitterSweet,
+      positiveColor: SideSwapColors.turquoise,
+      circleNegativeColor: SideSwapColors.policeBlue,
+      circlePositiveColor: SideSwapColors.metallicSeaweed,
+      textStyle: textTheme.titleSmall,
+      switchActiveColor: SideSwapColors.brightTurquoise,
+      switchInactiveColor: SideSwapColors.ataneoBlue,
+      switchToggleColor: Colors.white,
+    );
   }
 
   DCustomBigButtonStyle dCustomBigButtonStyle() {

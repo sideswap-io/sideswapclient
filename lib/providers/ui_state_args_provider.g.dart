@@ -11,19 +11,19 @@ String _$uiStateArgsNotifierHash() =>
 
 /// See also [UiStateArgsNotifier].
 @ProviderFor(UiStateArgsNotifier)
-final uiStateArgsNotifierProvider = AutoDisposeNotifierProvider<
-  UiStateArgsNotifier,
-  WalletMainArguments
->.internal(
-  UiStateArgsNotifier.new,
-  name: r'uiStateArgsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final uiStateArgsNotifierProvider =
+    AutoDisposeNotifierProvider<
+      UiStateArgsNotifier,
+      WalletMainArguments
+    >.internal(
+      UiStateArgsNotifier.new,
+      name: r'uiStateArgsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$uiStateArgsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$UiStateArgsNotifier = AutoDisposeNotifier<WalletMainArguments>;
 // ignore_for_file: type=lint

@@ -15,10 +15,9 @@ final heightPercentControllerProvider =
     AutoDisposeProvider<StreamController<double>>.internal(
       heightPercentController,
       name: r'heightPercentControllerProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$heightPercentControllerHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$heightPercentControllerHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -36,10 +35,9 @@ final panelPositionNotifierProvider =
     AutoDisposeNotifierProvider<PanelPositionNotifier, double>.internal(
       PanelPositionNotifier.new,
       name: r'panelPositionNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$panelPositionNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$panelPositionNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

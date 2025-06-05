@@ -27,8 +27,9 @@ class DNetworkAccessOnboarding extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final networkAccessTab = ref.watch(networkAccessTabNotifierProvider);
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
 
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 628, maxHeight: 752),
@@ -202,7 +203,7 @@ class DNetworkAccessOnboardingServer extends HookConsumerWidget {
             onChanged: (value) async {
               await Navigator.of(context).push(
                 RawDialogRoute<Widget>(
-                  pageBuilder: (_, __, ___) => const DSettingsCustomHost(),
+                  pageBuilder: (_, _, _) => const DSettingsCustomHost(),
                 ),
               );
             },

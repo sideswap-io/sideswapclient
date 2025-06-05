@@ -133,10 +133,9 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     );
 
     final plugin = SideswapNotificationsPlugin(
-      androidPlatform:
-          FlavorConfig.isFdroid
-              ? AndroidPlatformEnum.fdroid
-              : AndroidPlatformEnum.android,
+      androidPlatform: FlavorConfig.isFdroid
+          ? AndroidPlatformEnum.fdroid
+          : AndroidPlatformEnum.android,
     );
     await plugin.firebaseInitializeApp();
 

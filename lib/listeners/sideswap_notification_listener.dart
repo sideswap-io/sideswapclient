@@ -26,10 +26,9 @@ Future<void> _firebaseMessagingBackgroundHandler(
 
 final sideswapNotificationProvider = AutoDisposeProvider((ref) {
   final plugin = SideswapNotificationsPlugin(
-    androidPlatform:
-        FlavorConfig.isFdroid
-            ? AndroidPlatformEnum.fdroid
-            : AndroidPlatformEnum.android,
+    androidPlatform: FlavorConfig.isFdroid
+        ? AndroidPlatformEnum.fdroid
+        : AndroidPlatformEnum.android,
   );
   return SideswapNotificationProvider(ref, plugin);
 });
@@ -274,7 +273,7 @@ class SideswapNotificationProvider {
     }
   }
 
-  void _onNotificationData(FCMPayload fcmPayload) async {
+  void _onNotificationData(FCMPayload fcmPayload) {
     logger.d('Notification data: $fcmPayload');
 
     final txid = fcmPayload.txid;
@@ -321,38 +320,35 @@ class SideswapNotificationProvider {
 
     await showDialog<void>(
       context: ref.read(navigatorKeyProvider).currentContext!,
-      builder:
-          (BuildContext context) => CupertinoAlertDialog(
-            title:
-                receivedNotification.title != null
-                    ? Text(receivedNotification.title ?? '')
-                    : null,
-            content:
-                receivedNotification.body != null
-                    ? Text(receivedNotification.body ?? '')
-                    : null,
-            actions: <Widget>[
-              CupertinoDialogAction(
-                isDefaultAction: false,
-                onPressed: () async {
-                  logger.d('Ok pressed');
-                  logger.d('Payload: ${receivedNotification.payload}');
-                  // handle iOS notification here
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: receivedNotification.title != null
+            ? Text(receivedNotification.title ?? '')
+            : null,
+        content: receivedNotification.body != null
+            ? Text(receivedNotification.body ?? '')
+            : null,
+        actions: <Widget>[
+          CupertinoDialogAction(
+            isDefaultAction: false,
+            onPressed: () {
+              logger.d('Ok pressed');
+              logger.d('Payload: ${receivedNotification.payload}');
+              // handle iOS notification here
 
-                  Navigator.of(context, rootNavigator: true).pop();
-                },
-                child: const Text('Ok'),
-              ),
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                onPressed: () async {
-                  logger.d('Cancel pressed');
-                  Navigator.of(context, rootNavigator: true).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-            ],
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+            child: const Text('Ok'),
           ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              logger.d('Cancel pressed');
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -381,7 +377,7 @@ class SideswapNotificationListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(sideswapNotificationProvider, (_, __) {});
+    ref.listen(sideswapNotificationProvider, (_, _) {});
     return const SizedBox();
   }
 }

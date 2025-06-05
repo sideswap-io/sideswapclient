@@ -7,8 +7,8 @@ import 'package:sideswap/desktop/home/widgets/d_assets_panel_header.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 
-class DAmpWalletAssetsPanel extends StatelessWidget {
-  const DAmpWalletAssetsPanel({super.key});
+class DWalletAssetsPanel extends StatelessWidget {
+  const DWalletAssetsPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +18,11 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
         children: [
           Consumer(
             builder: (context, ref, _) {
-              final ampAccountAssets = ref.watch(
-                ampVisibleAccountAssetsProvider,
-              );
+              final allVisibleAssets = ref.watch(allVisibleAssetsProvider);
+
               final defaultCurrencyConversion = ref.watch(
-                accountAssetsTotalDefaultCurrencyBalanceStringProvider(
-                  ampAccountAssets,
+                assetsTotalDefaultCurrencyBalanceStringProvider(
+                  allVisibleAssets,
                 ),
               );
               final defaultCurrencyTicker = ref.watch(
@@ -31,23 +30,21 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
               );
 
               final lbtcConversion = ref.watch(
-                accountAssetsTotalLbtcBalanceProvider(ampAccountAssets),
+                assetsTotalLbtcBalanceProvider(allVisibleAssets),
               );
 
               return DAssetsPanelHeader(
-                title: 'AMP Securities wallet'.tr(),
                 totalValueLabel: 'Total Value'.tr(),
                 totalValue: '$defaultCurrencyConversion $defaultCurrencyTicker',
                 totalBtcValue: '$lbtcConversion L-BTC',
-                walletType: '2-of-2 multisig',
               );
             },
           ),
           Flexible(
             child: Consumer(
               builder: (context, ref, _) {
-                final ampAccounts = ref.watch(ampVisibleAccountAssetsProvider);
-                return DAssetsList(accountAssets: ampAccounts);
+                final allVisibleAssets = ref.watch(allVisibleAssetsProvider);
+                return DAssetsList(assets: allVisibleAssets);
               },
             ),
           ),

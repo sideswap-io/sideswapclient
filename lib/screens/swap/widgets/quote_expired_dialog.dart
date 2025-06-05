@@ -84,7 +84,7 @@ void showQuoteExpiredDialog(BuildContext context) {
                   height: 54,
                   text: 'Continue'.tr(),
                   backgroundColor: SideSwapColors.brightTurquoise,
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop();
                   },
                 ),

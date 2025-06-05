@@ -48,7 +48,7 @@ class WalletMain extends HookConsumerWidget {
               if (now.difference(currentBackPressTime.value) >
                   const Duration(seconds: 2, milliseconds: 700)) {
                 currentBackPressTime.value = now;
-                Flushbar(
+                final flushbar = Flushbar(
                   messageText: Text(
                     'Press back again to exit'.tr(),
                     style: const TextStyle(
@@ -72,7 +72,9 @@ class WalletMain extends HookConsumerWidget {
                       }
                     }
                   },
-                ).show(context);
+                );
+
+                await flushbar.show(context);
               } else {
                 await closeApp();
               }
@@ -97,9 +99,10 @@ class WalletMain extends HookConsumerWidget {
                   ref.read(swapHelperProvider).switchToPegs(),
                 WalletMainNavigationItemEnum.swap =>
                   ref.read(swapHelperProvider).switchToSwaps(),
-                WalletMainNavigationItemEnum.markets => ref
-                    .read(selectedMarketTypeButtonNotifierProvider.notifier)
-                    .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap),
+                WalletMainNavigationItemEnum.markets =>
+                  ref
+                      .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                      .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap),
                 _ => () {}(),
               });
             },

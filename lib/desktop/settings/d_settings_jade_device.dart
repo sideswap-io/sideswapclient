@@ -17,7 +17,7 @@ class DSettingsJadeDevice extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
-    ref.listen(jadeRescanProvider, (_, __) {});
+    ref.listen(jadeRescanProvider, (_, _) {});
 
     return PopScope(
       canPop: false,
@@ -79,18 +79,17 @@ class DSettingsJadeDevice extends HookConsumerWidget {
                           JadeDevicesStateAvailable() => Padding(
                             padding: const EdgeInsets.only(top: 24),
                             child: Column(
-                              children:
-                                  jadeDevicesState.devices
-                                      .map(
-                                        (port) => JadeDevice(
-                                          key: ValueKey(port.port),
-                                          jadePort: JadePort(
-                                            fromJadePortsPort: port,
-                                          ),
-                                          register: false,
-                                        ),
-                                      )
-                                      .toList(),
+                              children: jadeDevicesState.devices
+                                  .map(
+                                    (port) => JadeDevice(
+                                      key: ValueKey(port.port),
+                                      jadePort: JadePort(
+                                        fromJadePortsPort: port,
+                                      ),
+                                      register: false,
+                                    ),
+                                  )
+                                  .toList(),
                             ),
                           ),
                           _ => const Padding(

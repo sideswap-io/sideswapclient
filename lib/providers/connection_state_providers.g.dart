@@ -15,10 +15,9 @@ final serverConnectionNotifierProvider =
     NotifierProvider<ServerConnectionNotifier, bool>.internal(
       ServerConnectionNotifier.new,
       name: r'serverConnectionNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$serverConnectionNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$serverConnectionNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -33,10 +32,9 @@ final serverLoginNotifierProvider =
     NotifierProvider<ServerLoginNotifier, ServerLoginState>.internal(
       ServerLoginNotifier.new,
       name: r'serverLoginNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$serverLoginNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$serverLoginNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

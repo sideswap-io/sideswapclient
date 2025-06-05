@@ -13,10 +13,9 @@ String _$wordListFutureHash() => r'fdf11f450abf94c6b4d72ebfbee516c506552f53';
 final wordListFutureProvider = AutoDisposeFutureProvider<List<String>>.internal(
   wordListFuture,
   name: r'wordListFutureProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$wordListFutureHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$wordListFutureHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -33,10 +32,9 @@ final currentMnemonicIndexNotifierProvider =
     AutoDisposeNotifierProvider<CurrentMnemonicIndexNotifier, int>.internal(
       CurrentMnemonicIndexNotifier.new,
       name: r'currentMnemonicIndexNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$currentMnemonicIndexNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$currentMnemonicIndexNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -51,10 +49,9 @@ final mnemonicWordsCounterNotifierProvider =
     NotifierProvider<MnemonicWordsCounterNotifier, int>.internal(
       MnemonicWordsCounterNotifier.new,
       name: r'mnemonicWordsCounterNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$mnemonicWordsCounterNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$mnemonicWordsCounterNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -69,10 +66,9 @@ final mnemonicWordItemsNotifierProvider =
     NotifierProvider<MnemonicWordItemsNotifier, Map<int, WordItem>>.internal(
       MnemonicWordItemsNotifier.new,
       name: r'mnemonicWordItemsNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$mnemonicWordItemsNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$mnemonicWordItemsNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

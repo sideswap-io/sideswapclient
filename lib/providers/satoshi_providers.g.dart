@@ -14,10 +14,9 @@ final satoshiRepositoryProvider =
     AutoDisposeProvider<AbstractSatoshiRepository>.internal(
       satoshiRepository,
       name: r'satoshiRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$satoshiRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$satoshiRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

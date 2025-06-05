@@ -13,10 +13,9 @@ String _$universalLinkHash() => r'aa026a40d609d07a0da9f79e3319ae23b9027b4f';
 final universalLinkProvider = Provider<UniversalLink>.internal(
   universalLink,
   name: r'universalLinkProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$universalLinkHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$universalLinkHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -29,19 +28,19 @@ String _$universalLinkResultStateNotifierHash() =>
 
 /// See also [UniversalLinkResultStateNotifier].
 @ProviderFor(UniversalLinkResultStateNotifier)
-final universalLinkResultStateNotifierProvider = NotifierProvider<
-  UniversalLinkResultStateNotifier,
-  LinkResultState
->.internal(
-  UniversalLinkResultStateNotifier.new,
-  name: r'universalLinkResultStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final universalLinkResultStateNotifierProvider =
+    NotifierProvider<
+      UniversalLinkResultStateNotifier,
+      LinkResultState
+    >.internal(
+      UniversalLinkResultStateNotifier.new,
+      name: r'universalLinkResultStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$universalLinkResultStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$UniversalLinkResultStateNotifier = Notifier<LinkResultState>;
 // ignore_for_file: type=lint

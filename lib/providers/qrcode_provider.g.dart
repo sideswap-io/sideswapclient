@@ -13,8 +13,9 @@ String _$qrcodeHelperHash() => r'6765487f3eb3c6047f4592204937370d9c93d2cf';
 final qrcodeHelperProvider = AutoDisposeProvider<QrCodeHelper>.internal(
   qrcodeHelper,
   name: r'qrcodeHelperProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$qrcodeHelperHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$qrcodeHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -27,19 +28,19 @@ String _$qrCodeResultModelNotifierHash() =>
 
 /// See also [QrCodeResultModelNotifier].
 @ProviderFor(QrCodeResultModelNotifier)
-final qrCodeResultModelNotifierProvider = AutoDisposeNotifierProvider<
-  QrCodeResultModelNotifier,
-  QrCodeResultModel
->.internal(
-  QrCodeResultModelNotifier.new,
-  name: r'qrCodeResultModelNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final qrCodeResultModelNotifierProvider =
+    AutoDisposeNotifierProvider<
+      QrCodeResultModelNotifier,
+      QrCodeResultModel
+    >.internal(
+      QrCodeResultModelNotifier.new,
+      name: r'qrCodeResultModelNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$qrCodeResultModelNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$QrCodeResultModelNotifier = AutoDisposeNotifier<QrCodeResultModel>;
 // ignore_for_file: type=lint

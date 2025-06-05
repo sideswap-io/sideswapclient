@@ -4,8 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/providers/wallet.dart';
-
 class AssetSearchTextField extends ConsumerWidget {
   const AssetSearchTextField({super.key});
 
@@ -15,7 +13,10 @@ class AssetSearchTextField extends ConsumerWidget {
       height: 44,
       child: TextField(
         onChanged:
-            (value) => ref.read(walletProvider).setToggleAssetFilter(value),
+            (value) => {
+              // TODO (malcolmpl): new wallets
+              // ref.read(walletProvider).setToggleAssetFilter(value)
+            },
         style: const TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.normal,

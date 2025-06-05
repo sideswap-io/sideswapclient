@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -95,10 +94,9 @@ class TxDetails extends ConsumerWidget {
         TxDetailsRow(
           description: 'Status'.tr(),
           details: status,
-          detailsColor:
-              (confs.count != 0)
-                  ? SideSwapColors.airSuperiorityBlue
-                  : Colors.white,
+          detailsColor: (confs.count != 0)
+              ? SideSwapColors.airSuperiorityBlue
+              : Colors.white,
         ),
         ...switch (transItemHelper.txType()) {
           TxType txType when txType != TxType.swap => [
@@ -182,10 +180,9 @@ class TxDetailsSwapReceived extends ConsumerWidget {
     final assetImage = assetImageRepository.getSmallImage(
       deliveredData.assetId,
     );
-    final amountColor =
-        deliveredData.amount.contains('+')
-            ? SideSwapColors.menthol
-            : SideSwapColors.bitterSweet;
+    final amountColor = deliveredData.amount.contains('+')
+        ? SideSwapColors.menthol
+        : SideSwapColors.bitterSweet;
 
     return Container(
       constraints: const BoxConstraints(minHeight: 44, maxHeight: 132),
@@ -240,10 +237,9 @@ class TxDetailsSwapDelivered extends ConsumerWidget {
     final assetImage = assetImageRepository.getSmallImage(
       deliveredData.assetId,
     );
-    final amountColor =
-        deliveredData.amount.contains('+')
-            ? SideSwapColors.menthol
-            : SideSwapColors.bitterSweet;
+    final amountColor = deliveredData.amount.contains('+')
+        ? SideSwapColors.menthol
+        : SideSwapColors.bitterSweet;
 
     return Container(
       constraints: const BoxConstraints(minHeight: 44, maxHeight: 132),
@@ -336,10 +332,9 @@ class TxDetailsNetworkFee extends ConsumerWidget {
     final assetImage = assetImageRepository.getSmallImage(
       networkFeeData.assetId,
     );
-    final amountColor =
-        networkFeeData.networkFeeAmount.contains('+')
-            ? SideSwapColors.menthol
-            : SideSwapColors.bitterSweet;
+    final amountColor = networkFeeData.networkFeeAmount.contains('+')
+        ? SideSwapColors.menthol
+        : SideSwapColors.bitterSweet;
 
     return Container(
       constraints: const BoxConstraints(minHeight: 44, maxHeight: 132),
@@ -450,10 +445,9 @@ class TxDetailsBalancesList extends ConsumerWidget {
               final amount = balancesData[index].amount;
               final ticker = balancesData[index].ticker;
               final assetId = balancesData[index].assetId;
-              final amountColor =
-                  amount.contains('+')
-                      ? SideSwapColors.menthol
-                      : SideSwapColors.bitterSweet;
+              final amountColor = amount.contains('+')
+                  ? SideSwapColors.menthol
+                  : SideSwapColors.bitterSweet;
               final assetImage = assetImageRepository.getSmallImage(assetId);
               return TxDetailsAssetListItem(
                 index: index,
@@ -496,10 +490,9 @@ class TxDetailsAllBalancesList extends ConsumerWidget {
               final amount = transItemHelper.getBalancesAll()[index].amount;
               final ticker = transItemHelper.getBalancesAll()[index].ticker;
               final assetId = transItemHelper.getBalancesAll()[index].assetId;
-              final amountColor =
-                  amount.contains('+')
-                      ? SideSwapColors.menthol
-                      : SideSwapColors.bitterSweet;
+              final amountColor = amount.contains('+')
+                  ? SideSwapColors.menthol
+                  : SideSwapColors.bitterSweet;
               final assetImage = assetImageRepository.getSmallImage(assetId);
               return TxDetailsAssetListItem(
                 index: index,

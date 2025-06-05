@@ -3,6 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -10,17 +11,52 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/new_block_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'tx_provider.g.dart';
+part 'tx_provider.freezed.dart';
+
+@freezed
+sealed class LoadTransactionsState with _$LoadTransactionsState {
+  const factory LoadTransactionsState.empty() = LoadTransactionsStateEmpty;
+  const factory LoadTransactionsState.loading() = LoadTransactionsStateLoading;
+  const factory LoadTransactionsState.error({String? errorMsg}) =
+      LoadTransactionsStateError;
+}
+
+@riverpod
+class LoadTransactionsStateNotifier extends _$LoadTransactionsStateNotifier {
+  @override
+  LoadTransactionsState build() {
+    return LoadTransactionsState.empty();
+  }
+
+  void setState(LoadTransactionsState state) {
+    this.state = state;
+  }
+}
 
 @Riverpod(keepAlive: true)
 class AllTxsNotifier extends _$AllTxsNotifier {
   @override
   Map<String, TransItem> build() {
+    ref.listen(newBlockNotifierProvider, (_, _) {
+      var txShouldUpdated = false;
+      for (final transItem in state.values) {
+        if (transItem.hasConfs()) {
+          txShouldUpdated = true;
+        }
+      }
+
+      if (txShouldUpdated) {
+        loadTransactions();
+      }
+    });
     return {};
   }
 
@@ -28,6 +64,16 @@ class AllTxsNotifier extends _$AllTxsNotifier {
     final allTxs = {...state};
 
     for (var item in txs.items) {
+      allTxs[item.id] = item;
+    }
+
+    state = allTxs;
+  }
+
+  void updateList({required List<TransItem> txs}) {
+    final allTxs = {...state};
+
+    for (var item in txs) {
       allTxs[item.id] = item;
     }
 
@@ -42,6 +88,18 @@ class AllTxsNotifier extends _$AllTxsNotifier {
     }
 
     state = allTxs;
+  }
+
+  Future<void> loadTransactions() async {
+    await Future.microtask(
+      () => ref
+          .read(loadTransactionsStateNotifierProvider.notifier)
+          .setState(LoadTransactionsState.loading()),
+    );
+
+    final msg = To();
+    msg.loadTransactions = Empty();
+    ref.read(walletProvider).sendMsg(msg);
   }
 }
 
@@ -94,17 +152,14 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(Ref ref) {
   for (final item in allTxs.values) {
     final tx = item.tx;
     for (final balance in tx.balances) {
-      final accountAsset = AccountAsset(
-        AccountType(item.account.id),
-        balance.assetId,
-      );
+      final accountAsset = AccountAsset(Account.REG, balance.assetId);
       addTxItem(accountAssetTransactions, accountAsset, item);
     }
   }
 
   for (final order in allPegs.entries) {
     for (final item in order.value) {
-      final accountAsset = AccountAsset(AccountType.reg, liquidAssetId);
+      final accountAsset = AccountAsset(Account.REG, liquidAssetId);
       addTxItem(accountAssetTransactions, accountAsset, item);
     }
   }
@@ -135,23 +190,122 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(Ref ref) {
 
     allAssets[item.key] = tempAssets;
   }
-
   return allAssets;
+
+  // final transactions = <TxItem>[...allTxs.values.map((e) => TxItem(item: e))];
+  // for (final itemList in allPegs.values) {
+  //   transactions.addAll(itemList.map((e) => TxItem(item: e)));
+  // }
+
+  // transactions.sort((a, b) => b.compareTo(a));
+
+  // final tempAssets = <TxItem>[];
+  // final dateFormat = DateFormat('yyyy-MM-dd');
+  // for (var item in transactions) {
+  //   if (tempAssets.isEmpty) {
+  //     tempAssets.add(item.copyWith(showDate: true));
+  //   } else {
+  //     final last = DateTime.parse(
+  //       dateFormat.format(
+  //         DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt),
+  //       ),
+  //     );
+  //     final current = DateTime.parse(
+  //       dateFormat.format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)),
+  //     );
+  //     final diff = last.difference(current).inDays;
+  //     tempAssets.add(item.copyWith(showDate: diff != 0));
+  //   }
+  // }
+
+  // return allAssets;
 }
 
+// Version with map of assetid and transaction list
 @riverpod
-List<TxItem> transactionsForAccount(Ref ref, AccountType accountType) {
-  final allAssets = ref.watch(accountAssetTransactionsProvider);
+Map<String, List<TxItem>> assetTransactions(Ref ref) {
+  final allTxs = ref.watch(allTxsNotifierProvider);
+  final allPegs = ref.watch(allPegsNotifierProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-  final transactions = <TxItem>[];
-  for (final accountAsset in allAssets.keys) {
-    if (accountAsset.account == accountType) {
-      transactions.addAll(allAssets[accountAsset] ?? []);
+  final transactions = <TxItem>[...allTxs.values.map((e) => TxItem(item: e))];
+  for (final itemList in allPegs.values) {
+    transactions.addAll(itemList.map((e) => TxItem(item: e)));
+  }
+
+  transactions.sort((a, b) => b.compareTo(a));
+
+  void addTxItem(
+    Map<String, List<TxItem>> assetsTransactions,
+    String assetId,
+    TransItem transaction,
+  ) {
+    if (assetsTransactions[assetId] == null) {
+      assetsTransactions[assetId] = [];
+    }
+    assetsTransactions[assetId]!.add(TxItem(item: transaction));
+  }
+
+  final assetTransactions = <String, List<TxItem>>{};
+
+  for (final item in allTxs.values) {
+    final tx = item.tx;
+    for (final balance in tx.balances) {
+      addTxItem(assetTransactions, balance.assetId, item);
     }
   }
 
-  return transactions;
+  for (final order in allPegs.entries) {
+    for (final item in order.value) {
+      addTxItem(assetTransactions, liquidAssetId, item);
+    }
+  }
+
+  final allAssets = <String, List<TxItem>>{};
+
+  final dateFormat = DateFormat('yyyy-MM-dd');
+  for (var item in assetTransactions.entries) {
+    item.value.sort((a, b) => b.compareTo(a));
+
+    final tempAssets = <TxItem>[];
+    for (var item in item.value) {
+      if (tempAssets.isEmpty) {
+        tempAssets.add(item.copyWith(showDate: true));
+      } else {
+        final last = DateTime.parse(
+          dateFormat.format(
+            DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt),
+          ),
+        );
+        final current = DateTime.parse(
+          dateFormat.format(
+            DateTime.fromMillisecondsSinceEpoch(item.createdAt),
+          ),
+        );
+        final diff = last.difference(current).inDays;
+        tempAssets.add(item.copyWith(showDate: diff != 0));
+      }
+    }
+
+    allAssets[item.key] = tempAssets;
+  }
+  return allAssets;
 }
+
+// TODO (malcolmpl): new wallets
+// @riverpod
+// List<TxItem> transactionsForAccount(Ref ref, AccountType accountType) {
+//   final allAssets = ref.watch(accountAssetTransactionsProvider);
+
+//   final transactions = <TxItem>[];
+//   for (final accountAsset in allAssets.keys) {
+//     if (accountAsset.account == accountType) {
+//       transactions.addAll(allAssets[accountAsset] ?? []);
+//     }
+//   }
+
+//   return transactions;
+// }
 
 @riverpod
 List<TxItem> distinctTransactionsForAccount(Ref ref) {
@@ -189,7 +343,22 @@ List<TxItem> distinctTransactionsForAccount(Ref ref) {
 
 @riverpod
 TransItemHelper transItemHelper(Ref ref, TransItem transItem) {
-  return TransItemHelper(ref, transItem);
+  final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+  final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+  final assetsState = ref.read(assetsStateProvider);
+  final assetUtils = ref.read(assetUtilsProvider);
+  final amountToString = ref.read(amountToStringProvider);
+  final satoshiRepository = ref.read(satoshiRepositoryProvider);
+
+  return TransItemHelper(
+    liquidAssetId,
+    bitcoinAssetId,
+    assetsState,
+    assetUtils,
+    amountToString,
+    satoshiRepository,
+    transItem,
+  );
 }
 
 enum TxType { received, sent, swap, internal, unknown, pegIn, pegOut }
@@ -206,10 +375,23 @@ enum TxCircleImageType {
 }
 
 class TransItemHelper {
-  final Ref ref;
+  final String liquidAssetId;
+  final String bitcoinAssetId;
+  final Map<String, Asset> assetsState;
+  final AssetUtils assetUtils;
+  final AmountToString amountToString;
+  final AbstractSatoshiRepository satoshiRepository;
   final TransItem transItem;
 
-  TransItemHelper(this.ref, this.transItem);
+  TransItemHelper(
+    this.liquidAssetId,
+    this.bitcoinAssetId,
+    this.assetsState,
+    this.assetUtils,
+    this.amountToString,
+    this.satoshiRepository,
+    this.transItem,
+  );
 
   TxType txType() {
     if (transItem.whichItem() == TransItem_Item.peg) {
@@ -240,7 +422,7 @@ class TransItemHelper {
 
     if (tx.balances.length == 1 &&
         tx.balances.first.amount == -tx.networkFee &&
-        tx.balances.first.assetId == AccountAsset.liquidAssetId) {
+        tx.balances.first.assetId == liquidAssetId) {
       return TxType.internal;
     }
     if (anyPositive && !anyNegative) {
@@ -313,13 +495,12 @@ class TransItemHelper {
   }
 
   String assetAmountToString(String assetId, Int64 amount) {
-    final asset = ref.read(assetsStateProvider)[assetId];
+    final asset = assetsState[assetId];
     final ticker = asset?.ticker;
-    final precision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: asset?.assetId);
-    final amountProvider = ref.read(amountToStringProvider);
-    final amountStr = amountProvider.amountToStringNamed(
+    final precision = assetUtils.getPrecisionForAssetId(
+      assetId: asset?.assetId,
+    );
+    final amountStr = amountToString.amountToStringNamed(
       AmountToStringNamedParameters(
         amount: amount.toInt(),
         forceSign: true,
@@ -332,8 +513,6 @@ class TransItemHelper {
   }
 
   ({String sendBalance, String recvBalance}) txSwapBalancesString() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final delivered = getSentBalance(liquidAssetId, bitcoinAssetId);
     final received = getRecvBalance(liquidAssetId, bitcoinAssetId);
 
@@ -353,8 +532,6 @@ class TransItemHelper {
   }
 
   String txSendBalance() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final sendBalance = getSentBalance(liquidAssetId, bitcoinAssetId);
 
     return assetAmountToString(sendBalance.assetId, -sendBalance.amount);
@@ -364,7 +541,7 @@ class TransItemHelper {
     if (getRecvMultipleOutputs()) {
       Set<String> assetOutputs = {};
       for (final balance in transItem.tx.balances) {
-        final asset = ref.read(assetsStateProvider)[balance.assetId];
+        final asset = assetsState[balance.assetId];
         if (asset?.ticker != null) {
           assetOutputs.add(asset!.ticker);
         }
@@ -381,8 +558,6 @@ class TransItemHelper {
       );
     }
 
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final recvBalance = getRecvBalance(liquidAssetId, bitcoinAssetId);
 
     return (
@@ -392,11 +567,9 @@ class TransItemHelper {
   }
 
   ({String assetId, String ticker, String amount}) txPegInBalance() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final balance = getRecvBalance(liquidAssetId, bitcoinAssetId);
 
-    final asset = ref.read(assetsStateProvider)[balance.assetId];
+    final asset = assetsState[balance.assetId];
     final ticker = asset?.ticker ?? '';
     final amount = assetAmountToString(balance.assetId, balance.amount);
 
@@ -406,19 +579,16 @@ class TransItemHelper {
   String txPegInConversionRate() {
     final amountSend = transItem.peg.amountSend.toInt();
     final amountRecv = transItem.peg.amountRecv.toInt();
-    final conversionRate =
-        (amountSend != 0 && amountRecv != 0)
-            ? amountRecv * 100 / amountSend
-            : 0;
+    final conversionRate = (amountSend != 0 && amountRecv != 0)
+        ? amountRecv * 100 / amountSend
+        : 0;
     return '${conversionRate.toStringAsFixed(2)}%';
   }
 
   ({String assetId, String ticker, String amount}) txPegOutBalance() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final balance = getSentBalance(liquidAssetId, bitcoinAssetId);
 
-    final asset = ref.read(assetsStateProvider)[balance.assetId];
+    final asset = assetsState[balance.assetId];
     final ticker = asset?.ticker ?? '';
     final amount = assetAmountToString(balance.assetId, -balance.amount);
 
@@ -443,16 +613,14 @@ class TransItemHelper {
 
     return switch (txType()) {
       TxType.sent => () {
-        final balance =
-            transItem.tx.balances.length == 1
-                ? transItem.tx.balances.first
-                : transItem.tx.balances.firstWhere(
-                  (e) => e.assetId != liquidAssetId,
-                );
-        final amount =
-            balance.assetId == liquidAssetId
-                ? -balance.amount - transItem.tx.networkFee
-                : -balance.amount;
+        final balance = transItem.tx.balances.length == 1
+            ? transItem.tx.balances.first
+            : transItem.tx.balances.firstWhere(
+                (e) => e.assetId != liquidAssetId,
+              );
+        final amount = balance.assetId == liquidAssetId
+            ? -balance.amount - transItem.tx.networkFee
+            : -balance.amount;
         return Balance(amount: amount, assetId: balance.assetId);
       }(),
       TxType.swap || TxType.internal => () {
@@ -498,7 +666,6 @@ class TransItemHelper {
       return false;
     }
 
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
     final txFee = transItem.tx.networkFee;
     final tempBalances = [...transItem.tx.balances];
     tempBalances.removeWhere(
@@ -514,13 +681,12 @@ class TransItemHelper {
     }
 
     for (final balance in transItem.tx.balancesAll) {
-      final asset = ref.read(assetsStateProvider)[balance.assetId];
+      final asset = assetsState[balance.assetId];
       final ticker = asset?.ticker;
-      final precision = ref
-          .read(assetUtilsProvider)
-          .getPrecisionForAssetId(assetId: asset?.assetId);
-      final amountProvider = ref.read(amountToStringProvider);
-      final amountStr = amountProvider.amountToString(
+      final precision = assetUtils.getPrecisionForAssetId(
+        assetId: asset?.assetId,
+      );
+      final amountStr = amountToString.amountToString(
         AmountToStringParameters(
           amount: balance.amount.toInt(),
           forceSign: true,
@@ -538,16 +704,12 @@ class TransItemHelper {
   }
 
   ({String assetId, String ticker, String networkFeeAmount}) getNetworkFee() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final liquidAsset = ref.read(assetsStateProvider)[liquidAssetId];
-    final amountProvider = ref.read(amountToStringProvider);
+    final liquidAsset = assetsState[liquidAssetId];
 
     final liquidTicker = liquidAsset?.ticker;
-    final precision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: liquidAssetId);
+    final precision = assetUtils.getPrecisionForAssetId(assetId: liquidAssetId);
     final networkFee = transItem.tx.networkFee.toInt();
-    final networkFeeAmount = amountProvider.amountToString(
+    final networkFeeAmount = amountToString.amountToString(
       AmountToStringParameters(
         amount: networkFee == 0 ? networkFee : -networkFee,
         forceSign: networkFee == 0 ? false : true,
@@ -563,17 +725,13 @@ class TransItemHelper {
   }
 
   ({String assetId, String ticker, String amount}) getSwapDeliveredAmount() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
-    final amountProvider = ref.read(amountToStringProvider);
-
     final deliveredBalance = getSentBalance(liquidAssetId, bitcoinAssetId);
-    final asset = ref.read(assetsStateProvider)[deliveredBalance.assetId];
+    final asset = assetsState[deliveredBalance.assetId];
     final deliveredTicker = asset?.ticker ?? '';
-    final deliveredPrecision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: deliveredBalance.assetId);
-    final deliveredAmount = amountProvider.amountToString(
+    final deliveredPrecision = assetUtils.getPrecisionForAssetId(
+      assetId: deliveredBalance.assetId,
+    );
+    final deliveredAmount = amountToString.amountToString(
       AmountToStringParameters(
         amount: -deliveredBalance.amount.toInt(),
         forceSign: true,
@@ -589,17 +747,13 @@ class TransItemHelper {
   }
 
   ({String assetId, String ticker, String amount}) getSwapReceivedAmount() {
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
-    final amountProvider = ref.read(amountToStringProvider);
-
     final receivedBalance = getRecvBalance(liquidAssetId, bitcoinAssetId);
-    final asset = ref.read(assetsStateProvider)[receivedBalance.assetId];
+    final asset = assetsState[receivedBalance.assetId];
     final receivedTicker = asset?.ticker ?? '';
-    final receivedPrecision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: receivedBalance.assetId);
-    final receivedAmount = amountProvider.amountToString(
+    final receivedPrecision = assetUtils.getPrecisionForAssetId(
+      assetId: receivedBalance.assetId,
+    );
+    final receivedAmount = amountToString.amountToString(
       AmountToStringParameters(
         amount: receivedBalance.amount.toInt(),
         forceSign: true,
@@ -621,13 +775,10 @@ class TransItemHelper {
       return [];
     }
 
-    final amountProvider = ref.read(amountToStringProvider);
-
     final balances = <Balance>[];
     balances.addAll(transItem.tx.balances);
 
     if (removeFeeAsset) {
-      final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
       final feeAmount = transItem.tx.networkFee;
       balances.removeWhere(
         (e) => e.amount.abs() == feeAmount && e.assetId == liquidAssetId,
@@ -638,11 +789,9 @@ class TransItemHelper {
       balances.length,
       (index) {
         final balance = balances[index];
-        final asset = ref.watch(
-          assetsStateProvider.select((value) => value[balance.assetId]),
-        );
+        final asset = assetsState[balance.assetId];
         final ticker = asset != null ? asset.ticker : '???';
-        final amount = amountProvider.amountToString(
+        final amount = amountToString.amountToString(
           AmountToStringParameters(
             amount: balance.amount.toInt(),
             forceSign: true,
@@ -687,9 +836,6 @@ class TransItemHelper {
   }
 
   String price() {
-    final satoshiRepository = ref.read(satoshiRepositoryProvider);
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-
     final balanceDelivered = transItem.tx.balances.firstWhere(
       (e) => e.amount < 0,
     );
@@ -697,8 +843,8 @@ class TransItemHelper {
       (e) => e.amount >= 0,
     );
 
-    final assetSent = ref.read(assetsStateProvider)[balanceDelivered.assetId];
-    final assetRecv = ref.read(assetsStateProvider)[balanceReceived.assetId];
+    final assetSent = assetsState[balanceDelivered.assetId];
+    final assetRecv = assetsState[balanceReceived.assetId];
 
     final satoshiDelivered = balanceDelivered.amount.toInt().abs();
     final satoshiReceived = balanceReceived.amount.toInt().abs();
@@ -732,7 +878,6 @@ class TransItemHelper {
       ),
     };
 
-    final amountToString = ref.read(amountToStringProvider);
     final decimalKCoin = Decimal.fromInt(kCoin);
     final satoshiResult = result * decimalKCoin;
 
@@ -748,7 +893,9 @@ class TransItemHelper {
     // format price
     final targetPrice = replaceCharacterOnPosition(
       input: priceString,
-      currencyChar: assetSent?.ticker ?? '',
+      currencyChar: sentBitcoin
+          ? assetRecv?.ticker ?? ''
+          : assetSent?.ticker ?? '',
       currencyCharAlignment: CurrencyCharAlignment.end,
     );
 

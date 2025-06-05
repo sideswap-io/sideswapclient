@@ -84,7 +84,7 @@ class BitmapHelper {
     double width,
     double height,
   ) async {
-    return vg.loadPicture(SvgStringLoader(svgString), null);
+    return await vg.loadPicture(SvgStringLoader(svgString), null);
   }
 
   static Future<Uint8List> getSizedSvgImageBytes(

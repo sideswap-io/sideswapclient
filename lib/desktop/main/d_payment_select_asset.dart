@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/screens/pay/payment_select_asset.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DPaymentSelectAsset extends HookConsumerWidget {
   const DPaymentSelectAsset({
@@ -14,9 +14,9 @@ class DPaymentSelectAsset extends HookConsumerWidget {
     this.onSelected,
   });
 
-  final List<AccountAsset> availableAssets;
-  final List<AccountAsset> disabledAssets;
-  final ValueChanged<AccountAsset>? onSelected;
+  final Iterable<String> availableAssets;
+  final Iterable<String> disabledAssets;
+  final ValueChanged<Asset>? onSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,7 +33,7 @@ class DPaymentSelectAsset extends HookConsumerWidget {
 
     return DPopupWithClose(
       width: 580,
-      height: 630,
+      height: 710,
       child: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

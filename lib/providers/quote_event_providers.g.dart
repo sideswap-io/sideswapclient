@@ -7,23 +7,23 @@ part of 'quote_event_providers.dart';
 // **************************************************************************
 
 String _$quoteEventNotifierHash() =>
-    r'65d43ffaa52219214d5fc6095f3ea0ba1ff5b35b';
+    r'748758f051f4741c3f3cc112815a48b1c944f358';
 
 /// See also [QuoteEventNotifier].
 @ProviderFor(QuoteEventNotifier)
-final quoteEventNotifierProvider = AutoDisposeNotifierProvider<
-  QuoteEventNotifier,
-  Option<From_Quote>
->.internal(
-  QuoteEventNotifier.new,
-  name: r'quoteEventNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final quoteEventNotifierProvider =
+    AutoDisposeNotifierProvider<
+      QuoteEventNotifier,
+      Option<From_Quote>
+    >.internal(
+      QuoteEventNotifier.new,
+      name: r'quoteEventNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$quoteEventNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$QuoteEventNotifier = AutoDisposeNotifier<Option<From_Quote>>;
 String _$acceptQuoteNotifierHash() =>
@@ -33,19 +33,19 @@ String _$acceptQuoteNotifierHash() =>
 ///
 /// Copied from [AcceptQuoteNotifier].
 @ProviderFor(AcceptQuoteNotifier)
-final acceptQuoteNotifierProvider = AutoDisposeNotifierProvider<
-  AcceptQuoteNotifier,
-  Option<From_AcceptQuote>
->.internal(
-  AcceptQuoteNotifier.new,
-  name: r'acceptQuoteNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final acceptQuoteNotifierProvider =
+    AutoDisposeNotifierProvider<
+      AcceptQuoteNotifier,
+      Option<From_AcceptQuote>
+    >.internal(
+      AcceptQuoteNotifier.new,
+      name: r'acceptQuoteNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$acceptQuoteNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AcceptQuoteNotifier = AutoDisposeNotifier<Option<From_AcceptQuote>>;
 String _$previewOrderQuoteSuccessNotifierHash() =>
@@ -53,38 +53,52 @@ String _$previewOrderQuoteSuccessNotifierHash() =>
 
 /// See also [PreviewOrderQuoteSuccessNotifier].
 @ProviderFor(PreviewOrderQuoteSuccessNotifier)
-final previewOrderQuoteSuccessNotifierProvider = NotifierProvider<
-  PreviewOrderQuoteSuccessNotifier,
-  Option<QuoteSuccess>
->.internal(
-  PreviewOrderQuoteSuccessNotifier.new,
-  name: r'previewOrderQuoteSuccessNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final previewOrderQuoteSuccessNotifierProvider =
+    NotifierProvider<
+      PreviewOrderQuoteSuccessNotifier,
+      Option<QuoteSuccess>
+    >.internal(
+      PreviewOrderQuoteSuccessNotifier.new,
+      name: r'previewOrderQuoteSuccessNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$previewOrderQuoteSuccessNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$PreviewOrderQuoteSuccessNotifier = Notifier<Option<QuoteSuccess>>;
-String _$previewOrderQuoteSuccessTtlHash() =>
-    r'ad45bbabb616d5e18aa206040914b0d0a0f41668';
-
-/// See also [PreviewOrderQuoteSuccessTtl].
-@ProviderFor(PreviewOrderQuoteSuccessTtl)
-final previewOrderQuoteSuccessTtlProvider =
-    AutoDisposeNotifierProvider<PreviewOrderQuoteSuccessTtl, int>.internal(
-      PreviewOrderQuoteSuccessTtl.new,
-      name: r'previewOrderQuoteSuccessTtlProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$previewOrderQuoteSuccessTtlHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$PreviewOrderQuoteSuccessTtl = AutoDisposeNotifier<int>;
+typedef _$PreviewOrderQuoteSuccessNotifier = Notifier<Option<QuoteSuccess>>;
+String _$orderTtlNotifierHash() => r'dcfeae005491543026ae2bad7a58197142d755fa';
+
+/// See also [OrderTtlNotifier].
+@ProviderFor(OrderTtlNotifier)
+final orderTtlNotifierProvider =
+    NotifierProvider<OrderTtlNotifier, OrderTtlState>.internal(
+      OrderTtlNotifier.new,
+      name: r'orderTtlNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$orderTtlNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$OrderTtlNotifier = Notifier<OrderTtlState>;
+String _$orderSignTtlHash() => r'6f5d00189ce1ae2194e2187f15e5a9542786d060';
+
+/// See also [OrderSignTtl].
+@ProviderFor(OrderSignTtl)
+final orderSignTtlProvider =
+    AutoDisposeNotifierProvider<OrderSignTtl, int>.internal(
+      OrderSignTtl.new,
+      name: r'orderSignTtlProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$orderSignTtlHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$OrderSignTtl = AutoDisposeNotifier<int>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

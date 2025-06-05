@@ -15,10 +15,9 @@ final skipForNowNotifierProvider =
     AutoDisposeNotifierProvider<SkipForNowNotifier, SkipForNowState>.internal(
       SkipForNowNotifier.new,
       name: r'skipForNowNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$skipForNowNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$skipForNowNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

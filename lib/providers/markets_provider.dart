@@ -10,10 +10,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
+
 import 'package:sideswap/common/helpers.dart' show kCoin;
 import 'package:sideswap/desktop/markets/widgets/d_preview_order_dialog.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/ui_history_order.dart';
+import 'package:sideswap/models/ui_own_order.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -22,15 +24,13 @@ import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/models/ui_own_order.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/market_swap_page.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-part 'markets_provider.g.dart';
 part 'markets_provider.freezed.dart';
+part 'markets_provider.g.dart';
 
 @riverpod
 String marketTypeName(Ref ref, MarketType_ type) {
@@ -280,10 +280,9 @@ List<UiOwnOrder> marketUiOwnOrders(Ref ref) {
 
   return ownOrders.map((e) {
     final quoteAsset = assetsState[e.assetPair.quote];
-    final marketType =
-        quoteAsset == null
-            ? MarketType_.STABLECOIN
-            : ref.read(assetMarketTypeProvider(quoteAsset));
+    final marketType = quoteAsset == null
+        ? MarketType_.STABLECOIN
+        : ref.read(assetMarketTypeProvider(quoteAsset));
     return UiOwnOrder(
       amountToString: amountToString,
       assetsState: assetsState,
@@ -295,6 +294,18 @@ List<UiOwnOrder> marketUiOwnOrders(Ref ref) {
       ownOrder: e,
     );
   }).toList();
+}
+
+@riverpod
+Option<UiOwnOrder> marketUiOwnOrderById(Ref ref, OrderId orderId) {
+  final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
+  for (final uiOwnOrder in uiOwnOrders) {
+    if (uiOwnOrder.orderId == orderId) {
+      return Option.of(uiOwnOrder);
+    }
+  }
+
+  return Option.none();
 }
 
 @riverpod
@@ -395,9 +406,8 @@ class MarketPriceNotifier extends _$MarketPriceNotifier {
 }
 
 @riverpod
-Option<({String indexPrice, Option<Asset> quoteAsset})> marketIndexPrice(
-  Ref ref,
-) {
+Option<({int satoshiIndexPrice, Option<Asset> quoteAsset})>
+marketSatoshiIndexPrice(Ref ref) {
   final subscribedAssetPair = ref.watch(
     marketSubscribedAssetPairNotifierProvider,
   );
@@ -413,32 +423,70 @@ Option<({String indexPrice, Option<Asset> quoteAsset})> marketIndexPrice(
 
     final amount = marketPrices[assetPair]!.indexPrice;
     final asset = assetsState[assetPair.quote];
-    final satoshi =
-        asset == null
-            ? 0
-            : satoshiRepository.satoshiForAmount(
-              amount: amount.toString(),
-              assetId: asset.assetId,
-            );
+    final satoshi = asset == null
+        ? 0
+        : satoshiRepository.satoshiForAmount(
+            amount: amount.toString(),
+            assetId: asset.assetId,
+          );
 
     if (satoshi == 0) {
+      return Option.none();
+    }
+
+    final quoteAsset = asset == null ? Option<Asset>.none() : Option.of(asset);
+    return Option.of((satoshiIndexPrice: satoshi, quoteAsset: quoteAsset));
+  });
+}
+
+@riverpod
+Option<({String indexPrice, Option<Asset> quoteAsset})> marketIndexPrice(
+  Ref ref,
+) {
+  final optionSatoshiIndexPrice = ref.watch(marketSatoshiIndexPriceProvider);
+
+  return optionSatoshiIndexPrice.match(() => Option.none(), (
+    satoshiIndexPrice,
+  ) {
+    if (satoshiIndexPrice.satoshiIndexPrice == 0) {
       return Option.none();
     }
 
     final price = ref
         .watch(amountToStringProvider)
         .amountToString(
-          AmountToStringParameters(amount: satoshi, trailingZeroes: false),
+          AmountToStringParameters(
+            amount: satoshiIndexPrice.satoshiIndexPrice,
+            trailingZeroes: false,
+          ),
         );
-    final quoteAsset = asset == null ? Option<Asset>.none() : Option.of(asset);
-    return Option.of((indexPrice: price, quoteAsset: quoteAsset));
+
+    return Option.of((
+      indexPrice: price,
+      quoteAsset: satoshiIndexPrice.quoteAsset,
+    ));
   });
 }
 
 @riverpod
-Option<({String lastPrice, Option<Asset> quoteAsset})> marketLastPrice(
-  Ref ref,
-) {
+Option<({Decimal decimalIndexPrice, Option<Asset> quoteAsset})>
+marketDecimalIndexPrice(Ref ref) {
+  final optionMarketIndexPrice = ref.watch(marketIndexPriceProvider);
+
+  return optionMarketIndexPrice.match(() => Option.none(), (indexPrice) {
+    final decimalIndexPrice =
+        Decimal.tryParse(indexPrice.indexPrice) ?? Decimal.zero;
+
+    return Option.of((
+      decimalIndexPrice: decimalIndexPrice,
+      quoteAsset: indexPrice.quoteAsset,
+    ));
+  });
+}
+
+@riverpod
+Option<({int satoshiLastPrice, Option<Asset> quoteAsset})>
+marketSatoshiLastPrice(Ref ref) {
   final subscribedAssetPair = ref.watch(
     marketSubscribedAssetPairNotifierProvider,
   );
@@ -454,25 +502,62 @@ Option<({String lastPrice, Option<Asset> quoteAsset})> marketLastPrice(
 
     final amount = marketPrices[assetPair]!.lastPrice;
     final asset = assetsState[assetPair.quote];
-    final satoshi =
-        asset == null
-            ? 0
-            : satoshiRepository.satoshiForAmount(
-              amount: amount.toString(),
-              assetId: asset.assetId,
-            );
+    final satoshi = asset == null
+        ? 0
+        : satoshiRepository.satoshiForAmount(
+            amount: amount.toString(),
+            assetId: asset.assetId,
+          );
 
     if (satoshi == 0) {
+      return Option.none();
+    }
+
+    final quoteAsset = asset == null ? Option<Asset>.none() : Option.of(asset);
+    return Option.of((satoshiLastPrice: satoshi, quoteAsset: quoteAsset));
+  });
+}
+
+@riverpod
+Option<({String lastPrice, Option<Asset> quoteAsset})> marketLastPrice(
+  Ref ref,
+) {
+  final optionSatoshiLastPrice = ref.watch(marketSatoshiLastPriceProvider);
+
+  return optionSatoshiLastPrice.match(() => Option.none(), (satoshiLastPrice) {
+    if (satoshiLastPrice.satoshiLastPrice == 0) {
       return Option.none();
     }
 
     final price = ref
         .watch(amountToStringProvider)
         .amountToString(
-          AmountToStringParameters(amount: satoshi, trailingZeroes: false),
+          AmountToStringParameters(
+            amount: satoshiLastPrice.satoshiLastPrice,
+            trailingZeroes: false,
+          ),
         );
-    final quoteAsset = asset == null ? Option<Asset>.none() : Option.of(asset);
-    return Option.of((lastPrice: price, quoteAsset: quoteAsset));
+
+    return Option.of((
+      lastPrice: price,
+      quoteAsset: satoshiLastPrice.quoteAsset,
+    ));
+  });
+}
+
+@riverpod
+Option<({Decimal decimalLastPrice, Option<Asset> quoteAsset})>
+marketDecimalLastPrice(Ref ref) {
+  final optionMarketLastPrice = ref.watch(marketLastPriceProvider);
+
+  return optionMarketLastPrice.match(() => Option.none(), (lastPrice) {
+    final decimalLastPrice =
+        Decimal.tryParse(lastPrice.lastPrice) ?? Decimal.zero;
+
+    return Option.of((
+      decimalLastPrice: decimalLastPrice,
+      quoteAsset: lastPrice.quoteAsset,
+    ));
   });
 }
 
@@ -537,24 +622,41 @@ class OrderAmount {
     return satoshi;
   }
 
-  (Decimal, int, String, AssetPair) _equality() => (
-    amount,
-    satoshi,
-    assetId,
-    assetPair,
-  );
+  (Decimal, int, String, AssetPair) _equality() =>
+      (amount, satoshi, assetId, assetPair);
 
   @override
   bool operator ==(covariant OrderAmount other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other._equality() == _equality();
+    if (identical(this, other)) return true;
+
+    return other.amount == amount &&
+        other.satoshi == satoshi &&
+        other.assetId == assetId &&
+        other.assetPair == assetPair;
   }
 
   @override
   int get hashCode {
     return _equality().hashCode;
+  }
+
+  OrderAmount copyWith({
+    Decimal? amount,
+    int? satoshi,
+    String? assetId,
+    AssetPair? assetPair,
+  }) {
+    return OrderAmount(
+      amount: amount ?? this.amount,
+      satoshi: satoshi ?? this.satoshi,
+      assetId: assetId ?? this.assetId,
+      assetPair: assetPair ?? this.assetPair,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'OrderAmount(amount: $amount, satoshi: $satoshi, assetId: $assetId, assetPair: $assetPair)';
   }
 }
 
@@ -595,10 +697,9 @@ OrderAmount marketOrderAmount(Ref ref) {
       );
     },
     (assetPair) => () {
-      final assetId =
-          marketSideState == MarketSideStateBase()
-              ? assetPair.base
-              : assetPair.quote;
+      final assetId = marketSideState == MarketSideStateBase()
+          ? assetPair.base
+          : assetPair.quote;
       final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: amountDecimal.toString(),
@@ -630,11 +731,11 @@ bool marketOrderTradeButtonEnabled(Ref ref) {
 class MarketQuoteNotifier extends _$MarketQuoteNotifier {
   @override
   Option<From_Quote> build() {
-    ref.listen(marketTypeSwitchStateNotifierProvider, (_, __) {
+    ref.listen(marketTypeSwitchStateNotifierProvider, (_, _) {
       _stopQuotes();
     });
 
-    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, __) {
+    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, _) {
       _startQuotes();
     });
 
@@ -643,11 +744,11 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
       _startQuotes();
     });
 
-    ref.listen(marketSideStateNotifierProvider, (_, __) {
+    ref.listen(marketSideStateNotifierProvider, (_, _) {
       _stopQuotes();
     });
 
-    ref.listen(tradeDirStateNotifierProvider, (_, __) {
+    ref.listen(tradeDirStateNotifierProvider, (_, _) {
       _stopQuotes();
     });
 
@@ -673,10 +774,9 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
           _stopQuotes();
         }
 
-        final assetId =
-            marketSideState == MarketSideStateBase()
-                ? assetPair.base
-                : assetPair.quote;
+        final assetId = marketSideState == MarketSideStateBase()
+            ? assetPair.base
+            : assetPair.quote;
         if (marketOrderAmount.assetPair != assetPair ||
             marketOrderAmount.assetId != assetId) {
           return;
@@ -690,10 +790,9 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
             .read(quoteEventNotifierProvider.notifier)
             .startQuotes(
               assetPair: assetPair,
-              assetType:
-                  marketSideState == MarketSideStateBase()
-                      ? AssetType.BASE
-                      : AssetType.QUOTE,
+              assetType: marketSideState == MarketSideStateBase()
+                  ? AssetType.BASE
+                  : AssetType.QUOTE,
               amount: marketOrderAmount.asSatoshi(),
               tradeDir: tradeDir,
             );
@@ -709,24 +808,23 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
 @riverpod
 Option<QuoteError> marketQuoteError(Ref ref) {
   final optionQuote = ref.watch(marketQuoteNotifierProvider);
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
 
-  return optionStartOrderId.match(
-    () =>
-        optionQuote.match(
-          () => () {
-            return Option<QuoteError>.none();
-          },
-          (quote) => () {
-            if (!quote.hasError()) {
-              return Option<QuoteError>.none();
-            }
+  return optionStartOrder.match(
+    () => optionQuote.match(
+      () => () {
+        return Option<QuoteError>.none();
+      },
+      (quote) => () {
+        if (!quote.hasError()) {
+          return Option<QuoteError>.none();
+        }
 
-            return Option.of(
-              QuoteError(error: quote.error, orderId: quote.orderId.toInt()),
-            );
-          },
-        )(),
+        return Option.of(
+          QuoteError(error: quote.error, orderId: quote.orderId.toInt()),
+        );
+      },
+    )(),
     (_) => Option.none(),
   );
 }
@@ -738,42 +836,41 @@ Option<QuoteLowBalance> marketQuoteLowBalanceError(Ref ref) {
   final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
 
-  return optionStartOrderId.match(
+  return optionStartOrder.match(
     () => optionAssetPair.match(
       () => Option<QuoteLowBalance>.none(),
-      (assetPair) =>
-          optionQuote.match(
-            () => () {
-              return Option<QuoteLowBalance>.none();
-            },
-            (quote) => () {
-              if (!quote.hasLowBalance()) {
-                return Option<QuoteLowBalance>.none();
-              }
+      (assetPair) => optionQuote.match(
+        () => () {
+          return Option<QuoteLowBalance>.none();
+        },
+        (quote) => () {
+          if (!quote.hasLowBalance()) {
+            return Option<QuoteLowBalance>.none();
+          }
 
-              if (quote.assetPair != assetPair) {
-                return Option<QuoteLowBalance>.none();
-              }
+          if (quote.assetPair != assetPair) {
+            return Option<QuoteLowBalance>.none();
+          }
 
-              return optionSubscribedMarket.match(
-                () => Option<QuoteLowBalance>.none(),
-                (marketInfo) => Option.of(
-                  QuoteLowBalance(
-                    amountToString,
-                    quote.lowBalance,
-                    quote.assetPair,
-                    quote.assetType,
-                    quote.tradeDir,
-                    marketInfo.feeAsset,
-                    assetsState,
-                    quote.orderId.toInt(),
-                  ),
-                ),
-              );
-            },
-          )(),
+          return optionSubscribedMarket.match(
+            () => Option<QuoteLowBalance>.none(),
+            (marketInfo) => Option.of(
+              QuoteLowBalance(
+                amountToString,
+                quote.lowBalance,
+                quote.assetPair,
+                quote.assetType,
+                quote.tradeDir,
+                marketInfo.feeAsset,
+                assetsState,
+                quote.orderId.toInt(),
+              ),
+            ),
+          );
+        },
+      )(),
     ),
     (_) => Option.none(),
   );
@@ -786,42 +883,41 @@ Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
   final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
 
-  return optionStartOrderId.match(
+  return optionStartOrder.match(
     () => optionAssetPair.match(
       () => Option.none(),
-      (assetPair) =>
-          optionQuote.match(
-            () => () {
-              return Option<QuoteSuccess>.none();
-            },
-            (quote) => () {
-              if (!quote.hasSuccess()) {
-                return Option<QuoteSuccess>.none();
-              }
+      (assetPair) => optionQuote.match(
+        () => () {
+          return Option<QuoteSuccess>.none();
+        },
+        (quote) => () {
+          if (!quote.hasSuccess()) {
+            return Option<QuoteSuccess>.none();
+          }
 
-              if (quote.assetPair != assetPair) {
-                return Option<QuoteSuccess>.none();
-              }
+          if (quote.assetPair != assetPair) {
+            return Option<QuoteSuccess>.none();
+          }
 
-              return optionSubscribedMarket.match(
-                () => Option<QuoteSuccess>.none(),
-                (marketInfo) => Option.of(
-                  QuoteSuccess(
-                    amountToString,
-                    quote.success,
-                    quote.assetPair,
-                    quote.assetType,
-                    quote.tradeDir,
-                    marketInfo.feeAsset,
-                    assetsState,
-                    quote.orderId.toInt(),
-                  ),
-                ),
-              );
-            },
-          )(),
+          return optionSubscribedMarket.match(
+            () => Option<QuoteSuccess>.none(),
+            (marketInfo) => Option.of(
+              QuoteSuccess(
+                amountToString,
+                quote.success,
+                quote.assetPair,
+                quote.assetType,
+                quote.tradeDir,
+                marketInfo.feeAsset,
+                assetsState,
+                quote.orderId.toInt(),
+              ),
+            ),
+          );
+        },
+      )(),
     ),
     (_) => Option.none(),
   );
@@ -830,26 +926,26 @@ Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
 @riverpod
 Option<QuoteUnregisteredGaid> marketQuoteUnregisteredGaid(Ref ref) {
   final optionQuote = ref.watch(marketQuoteNotifierProvider);
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
 
-  return optionStartOrderId.match(
-    () =>
-        optionQuote.match(
-          () => () {
-            return Option<QuoteUnregisteredGaid>.none();
-          },
-          (quote) => () {
-            if (!quote.hasUnregisteredGaid()) {
-              return Option<QuoteUnregisteredGaid>.none();
-            }
+  return optionStartOrder.match(
+    () => optionQuote.match(
+      () => () {
+        return Option<QuoteUnregisteredGaid>.none();
+      },
+      (quote) => () {
+        if (!quote.hasUnregisteredGaid()) {
+          return Option<QuoteUnregisteredGaid>.none();
+        }
 
-            return Option.of(
-              QuoteUnregisteredGaid(
-                quoteUnregisteredGaid: quote.unregisteredGaid,
-              ),
-            );
-          },
-        )(),
+        return Option.of(
+          QuoteUnregisteredGaid(
+            orderId: quote.orderId,
+            quoteUnregisteredGaid: quote.unregisteredGaid,
+          ),
+        );
+      },
+    )(),
     (_) => Option.none(),
   );
 }
@@ -877,19 +973,21 @@ Option<String> marketAcceptQuoteSuccess(Ref ref) {
   )();
 }
 
-@riverpod
-class MarketAcceptQuoteSuccessShowDialogNotifier
-    extends _$MarketAcceptQuoteSuccessShowDialogNotifier {
-  @override
-  bool build() {
-    final optionAccepQuoteSuccess = ref.watch(marketAcceptQuoteSuccessProvider);
-    return optionAccepQuoteSuccess.match(() => false, (_) => true);
-  }
+// @riverpod
+// class MarketAcceptQuoteSuccessShowDialogNotifier
+//     extends _$MarketAcceptQuoteSuccessShowDialogNotifier {
+//   @override
+//   bool build() {
+//     final optionAcceptQuoteSuccess = ref.watch(
+//       marketAcceptQuoteSuccessProvider,
+//     );
+//     return optionAcceptQuoteSuccess.match(() => false, (_) => true);
+//   }
 
-  void setState(bool value) {
-    state = value;
-  }
-}
+//   void setState(bool value) {
+//     state = value;
+//   }
+// }
 
 @riverpod
 Option<String> marketAcceptQuoteError(Ref ref) {
@@ -1053,10 +1151,9 @@ OrderAmount limitOrderPrice(Ref ref) {
       );
     },
     (assetPair) => () {
-      final assetId =
-          marketSideState == MarketSideStateBase()
-              ? assetPair.quote
-              : assetPair.base;
+      final assetId = marketSideState == MarketSideStateBase()
+          ? assetPair.quote
+          : assetPair.base;
       final priceDecimal = Decimal.tryParse(priceString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: priceDecimal.toString(),
@@ -1116,6 +1213,11 @@ class OrderSubmitSuccessNotifier extends _$OrderSubmitSuccessNotifier {
   }
 
   void setState(UiOwnOrder uiOwnOrder) {
+    // set submit success only once
+    if (state.toNullable()?.orderId == uiOwnOrder.orderId) {
+      return;
+    }
+
     state = Option.of(uiOwnOrder);
   }
 }
@@ -1377,7 +1479,7 @@ class MarketHistoryOrderNotifier extends _$MarketHistoryOrderNotifier {
   @override
   List<HistoryOrder> build() {
     // also listen on total items, they will be always available when ui will watch on history order provider
-    ref.listen(marketHistoryTotalProvider, (_, __) {});
+    ref.listen(marketHistoryTotalProvider, (_, _) {});
     return [];
   }
 
@@ -1455,7 +1557,7 @@ class IndexPriceButtonAsyncNotifier extends _$IndexPriceButtonAsyncNotifier {
     return const AsyncValue<String>.loading();
   }
 
-  void setIndexPrice(String value) async {
+  void setIndexPrice(String value) {
     state = AsyncValue.data(value);
   }
 }
@@ -1463,12 +1565,12 @@ class IndexPriceButtonAsyncNotifier extends _$IndexPriceButtonAsyncNotifier {
 @Riverpod(keepAlive: true)
 class MarketStartOrderNotifier extends _$MarketStartOrderNotifier {
   @override
-  Option<int> build() {
+  Option<From_StartOrder> build() {
     return Option.none();
   }
 
-  void setState(int orderId) {
-    state = Option.of(orderId);
+  void setState(From_StartOrder startOrder) {
+    state = Option.of(startOrder);
   }
 }
 
@@ -1494,7 +1596,7 @@ class MarketStartOrderErrorNotifier extends _$MarketStartOrderErrorNotifier {
 
 @riverpod
 Option<QuoteSuccess> marketStartOrderQuoteSuccess(Ref ref) {
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
   final optionQuote = ref.watch(marketQuoteNotifierProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
@@ -1508,29 +1610,36 @@ Option<QuoteSuccess> marketStartOrderQuoteSuccess(Ref ref) {
         return Option.none();
       }
 
-      if (optionStartOrderId.toNullable() != quote.orderId.toInt()) {
-        return Option.none();
-      }
+      return optionStartOrder.match(() => Option.none(), (startOrder) {
+        if (startOrder.orderId.toInt() != quote.orderId.toInt()) {
+          return Option.none();
+        }
 
-      return Option.of(
-        QuoteSuccess(
-          amountToString,
-          quote.success,
-          quote.assetPair,
-          quote.assetType,
-          quote.tradeDir,
-          quote.assetType,
-          assetsState,
-          quote.orderId.toInt(),
-        ),
-      );
+        if (!startOrder.hasSuccess()) {
+          return Option.none();
+        }
+
+        return Option.of(
+          QuoteSuccess(
+            amountToString,
+            quote.success,
+            quote.assetPair,
+            quote.assetType,
+            quote.tradeDir,
+            startOrder.success.feeAsset,
+            assetsState,
+            quote.orderId.toInt(),
+            startOrderSuccess: startOrder.success,
+          ),
+        );
+      });
     },
   );
 }
 
 @riverpod
 Option<QuoteLowBalance> marketStartOrderLowBalanceError(Ref ref) {
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
   final optionQuote = ref.watch(marketQuoteNotifierProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
@@ -1544,43 +1653,78 @@ Option<QuoteLowBalance> marketStartOrderLowBalanceError(Ref ref) {
         return Option.none();
       }
 
-      if (optionStartOrderId.toNullable() != quote.orderId.toInt()) {
-        return Option.none();
-      }
+      return optionStartOrder.match(() => Option.none(), (startOrder) {
+        if (startOrder.orderId.toInt() != quote.orderId.toInt()) {
+          return Option.none();
+        }
 
-      return Option.of(
-        QuoteLowBalance(
-          amountToString,
-          quote.lowBalance,
-          quote.assetPair,
-          quote.assetType,
-          quote.tradeDir,
-          quote.assetType,
-          assetsState,
-          quote.orderId.toInt(),
-        ),
-      );
+        return Option.of(
+          QuoteLowBalance(
+            amountToString,
+            quote.lowBalance,
+            quote.assetPair,
+            quote.assetType,
+            quote.tradeDir,
+            quote.assetType,
+            assetsState,
+            quote.orderId.toInt(),
+          ),
+        );
+      });
     },
   );
 }
 
 @riverpod
 Option<QuoteError> marketStartOrderQuoteError(Ref ref) {
-  final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
-  final optionQuoteError = ref.watch(marketQuoteErrorProvider);
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
 
-  return optionQuoteError.match(
+  return optionQuote.match(
     () {
       return Option.none();
     },
-    (quoteError) {
-      if (optionStartOrderId.toNullable() != quoteError.orderId) {
+    (quote) {
+      return optionStartOrder.match(() => Option.none(), (startOrder) {
+        if (!quote.hasError()) {
+          return Option.none();
+        }
+
+        if (startOrder.orderId.toInt() != quote.orderId.toInt()) {
+          return Option.none();
+        }
+
+        return Option.of(
+          QuoteError(orderId: quote.orderId.toInt(), error: quote.error),
+        );
+      });
+    },
+  );
+}
+
+@riverpod
+Option<QuoteUnregisteredGaid> marketStartOrderUnregisteredGaid(Ref ref) {
+  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+
+  return optionQuote.match(() => Option.none(), (quote) {
+    return optionStartOrder.match(() => Option.none(), (startOrder) {
+      if (!quote.hasUnregisteredGaid()) {
         return Option.none();
       }
 
-      return optionQuoteError;
-    },
-  );
+      if (startOrder.orderId.toInt() != quote.orderId.toInt()) {
+        return Option.none();
+      }
+
+      return Option.of(
+        QuoteUnregisteredGaid(
+          orderId: startOrder.orderId,
+          quoteUnregisteredGaid: quote.unregisteredGaid,
+        ),
+      );
+    });
+  });
 }
 
 abstract class AbstractMarketTradeRepository {
@@ -1603,23 +1747,14 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
     await optionQuoteSuccess.match(
       () => () {},
       (quoteSuccess) => () async {
-        var authorized = ref.read(jadeOneTimeAuthorizationProvider);
-
-        if (!ref.read(jadeOneTimeAuthorizationProvider)) {
-          authorized =
-              await ref
-                  .read(jadeOneTimeAuthorizationProvider.notifier)
-                  .authorize();
-        }
-
-        if (!authorized) {
-          return;
-        }
+        ref
+            .read(previewOrderQuoteSuccessNotifierProvider.notifier)
+            .setState(quoteSuccess);
 
         if (context.mounted) {
-          ref
-              .read(previewOrderQuoteSuccessNotifierProvider.notifier)
-              .setState(quoteSuccess);
+          if (!context.mounted) {
+            return;
+          }
 
           if (FlavorConfig.isDesktop) {
             await showDialog<void>(
@@ -1648,6 +1783,7 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
             return;
           }
 
+          ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
           ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
         }
       },
@@ -1696,8 +1832,9 @@ Option<Asset> limitFeeAsset(Ref ref) {
           return Option.none();
         },
         (quoteAsset) {
-          final feeAsset =
-              marketInfo.feeAsset == AssetType.BASE ? baseAsset : quoteAsset;
+          final feeAsset = marketInfo.feeAsset == AssetType.BASE
+              ? baseAsset
+              : quoteAsset;
           return Option.of(feeAsset);
         },
       ),
@@ -1862,15 +1999,12 @@ String marketLimitOrderAggregatedVolumeWithTicker(Ref ref) {
 }
 
 @riverpod
-bool makeLimitOrderAggregateVolumeTooHigh(Ref ref) {
+bool marketLimitOrderAggregateVolumeTooHigh(Ref ref) {
   final aggregateVolume = ref.watch(marketLimitOrderAggregateVolumeProvider);
   final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
 
   return optionQuoteAsset.match(() => true, (quoteAsset) {
-    final accountAsset = ref.watch(accountAssetFromAssetProvider(quoteAsset));
-    final assetBalance = ref.watch(
-      accountAssetBalanceStringProvider(accountAsset),
-    );
+    final assetBalance = ref.watch(assetBalanceStringProvider(quoteAsset));
 
     final balance = double.tryParse(assetBalance) ?? .0;
     return aggregateVolume.asDouble() > balance;
@@ -1889,6 +2023,14 @@ class MarketOrderAggregateVolumeProvider {
   });
 
   String asString() {
+    if (precision == 0) {
+      return asDecimal().toBigInt().toString();
+    }
+
+    return asDecimal().toStringAsFixed(precision);
+  }
+
+  Decimal asDecimal() {
     final multipliedInSat = amount * price * Decimal.fromInt(kCoin);
     final power =
         Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
@@ -1896,15 +2038,43 @@ class MarketOrderAggregateVolumeProvider {
     final amountWithPrecision = (multipliedInSat / power).toDecimal();
 
     if (precision == 0) {
-      return amountWithPrecision.toBigInt().toString();
+      return amountWithPrecision;
     }
 
-    return (multipliedInSat / power).toDecimal().toStringAsFixed(precision);
+    return (multipliedInSat / power).toDecimal();
   }
 
   double asDouble() {
     return double.tryParse(asString()) ?? 0.0;
   }
+
+  MarketOrderAggregateVolumeProvider copyWith({
+    Decimal? amount,
+    Decimal? price,
+    int? precision,
+  }) {
+    return MarketOrderAggregateVolumeProvider(
+      amount: amount ?? this.amount,
+      price: price ?? this.price,
+      precision: precision ?? this.precision,
+    );
+  }
+
+  @override
+  String toString() =>
+      'MarketOrderAggregateVolumeProvider(amount: $amount, price: $price, precision: $precision)';
+
+  @override
+  bool operator ==(covariant MarketOrderAggregateVolumeProvider other) {
+    if (identical(this, other)) return true;
+
+    return other.amount == amount &&
+        other.price == price &&
+        other.precision == precision;
+  }
+
+  @override
+  int get hashCode => amount.hashCode ^ price.hashCode ^ precision.hashCode;
 }
 
 @riverpod
@@ -1912,11 +2082,9 @@ String marketLimitPriceBalance(Ref ref) {
   final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
 
   return optionQuoteAsset.match(() => '', (quoteAsset) {
-    final totalBalance = ref.watch(
-      totalMaxAvailableBalanceForAssetAsStringProvider(quoteAsset.assetId),
-    );
+    final assetBalance = ref.watch(assetBalanceStringProvider(quoteAsset));
 
-    return totalBalance;
+    return assetBalance;
   });
 }
 
@@ -1925,10 +2093,8 @@ String marketLimitAmountBalance(Ref ref) {
   final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
 
   return optionBaseAsset.match(() => '', (baseAsset) {
-    final totalBalance = ref.watch(
-      totalMaxAvailableBalanceForAssetAsStringProvider(baseAsset.assetId),
-    );
+    final assetBalance = ref.watch(assetBalanceStringProvider(baseAsset));
 
-    return totalBalance;
+    return assetBalance;
   });
 }

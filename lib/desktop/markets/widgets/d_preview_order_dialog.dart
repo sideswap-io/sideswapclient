@@ -9,6 +9,7 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -37,35 +38,39 @@ class DPreviewOrderDialog extends HookConsumerWidget {
     final optionQuoteSuccess = ref.watch(
       previewOrderQuoteSuccessNotifierProvider,
     );
-    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
+    final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     final closeCallback = useCallback(() {
       ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
       ref.invalidate(quoteEventNotifierProvider);
       ref.invalidate(marketQuoteNotifierProvider);
-      Future.microtask(
-        () => ref.invalidate(previewOrderQuoteSuccessNotifierProvider),
-      );
+
+      // Jade wallet will cleanup the quote state on its own
+      final isJadeWallet = ref.read(isJadeWalletProvider);
+      if (!isJadeWallet) {
+        ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+      }
+
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != desktopOrderPreviewRouteName;
       });
     });
 
     useEffect(() {
-      if (previewOrderTtl != 0) {
+      if (orderSignTtl != 0) {
         return;
       }
 
-      closeCallback();
+      Future.microtask(() => closeCallback());
 
       return;
-    }, [previewOrderTtl]);
+    }, [orderSignTtl]);
 
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
       style: defaultDialogTheme,
       title: DContentDialogTitle(
-        content: Text('New order'.tr()),
+        content: Text('Swap proposal'.tr()),
         onClose: () {
           closeCallback();
         },
@@ -73,51 +78,64 @@ class DPreviewOrderDialog extends HookConsumerWidget {
       content: SizedBox(
         width: 580,
         height: 485,
-        child:
-            optionQuoteSuccess.match(
-              () => () {
-                return SizedBox();
-              },
-              (quoteSuccess) => () {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
+        child: optionQuoteSuccess.match(
+          () => () {
+            return SizedBox();
+          },
+          (quoteSuccess) => () {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                children: [
+                  MarketPreviewOrderDialogCommonBody(),
+                  Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      MarketPreviewOrderDialogCommonBody(),
-                      Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          DCustomTextBigButton(
-                            width: 245,
-                            height: 44,
-                            onPressed: () {
-                              closeCallback();
-                            },
-                            child: Text('Cancel'.tr()),
-                          ),
-                          DCustomFilledBigButton(
-                            width: 245,
-                            height: 44,
-                            onPressed: () {
-                              final msg = To();
-                              msg.acceptQuote = To_AcceptQuote(
-                                quoteId: Int64(quoteSuccess.quoteId),
-                              );
-                              ref.read(walletProvider).sendMsg(msg);
+                      DCustomTextBigButton(
+                        width: 245,
+                        height: 44,
+                        onPressed: () {
+                          closeCallback();
+                        },
+                        child: Text('Cancel'.tr()),
+                      ),
+                      DCustomFilledBigButton(
+                        width: 245,
+                        height: 44,
+                        onPressed: () async {
+                          var authorized = ref.read(
+                            jadeOneTimeAuthorizationProvider,
+                          );
 
-                              closeCallback();
-                              ref.invalidate(marketQuoteNotifierProvider);
-                            },
-                            child: Text('Accept'.tr()),
-                          ),
-                        ],
+                          if (!ref.read(jadeOneTimeAuthorizationProvider)) {
+                            authorized = await ref
+                                .read(jadeOneTimeAuthorizationProvider.notifier)
+                                .authorize();
+                          }
+
+                          if (!authorized) {
+                            return;
+                          }
+
+                          final msg = To();
+                          msg.acceptQuote = To_AcceptQuote(
+                            quoteId: Int64(quoteSuccess.quoteId),
+                          );
+                          ref.read(walletProvider).sendMsg(msg);
+
+                          closeCallback();
+                          ref.invalidate(marketQuoteNotifierProvider);
+                        },
+                        child: Text('Accept'.tr()),
                       ),
                     ],
                   ),
-                );
-              },
-            )(),
+                ],
+              ),
+            );
+          },
+        )(),
       ),
     );
   }

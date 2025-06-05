@@ -89,22 +89,15 @@ class ProductSliverGroup extends ConsumerWidget {
           ),
           SliverList.builder(
             itemBuilder: (context, index) {
-              final baseAsset =
-                  ref
-                      .watch(
-                        baseAssetByMarketInfoProvider(marketInfoList[index]),
-                      )
-                      .toNullable();
-              final quoteAsset =
-                  ref
-                      .watch(
-                        quoteAssetByMarketInfoProvider(marketInfoList[index]),
-                      )
-                      .toNullable();
-              final subscribedAssetPair =
-                  ref
-                      .watch(marketSubscribedAssetPairNotifierProvider)
-                      .toNullable();
+              final baseAsset = ref
+                  .watch(baseAssetByMarketInfoProvider(marketInfoList[index]))
+                  .toNullable();
+              final quoteAsset = ref
+                  .watch(quoteAssetByMarketInfoProvider(marketInfoList[index]))
+                  .toNullable();
+              final subscribedAssetPair = ref
+                  .watch(marketSubscribedAssetPairNotifierProvider)
+                  .toNullable();
               final baseIcon = ref
                   .read(assetImageRepositoryProvider)
                   .getVerySmallImage(baseAsset?.assetId);
@@ -114,6 +107,9 @@ class ProductSliverGroup extends ConsumerWidget {
 
               return TextButton(
                 style: ButtonStyle(
+                  minimumSize: WidgetStatePropertyAll(Size(0, 20)),
+                  padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   backgroundColor: WidgetStateColor.resolveWith((states) {
                     return switch (states) {
                       Set<WidgetState>()
@@ -150,8 +146,8 @@ class ProductSliverGroup extends ConsumerWidget {
                   padding: const EdgeInsets.only(
                     left: 4,
                     right: 0,
-                    top: 7,
-                    bottom: 7,
+                    top: 8,
+                    bottom: 8,
                   ),
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(8)),

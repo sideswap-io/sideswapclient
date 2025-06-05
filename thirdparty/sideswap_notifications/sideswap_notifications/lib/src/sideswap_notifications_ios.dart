@@ -19,7 +19,7 @@ class SideswapNotificationsiOSPlugin
     THandleIncomingNotification? handleIncomingNotification,
   }) async {
     notificationService ??= NotificationService();
-    notificationService!.init(
+    await notificationService!.init(
       notificationBackgroundHandler: notificationBackgroundHandler,
       handleIncomingNotification: handleIncomingNotification,
     );
@@ -33,7 +33,7 @@ class SideswapNotificationsiOSPlugin
       return;
     }
 
-    notificationService!.refreshToken(
+    await notificationService!.refreshToken(
       refreshTokenCallback: refreshTokenCallback,
     );
   }

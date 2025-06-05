@@ -13,8 +13,9 @@ String _$envHash() => r'88f98d23c00ec0d7f25f92d533ab21916fb5f654';
 final envProvider = AutoDisposeNotifierProvider<Env, int>.internal(
   Env.new,
   name: r'envProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$envHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$envHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

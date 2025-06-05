@@ -17,7 +17,7 @@ class InstantSwapHeader extends ConsumerWidget {
       },
       (side) {
         final optionAsset = ref.watch(
-          assetFromAssetIdProvider(side.accountAsset.assetId),
+          assetFromAssetIdProvider(side.asset.assetId),
         );
         return optionAsset.match(
           () => const SizedBox(),

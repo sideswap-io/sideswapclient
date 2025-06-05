@@ -13,10 +13,9 @@ String _$ampIdNotifierHash() => r'71de7a3a49d0703f23d60618a0744306a1026e99';
 final ampIdNotifierProvider = NotifierProvider<AmpIdNotifier, String>.internal(
   AmpIdNotifier.new,
   name: r'ampIdNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ampIdNotifierHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$ampIdNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

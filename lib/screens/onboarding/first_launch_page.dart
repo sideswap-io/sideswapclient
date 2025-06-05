@@ -27,7 +27,7 @@ class FirstLaunchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(selectEnvDialogProvider, (_, next) async {
+    ref.listen(selectEnvDialogProvider, (_, next) {
       if (next) {
         ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(false);
         ref
@@ -82,8 +82,9 @@ class FirstLaunchPage extends HookConsumerWidget {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap:
-                                ref.read(selectEnvTapProvider.notifier).setTap,
+                            onTap: ref
+                                .read(selectEnvTapProvider.notifier)
+                                .setTap,
                             child: Column(
                               children: [
                                 const Padding(
@@ -138,11 +139,12 @@ class FirstLaunchPage extends HookConsumerWidget {
                                         'Connection issues detected. Check your network connection and restart the app.'
                                             .tr(),
                                         textAlign: TextAlign.center,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.titleMedium?.copyWith(
-                                          color: SideSwapColors.bitterSweet,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              color: SideSwapColors.bitterSweet,
+                                            ),
                                       ),
                                     ),
                                   ],
@@ -164,21 +166,21 @@ class FirstLaunchPage extends HookConsumerWidget {
                               ),
                               onPressed:
                                   serverLoginState is! ServerLoginStateError
-                                      ? () async {
-                                        ref
-                                            .read(
-                                              firstLaunchStateNotifierProvider
-                                                  .notifier,
-                                            )
-                                            .setFirstLaunchState(
-                                              const FirstLaunchStateCreateWallet(),
-                                            );
+                                  ? () async {
+                                      ref
+                                          .read(
+                                            firstLaunchStateNotifierProvider
+                                                .notifier,
+                                          )
+                                          .setFirstLaunchState(
+                                            const FirstLaunchStateCreateWallet(),
+                                          );
 
-                                        await ref
-                                            .read(walletProvider)
-                                            .setReviewLicenseCreateWallet();
-                                      }
-                                      : null,
+                                      await ref
+                                          .read(walletProvider)
+                                          .setReviewLicenseCreateWallet();
+                                    }
+                                  : null,
                             ),
                           ),
                           Padding(
@@ -198,20 +200,20 @@ class FirstLaunchPage extends HookConsumerWidget {
                               ),
                               onPressed:
                                   serverLoginState is! ServerLoginStateError
-                                      ? () {
-                                        ref
-                                            .read(
-                                              firstLaunchStateNotifierProvider
-                                                  .notifier,
-                                            )
-                                            .setFirstLaunchState(
-                                              const FirstLaunchStateImportWallet(),
-                                            );
-                                        ref
-                                            .read(walletProvider)
-                                            .setReviewLicenseImportWallet();
-                                      }
-                                      : null,
+                                  ? () {
+                                      ref
+                                          .read(
+                                            firstLaunchStateNotifierProvider
+                                                .notifier,
+                                          )
+                                          .setFirstLaunchState(
+                                            const FirstLaunchStateImportWallet(),
+                                          );
+                                      ref
+                                          .read(walletProvider)
+                                          .setReviewLicenseImportWallet();
+                                    }
+                                  : null,
                             ),
                           ),
                           if (FlavorConfig.enableJade) ...[
@@ -227,17 +229,17 @@ class FirstLaunchPage extends HookConsumerWidget {
                                 ),
                                 onPressed:
                                     serverLoginState is! ServerLoginStateError
-                                        ? () async {
-                                          ref
-                                              .read(
-                                                pageStatusNotifierProvider
-                                                    .notifier,
-                                              )
-                                              .setStatus(
-                                                Status.jadeBluetoothPermission,
-                                              );
-                                        }
-                                        : null,
+                                    ? () {
+                                        ref
+                                            .read(
+                                              pageStatusNotifierProvider
+                                                  .notifier,
+                                            )
+                                            .setStatus(
+                                              Status.jadeBluetoothPermission,
+                                            );
+                                      }
+                                    : null,
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -285,11 +287,10 @@ class FirstLaunchNetworkSettingsButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle =
-        ref
-            .watch(mobileAppThemeNotifierProvider)
-            .firstLaunchNetworkSettingsButtonTheme
-            .style;
+    final buttonStyle = ref
+        .watch(mobileAppThemeNotifierProvider)
+        .firstLaunchNetworkSettingsButtonTheme
+        .style;
 
     return SizedBox(
       height: 39,

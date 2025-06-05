@@ -6,10 +6,10 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/main/widgets/d_option_generate_widget.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DGenerateAddressPopup extends HookConsumerWidget {
   const DGenerateAddressPopup({super.key});
@@ -57,7 +57,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DOptionGenerateWidget(
-                  isSelected: selectedAccountType.isRegular,
+                  isSelected: selectedAccountType == Account.REG,
                   assetIcon: 'assets/regular_wallet.svg',
                   title: 'Regular wallet'.tr(),
                   subTitle: 'Single-signature wallet'.tr(),
@@ -65,7 +65,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
                       'Your default wallet which contains asset are secured by a single key under your control.'
                           .tr(),
                   onPressed: () {
-                    if (selectedAccountType.isRegular) {
+                    if (selectedAccountType == Account.REG) {
                       Navigator.pop(context);
                       ref.read(desktopDialogProvider).showRecvAddress();
                       return;
@@ -73,12 +73,12 @@ class DGenerateAddressPopup extends HookConsumerWidget {
 
                     ref
                         .read(selectedAccountTypeNotifierProvider.notifier)
-                        .setAccountType(AccountType.reg);
+                        .setAccountType(Account.REG);
                   },
                 ),
                 const SizedBox(width: 2),
                 DOptionGenerateWidget(
-                  isSelected: selectedAccountType.isAmp,
+                  isSelected: selectedAccountType == Account.AMP_,
                   assetIcon: 'assets/amp_wallet.svg',
                   title: 'AMP Securities wallet'.tr(),
                   subTitle: '2-of-2 multi-signature wallet'.tr(),
@@ -86,7 +86,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
                       'Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.'
                           .tr(),
                   onPressed: () {
-                    if (selectedAccountType.isAmp) {
+                    if (selectedAccountType == Account.AMP_) {
                       Navigator.pop(context);
                       ref.read(desktopDialogProvider).showRecvAddress();
                       return;
@@ -94,7 +94,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
 
                     ref
                         .read(selectedAccountTypeNotifierProvider.notifier)
-                        .setAccountType(AccountType.amp);
+                        .setAccountType(Account.AMP_);
                   },
                 ),
               ],

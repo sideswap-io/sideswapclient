@@ -15,10 +15,9 @@ final encryptionRepositoryProvider =
     Provider<AbstractEncryptionRepository>.internal(
       encryptionRepository,
       name: r'encryptionRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$encryptionRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$encryptionRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

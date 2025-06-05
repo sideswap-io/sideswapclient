@@ -142,4 +142,134 @@ as int,
 
 }
 
+/// @nodoc
+mixin _$OrderTtlState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderTtlState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'OrderTtlState()';
+}
+
+
+}
+
+/// @nodoc
+class $OrderTtlStateCopyWith<$Res>  {
+$OrderTtlStateCopyWith(OrderTtlState _, $Res Function(OrderTtlState) __);
+}
+
+
+/// @nodoc
+
+
+class OrderTtlStateEmpty implements OrderTtlState {
+  const OrderTtlStateEmpty();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderTtlStateEmpty);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'OrderTtlState.empty()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class OrderTtlStateData implements OrderTtlState {
+  const OrderTtlStateData({required this.seconds, required this.timestamp});
+  
+
+ final  int seconds;
+ final  DateTime timestamp;
+
+/// Create a copy of OrderTtlState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OrderTtlStateDataCopyWith<OrderTtlStateData> get copyWith => _$OrderTtlStateDataCopyWithImpl<OrderTtlStateData>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderTtlStateData&&(identical(other.seconds, seconds) || other.seconds == seconds)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,seconds,timestamp);
+
+@override
+String toString() {
+  return 'OrderTtlState.data(seconds: $seconds, timestamp: $timestamp)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OrderTtlStateDataCopyWith<$Res> implements $OrderTtlStateCopyWith<$Res> {
+  factory $OrderTtlStateDataCopyWith(OrderTtlStateData value, $Res Function(OrderTtlStateData) _then) = _$OrderTtlStateDataCopyWithImpl;
+@useResult
+$Res call({
+ int seconds, DateTime timestamp
+});
+
+
+
+
+}
+/// @nodoc
+class _$OrderTtlStateDataCopyWithImpl<$Res>
+    implements $OrderTtlStateDataCopyWith<$Res> {
+  _$OrderTtlStateDataCopyWithImpl(this._self, this._then);
+
+  final OrderTtlStateData _self;
+  final $Res Function(OrderTtlStateData) _then;
+
+/// Create a copy of OrderTtlState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? seconds = null,Object? timestamp = null,}) {
+  return _then(OrderTtlStateData(
+seconds: null == seconds ? _self.seconds : seconds // ignore: cast_nullable_to_non_nullable
+as int,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+
+}
+
 // dart format on

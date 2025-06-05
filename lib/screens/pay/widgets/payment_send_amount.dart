@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/payment_amount_page_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 
 class PaymentSendAmount extends ConsumerWidget {
@@ -20,10 +18,10 @@ class PaymentSendAmount extends ConsumerWidget {
 
   final TextEditingController? controller;
   final FocusNode focusNode;
-  final void Function(AccountAsset)? onDropdownChanged;
+  final void Function(String)? onDropdownChanged;
   final void Function(String) validate;
-  final AccountAsset dropdownValue;
-  final List<AccountAsset>? availableDropdownAssets;
+  final String dropdownValue;
+  final List<String>? availableDropdownAssets;
   final void Function(String value)? onChanged;
 
   @override
@@ -31,7 +29,8 @@ class PaymentSendAmount extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         final sendAssets =
-            availableDropdownAssets ?? ref.watch(walletProvider).sendAssets();
+            availableDropdownAssets ??
+            ref.watch(paymentPageSendAssetsWithBalanceProvider).toList();
         final showError = ref.watch(paymentInsufficientFundsNotifierProvider);
 
         return TickerAmountTextField(

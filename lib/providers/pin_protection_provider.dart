@@ -108,7 +108,7 @@ class PinProtectionHelper {
     ref.invalidate(pinProtectionStateNotifierProvider);
   }
 
-  void onKeyEntered(PinKeyEnum key) async {
+  void onKeyEntered(PinKeyEnum key) {
     final pinProtectionState = ref.read(pinProtectionStateNotifierProvider);
     if (pinProtectionState == const PinProtectionState.waiting()) {
       return;
@@ -182,7 +182,7 @@ class PinProtectionHelper {
     ref.read(pinCodeProtectionNotifierProvider.notifier).setPinCode(newPinCode);
   }
 
-  void _onEnter() async {
+  void _onEnter() {
     final pinCode = ref.read(pinCodeProtectionNotifierProvider);
     if (pinCode.length < ref.read(pinHelperProvider).minPinLength) {
       ref
@@ -201,7 +201,7 @@ class PinProtectionHelper {
     ref.read(walletProvider).sendDecryptPin(pinCode);
   }
 
-  void onPinDecrypted(PinDecryptedData pinDecryptedData) async {
+  Future<void> onPinDecrypted(PinDecryptedData pinDecryptedData) async {
     ref.invalidate(pinProtectionStateNotifierProvider);
 
     logger.d(pinDecryptedData);

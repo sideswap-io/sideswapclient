@@ -5,23 +5,16 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/tx_provider.dart';
-import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/markets/widgets/regular_flag.dart';
 import 'package:sideswap/screens/markets/widgets/sideswap_chip.dart';
 import 'package:sideswap/screens/tx/widgets/multiple_outputs_icon.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class TxItemTransaction extends ConsumerWidget {
-  const TxItemTransaction({
-    super.key,
-    required this.transItem,
-    required this.accountType,
-  });
+  const TxItemTransaction({super.key, required this.transItem});
 
   final TransItem transItem;
-  final AccountType accountType;
   static const double itemHeight = 50.0;
 
   @override
@@ -55,10 +48,7 @@ class TxItemTransaction extends ConsumerWidget {
                 ),
                 const Spacer(),
                 switch (transItem) {
-                  TransItem transItem
-                      when transItem.hasTx() &&
-                              transItem.account.id == AccountType.reg.id ||
-                          transItem.hasPeg() =>
+                  TransItem transItem when transItem.hasTx() =>
                     const RegularFlag(
                       textStyle: TextStyle(
                         color: SideSwapColors.brightTurquoise,
@@ -68,18 +58,32 @@ class TxItemTransaction extends ConsumerWidget {
                         letterSpacing: 0.12,
                       ),
                     ),
-                  TransItem transItem
-                      when transItem.hasTx() &&
-                          transItem.account.id == AccountType.amp.id =>
-                    const AmpFlag(
-                      textStyle: TextStyle(
-                        color: SideSwapColors.brightTurquoise,
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.12,
-                      ),
-                    ),
+                  // TODO (malcolmpl): new wallets
+                  // TransItem transItem
+                  //     when transItem.hasTx() &&
+                  //             transItem.account.id == AccountType.reg.id ||
+                  //         transItem.hasPeg() =>
+                  //   const RegularFlag(
+                  //     textStyle: TextStyle(
+                  //       color: SideSwapColors.brightTurquoise,
+                  //       fontSize: 12,
+                  //       fontFamily: 'Roboto',
+                  //       fontWeight: FontWeight.w500,
+                  //       letterSpacing: 0.12,
+                  //     ),
+                  //   ),
+                  // TransItem transItem
+                  //     when transItem.hasTx() &&
+                  //         transItem.account.id == AccountType.amp.id =>
+                  //   const AmpFlag(
+                  //     textStyle: TextStyle(
+                  //       color: SideSwapColors.brightTurquoise,
+                  //       fontSize: 12,
+                  //       fontFamily: 'Roboto',
+                  //       fontWeight: FontWeight.w500,
+                  //       letterSpacing: 0.12,
+                  //     ),
+                  //   ),
                   _ => const SizedBox(),
                 },
                 const SizedBox(width: 10),

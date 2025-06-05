@@ -14,10 +14,9 @@ final endpointServerProvider =
     AutoDisposeProvider<EndpointServerProvider>.internal(
       endpointServer,
       name: r'endpointServerProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$endpointServerHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$endpointServerHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -34,10 +33,9 @@ final eiCreateTransactionNotifierProvider =
     NotifierProvider<EiCreateTransactionNotifier, EICreateTransaction>.internal(
       EiCreateTransactionNotifier.new,
       name: r'eiCreateTransactionNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$eiCreateTransactionNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$eiCreateTransactionNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

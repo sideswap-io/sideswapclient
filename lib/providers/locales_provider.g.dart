@@ -14,10 +14,9 @@ final localesNotifierProvider =
     AutoDisposeNotifierProvider<LocalesNotifier, String>.internal(
       LocalesNotifier.new,
       name: r'localesNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$localesNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$localesNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

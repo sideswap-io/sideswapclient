@@ -74,7 +74,7 @@ class CandlesticksState extends State<Candlesticks> {
             child: TweenAnimationBuilder(
               tween: Tween(begin: 6.toDouble(), end: candleWidth),
               duration: const Duration(milliseconds: 120),
-              builder: (_, double width, __) {
+              builder: (_, double width, _) {
                 if (kIsWeb ||
                     Platform.isMacOS ||
                     Platform.isWindows ||

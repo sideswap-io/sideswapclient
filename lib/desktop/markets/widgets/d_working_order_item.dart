@@ -25,7 +25,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     /// * set background to red when order expiration time is approaching
     final backgroundColor = useState(Colors.transparent);
-    ref.listen(orderExpireDescriptionProvider(Option.of(order)), (_, __) {
+    ref.listen(orderExpireDescriptionProvider(Option.of(order)), (_, _) {
       if (order.ttl != null && order.ttl! <= 5) {
         backgroundColor.value = SideSwapColors.bitterSweet.shade500;
       }
@@ -33,10 +33,9 @@ class DWorkingOrderItem extends HookConsumerWidget {
 
     final isSell = order.tradeDir == TradeDir.SELL;
     final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
-    final dirColor =
-        isSell
-            ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
-            : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
+    final dirColor = isSell
+        ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
+        : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
 
     final showCancelDialogCallback = useCallback(() {
       return showDialog<bool>(
@@ -60,10 +59,9 @@ class DWorkingOrderItem extends HookConsumerWidget {
                 actionsAlignment: MainAxisAlignment.spaceBetween,
                 actions: <Widget>[
                   TextButton(
-                    style:
-                        Theme.of(
-                          context,
-                        ).extension<SideswapYesButtonStyle>()!.style,
+                    style: Theme.of(
+                      context,
+                    ).extension<SideswapYesButtonStyle>()!.style,
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(true);
                     },
@@ -71,10 +69,9 @@ class DWorkingOrderItem extends HookConsumerWidget {
                   ),
                   TextButton(
                     focusNode: dialogCancelFocusNode,
-                    style:
-                        Theme.of(
-                          context,
-                        ).extension<SideswapNoButtonStyle>()!.style,
+                    style: Theme.of(
+                      context,
+                    ).extension<SideswapNoButtonStyle>()!.style,
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(false);
                     },
@@ -111,8 +108,8 @@ class DWorkingOrderItem extends HookConsumerWidget {
               if (order.questionMark) ...[
                 SizedBox(width: 6),
                 Tooltip(
-                  message:
-                      'Not enough UTXOs to cover the requested amount'.tr(),
+                  message: 'Not enough UTXOs to cover the requested amount'
+                      .tr(),
                   child: Icon(Icons.warning_amber_rounded, color: Colors.amber),
                 ),
               ],

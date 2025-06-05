@@ -5,24 +5,24 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-class AssetsHeader extends HookConsumerWidget {
-  const AssetsHeader({super.key, required this.accountAssets});
-
-  final List<AccountAsset> accountAssets;
+class AssetsHeader extends ConsumerWidget {
+  const AssetsHeader({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final allVisibleAssets = ref.watch(allVisibleAssetsProvider);
+
     final defaultCurrencyConversion = ref.watch(
-      accountAssetsTotalDefaultCurrencyBalanceStringProvider(accountAssets),
+      assetsTotalDefaultCurrencyBalanceStringProvider(allVisibleAssets),
     );
     final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
 
     final lbtcConversion = ref.watch(
-      accountAssetsTotalLbtcBalanceProvider(accountAssets),
+      assetsTotalLbtcBalanceProvider(allVisibleAssets),
     );
 
     return Container(
@@ -64,39 +64,10 @@ class AssetsHeader extends HookConsumerWidget {
             ],
           ),
           const Padding(
-            padding: EdgeInsets.only(top: 13),
+            padding: EdgeInsets.only(top: 18),
             child: Row(children: [SizedBox(width: 6), WalletTransactions()]),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// TODO (malcolmpl): Is it needed at all? Currently unused
-@Deprecated('Is it needed at all? Currently unused')
-class WalletFilter extends ConsumerWidget {
-  const WalletFilter({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return CustomBigButton(
-      width: 32,
-      height: 32,
-      backgroundColor: SideSwapColors.chathamsBlue,
-      onPressed: () {},
-      child: SizedBox(
-        width: 32,
-        height: 32,
-        child: Center(
-          child: SvgPicture.asset(
-            'assets/filter.svg',
-            colorFilter: const ColorFilter.mode(
-              SideSwapColors.brightTurquoise,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
       ),
     );
   }

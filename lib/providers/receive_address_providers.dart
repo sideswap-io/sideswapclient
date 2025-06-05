@@ -1,26 +1,32 @@
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'receive_address_providers.g.dart';
 
 class ReceiveAddress {
-  final AccountType accountType;
+  final Account account;
   final String recvAddress;
-  ReceiveAddress({required this.accountType, required this.recvAddress});
+  ReceiveAddress({required this.account, required this.recvAddress});
 
-  ReceiveAddress copyWith({AccountType? accountType, String? recvAddress}) {
+  ReceiveAddress copyWith({Account? account, String? recvAddress}) {
     return ReceiveAddress(
-      accountType: accountType ?? this.accountType,
+      account: account ?? this.account,
       recvAddress: recvAddress ?? this.recvAddress,
     );
   }
 
+  List<String> get recvAddressList {
+    return recvAddress.characters.slices(4).map((e) => e.join()).toList();
+  }
+
   @override
   String toString() =>
-      'ReceiveAddress(accountType: $accountType, recvAddress: $recvAddress)';
+      'ReceiveAddress(account: $account, recvAddress: $recvAddress)';
 
-  (AccountType, String) _equality() => (accountType, recvAddress);
+  (Account, String) _equality() => (account, recvAddress);
 
   @override
   bool operator ==(covariant ReceiveAddress other) {
@@ -30,14 +36,14 @@ class ReceiveAddress {
   }
 
   @override
-  int get hashCode => accountType.hashCode ^ recvAddress.hashCode;
+  int get hashCode => account.hashCode ^ recvAddress.hashCode;
 }
 
 @Riverpod(keepAlive: true)
 class CurrentReceiveAddress extends _$CurrentReceiveAddress {
   @override
   ReceiveAddress build() {
-    return ReceiveAddress(accountType: AccountType.reg, recvAddress: '');
+    return ReceiveAddress(account: Account.REG, recvAddress: '');
   }
 
   void setRecvAddress(ReceiveAddress receiveAddress) {
@@ -53,7 +59,7 @@ class RegularAccountAddresses extends _$RegularAccountAddresses {
   }
 
   void insertAddress(ReceiveAddress receiveAddress) {
-    if (receiveAddress.accountType != AccountType.reg) {
+    if (receiveAddress.account != Account.REG) {
       return;
     }
 

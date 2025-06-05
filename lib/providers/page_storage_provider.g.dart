@@ -15,10 +15,9 @@ final pageStorageKeyDataProvider =
     NotifierProvider<PageStorageKeyData, String>.internal(
       PageStorageKeyData.new,
       name: r'pageStorageKeyDataProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pageStorageKeyDataHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pageStorageKeyDataHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

@@ -4,8 +4,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/client_ffi.dart';
+import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -30,6 +32,7 @@ abstract class AbstractPegRepository {
   String pegInWalletBalance();
   String pegOutMinAmount();
   String pegOutWalletBalance();
+  void getPegOutAmount();
 }
 
 class PegRepository implements AbstractPegRepository {
@@ -106,6 +109,34 @@ class PegRepository implements AbstractPegRepository {
   @override
   String pegOutWalletBalance() {
     return extractValue(pegSubscribedValues.pegOutWalletBalance);
+  }
+
+  @override
+  void getPegOutAmount() {
+    ref.read(swapHelperProvider).swapReset();
+    final swapType = ref.read(swapTypeProvider);
+
+    if (swapType == const SwapType.pegOut()) {
+      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
+      final optionCurrentFeeRate = ref.read(
+        bitcoinCurrentFeeRateNotifierProvider,
+      );
+      final sendAmount =
+          (subscribe == const SwapPriceSubscribeState.send())
+              ? ref.read(swapSendSatoshiAmountProvider)
+              : null;
+      final recvAmount =
+          (subscribe == const SwapPriceSubscribeState.recv())
+              ? ref.read(swapRecvSatoshiAmountProvider)
+              : null;
+      if (((sendAmount ?? 0) > 0 || (recvAmount ?? 0) > 0)) {
+        optionCurrentFeeRate.match(() {}, (feeRate) {
+          ref
+              .read(walletProvider)
+              .getPegOutAmount(sendAmount, recvAmount, feeRate.value);
+        });
+      }
+    }
   }
 }
 

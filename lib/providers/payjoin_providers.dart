@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
@@ -34,18 +33,15 @@ class DeductFeeFromOutputEnabledNotifier
     }
 
     final payjoinFeeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
-    final payjoinAccountAsset = AccountAsset(
-      AccountType.reg,
-      payjoinFeeAsset?.assetId,
-    );
+    if (payjoinFeeAsset == null) {
+      return false;
+    }
 
     final selectedInputs = ref.watch(selectedInputsNotifierProvider);
 
     if (selectedInputs.isNotEmpty) {
       final maxBalance = ref.watch(
-        maxAvailableBalanceWithInputsForAccountAssetProvider(
-          payjoinAccountAsset,
-        ),
+        maxAvailableBalanceWithInputsForAssetProvider(payjoinFeeAsset.assetId),
       );
       if (maxBalance > 0) {
         return true;
@@ -54,7 +50,7 @@ class DeductFeeFromOutputEnabledNotifier
     }
 
     final maxBalance = ref.watch(
-      maxAvailableBalanceForAccountAssetProvider(payjoinAccountAsset),
+      availableBalanceForAssetIdProvider(payjoinFeeAsset.assetId),
     );
     if (maxBalance > 0) {
       return true;
@@ -94,12 +90,8 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
     final index = ref.watch(payjoinRadioButtonIndexNotifierProvider);
 
     final assetId = outputsData.receivers![index].assetId!;
-    final accountTypeId = outputsData.receivers![index].account;
-    final accountType = AccountType(accountTypeId ?? AccountType.reg.id);
-    final accountAsset = AccountAsset(accountType, assetId);
     final outputSatoshi = outputsData.receivers![index].satoshi;
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final liquidAccountAsset = AccountAsset(accountType, liquidAssetId);
 
     final selectedInputs = ref.watch(selectedInputsNotifierProvider);
 
@@ -108,16 +100,14 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
       final payjoinFeeAsset when payjoinFeeAsset?.assetId == assetId => () {
         if (selectedInputs.isNotEmpty) {
           final maxBalance = ref.watch(
-            maxAvailableBalanceWithInputsForAccountAssetProvider(accountAsset),
+            maxAvailableBalanceWithInputsForAssetProvider(assetId),
           );
           if (maxBalance == outputSatoshi) {
             return true;
           }
 
           final liquidMaxBalance = ref.watch(
-            maxAvailableBalanceWithInputsForAccountAssetProvider(
-              liquidAccountAsset,
-            ),
+            maxAvailableBalanceWithInputsForAssetProvider(liquidAssetId),
           );
           // have LBTC
           if (liquidMaxBalance > 0) {
@@ -128,14 +118,14 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
         }
 
         final maxBalance = ref.watch(
-          maxAvailableBalanceForAccountAssetProvider(accountAsset),
+          availableBalanceForAssetIdProvider(assetId),
         );
         if (maxBalance == outputSatoshi) {
           return true;
         }
 
         final liquidMaxBalance = ref.watch(
-          maxAvailableBalanceForAccountAssetProvider(liquidAccountAsset),
+          availableBalanceForAssetIdProvider(liquidAssetId),
         );
         // have LBTC
         if (liquidMaxBalance > 0) {
@@ -161,16 +151,14 @@ bool liquidHaveBalance(Ref ref) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   if (selectedInputs.isNotEmpty) {
     // balance with inputs
-    final accountAsset = AccountAsset(AccountType.reg, liquidAssetId);
     final maxBalance = ref.watch(
-      maxAvailableBalanceWithInputsForAccountAssetProvider(accountAsset),
+      maxAvailableBalanceWithInputsForAssetProvider(liquidAssetId),
     );
     return maxBalance > 0;
   }
 
-  final accountAsset = AccountAsset(AccountType.reg, liquidAssetId);
   final maxBalance = ref.watch(
-    maxAvailableBalanceForAccountAssetProvider(accountAsset),
+    availableBalanceForAssetIdProvider(liquidAssetId),
   );
   return maxBalance > 0;
 }
@@ -227,9 +215,8 @@ class PayjoinFeeAssetNotifier extends _$PayjoinFeeAssetNotifier {
     if (selectedInputs.isNotEmpty) {
       // balance with inputs
       return payjoinFeeAssets.firstWhere((e) {
-        final accountAsset = AccountAsset(AccountType.reg, e.assetId);
         final maxBalance = ref.watch(
-          maxAvailableBalanceWithInputsForAccountAssetProvider(accountAsset),
+          maxAvailableBalanceWithInputsForAssetProvider(e.assetId),
         );
         return maxBalance > 0;
       }, orElse: () => liquidAsset);
@@ -237,9 +224,8 @@ class PayjoinFeeAssetNotifier extends _$PayjoinFeeAssetNotifier {
 
     // balance without inputs
     return payjoinFeeAssets.firstWhere((e) {
-      final accountAsset = AccountAsset(AccountType.reg, e.assetId);
       final maxBalance = ref.watch(
-        maxAvailableBalanceForAccountAssetProvider(accountAsset),
+        availableBalanceForAssetIdProvider(e.assetId),
       );
       return maxBalance > 0;
     }, orElse: () => liquidAsset);
@@ -271,14 +257,12 @@ List<Asset> payjoinFeeAssets(Ref ref) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final allAccountAssets = [...ref.watch(allVisibleAccountAssetsProvider)];
   final payjoinAssets = [...ref.watch(payjoinAssetsProvider)];
-  allAccountAssets.removeWhere((item) => item.account != AccountType.reg);
+  allAccountAssets.removeWhere((item) => item.account != Account.REG);
   payjoinAssets.removeWhere(
-    (item) =>
-        !allAccountAssets.any(
-          (accountAsset) =>
-              item.assetId == accountAsset.assetId &&
-              item.assetId != liquidAssetId,
-        ),
+    (item) => !allAccountAssets.any(
+      (accountAsset) =>
+          item.assetId == accountAsset.assetId && item.assetId != liquidAssetId,
+    ),
   );
   final assets = ref.watch(assetsStateProvider).values;
   final liquidAsset = assets.firstWhereOrNull(

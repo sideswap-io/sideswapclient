@@ -73,10 +73,9 @@ class IsAddrTypeValidProvider extends AutoDisposeProvider<bool> {
         (ref) => isAddrTypeValid(ref as IsAddrTypeValidRef, addr, addrType),
         from: isAddrTypeValidProvider,
         name: r'isAddrTypeValidProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$isAddrTypeValidHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$isAddrTypeValidHash,
         dependencies: IsAddrTypeValidFamily._dependencies,
         allTransitiveDependencies:
             IsAddrTypeValidFamily._allTransitiveDependencies,

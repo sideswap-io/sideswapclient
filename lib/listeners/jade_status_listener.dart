@@ -16,8 +16,9 @@ class JadeStatusListener extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final jadeLockState = ref.watch(jadeLockStateNotifierProvider);
     final jadeStatus = ref.watch(jadeStatusNotifierProvider);
-    final showAmpOnboarding =
-        ref.watch(configurationProvider).showAmpOnboarding;
+    final showAmpOnboarding = ref
+        .watch(configurationProvider)
+        .showAmpOnboarding;
     final jadeInfoDialogRoute = ref.watch(jadeInfoDialogNotifierProvider);
 
     ref.listen(jadeStatusNotifierProvider, (previous, next) {
@@ -60,6 +61,7 @@ class JadeStatusListener extends HookConsumerWidget {
             ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
             // rest of MarketTradeRepository.makeSwapTrade
             ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+            ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
           }
         });
       }

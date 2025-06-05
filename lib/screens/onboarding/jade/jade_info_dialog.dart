@@ -167,10 +167,8 @@ class JadeInfoDialogSign extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionQuoteSuccess = ref.watch(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
-    final previewOrderTtl = ref.watch(previewOrderQuoteSuccessTtlProvider);
+    final orderTtlState = ref.watch(orderTtlNotifierProvider);
+    final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -196,38 +194,34 @@ class JadeInfoDialogSign extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              optionQuoteSuccess.match(
-                () {
-                  return SizedBox();
-                },
-                (quoteSuccess) {
-                  return Column(
-                    children: [
-                      SizedBox(height: 8),
-                      SizedBox(
-                        width: 150,
-                        child: Row(
-                          children: [
-                            Text(
-                              'Time-to-live'.tr(),
-                              style: Theme.of(
-                                context,
-                              ).textTheme.titleMedium?.copyWith(
-                                color: SideSwapColors.brightTurquoise,
-                              ),
+              switch (orderTtlState) {
+                OrderTtlStateEmpty() => const SizedBox(),
+                _ => Column(
+                  children: [
+                    SizedBox(height: 8),
+                    SizedBox(
+                      width: 150,
+                      child: Row(
+                        children: [
+                          Text(
+                            'Time-to-live'.tr(),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              color: SideSwapColors.brightTurquoise,
                             ),
-                            Spacer(),
-                            Text(
-                              '$previewOrderTtl s.',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ],
-                        ),
+                          ),
+                          Spacer(),
+                          Text(
+                            '$orderSignTtl s.',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
                       ),
-                    ],
-                  );
-                },
-              ),
+                    ),
+                  ],
+                ),
+              },
             ],
           ),
         ),

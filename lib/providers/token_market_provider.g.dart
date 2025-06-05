@@ -11,19 +11,19 @@ String _$tokenMarketNotifierHash() =>
 
 /// See also [TokenMarketNotifier].
 @ProviderFor(TokenMarketNotifier)
-final tokenMarketNotifierProvider = NotifierProvider<
-  TokenMarketNotifier,
-  Map<String, AssetDetailsData>
->.internal(
-  TokenMarketNotifier.new,
-  name: r'tokenMarketNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final tokenMarketNotifierProvider =
+    NotifierProvider<
+      TokenMarketNotifier,
+      Map<String, AssetDetailsData>
+    >.internal(
+      TokenMarketNotifier.new,
+      name: r'tokenMarketNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$tokenMarketNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$TokenMarketNotifier = Notifier<Map<String, AssetDetailsData>>;
 // ignore_for_file: type=lint

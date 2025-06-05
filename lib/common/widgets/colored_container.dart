@@ -23,7 +23,14 @@ class ColoredContainer extends StatelessWidget {
     final defaultTheme = ColoredContainerStyle(
       backgroundColor: SideSwapColors.navyBlue,
       borderColor: SideSwapColors.navyBlue,
-      horizontalPadding: 12,
+      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 12),
+      borderWidth: 1,
+    );
+
+    final borderWidth = containerTheme.borderWidth ?? defaultTheme.borderWidth!;
+    final defaultPadding = containerTheme.padding ?? defaultTheme.padding!;
+    final padding = defaultPadding.subtract(
+      EdgeInsets.symmetric(horizontal: borderWidth, vertical: borderWidth),
     );
 
     return Container(
@@ -33,18 +40,11 @@ class ColoredContainer extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(8)),
         border: Border.all(
           color: containerTheme.borderColor ?? defaultTheme.borderColor!,
+          width: borderWidth,
         ),
         color: containerTheme.backgroundColor ?? defaultTheme.backgroundColor,
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal:
-              containerTheme.horizontalPadding ??
-              defaultTheme.horizontalPadding!,
-          vertical: 5,
-        ),
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
   }
 }

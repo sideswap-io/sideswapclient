@@ -36,23 +36,27 @@ class ColoredContainerStyle extends ThemeExtension<ColoredContainerStyle> {
   ColoredContainerStyle({
     this.backgroundColor,
     this.borderColor,
-    this.horizontalPadding,
+    this.padding,
+    this.borderWidth,
   });
 
   final Color? backgroundColor;
   final Color? borderColor;
-  final double? horizontalPadding;
+  final EdgeInsetsGeometry? padding;
+  final double? borderWidth;
 
   @override
   ColoredContainerStyle copyWith({
     Color? backgroundColor,
     Color? borderColor,
-    double? horizontalPadding,
+    EdgeInsetsGeometry? padding,
+    double? borderWidth,
   }) {
     return ColoredContainerStyle(
       backgroundColor: backgroundColor ?? this.backgroundColor,
       borderColor: borderColor ?? this.borderColor,
-      horizontalPadding: horizontalPadding ?? this.horizontalPadding,
+      padding: padding ?? this.padding,
+      borderWidth: borderWidth ?? this.borderWidth,
     );
   }
 
@@ -68,11 +72,8 @@ class ColoredContainerStyle extends ThemeExtension<ColoredContainerStyle> {
     return ColoredContainerStyle(
       backgroundColor: Color.lerp(backgroundColor, other.backgroundColor, t),
       borderColor: Color.lerp(borderColor, other.borderColor, t),
-      horizontalPadding: lerpDouble(
-        horizontalPadding,
-        other.horizontalPadding,
-        t,
-      ),
+      padding: EdgeInsetsGeometry.lerp(padding, other.padding, t),
+      borderWidth: lerpDouble(borderWidth, other.borderWidth, t),
     );
   }
 }

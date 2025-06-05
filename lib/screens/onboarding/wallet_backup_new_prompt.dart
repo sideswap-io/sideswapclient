@@ -94,14 +94,11 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
                       height: 54,
                       text: 'YES'.tr(),
                       backgroundColor: SideSwapColors.brightTurquoise,
-                      onPressed:
-                          skipForNow == const SkipForNowStateEmpty()
-                              ? () {
-                                ref
-                                    .read(walletProvider)
-                                    .backupNewWalletEnable();
-                              }
-                              : null,
+                      onPressed: skipForNow == const SkipForNowStateEmpty()
+                          ? () {
+                              ref.read(walletProvider).backupNewWalletEnable();
+                            }
+                          : null,
                     ),
                   ),
                   Padding(
@@ -114,12 +111,11 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
                         text: 'NOT NOW'.tr(),
                         textColor: SideSwapColors.brightTurquoise,
                         backgroundColor: Colors.transparent,
-                        onPressed:
-                            skipForNow == const SkipForNowStateEmpty()
-                                ? () async {
-                                  showWalletBackupDialog(context);
-                                }
-                                : null,
+                        onPressed: skipForNow == const SkipForNowStateEmpty()
+                            ? () {
+                                showWalletBackupDialog(context);
+                              }
+                            : null,
                       ),
                     ),
                   ),

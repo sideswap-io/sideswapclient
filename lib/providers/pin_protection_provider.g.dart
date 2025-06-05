@@ -14,10 +14,9 @@ String _$pinProtectionHelperHash() =>
 final pinProtectionHelperProvider = Provider<PinProtectionHelper>.internal(
   pinProtectionHelper,
   name: r'pinProtectionHelperProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$pinProtectionHelperHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$pinProtectionHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -30,19 +29,19 @@ String _$pinProtectionStateNotifierHash() =>
 
 /// See also [PinProtectionStateNotifier].
 @ProviderFor(PinProtectionStateNotifier)
-final pinProtectionStateNotifierProvider = AutoDisposeNotifierProvider<
-  PinProtectionStateNotifier,
-  PinProtectionState
->.internal(
-  PinProtectionStateNotifier.new,
-  name: r'pinProtectionStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final pinProtectionStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      PinProtectionStateNotifier,
+      PinProtectionState
+    >.internal(
+      PinProtectionStateNotifier.new,
+      name: r'pinProtectionStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$pinProtectionStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PinProtectionStateNotifier = AutoDisposeNotifier<PinProtectionState>;
 String _$pinCodeProtectionNotifierHash() =>
@@ -54,10 +53,9 @@ final pinCodeProtectionNotifierProvider =
     AutoDisposeNotifierProvider<PinCodeProtectionNotifier, String>.internal(
       PinCodeProtectionNotifier.new,
       name: r'pinCodeProtectionNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pinCodeProtectionNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinCodeProtectionNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -72,10 +70,9 @@ final pinDecryptedDataNotifierProvider =
     NotifierProvider<PinDecryptedDataNotifier, PinDecryptedData>.internal(
       PinDecryptedDataNotifier.new,
       name: r'pinDecryptedDataNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pinDecryptedDataNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pinDecryptedDataNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -86,19 +83,19 @@ String _$pinUnlockStateNotifierHash() =>
 
 /// See also [PinUnlockStateNotifier].
 @ProviderFor(PinUnlockStateNotifier)
-final pinUnlockStateNotifierProvider = AutoDisposeNotifierProvider<
-  PinUnlockStateNotifier,
-  PinUnlockState
->.internal(
-  PinUnlockStateNotifier.new,
-  name: r'pinUnlockStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final pinUnlockStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      PinUnlockStateNotifier,
+      PinUnlockState
+    >.internal(
+      PinUnlockStateNotifier.new,
+      name: r'pinUnlockStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$pinUnlockStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$PinUnlockStateNotifier = AutoDisposeNotifier<PinUnlockState>;
 // ignore_for_file: type=lint

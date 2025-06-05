@@ -13,7 +13,7 @@ import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
-import 'package:sideswap/desktop/markets/widgets/d_limit_panel_settings_dialog.dart';
+import 'package:sideswap/desktop/markets/widgets/d_limit_panel_review_order_dialog.dart';
 import 'package:sideswap/desktop/markets/widgets/product_columns.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/screens/markets/widgets/limit_amount_text_field.dart';
@@ -22,7 +22,6 @@ import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
 import 'package:sideswap/desktop/markets/widgets/balance_line.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_button.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -42,7 +41,7 @@ class MarketOrderPanel extends HookConsumerWidget {
 
     final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
 
-    const headerActiveColor = Color(0xFF084366);
+    const headerActiveColor = SideSwapColors.ataneoBlue;
 
     final expanded = useState(false);
     final drawProductColumns = useState<bool>(false);
@@ -148,14 +147,12 @@ class MarketOrderPanel extends HookConsumerWidget {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color:
-                      states.isHovering || expanded.value
-                          ? headerActiveColor
-                          : headerDefaultColor,
-                  borderRadius:
-                      drawProductColumns.value
-                          ? const BorderRadius.vertical(top: Radius.circular(8))
-                          : const BorderRadius.all(Radius.circular(8)),
+                  color: states.isHovering || expanded.value
+                      ? headerActiveColor
+                      : headerDefaultColor,
+                  borderRadius: drawProductColumns.value
+                      ? const BorderRadius.vertical(top: Radius.circular(8))
+                      : const BorderRadius.all(Radius.circular(8)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -206,14 +203,13 @@ class MarketOrderPanel extends HookConsumerWidget {
                           activeText: 'Sell'.tr(),
                           inactiveText: 'Buy'.tr(),
                           value: tradeDirState == TradeDir.SELL,
-                          activeToggleBackground:
-                              tradeDirState == TradeDir.SELL
-                                  ? Theme.of(
-                                    context,
-                                  ).extension<MarketColorsStyle>()!.sellColor!
-                                  : Theme.of(
-                                    context,
-                                  ).extension<MarketColorsStyle>()!.buyColor!,
+                          activeToggleBackground: tradeDirState == TradeDir.SELL
+                              ? Theme.of(
+                                  context,
+                                ).extension<MarketColorsStyle>()!.sellColor!
+                              : Theme.of(
+                                  context,
+                                ).extension<MarketColorsStyle>()!.buyColor!,
                           inactiveToggleBackground: SideSwapColors.darkCerulean,
                           backgroundColor: SideSwapColors.darkCerulean,
                           borderColor: SideSwapColors.darkCerulean,
@@ -284,8 +280,9 @@ class MarketTypeSwitch extends ConsumerWidget {
         activeText: 'Limit order'.tr(),
         inactiveText: 'Market order'.tr(),
         value: marketTypeSwitchState == MarketTypeSwitchState.limit(),
-        activeToggleBackground:
-            Theme.of(context).extension<MarketColorsStyle>()!.buyColor!,
+        activeToggleBackground: Theme.of(
+          context,
+        ).extension<MarketColorsStyle>()!.buyColor!,
         inactiveToggleBackground: SideSwapColors.darkCerulean,
         backgroundColor: SideSwapColors.darkCerulean,
         borderColor: SideSwapColors.darkCerulean,
@@ -371,8 +368,9 @@ class MarketAssetSwitchButtons extends ConsumerWidget {
           activeText: quoteAsset.ticker,
           inactiveText: baseAsset.ticker,
           value: marketSideState == MarketSideState.quote(),
-          activeToggleBackground:
-              Theme.of(context).extension<MarketColorsStyle>()!.buyColor!,
+          activeToggleBackground: Theme.of(
+            context,
+          ).extension<MarketColorsStyle>()!.buyColor!,
           inactiveToggleBackground: SideSwapColors.darkCerulean,
           backgroundColor: SideSwapColors.darkCerulean,
           borderColor: SideSwapColors.darkCerulean,
@@ -472,20 +470,13 @@ class MarketAmountPanel extends HookConsumerWidget {
       Asset baseAsset,
       Asset quoteAsset,
     ) {
-      final asset =
-          marketSideState == MarketSideState.base() ? baseAsset : quoteAsset;
+      final asset = marketSideState == MarketSideState.base()
+          ? baseAsset
+          : quoteAsset;
 
-      /// * get amp balance for amp asset or instead get sum for all accounts
-      final balance =
-          asset.ampMarket
-              ? ref.read(
-                maxAvailableBalanceForAccountAssetProvider(
-                  AccountAsset(AccountType.amp, asset.assetId),
-                ),
-              )
-              : ref.read(
-                totalMaxAvailableBalanceForAssetProvider(asset.assetId),
-              );
+      final balance = ref.read(
+        availableBalanceForAssetIdProvider(asset.assetId),
+      );
 
       amountController.text = ref
           .read(amountToStringProvider)
@@ -537,10 +528,9 @@ class MarketAmountPanel extends HookConsumerWidget {
               children: [
                 MarketAmountTextField(
                   caption: 'Amount'.tr(),
-                  asset:
-                      marketSideState == MarketSideState.base()
-                          ? baseAsset
-                          : quoteAsset,
+                  asset: marketSideState == MarketSideState.base()
+                      ? baseAsset
+                      : quoteAsset,
                   controller: amountController,
                   autofocus: true,
                   focusNode: amountFocusNode,
@@ -622,12 +612,11 @@ class MarketAssetRow extends ConsumerWidget {
     final deliverIcon = ref
         .read(assetImageRepositoryProvider)
         .getVerySmallImage(assetId);
-    final defaultCurrencyConversion =
-        showConversion
-            ? ref.watch(
-              defaultCurrencyConversionFromStringProvider(assetId, amount),
-            )
-            : null;
+    final defaultCurrencyConversion = showConversion
+        ? ref.watch(
+            defaultCurrencyConversionFromStringProvider(assetId, amount),
+          )
+        : null;
 
     final defaultTheme =
         theme ?? Theme.of(context).extension<MarketAssetRowStyle>()!;
@@ -638,18 +627,16 @@ class MarketAssetRow extends ConsumerWidget {
           children: [
             Text(
               label,
-              style:
-                  isError
-                      ? defaultTheme.errorLabelStyle
-                      : defaultTheme.labelStyle,
+              style: isError
+                  ? defaultTheme.errorLabelStyle
+                  : defaultTheme.labelStyle,
             ),
             Spacer(),
             Text(
               amount,
-              style:
-                  isError
-                      ? defaultTheme.errorAmountStyle
-                      : defaultTheme.amountStyle,
+              style: isError
+                  ? defaultTheme.errorAmountStyle
+                  : defaultTheme.amountStyle,
             ),
             SizedBox(
               width: 80,
@@ -661,10 +648,9 @@ class MarketAssetRow extends ConsumerWidget {
                   Spacer(),
                   Text(
                     asset.toNullable()?.ticker ?? '',
-                    style:
-                        isError
-                            ? defaultTheme.errorTickerStyle
-                            : defaultTheme.tickerStyle,
+                    style: isError
+                        ? defaultTheme.errorTickerStyle
+                        : defaultTheme.tickerStyle,
                   ),
                 ],
               ),
@@ -1039,10 +1025,9 @@ class LimitPanel extends HookConsumerWidget {
         var authorized = ref.read(jadeOneTimeAuthorizationProvider);
 
         if (!ref.read(jadeOneTimeAuthorizationProvider)) {
-          authorized =
-              await ref
-                  .read(jadeOneTimeAuthorizationProvider.notifier)
-                  .authorize();
+          authorized = await ref
+              .read(jadeOneTimeAuthorizationProvider.notifier)
+              .authorize();
         }
 
         if (!authorized) {
@@ -1076,10 +1061,22 @@ class LimitPanel extends HookConsumerWidget {
       ],
     );
 
+    final orderDetailsDialogCallback = useCallback(() async {
+      await showDialog<void>(
+        context: context,
+        builder: (context) {
+          return DLimitPanelReviewOrderDialog();
+        },
+        routeSettings: RouteSettings(name: limitPanelReviewOrderRouteName),
+        useRootNavigator: false,
+      );
+    });
+
     final marketOrderButtonPressedCallback = useMemoized(
       () => switch (jadeLockRepository.isUnlocked()) {
         true => switch (tradeButtonEnabled) {
-          true => tradeCallback,
+          true => orderDetailsDialogCallback,
+          // true => tradeCallback,
           _ => null,
         },
         _ => jadeLockRepository.refreshJadeLockState,
@@ -1133,7 +1130,6 @@ class LimitPanel extends HookConsumerWidget {
                                     tradeCallback();
                                   },
                                 ),
-                                LimitPanelSettings(),
                               ],
                             ),
                           ),
@@ -1161,61 +1157,6 @@ class LimitPanel extends HookConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class LimitPanelSettings extends ConsumerWidget {
-  const LimitPanelSettings({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      children: [
-        SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            DHoverButton(
-              onPressed: () async {
-                await showDialog<void>(
-                  context: context,
-                  builder: (context) {
-                    return DLimitPanelSettingsDialog();
-                  },
-                  routeSettings: RouteSettings(
-                    name: limitPanelSettingsDialogRouteName,
-                  ),
-                  useRootNavigator: false,
-                );
-              },
-              builder: (context, states) {
-                return Container(
-                  width: 120,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: switch (states) {
-                      Set<ButtonStates>()
-                          when states.isHovering && states.isPressing =>
-                        SideSwapColors.brightTurquoise.toAccentColor().darker,
-                      Set<ButtonStates>() when states.isHovering =>
-                        SideSwapColors.brightTurquoise.toAccentColor().dark,
-                      _ => SideSwapColors.brightTurquoise,
-                    },
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Order settings',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
@@ -1374,19 +1315,18 @@ class LimitPanelOfflineSwap extends ConsumerWidget {
             activeText: 'Online'.tr(),
             inactiveText: 'Offline'.tr(),
             value: offlineSwapType == OfflineSwapType.empty(),
-            onToggle:
-                isJadeWallet || forceOfflineOnly
-                    ? null
-                    : (value) {
-                      if (value) {
-                        ref.invalidate(marketLimitOfflineSwapProvider);
-                        return;
-                      }
+            onToggle: isJadeWallet || forceOfflineOnly
+                ? null
+                : (value) {
+                    if (value) {
+                      ref.invalidate(marketLimitOfflineSwapProvider);
+                      return;
+                    }
 
-                      ref
-                          .read(marketLimitOfflineSwapProvider.notifier)
-                          .setState(OfflineSwapType.twoStep());
-                    },
+                    ref
+                        .read(marketLimitOfflineSwapProvider.notifier)
+                        .setState(OfflineSwapType.twoStep());
+                  },
           ),
         ],
       ),
@@ -1424,12 +1364,11 @@ class LimitPanelTtl extends HookConsumerWidget {
                   description,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     fontSize: 13,
-                    color:
-                        selected
-                            ? SideSwapColors.airSuperiorityBlue
-                            : over.value
-                            ? SideSwapColors.brightTurquoise
-                            : Colors.white,
+                    color: selected
+                        ? SideSwapColors.airSuperiorityBlue
+                        : over.value
+                        ? SideSwapColors.brightTurquoise
+                        : Colors.white,
                   ),
                 ),
               ),
@@ -1519,8 +1458,9 @@ class LimitPanelTtl extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
-    final buttonThemes =
-        ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
+    final buttonThemes = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonThemeData;
     final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
 
     return Row(
@@ -1529,22 +1469,21 @@ class LimitPanelTtl extends HookConsumerWidget {
         Flexible(
           child: DButton(
             key: buttonKey,
-            style:
-                clicked.value
-                    ? buttonThemes.filledButtonStyle?.merge(
-                      DButtonStyle(
-                        backgroundColor: ButtonState.all(
-                          SideSwapColors.prussianBlue,
-                        ),
-                      ),
-                    )
-                    : buttonThemes.filledButtonStyle?.merge(
-                      DButtonStyle(
-                        backgroundColor: ButtonState.all(
-                          SideSwapColors.blueSapphire,
-                        ),
+            style: clicked.value
+                ? buttonThemes.filledButtonStyle?.merge(
+                    DButtonStyle(
+                      backgroundColor: ButtonState.all(
+                        SideSwapColors.prussianBlue,
                       ),
                     ),
+                  )
+                : buttonThemes.filledButtonStyle?.merge(
+                    DButtonStyle(
+                      backgroundColor: ButtonState.all(
+                        SideSwapColors.blueSapphire,
+                      ),
+                    ),
+                  ),
             onPressed: () async {
               clicked.value = true;
               final result = await showTtlMenu(
@@ -1553,9 +1492,10 @@ class LimitPanelTtl extends HookConsumerWidget {
                 limitTtlFlag,
               );
               (switch (result) {
-                LimitTtlFlag result => ref
-                    .read(limitTtlFlagNotifierProvider.notifier)
-                    .setState(result),
+                LimitTtlFlag result =>
+                  ref
+                      .read(limitTtlFlagNotifierProvider.notifier)
+                      .setState(result),
                 _ => ref.invalidate(limitTtlFlagNotifierProvider),
               });
 
@@ -1622,7 +1562,7 @@ class OverlayProductColumns extends HookConsumerWidget {
   });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const headerActiveColor = Color(0xFF084366);
+    const headerActiveColor = SideSwapColors.ataneoBlue;
 
     final width = size.width * 2;
     final height = orderPanelSize.height - size.height;

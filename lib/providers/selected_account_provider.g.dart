@@ -7,22 +7,21 @@ part of 'selected_account_provider.dart';
 // **************************************************************************
 
 String _$selectedAccountTypeNotifierHash() =>
-    r'8166e3014240a2578bbf264af449febaa3deab00';
+    r'5feefea6032e02c469c6da239befaadcdd911b86';
 
 /// See also [SelectedAccountTypeNotifier].
 @ProviderFor(SelectedAccountTypeNotifier)
 final selectedAccountTypeNotifierProvider =
-    NotifierProvider<SelectedAccountTypeNotifier, AccountType>.internal(
+    NotifierProvider<SelectedAccountTypeNotifier, Account>.internal(
       SelectedAccountTypeNotifier.new,
       name: r'selectedAccountTypeNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$selectedAccountTypeNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$selectedAccountTypeNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$SelectedAccountTypeNotifier = Notifier<AccountType>;
+typedef _$SelectedAccountTypeNotifier = Notifier<Account>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

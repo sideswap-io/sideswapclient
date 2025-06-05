@@ -566,5 +566,11 @@
   "Show testnet servers": "Show testnet servers",
   "Balance exceeded": "Balance exceeded",
   "Online orders (recommended):\n- Are not tied to specific UTXOs (spending UTXOs won't cancel online orders).\n- Can be partially matched, making them more flexible.\n- Order amount can be more than the available wallet balance.\n- Allow price editing.\n- Requires the application to be open and your computer to be running.\n\nOffline orders:\n- Are tied to specific UTXOs (spending UTXOs can cancel one or more orders).\n- Requires exact UTXO amount and therefore may require a funding transaction and payment of network fee.\n- Order amount cannot exceed available wallet balance.\n- Does not allow price editing.\n- Allows the application to be offline.": "Online orders (recommended):\n- Are not tied to specific UTXOs (spending UTXOs won't cancel online orders).\n- Can be partially matched, making them more flexible.\n- Order amount can be more than the available wallet balance.\n- Allow price editing.\n- Requires the application to be open and your computer to be running.\n\nOffline orders:\n- Are tied to specific UTXOs (spending UTXOs can cancel one or more orders).\n- Requires exact UTXO amount and therefore may require a funding transaction and payment of network fee.\n- Order amount cannot exceed available wallet balance.\n- Does not allow price editing.\n- Allows the application to be offline.",
-  "Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.": "Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline."
+  "Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.": "Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.",
+  "Review limit order": "Review limit order",
+  "Price tracking": "Price tracking",
+  "Error loading transactions: {}": "Error loading transactions: {}",
+  "Verify": "Verify",
+  "Verified": "Verified",
+  "Swap proposal": "Swap proposal"
 }

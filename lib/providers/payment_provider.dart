@@ -5,9 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
-
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -118,9 +115,6 @@ class PaymentAmountPageArgumentsNotifier
 @riverpod
 PaymentHelper paymentHelper(Ref ref) {
   final outputsData = ref.watch(outputsCreatorProvider);
-  final selectedAccountAsset = ref.watch(
-    sendPopupSelectedAccountAssetNotifierProvider,
-  );
   final deductFeeFromOutput = ref.watch(deductFeeFromOutputNotifierProvider);
   final deductIndex = ref.watch(payjoinRadioButtonIndexNotifierProvider);
   final feeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
@@ -130,7 +124,6 @@ PaymentHelper paymentHelper(Ref ref) {
   return PaymentHelper(
     ref,
     outputsData: outputsData,
-    accountAsset: selectedAccountAsset,
     deductFeeFromOutput: deductFeeFromOutput,
     deductIndex: deductIndex,
     feeAsset: feeAsset,
@@ -142,7 +135,6 @@ PaymentHelper paymentHelper(Ref ref) {
 class PaymentHelper {
   final Ref ref;
   final Either<OutputsError, OutputsData> outputsData;
-  final AccountAsset accountAsset;
   final bool deductFeeFromOutput;
   final int deductIndex;
   final Asset? feeAsset;
@@ -152,7 +144,6 @@ class PaymentHelper {
   PaymentHelper(
     this.ref, {
     required this.outputsData,
-    required this.accountAsset,
     required this.deductFeeFromOutput,
     required this.deductIndex,
     required this.satoshiRepository,
@@ -168,34 +159,33 @@ class PaymentHelper {
           return;
         }
 
-        final addressAmounts =
-            r.receivers!.map((e) {
-              return AddressAmount(
-                address: e.address,
-                amount: Int64(e.satoshi ?? 0),
-                assetId: e.assetId,
-              );
-            }).toList();
+        final addressAmounts = r.receivers!.map((e) {
+          return AddressAmount(
+            address: e.address,
+            amount: Int64(e.satoshi ?? 0),
+            assetId: e.assetId,
+          );
+        }).toList();
 
         final utxos = selectedInputs?.map(
           (selectedInput) =>
               OutPoint(txid: selectedInput.txid, vout: selectedInput.vout),
         );
 
-        final account = Account();
-        account.id =
-            ((selectedInputs?.length ?? 0) > 0
-                ? selectedInputs?.first.account
-                : accountAsset.account.id) ??
-            0;
+        // TODO (malcolmpl): new wallets
+        // final account =
+        //     ((selectedInputs?.length ?? 0) > 0
+        //         ? selectedInputs?.first.account
+        //         : accountAsset.account) ??
+        //     Account.REG;
 
         final createTx = CreateTx(
           addressees: addressAmounts,
-          account: account,
           utxos: utxos,
           deductFeeOutput: deductFeeFromOutput ? deductIndex : null,
-          feeAssetId:
-              feeAsset?.assetId != liquidAssetId ? feeAsset?.assetId : null,
+          feeAssetId: feeAsset?.assetId != liquidAssetId
+              ? feeAsset?.assetId
+              : null,
         );
 
         ref.read(walletProvider).createTx(createTx);
@@ -205,7 +195,7 @@ class PaymentHelper {
 
   void selectPaymentSend(
     String amount,
-    AccountAsset accountAsset, {
+    Asset asset, {
     String? address,
     bool isGreedy = false,
   }) {
@@ -217,8 +207,8 @@ class PaymentHelper {
     /// Used only in mobile - it should be removed if outputs are added to mobile?
     Future.microtask(
       () => ref
-          .read(selectedWalletAccountAssetNotifierProvider.notifier)
-          .setAccountAsset(accountAsset),
+          .read(selectedWalletAssetNotifierProvider.notifier)
+          .setState(asset),
     );
 
     if (!ref.read(isAddrTypeValidProvider(address, AddrType.elements))) {
@@ -228,16 +218,12 @@ class PaymentHelper {
 
     final precision = ref
         .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: accountAsset.assetId);
+        .getPrecisionForAssetId(assetId: asset.assetId);
     final internalAmount = satoshiRepository.parseAssetAmount(
       amount: amount,
       precision: precision,
     );
-    final balance = ref.read(balancesNotifierProvider)[accountAsset];
-    if (balance == null) {
-      logger.e('Wrong balance for selected wallet asset');
-      return;
-    }
+    final balance = ref.read(availableBalanceForAssetIdProvider(asset.assetId));
 
     if (internalAmount == null ||
         internalAmount <= 0 ||
@@ -259,15 +245,12 @@ class PaymentHelper {
     final addressAmount = AddressAmount();
     addressAmount.address = address;
     addressAmount.amount = Int64(internalAmount);
-    addressAmount.assetId = accountAsset.assetId ?? '';
+    addressAmount.assetId = asset.assetId;
     final shouldDeductFeeOutput =
-        isGreedy &&
-        internalAmount == balance &&
-        liquidAssetId == accountAsset.assetId;
+        isGreedy && internalAmount == balance && liquidAssetId == asset.assetId;
 
     final createTx = CreateTx(
       addressees: [addressAmount],
-      account: getAccount(accountAsset.account),
       deductFeeOutput: shouldDeductFeeOutput ? 0 : null,
     );
 

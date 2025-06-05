@@ -144,15 +144,18 @@ class SideSwapPageHeader extends ConsumerWidget {
     assert(debugCheckHasMediaQuery(context));
     final screenWidth = MediaQuery.of(context).size.width;
     final bool isSmallScreen = screenWidth < 640.0;
-    final double horizontalPadding =
-        isSmallScreen ? 12.0 : kPageDefaultVerticalPadding;
+    final double horizontalPadding = isSmallScreen
+        ? 12.0
+        : kPageDefaultVerticalPadding;
     return horizontalPadding;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleStyle =
-        ref.watch(desktopAppThemeNotifierProvider).typography.title;
+    final titleStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .typography
+        .title;
     final leading = this.leading;
     final horizontalPadding = SideSwapPageHeader.horizontalPadding(context);
     return Padding(
@@ -163,7 +166,7 @@ class SideSwapPageHeader extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          if (leading != null) leading,
+          ?leading,
           Expanded(
             child: DefaultTextStyle(
               style: titleStyle!,

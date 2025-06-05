@@ -13,10 +13,9 @@ String _$csvRepositoryHash() => r'972bfb7cf8fa7e0cd6c52eaa32bb42746f925fd0';
 final csvRepositoryProvider = AutoDisposeProvider<CsvRepository>.internal(
   csvRepository,
   name: r'csvRepositoryProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$csvRepositoryHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$csvRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -24,7 +23,7 @@ final csvRepositoryProvider = AutoDisposeProvider<CsvRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CsvRepositoryRef = AutoDisposeProviderRef<CsvRepository>;
-String _$csvNotifierHash() => r'e20be8aa39ce8bce88c624c9359edf6e0d550f98';
+String _$csvNotifierHash() => r'988d881f95ab8c9882503d4f49d3bf3d2a2a00c9';
 
 /// See also [CsvNotifier].
 @ProviderFor(CsvNotifier)
@@ -32,10 +31,9 @@ final csvNotifierProvider =
     AutoDisposeAsyncNotifierProvider<CsvNotifier, bool>.internal(
       CsvNotifier.new,
       name: r'csvNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$csvNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$csvNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

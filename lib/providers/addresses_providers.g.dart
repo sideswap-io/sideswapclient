@@ -7,7 +7,7 @@ part of 'addresses_providers.dart';
 // **************************************************************************
 
 String _$regularAddressesModelAsyncHash() =>
-    r'1bf574c332a9ebe8218544c6966a8e5d6f687a7a';
+    r'cc5714e646bed4933ebb2b9ba867879b4198f5da';
 
 /// See also [regularAddressesModelAsync].
 @ProviderFor(regularAddressesModelAsync)
@@ -15,10 +15,9 @@ final regularAddressesModelAsyncProvider =
     AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
       regularAddressesModelAsync,
       name: r'regularAddressesModelAsyncProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$regularAddressesModelAsyncHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$regularAddressesModelAsyncHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -28,7 +27,7 @@ final regularAddressesModelAsyncProvider =
 typedef RegularAddressesModelAsyncRef =
     AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
 String _$ampAdressesModelAsyncHash() =>
-    r'0d3ca5b99eddd44d557140a0b5cab77062357ddd';
+    r'30d6573621ebd931043cd3a9e1bc1b99eabdb1e6';
 
 /// See also [ampAdressesModelAsync].
 @ProviderFor(ampAdressesModelAsync)
@@ -36,10 +35,9 @@ final ampAdressesModelAsyncProvider =
     AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
       ampAdressesModelAsync,
       name: r'ampAdressesModelAsyncProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$ampAdressesModelAsyncHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$ampAdressesModelAsyncHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -57,10 +55,9 @@ final groupedAddressesAsyncProvider =
     AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
       groupedAddressesAsync,
       name: r'groupedAddressesAsyncProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$groupedAddressesAsyncHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$groupedAddressesAsyncHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -70,7 +67,7 @@ final groupedAddressesAsyncProvider =
 typedef GroupedAddressesAsyncRef =
     AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
 String _$filteredAddressesAsyncHash() =>
-    r'3facefb779354bd9b9933260ac3b5923523f41f6';
+    r'4f512aebba2a6ea1b49894bcf1589ab429c9e228';
 
 /// See also [filteredAddressesAsync].
 @ProviderFor(filteredAddressesAsync)
@@ -78,10 +75,9 @@ final filteredAddressesAsyncProvider =
     AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
       filteredAddressesAsync,
       name: r'filteredAddressesAsyncProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$filteredAddressesAsyncHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$filteredAddressesAsyncHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -160,10 +156,9 @@ class AddressesItemHelperProvider
             addressesItemHelper(ref as AddressesItemHelperRef, addressesItem),
         from: addressesItemHelperProvider,
         name: r'addressesItemHelperProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$addressesItemHelperHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$addressesItemHelperHash,
         dependencies: AddressesItemHelperFamily._dependencies,
         allTransitiveDependencies:
             AddressesItemHelperFamily._allTransitiveDependencies,
@@ -238,7 +233,7 @@ class _AddressesItemHelperProviderElement
 }
 
 String _$inputsAddressesAsyncHash() =>
-    r'847e824b93f3628868395bc33e28d5e80173e0c0';
+    r'bc0965f3bdd75b0d65288c0ad026c9f2c0b60148';
 
 /// See also [inputsAddressesAsync].
 @ProviderFor(inputsAddressesAsync)
@@ -246,10 +241,9 @@ final inputsAddressesAsyncProvider =
     AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
       inputsAddressesAsync,
       name: r'inputsAddressesAsyncProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$inputsAddressesAsyncHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$inputsAddressesAsyncHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -267,10 +261,9 @@ final selectedInputsHelperProvider =
     AutoDisposeProvider<SelectedInputsHelper>.internal(
       selectedInputsHelper,
       name: r'selectedInputsHelperProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$selectedInputsHelperHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$selectedInputsHelperHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -328,10 +321,9 @@ class InputListItemExpandedStateProvider extends AutoDisposeProvider<bool> {
         ),
         from: inputListItemExpandedStateProvider,
         name: r'inputListItemExpandedStateProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$inputListItemExpandedStateHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$inputListItemExpandedStateHash,
         dependencies: InputListItemExpandedStateFamily._dependencies,
         allTransitiveDependencies:
             InputListItemExpandedStateFamily._allTransitiveDependencies,
@@ -408,19 +400,19 @@ String _$loadAddressesStateNotifierHash() =>
 
 /// See also [LoadAddressesStateNotifier].
 @ProviderFor(LoadAddressesStateNotifier)
-final loadAddressesStateNotifierProvider = AutoDisposeNotifierProvider<
-  LoadAddressesStateNotifier,
-  LoadAddressesState
->.internal(
-  LoadAddressesStateNotifier.new,
-  name: r'loadAddressesStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final loadAddressesStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      LoadAddressesStateNotifier,
+      LoadAddressesState
+    >.internal(
+      LoadAddressesStateNotifier.new,
+      name: r'loadAddressesStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$loadAddressesStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$LoadAddressesStateNotifier = AutoDisposeNotifier<LoadAddressesState>;
 String _$loadUtxosStateNotifierHash() =>
@@ -428,23 +420,23 @@ String _$loadUtxosStateNotifierHash() =>
 
 /// See also [LoadUtxosStateNotifier].
 @ProviderFor(LoadUtxosStateNotifier)
-final loadUtxosStateNotifierProvider = AutoDisposeNotifierProvider<
-  LoadUtxosStateNotifier,
-  LoadUtxosState
->.internal(
-  LoadUtxosStateNotifier.new,
-  name: r'loadUtxosStateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final loadUtxosStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      LoadUtxosStateNotifier,
+      LoadUtxosState
+    >.internal(
+      LoadUtxosStateNotifier.new,
+      name: r'loadUtxosStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$loadUtxosStateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$LoadUtxosStateNotifier = AutoDisposeNotifier<LoadUtxosState>;
 String _$addressesAsyncNotifierHash() =>
-    r'6fc355de5a34502ee4edbd6b505fcd32a5dfc8ca';
+    r'f7f36c390730df058031cced46bbe919afaef343';
 
 abstract class _$AddressesAsyncNotifier
     extends BuildlessAutoDisposeAsyncNotifier<AddressesModel> {
@@ -502,10 +494,9 @@ class AddressesAsyncNotifierProvider
         () => AddressesAsyncNotifier()..account = account,
         from: addressesAsyncNotifierProvider,
         name: r'addressesAsyncNotifierProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$addressesAsyncNotifierHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$addressesAsyncNotifierHash,
         dependencies: AddressesAsyncNotifierFamily._dependencies,
         allTransitiveDependencies:
             AddressesAsyncNotifierFamily._allTransitiveDependencies,
@@ -596,19 +587,19 @@ String _$addressDetailsDialogNotifierHash() =>
 
 /// See also [AddressDetailsDialogNotifier].
 @ProviderFor(AddressDetailsDialogNotifier)
-final addressDetailsDialogNotifierProvider = NotifierProvider<
-  AddressDetailsDialogNotifier,
-  AddressDetailsState
->.internal(
-  AddressDetailsDialogNotifier.new,
-  name: r'addressDetailsDialogNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final addressDetailsDialogNotifierProvider =
+    NotifierProvider<
+      AddressDetailsDialogNotifier,
+      AddressDetailsState
+    >.internal(
+      AddressDetailsDialogNotifier.new,
+      name: r'addressDetailsDialogNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$addressDetailsDialogNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AddressDetailsDialogNotifier = Notifier<AddressDetailsState>;
 String _$addressesWalletTypeFlagNotifierHash() =>
@@ -616,19 +607,19 @@ String _$addressesWalletTypeFlagNotifierHash() =>
 
 /// See also [AddressesWalletTypeFlagNotifier].
 @ProviderFor(AddressesWalletTypeFlagNotifier)
-final addressesWalletTypeFlagNotifierProvider = AutoDisposeNotifierProvider<
-  AddressesWalletTypeFlagNotifier,
-  AddressesWalletTypeFlag
->.internal(
-  AddressesWalletTypeFlagNotifier.new,
-  name: r'addressesWalletTypeFlagNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final addressesWalletTypeFlagNotifierProvider =
+    AutoDisposeNotifierProvider<
+      AddressesWalletTypeFlagNotifier,
+      AddressesWalletTypeFlag
+    >.internal(
+      AddressesWalletTypeFlagNotifier.new,
+      name: r'addressesWalletTypeFlagNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$addressesWalletTypeFlagNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AddressesWalletTypeFlagNotifier =
     AutoDisposeNotifier<AddressesWalletTypeFlag>;
@@ -637,19 +628,19 @@ String _$addressesAddressTypeFlagNotifierHash() =>
 
 /// See also [AddressesAddressTypeFlagNotifier].
 @ProviderFor(AddressesAddressTypeFlagNotifier)
-final addressesAddressTypeFlagNotifierProvider = AutoDisposeNotifierProvider<
-  AddressesAddressTypeFlagNotifier,
-  AddressesAddressTypeFlag
->.internal(
-  AddressesAddressTypeFlagNotifier.new,
-  name: r'addressesAddressTypeFlagNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final addressesAddressTypeFlagNotifierProvider =
+    AutoDisposeNotifierProvider<
+      AddressesAddressTypeFlagNotifier,
+      AddressesAddressTypeFlag
+    >.internal(
+      AddressesAddressTypeFlagNotifier.new,
+      name: r'addressesAddressTypeFlagNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$addressesAddressTypeFlagNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AddressesAddressTypeFlagNotifier =
     AutoDisposeNotifier<AddressesAddressTypeFlag>;
@@ -658,19 +649,19 @@ String _$addressesBalanceTypeFlagNotifierHash() =>
 
 /// See also [AddressesBalanceTypeFlagNotifier].
 @ProviderFor(AddressesBalanceTypeFlagNotifier)
-final addressesBalanceTypeFlagNotifierProvider = AutoDisposeNotifierProvider<
-  AddressesBalanceTypeFlagNotifier,
-  AddressesBalanceFlag
->.internal(
-  AddressesBalanceTypeFlagNotifier.new,
-  name: r'addressesBalanceTypeFlagNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final addressesBalanceTypeFlagNotifierProvider =
+    AutoDisposeNotifierProvider<
+      AddressesBalanceTypeFlagNotifier,
+      AddressesBalanceFlag
+    >.internal(
+      AddressesBalanceTypeFlagNotifier.new,
+      name: r'addressesBalanceTypeFlagNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$addressesBalanceTypeFlagNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AddressesBalanceTypeFlagNotifier =
     AutoDisposeNotifier<AddressesBalanceFlag>;
@@ -679,19 +670,19 @@ String _$selectedInputsNotifierHash() =>
 
 /// See also [SelectedInputsNotifier].
 @ProviderFor(SelectedInputsNotifier)
-final selectedInputsNotifierProvider = AutoDisposeNotifierProvider<
-  SelectedInputsNotifier,
-  List<UtxosItem>
->.internal(
-  SelectedInputsNotifier.new,
-  name: r'selectedInputsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final selectedInputsNotifierProvider =
+    AutoDisposeNotifierProvider<
+      SelectedInputsNotifier,
+      List<UtxosItem>
+    >.internal(
+      SelectedInputsNotifier.new,
+      name: r'selectedInputsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$selectedInputsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SelectedInputsNotifier = AutoDisposeNotifier<List<UtxosItem>>;
 String _$inputListItemExpandedStatesNotifierHash() =>
@@ -699,19 +690,19 @@ String _$inputListItemExpandedStatesNotifierHash() =>
 
 /// See also [InputListItemExpandedStatesNotifier].
 @ProviderFor(InputListItemExpandedStatesNotifier)
-final inputListItemExpandedStatesNotifierProvider = AutoDisposeNotifierProvider<
-  InputListItemExpandedStatesNotifier,
-  List<InputListItemExpandedState>
->.internal(
-  InputListItemExpandedStatesNotifier.new,
-  name: r'inputListItemExpandedStatesNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final inputListItemExpandedStatesNotifierProvider =
+    AutoDisposeNotifierProvider<
+      InputListItemExpandedStatesNotifier,
+      List<InputListItemExpandedState>
+    >.internal(
+      InputListItemExpandedStatesNotifier.new,
+      name: r'inputListItemExpandedStatesNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$inputListItemExpandedStatesNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$InputListItemExpandedStatesNotifier =
     AutoDisposeNotifier<List<InputListItemExpandedState>>;

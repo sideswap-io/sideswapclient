@@ -26,8 +26,9 @@ class DSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
     final isPinEnabled = ref.watch(pinAvailableProvider);
     final isJade = ref.watch(isJadeWalletProvider);
 
@@ -80,19 +81,17 @@ class DSettings extends ConsumerWidget {
                           onPressed: () async {
                             if (isPinEnabled) {
                               final navigator = Navigator.of(context);
-                              final ret =
-                                  await ref
-                                      .read(walletProvider)
-                                      .disablePinProtection();
+                              final ret = await ref
+                                  .read(walletProvider)
+                                  .disablePinProtection();
                               if (ret) {
                                 ref
                                     .read(pageStatusNotifierProvider.notifier)
                                     .setStatus(Status.registered);
-                                navigator.pushAndRemoveUntil(
+                                await navigator.pushAndRemoveUntil(
                                   RawDialogRoute<Widget>(
-                                    pageBuilder:
-                                        (_, __, ___) =>
-                                            const DSettingsPinDisableSuccess(),
+                                    pageBuilder: (_, _, _) =>
+                                        const DSettingsPinDisableSuccess(),
                                   ),
                                   (route) => route.isFirst,
                                 );
@@ -195,16 +194,18 @@ class DSettings extends ConsumerWidget {
                       title: 'Use local api server',
                       forward: false,
                       onPressed: () {
-                        final enableEndpoint =
-                            ref.read(configurationProvider).enableEndpoint;
+                        final enableEndpoint = ref
+                            .read(configurationProvider)
+                            .enableEndpoint;
                         ref
                             .read(configurationProvider.notifier)
                             .setEnableEndpoint(!enableEndpoint);
                       },
                       child: Consumer(
                         builder: (context, ref, child) {
-                          final enableEndpoint =
-                              ref.watch(configurationProvider).enableEndpoint;
+                          final enableEndpoint = ref
+                              .watch(configurationProvider)
+                              .enableEndpoint;
                           return IgnorePointer(
                             child: FlutterSwitch(
                               value: enableEndpoint,
@@ -244,8 +245,8 @@ class DSettings extends ConsumerWidget {
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil<Widget>(
                         RawDialogRoute(
-                          pageBuilder:
-                              (_, __, ___) => const DSettingsDeleteWallet(),
+                          pageBuilder: (_, _, _) =>
+                              const DSettingsDeleteWallet(),
                         ),
                         (route) => route.isFirst,
                       );

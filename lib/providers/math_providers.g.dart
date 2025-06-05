@@ -13,8 +13,9 @@ String _$mathHelperHash() => r'3e0cdf540376f1182c99347955323897517d160f';
 final mathHelperProvider = AutoDisposeProvider<MathHelper>.internal(
   mathHelper,
   name: r'mathHelperProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$mathHelperHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$mathHelperHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

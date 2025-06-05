@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
-import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 
 class UiStatesListener extends HookConsumerWidget {
@@ -19,13 +18,6 @@ class UiStatesListener extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (walletMainArguments.navigationItemEnum !=
-            WalletMainNavigationItemEnum.swap) {
-          ref
-              .read(subscribePriceStreamNotifierProvider.notifier)
-              .unsubscribeFromPriceStream();
-        }
-
         (switch (walletMainArguments.navigationItemEnum) {
           WalletMainNavigationItemEnum.pegs => () {},
           _ => pegRepository.setActivePage,

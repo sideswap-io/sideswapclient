@@ -42,7 +42,7 @@ class QuoteEventNotifier extends _$QuoteEventNotifier {
     required AssetType assetType,
     required int amount,
     required TradeDir tradeDir,
-    bool instantSwaps = false,
+    bool instantSwap = false,
   }) {
     _currentQuoteId = randomId();
 
@@ -50,11 +50,11 @@ class QuoteEventNotifier extends _$QuoteEventNotifier {
 
     final msg = To();
     msg.startQuotes = To_StartQuotes(
-      instantSwaps: instantSwaps,
       assetPair: assetPair,
       assetType: assetType,
       amount: Int64(amount),
       tradeDir: tradeDir,
+      instantSwap: instantSwap,
       clientSubId: _currentQuoteId,
     );
 
@@ -258,6 +258,7 @@ class QuoteLowBalance extends ConvertAmount {
 
 class QuoteSuccess extends ConvertAmount {
   final From_Quote_Success _quoteSuccess;
+  final From_StartOrder_Success? startOrderSuccess;
   final DateTime _timestamp;
   final AssetPair assetPair;
   final AssetType assetType;
@@ -274,8 +275,9 @@ class QuoteSuccess extends ConvertAmount {
     this.tradeDir,
     this.feeAssetType,
     this.assetsState,
-    this.orderId,
-  ) : _timestamp = DateTime.timestamp();
+    this.orderId, {
+    this.startOrderSuccess,
+  }) : _timestamp = DateTime.timestamp();
 
   From_Quote_Success get quoteSuccess => _quoteSuccess;
   int get quoteId => _quoteSuccess.quoteId.toInt();
@@ -322,11 +324,8 @@ class QuoteSuccess extends ConvertAmount {
   String get deliverAmount => switch (feeAssetType == assetType) {
     true => switch (tradeDir) {
       TradeDir.SELL => switch (feeAssetType) {
-        // sell base asset, base + fee
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
+        //* * sell base asset, no fee here (ie. import private order, if you find that fee is needed here then all deliver amount algo should be changed)
+        AssetType.BASE => convertAmountForAsset(baseAmount, baseAsset),
         // sell quote asset, quote + fee
         _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
       },
@@ -453,9 +452,13 @@ class QuoteSuccess extends ConvertAmount {
 }
 
 class QuoteUnregisteredGaid {
+  final Int64 orderId;
   final From_Quote_UnregisteredGaid quoteUnregisteredGaid;
 
-  QuoteUnregisteredGaid({required this.quoteUnregisteredGaid});
+  QuoteUnregisteredGaid({
+    required this.orderId,
+    required this.quoteUnregisteredGaid,
+  });
 
   String get domainAgent => quoteUnregisteredGaid.domainAgent;
 }
@@ -540,11 +543,42 @@ class PreviewOrderQuoteSuccessNotifier
   }
 }
 
+@freezed
+sealed class OrderTtlState with _$OrderTtlState {
+  const factory OrderTtlState.empty() = OrderTtlStateEmpty;
+  const factory OrderTtlState.data({
+    required int seconds,
+    required DateTime timestamp,
+  }) = OrderTtlStateData;
+}
+
+@Riverpod(keepAlive: true)
+class OrderTtlNotifier extends _$OrderTtlNotifier {
+  @override
+  OrderTtlState build() {
+    final optionQuoteSuccess = ref.watch(
+      previewOrderQuoteSuccessNotifierProvider,
+    );
+
+    return optionQuoteSuccess.match(() => OrderTtlState.empty(), (
+      quoteSuccess,
+    ) {
+      final seconds = (quoteSuccess.ttlMilliseconds / 1000).round();
+      final timestamp = quoteSuccess.timestamp;
+      return OrderTtlState.data(seconds: seconds, timestamp: timestamp);
+    });
+  }
+
+  void setState(OrderTtlState orderTtlState) {
+    state = orderTtlState;
+  }
+}
+
 @riverpod
-class PreviewOrderQuoteSuccessTtl extends _$PreviewOrderQuoteSuccessTtl {
+class OrderSignTtl extends _$OrderSignTtl {
   @override
   int build() {
-    ref.watch(previewOrderQuoteSuccessNotifierProvider);
+    ref.watch(orderTtlNotifierProvider);
 
     final timer = Timer.periodic(Duration(seconds: 1), (_) => updateState());
     ref.onDispose(() => timer.cancel());
@@ -553,24 +587,21 @@ class PreviewOrderQuoteSuccessTtl extends _$PreviewOrderQuoteSuccessTtl {
   }
 
   int updateState() {
-    final optionQuoteSuccess = ref.read(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
+    final orderTtlState = ref.read(orderTtlNotifierProvider);
 
-    state =
-        optionQuoteSuccess.match(
-          () => () {
-            return 0;
-          },
-          (quoteSuccess) => () {
-            final timestamp = quoteSuccess.timestamp;
-            final seconds = (quoteSuccess.ttlMilliseconds / 1000).round();
-            final futuredTimestamp = timestamp.add(Duration(seconds: seconds));
-            final now = DateTime.timestamp();
-            final diff = futuredTimestamp.difference(now);
-            return diff.inSeconds < 0 ? 0 : diff.inSeconds;
-          },
-        )();
+    state = switch (orderTtlState) {
+      OrderTtlStateData() => () {
+        final futuredTimestamp = orderTtlState.timestamp.add(
+          Duration(seconds: orderTtlState.seconds),
+        );
+        final now = DateTime.timestamp();
+        final diff = futuredTimestamp.difference(now);
+        return diff.inSeconds < 0 ? 0 : diff.inSeconds;
+      },
+      _ => () {
+        return 0;
+      },
+    }();
 
     return state;
   }

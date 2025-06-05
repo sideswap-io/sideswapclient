@@ -45,17 +45,15 @@ class MnemonicTable extends StatelessWidget {
                 height: itemHeight,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color:
-                      correctField
-                          ? const Color(0xFF23729D)
-                          : Colors.transparent,
+                  color: correctField
+                      ? const Color(0xFF23729D)
+                      : Colors.transparent,
                   border: Border.all(
-                    color:
-                        onCheckError(index)
-                            ? Colors.red
-                            : currentSelectedItem == index
-                            ? SideSwapColors.brightTurquoise
-                            : const Color(0xFF23729D),
+                    color: onCheckError(index)
+                        ? Colors.red
+                        : currentSelectedItem == index
+                        ? SideSwapColors.brightTurquoise
+                        : const Color(0xFF23729D),
                     width: 1,
                     style: BorderStyle.solid,
                   ),
@@ -82,18 +80,17 @@ class MnemonicTable extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 3),
                         child: ValueListenableBuilder(
                           valueListenable: words[index],
-                          builder:
-                              (_, String __, ___) => Text(
-                                words[index].value,
-                                textAlign: TextAlign.left,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
+                          builder: (_, String _, _) => Text(
+                            words[index].value,
+                            textAlign: TextAlign.left,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),

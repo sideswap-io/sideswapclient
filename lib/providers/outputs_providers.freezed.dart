@@ -166,7 +166,7 @@ as List<OutputsReceiver>?,
 /// @nodoc
 mixin _$OutputsReceiver {
 
- String? get address;@JsonKey(name: 'asset_id') String? get assetId; int? get satoshi; String? get comment; int? get account;
+ String? get address;@JsonKey(name: 'asset_id') String? get assetId; int? get satoshi; String? get comment;@IntToAccountConverter() Account? get account;
 /// Create a copy of OutputsReceiver
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -199,7 +199,7 @@ abstract mixin class $OutputsReceiverCopyWith<$Res>  {
   factory $OutputsReceiverCopyWith(OutputsReceiver value, $Res Function(OutputsReceiver) _then) = _$OutputsReceiverCopyWithImpl;
 @useResult
 $Res call({
- String? address,@JsonKey(name: 'asset_id') String? assetId, int? satoshi, String? comment, int? account
+ String? address,@JsonKey(name: 'asset_id') String? assetId, int? satoshi, String? comment,@IntToAccountConverter() Account? account
 });
 
 
@@ -223,7 +223,7 @@ as String?,assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast
 as String?,satoshi: freezed == satoshi ? _self.satoshi : satoshi // ignore: cast_nullable_to_non_nullable
 as int?,comment: freezed == comment ? _self.comment : comment // ignore: cast_nullable_to_non_nullable
 as String?,account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
-as int?,
+as Account?,
   ));
 }
 
@@ -234,14 +234,14 @@ as int?,
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
 class _OutputsReceiver implements OutputsReceiver {
-  const _OutputsReceiver({this.address, @JsonKey(name: 'asset_id') this.assetId, this.satoshi, this.comment, this.account});
+  const _OutputsReceiver({this.address, @JsonKey(name: 'asset_id') this.assetId, this.satoshi, this.comment, @IntToAccountConverter() this.account});
   factory _OutputsReceiver.fromJson(Map<String, dynamic> json) => _$OutputsReceiverFromJson(json);
 
 @override final  String? address;
 @override@JsonKey(name: 'asset_id') final  String? assetId;
 @override final  int? satoshi;
 @override final  String? comment;
-@override final  int? account;
+@override@IntToAccountConverter() final  Account? account;
 
 /// Create a copy of OutputsReceiver
 /// with the given fields replaced by the non-null parameter values.
@@ -276,7 +276,7 @@ abstract mixin class _$OutputsReceiverCopyWith<$Res> implements $OutputsReceiver
   factory _$OutputsReceiverCopyWith(_OutputsReceiver value, $Res Function(_OutputsReceiver) _then) = __$OutputsReceiverCopyWithImpl;
 @override @useResult
 $Res call({
- String? address,@JsonKey(name: 'asset_id') String? assetId, int? satoshi, String? comment, int? account
+ String? address,@JsonKey(name: 'asset_id') String? assetId, int? satoshi, String? comment,@IntToAccountConverter() Account? account
 });
 
 
@@ -300,7 +300,7 @@ as String?,assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast
 as String?,satoshi: freezed == satoshi ? _self.satoshi : satoshi // ignore: cast_nullable_to_non_nullable
 as int?,comment: freezed == comment ? _self.comment : comment // ignore: cast_nullable_to_non_nullable
 as String?,account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
-as int?,
+as Account?,
   ));
 }
 
@@ -822,6 +822,72 @@ class _$OutputsErrorOutputsDataIsEmptyCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? message = freezed,}) {
   return _then(OutputsErrorOutputsDataIsEmpty(
+freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class OutputsErrorAssetNotFound implements OutputsError {
+  const OutputsErrorAssetNotFound([this.message]);
+  
+
+@override final  String? message;
+
+/// Create a copy of OutputsError
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OutputsErrorAssetNotFoundCopyWith<OutputsErrorAssetNotFound> get copyWith => _$OutputsErrorAssetNotFoundCopyWithImpl<OutputsErrorAssetNotFound>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OutputsErrorAssetNotFound&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'OutputsError.assetNotFound(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OutputsErrorAssetNotFoundCopyWith<$Res> implements $OutputsErrorCopyWith<$Res> {
+  factory $OutputsErrorAssetNotFoundCopyWith(OutputsErrorAssetNotFound value, $Res Function(OutputsErrorAssetNotFound) _then) = _$OutputsErrorAssetNotFoundCopyWithImpl;
+@override @useResult
+$Res call({
+ String? message
+});
+
+
+
+
+}
+/// @nodoc
+class _$OutputsErrorAssetNotFoundCopyWithImpl<$Res>
+    implements $OutputsErrorAssetNotFoundCopyWith<$Res> {
+  _$OutputsErrorAssetNotFoundCopyWithImpl(this._self, this._then);
+
+  final OutputsErrorAssetNotFound _self;
+  final $Res Function(OutputsErrorAssetNotFound) _then;
+
+/// Create a copy of OutputsError
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? message = freezed,}) {
+  return _then(OutputsErrorAssetNotFound(
 freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

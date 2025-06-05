@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/models/tx_item.dart';
-import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/tx/widgets/tx_item_date.dart';
 import 'package:sideswap/screens/tx/widgets/tx_item_transaction.dart';
@@ -15,8 +14,6 @@ class TxListItem extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,10 +40,7 @@ class TxListItem extends HookConsumerWidget {
           onPressed: () {
             ref.read(walletProvider).showTxDetails(txItem.item);
           },
-          child: TxItemTransaction(
-            transItem: txItem.item,
-            accountType: selectedAccountType,
-          ),
+          child: TxItemTransaction(transItem: txItem.item),
         ),
         const SizedBox(height: 8),
       ],

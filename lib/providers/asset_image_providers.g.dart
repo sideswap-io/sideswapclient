@@ -15,10 +15,9 @@ final assetImageRepositoryProvider =
     Provider<AbstractAssetImageRepository>.internal(
       assetImageRepository,
       name: r'assetImageRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$assetImageRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$assetImageRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

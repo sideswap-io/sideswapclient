@@ -15,10 +15,9 @@ final pegInMinimumAmountProvider =
     NotifierProvider<PegInMinimumAmount, int>.internal(
       PegInMinimumAmount.new,
       name: r'pegInMinimumAmountProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegInMinimumAmountHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegInMinimumAmountHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -33,10 +32,9 @@ final pegInServerFeePercentProvider =
     NotifierProvider<PegInServerFeePercent, double>.internal(
       PegInServerFeePercent.new,
       name: r'pegInServerFeePercentProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegInServerFeePercentHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegInServerFeePercentHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -51,10 +49,9 @@ final pegOutMinimumAmountProvider =
     NotifierProvider<PegOutMinimumAmount, int>.internal(
       PegOutMinimumAmount.new,
       name: r'pegOutMinimumAmountProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegOutMinimumAmountHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegOutMinimumAmountHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -69,10 +66,9 @@ final pegOutServerFeePercentProvider =
     NotifierProvider<PegOutServerFeePercent, double>.internal(
       PegOutServerFeePercent.new,
       name: r'pegOutServerFeePercentProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegOutServerFeePercentHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegOutServerFeePercentHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -86,10 +82,9 @@ final bitcoinFeeRatesProvider =
     NotifierProvider<BitcoinFeeRates, List<FeeRate>>.internal(
       BitcoinFeeRates.new,
       name: r'bitcoinFeeRatesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$bitcoinFeeRatesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$bitcoinFeeRatesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

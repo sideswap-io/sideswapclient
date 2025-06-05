@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UtxosItem {
 
- String? get txid; int? get vout; String? get assetId; int? get amount; bool? get isInternal; bool? get isConfidential; int? get account;
+ String? get txid; int? get vout; String? get assetId; int? get amount; bool? get isInternal; bool? get isConfidential; Account? get account;
 /// Create a copy of UtxosItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -46,7 +46,7 @@ abstract mixin class $UtxosItemCopyWith<$Res>  {
   factory $UtxosItemCopyWith(UtxosItem value, $Res Function(UtxosItem) _then) = _$UtxosItemCopyWithImpl;
 @useResult
 $Res call({
- String? txid, int? vout, String? assetId, int? amount, bool? isInternal, bool? isConfidential, int? account
+ String? txid, int? vout, String? assetId, int? amount, bool? isInternal, bool? isConfidential, Account? account
 });
 
 
@@ -72,7 +72,7 @@ as String?,amount: freezed == amount ? _self.amount : amount // ignore: cast_nul
 as int?,isInternal: freezed == isInternal ? _self.isInternal : isInternal // ignore: cast_nullable_to_non_nullable
 as bool?,isConfidential: freezed == isConfidential ? _self.isConfidential : isConfidential // ignore: cast_nullable_to_non_nullable
 as bool?,account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
-as int?,
+as Account?,
   ));
 }
 
@@ -92,7 +92,7 @@ class _UtxosItem implements UtxosItem {
 @override final  int? amount;
 @override final  bool? isInternal;
 @override final  bool? isConfidential;
-@override final  int? account;
+@override final  Account? account;
 
 /// Create a copy of UtxosItem
 /// with the given fields replaced by the non-null parameter values.
@@ -124,7 +124,7 @@ abstract mixin class _$UtxosItemCopyWith<$Res> implements $UtxosItemCopyWith<$Re
   factory _$UtxosItemCopyWith(_UtxosItem value, $Res Function(_UtxosItem) _then) = __$UtxosItemCopyWithImpl;
 @override @useResult
 $Res call({
- String? txid, int? vout, String? assetId, int? amount, bool? isInternal, bool? isConfidential, int? account
+ String? txid, int? vout, String? assetId, int? amount, bool? isInternal, bool? isConfidential, Account? account
 });
 
 
@@ -150,7 +150,7 @@ as String?,amount: freezed == amount ? _self.amount : amount // ignore: cast_nul
 as int?,isInternal: freezed == isInternal ? _self.isInternal : isInternal // ignore: cast_nullable_to_non_nullable
 as bool?,isConfidential: freezed == isConfidential ? _self.isConfidential : isConfidential // ignore: cast_nullable_to_non_nullable
 as bool?,account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
-as int?,
+as Account?,
   ));
 }
 
@@ -160,7 +160,7 @@ as int?,
 /// @nodoc
 mixin _$AddressesItem {
 
- int? get account; String? get address; String? get unconfidentialAddress; int? get index; bool? get isInternal; List<UtxosItem>? get utxos;
+ Account? get account; String? get address; String? get unconfidentialAddress; int? get index; bool? get isInternal; List<UtxosItem>? get utxos;
 /// Create a copy of AddressesItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -191,7 +191,7 @@ abstract mixin class $AddressesItemCopyWith<$Res>  {
   factory $AddressesItemCopyWith(AddressesItem value, $Res Function(AddressesItem) _then) = _$AddressesItemCopyWithImpl;
 @useResult
 $Res call({
- int? account, String? address, String? unconfidentialAddress, int? index, bool? isInternal, List<UtxosItem>? utxos
+ Account? account, String? address, String? unconfidentialAddress, int? index, bool? isInternal, List<UtxosItem>? utxos
 });
 
 
@@ -211,7 +211,7 @@ class _$AddressesItemCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? account = freezed,Object? address = freezed,Object? unconfidentialAddress = freezed,Object? index = freezed,Object? isInternal = freezed,Object? utxos = freezed,}) {
   return _then(_self.copyWith(
 account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
-as int?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as Account?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,unconfidentialAddress: freezed == unconfidentialAddress ? _self.unconfidentialAddress : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
 as String?,index: freezed == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
 as int?,isInternal: freezed == isInternal ? _self.isInternal : isInternal // ignore: cast_nullable_to_non_nullable
@@ -230,7 +230,7 @@ class _AddressesItem implements AddressesItem {
   const _AddressesItem({this.account, this.address, this.unconfidentialAddress, this.index, this.isInternal, final  List<UtxosItem>? utxos}): _utxos = utxos;
   
 
-@override final  int? account;
+@override final  Account? account;
 @override final  String? address;
 @override final  String? unconfidentialAddress;
 @override final  int? index;
@@ -275,7 +275,7 @@ abstract mixin class _$AddressesItemCopyWith<$Res> implements $AddressesItemCopy
   factory _$AddressesItemCopyWith(_AddressesItem value, $Res Function(_AddressesItem) _then) = __$AddressesItemCopyWithImpl;
 @override @useResult
 $Res call({
- int? account, String? address, String? unconfidentialAddress, int? index, bool? isInternal, List<UtxosItem>? utxos
+ Account? account, String? address, String? unconfidentialAddress, int? index, bool? isInternal, List<UtxosItem>? utxos
 });
 
 
@@ -295,7 +295,7 @@ class __$AddressesItemCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? account = freezed,Object? address = freezed,Object? unconfidentialAddress = freezed,Object? index = freezed,Object? isInternal = freezed,Object? utxos = freezed,}) {
   return _then(_AddressesItem(
 account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
-as int?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as Account?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,unconfidentialAddress: freezed == unconfidentialAddress ? _self.unconfidentialAddress : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
 as String?,index: freezed == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
 as int?,isInternal: freezed == isInternal ? _self.isInternal : isInternal // ignore: cast_nullable_to_non_nullable

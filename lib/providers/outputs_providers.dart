@@ -13,9 +13,25 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'outputs_providers.freezed.dart';
 part 'outputs_providers.g.dart';
+
+class IntToAccountConverter implements JsonConverter<Account?, int?> {
+  const IntToAccountConverter();
+
+  @override
+  Account? fromJson(int? value) {
+    return Account.valueOf(value ?? 0);
+  }
+
+  @override
+  int? toJson(Account? account) {
+    return account?.value ?? 0;
+  }
+}
 
 class DoubleToDecimalConverter implements JsonConverter<Decimal?, double?> {
   const DoubleToDecimalConverter();
@@ -53,7 +69,7 @@ sealed class OutputsReceiver with _$OutputsReceiver {
     @JsonKey(name: 'asset_id') String? assetId,
     int? satoshi,
     String? comment,
-    int? account,
+    @IntToAccountConverter() Account? account,
   }) = _OutputsReceiver;
 
   factory OutputsReceiver.fromJson(Map<String, dynamic> json) =>
@@ -132,7 +148,7 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
     required String assetId,
     required String address,
     required int satoshi,
-    required int account,
+    required Account account,
   }) {
     if (assetId.isEmpty || address.isEmpty || satoshi == 0) {
       logger.w(
@@ -194,29 +210,28 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
 class OutputsCreator extends _$OutputsCreator {
   @override
   Either<OutputsError, OutputsData> build() {
-    final selectedAccountAsset = ref.watch(
-      sendPopupSelectedAccountAssetNotifierProvider,
-    );
+    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdNotifierProvider);
     final sendPopupAmount = ref.watch(sendPopupAmountNotifierProvider);
     final address = ref.watch(sendPopupAddressNotifierProvider);
     final outputsData = ref.watch(outputsReaderNotifierProvider);
-    final assetId = selectedAccountAsset.assetId ?? '';
     final satoshiRepository = ref.watch(satoshiRepositoryProvider);
     final satoshi = satoshiRepository.satoshiForAmount(
       amount: sendPopupAmount,
-      assetId: assetId,
+      assetId: selectedAssetId,
     );
+    final optionAsset = ref.watch(assetFromAssetIdProvider(selectedAssetId));
 
     return switch (outputsData) {
       Left(value: final _)
-          when satoshi == 0 || assetId.isEmpty || address.isEmpty =>
+          when satoshi == 0 || selectedAssetId.isEmpty || address.isEmpty =>
         () {
           return const Left<OutputsError, OutputsData>(
             OutputsErrorRequiredDataIsEmpty(),
           );
         }(),
-      Left(value: final _) => () {
-        return Right<OutputsError, OutputsData>(
+      Left(value: final _) => optionAsset.match(
+        () => Left<OutputsError, OutputsData>(OutputsErrorAssetNotFound()),
+        (asset) => Right<OutputsError, OutputsData>(
           OutputsData(
             type: 'sideswap_app',
             version: '2',
@@ -224,14 +239,14 @@ class OutputsCreator extends _$OutputsCreator {
             receivers: [
               OutputsReceiver(
                 address: address,
-                assetId: assetId,
+                assetId: selectedAssetId,
                 satoshi: satoshi,
-                account: selectedAccountAsset.account.id,
+                account: asset.ampMarket ? Account.AMP_ : Account.REG,
               ),
             ],
           ),
-        );
-      }(),
+        ),
+      ),
       Right(value: final value) => () {
         final receivers = [...value.receivers ?? <OutputsReceiver>[]];
 
@@ -301,6 +316,8 @@ sealed class OutputsError with _$OutputsError {
       OutputsErrorRequiredDataIsEmpty;
   const factory OutputsError.outputsDataIsEmpty([String? message]) =
       OutputsErrorOutputsDataIsEmpty;
+  const factory OutputsError.assetNotFound([String? message]) =
+      OutputsErrorAssetNotFound;
 }
 
 @riverpod

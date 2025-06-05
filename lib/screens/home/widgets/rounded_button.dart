@@ -7,7 +7,7 @@ class RoundedButton extends StatefulWidget {
     this.color = const Color(0xFF0D5574),
     this.child,
     this.width,
-    this.heigh,
+    this.height,
     this.borderRadius,
   });
 
@@ -15,7 +15,7 @@ class RoundedButton extends StatefulWidget {
   final Color? color;
   final Widget? child;
   final double? width;
-  final double? heigh;
+  final double? height;
   final BorderRadius? borderRadius;
 
   @override
@@ -31,7 +31,7 @@ class RoundedButtonState extends State<RoundedButton> {
   void initState() {
     super.initState();
     _width = widget.width ?? 42;
-    _height = widget.heigh ?? 42;
+    _height = widget.height ?? 42;
     _borderRadius = widget.borderRadius ?? BorderRadius.circular(42);
   }
 

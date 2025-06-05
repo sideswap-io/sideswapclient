@@ -38,13 +38,14 @@ import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/login_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
+import 'package:sideswap/providers/new_block_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
+import 'package:sideswap/providers/proxy_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
-import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
@@ -123,15 +124,16 @@ String envName(int env) {
   throw Exception('unexpected env value');
 }
 
-Account getAccount(AccountType accountType) {
-  final account = Account();
-  account.id = accountType.id;
-  return account;
-}
+// TODO (malcolmpl): new wallets
+// Account getAccount(AccountType accountType) {
+//   final account = Account();
+//   account.id = accountType.id;
+//   return account;
+// }
 
-AccountType getAccountType(Account account) {
-  return AccountType(account.id);
-}
+// AccountType getAccountType(Account account) {
+//   return AccountType(account.id);
+// }
 
 class PinDecryptedData {
   final From_DecryptPin_Error? error;
@@ -250,8 +252,8 @@ class SideswapWallet {
         .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.walletLoading);
 
-    _recvSubscription?.cancel();
-    _receivePortSubscription?.cancel();
+    await _recvSubscription?.cancel();
+    await _receivePortSubscription?.cancel();
 
     _recvSubscription = _recvSubject.listen((value) async {
       try {
@@ -284,7 +286,7 @@ class SideswapWallet {
 
     await _addBtcAsset();
 
-    _receivePortSubscription = _receivePort.listen((dynamic msgPtr) async {
+    _receivePortSubscription = _receivePort.listen((dynamic msgPtr) {
       final ptr = Lib.lib.sideswap_msg_ptr(msgPtr as int);
       final len = Lib.lib.sideswap_msg_len(msgPtr);
       final msg = From.fromBuffer(ptr.asTypedList(len));
@@ -296,8 +298,10 @@ class SideswapWallet {
     processPendingPushMessages();
 
     final appResetRequired = await _encryption.appResetRequired(
-      hasEncryptedMnemonic:
-          ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty,
+      hasEncryptedMnemonic: ref
+          .read(configurationProvider)
+          .mnemonicEncrypted
+          .isNotEmpty,
       usePinProtection: ref.read(configurationProvider).usePinProtection,
     );
     if (appResetRequired) {
@@ -333,10 +337,9 @@ class SideswapWallet {
     }
 
     final plugin = SideswapNotificationsPlugin(
-      androidPlatform:
-          FlavorConfig.isFdroid
-              ? AndroidPlatformEnum.fdroid
-              : AndroidPlatformEnum.android,
+      androidPlatform: FlavorConfig.isFdroid
+          ? AndroidPlatformEnum.fdroid
+          : AndroidPlatformEnum.android,
     );
     await plugin.firebaseRefreshToken(
       refreshTokenCallback: (token) {
@@ -386,12 +389,12 @@ class SideswapWallet {
         ref
             .read(eurxAssetIdStateProvider.notifier)
             .setState(from.envSettings.eurxAssetId);
-        AccountAsset.liquidAssetId = from.envSettings.policyAssetId;
+
         ref
             .read(defaultAccountsStateProvider.notifier)
             .insertAccountAsset(
               accountAsset: AccountAsset(
-                AccountType.reg,
+                Account.REG,
                 from.envSettings.policyAssetId,
               ),
             );
@@ -411,7 +414,7 @@ class SideswapWallet {
         break;
       case From_Msg.ampAssets:
         ref
-            .read(ampAssetsNotifierProvider.notifier)
+            .read(ampAssetIdsNotifierProvider.notifier)
             .insertAmpAssets(ampAssetIds: from.ampAssets.assets);
         break;
       case From_Msg.balanceUpdate:
@@ -459,9 +462,8 @@ class SideswapWallet {
         break;
 
       case From_Msg.recvAddress:
-        final accountType = getAccountType(from.recvAddress.account);
         final receiveAddress = ReceiveAddress(
-          accountType: accountType,
+          account: from.recvAddress.account,
           recvAddress: from.recvAddress.addr.addr,
         );
         ref
@@ -471,7 +473,7 @@ class SideswapWallet {
 
       case From_Msg.createTxResult:
         (switch (from.createTxResult.whichResult()) {
-          From_CreateTxResult_Result.errorMsg => () async {
+          From_CreateTxResult_Result.errorMsg => () {
             logger.e(from.createTxResult.errorMsg);
             ref
                 .read(createTxStateNotifierProvider.notifier)
@@ -479,11 +481,12 @@ class SideswapWallet {
                   CreateTxStateError(errorMsg: from.createTxResult.errorMsg),
                 );
           }(),
-          From_CreateTxResult_Result.createdTx => ref
-              .read(createTxStateNotifierProvider.notifier)
-              .setCreateTxState(
-                CreateTxStateCreated(from.createTxResult.createdTx),
-              ),
+          From_CreateTxResult_Result.createdTx =>
+            ref
+                .read(createTxStateNotifierProvider.notifier)
+                .setCreateTxState(
+                  CreateTxStateCreated(from.createTxResult.createdTx),
+                ),
           From_CreateTxResult_Result.notSet => () {
             throw Exception('invalid send result message');
           }(),
@@ -516,7 +519,7 @@ class SideswapWallet {
               showTxDetails(transItem);
             } else {
               final allPegsById = ref.read(allPegsByIdProvider);
-              ref
+              await ref
                   .read(desktopDialogProvider)
                   .showTx(
                     transItem,
@@ -596,14 +599,14 @@ class SideswapWallet {
 
       case From_Msg.decryptPin:
         if (from.decryptPin.hasError()) {
-          ref
+          await ref
               .read(pinProtectionHelperProvider)
               .onPinDecrypted(
                 PinDecryptedData(false, error: from.decryptPin.error),
               );
         } else {
           mnemonicRepository.setMnemonic(from.decryptPin.mnemonic);
-          ref
+          await ref
               .read(pinProtectionHelperProvider)
               .onPinDecrypted(
                 PinDecryptedData(true, mnemonic: mnemonicRepository.mnemonic()),
@@ -613,8 +616,9 @@ class SideswapWallet {
         break;
 
       case From_Msg.walletLoaded:
-        final showAmpOnboarding =
-            ref.read(configurationProvider).showAmpOnboarding;
+        final showAmpOnboarding = ref
+            .read(configurationProvider)
+            .showAmpOnboarding;
         if (showAmpOnboarding) {
           // wallet is loaded but we need to display onboarding amp setup
           ref
@@ -658,38 +662,30 @@ class SideswapWallet {
         logger.d("Asset details: ${from.assetDetails}");
         final assetDetailsData = AssetDetailsData(
           assetId: from.assetDetails.assetId,
-          stats:
-              from.assetDetails.hasStats()
-                  ? AssetDetailsStats(
-                    issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
-                    burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
-                    offlineAmount:
-                        from.assetDetails.stats.offlineAmount.toInt(),
-                    hasBlindedIssuances:
-                        from.assetDetails.stats.hasBlindedIssuances,
-                  )
-                  : null,
-          chartUrl:
-              from.assetDetails.hasChartUrl()
-                  ? from.assetDetails.chartUrl
-                  : null,
+          stats: from.assetDetails.hasStats()
+              ? AssetDetailsStats(
+                  issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
+                  burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
+                  offlineAmount: from.assetDetails.stats.offlineAmount.toInt(),
+                  hasBlindedIssuances:
+                      from.assetDetails.stats.hasBlindedIssuances,
+                )
+              : null,
+          chartUrl: from.assetDetails.hasChartUrl()
+              ? from.assetDetails.chartUrl
+              : null,
           chartStats: null,
         );
         ref
             .read(tokenMarketNotifierProvider.notifier)
             .insertAssetDetails(assetDetailsData);
         break;
-      case From_Msg.updatePriceStream:
-        ref
-            .read(subscribePriceStreamNotifierProvider.notifier)
-            .onUpdatePriceStreamChanged(from.updatePriceStream);
-        break;
       case From_Msg.registerAmp:
-        _processRegisterAmpResult(from.registerAmp);
+        await _processRegisterAmpResult(from.registerAmp);
         break;
       case From_Msg.localMessage:
         logger.w('local message: ${from.localMessage}');
-        ref
+        await ref
             .read(localNotificationsProvider)
             .showNotification(from.localMessage.title, from.localMessage.body);
         break;
@@ -841,9 +837,20 @@ class SideswapWallet {
       case From_Msg.jadeUnlock:
         _handleJadeUnlock(from.jadeUnlock);
         break;
-      // TODO: Handle this case.
+      case From_Msg.loadTransactions:
+        _handleLoadTransactions(from.loadTransactions);
+        break;
+      case From_Msg.newBlock:
+        _handleNewBlock(from.newBlock);
+        break;
+      case From_Msg.newTx:
+        _handleNewTx(from.newTx);
+        break;
+      case From_Msg.jadeVerifyAddress:
+        _handleJadeVerifyAddress(from.jadeVerifyAddress);
+        break;
+      // TODO: Handle this cases
       case From_Msg.orderCancel:
-      // TODO: Handle this case.
       case From_Msg.notSet:
         throw UnimplementedError('invalid message: $from');
     }
@@ -887,14 +894,14 @@ class SideswapWallet {
       ref
           .read(defaultAccountsStateProvider.notifier)
           .insertAccountAsset(
-            accountAsset: AccountAsset(AccountType.reg, asset.assetId),
+            accountAsset: AccountAsset(Account.REG, asset.assetId),
           );
     }
     if (asset.ampMarket) {
       ref
           .read(defaultAccountsStateProvider.notifier)
           .insertAccountAsset(
-            accountAsset: AccountAsset(AccountType.amp, asset.assetId),
+            accountAsset: AccountAsset(Account.AMP_, asset.assetId),
           );
     }
 
@@ -1020,7 +1027,7 @@ class SideswapWallet {
   }
 
   Future<bool> walletBiometricEnable() async {
-    return _registerWallet(true);
+    return await _registerWallet(true);
   }
 
   Future<bool> walletPinEnable() async {
@@ -1033,7 +1040,7 @@ class SideswapWallet {
   }
 
   Future<bool> walletBiometricSkip() async {
-    return _registerWallet(false);
+    return await _registerWallet(false);
   }
 
   Future<bool> _registerWallet(bool enableBiometric) async {
@@ -1101,8 +1108,9 @@ class SideswapWallet {
       uniqueWords.remove(selectedWord);
       final remainingWords = uniqueWords.toList();
       remainingWords.shuffle(r);
-      final otherWords =
-          remainingWords.take(kBackupCheckWordCount - 1).toList();
+      final otherWords = remainingWords
+          .take(kBackupCheckWordCount - 1)
+          .toList();
       otherWords.add(selectedWord);
       otherWords.shuffle(r);
       backupCheckAllWords[selectedIndex] = otherWords;
@@ -1331,7 +1339,10 @@ class SideswapWallet {
           .setState(const JadeOnboardingRegistrationStateProcessing());
     }
 
-    sendProxySettings();
+    final proxySettingsRepository = ref.read(
+      proxySettingsRepositoryNotifierProvider,
+    );
+    sendProxySettings(proxySettingsRepository.getProxySettings());
     sendNetworkSettings();
 
     if (ref.read(configurationProvider).phoneKey.isNotEmpty) {
@@ -1358,17 +1369,8 @@ class SideswapWallet {
     sendMsg(msg);
   }
 
-  void selectAssetDetails(AccountAsset value) {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.assetDetails);
-    ref
-        .read(selectedWalletAccountAssetNotifierProvider.notifier)
-        .setAccountAsset(value);
-  }
-
-  void selectAssetReceive(AccountType accountType) {
-    toggleRecvAddrType(accountType);
+  void selectAssetReceive(Account account) {
+    toggleRecvAddrType(account);
 
     ref
         .read(pageStatusNotifierProvider.notifier)
@@ -1377,12 +1379,12 @@ class SideswapWallet {
   }
 
   void startAssetReceiveAddr() {
-    toggleRecvAddrType(AccountType.reg);
+    toggleRecvAddrType(Account.REG);
   }
 
-  void toggleRecvAddrType(AccountType accountType) {
+  void toggleRecvAddrType(Account account) {
     final msg = To();
-    msg.getRecvAddress = getAccount(accountType);
+    msg.getRecvAddress = account;
     sendMsg(msg);
   }
 
@@ -1459,7 +1461,6 @@ class SideswapWallet {
   void assetSendConfirmCommon(CreatedTx createdTx) {
     final msg = To();
     msg.sendTx = To_SendTx();
-    msg.sendTx.account = createdTx.req.account;
     msg.sendTx.id = createdTx.id;
     sendMsg(msg);
     ref
@@ -1482,8 +1483,8 @@ class SideswapWallet {
     if (filterLowerCase.isEmpty) {
       return true;
     }
-    final assetText =
-        '${asset.ticker}\n${asset.name}\n${asset.assetId}'.toLowerCase();
+    final assetText = '${asset.ticker}\n${asset.name}\n${asset.assetId}'
+        .toLowerCase();
     return assetText.contains(filterLowerCase);
   }
 
@@ -1532,7 +1533,7 @@ class SideswapWallet {
     var msg = To();
     msg.setMemo = To_SetMemo();
     // FIXME: Use correct account type here
-    msg.setMemo.account = getAccount(AccountType.reg);
+    msg.setMemo.account = Account.REG;
     msg.setMemo.txid = txid;
     msg.setMemo.memo = _currentTxMemoUpdate;
     sendMsg(msg);
@@ -1550,14 +1551,13 @@ class SideswapWallet {
       return;
     }
 
-    final mnemonic =
-        ref.read(configurationProvider).useBiometricProtection
-            ? await _encryption.decryptBiometric(
-              ref.read(configurationProvider).mnemonicEncrypted,
-            )
-            : await _encryption.decryptFallback(
-              ref.read(configurationProvider).mnemonicEncrypted,
-            );
+    final mnemonic = ref.read(configurationProvider).useBiometricProtection
+        ? await _encryption.decryptBiometric(
+            ref.read(configurationProvider).mnemonicEncrypted,
+          )
+        : await _encryption.decryptFallback(
+            ref.read(configurationProvider).mnemonicEncrypted,
+          );
     if (mnemonic == mnemonicRepository.mnemonic() &&
         validateMnemonic(mnemonic)) {
       ref
@@ -1626,9 +1626,6 @@ class SideswapWallet {
   }
 
   Future<void> deleteWalletAndCleanup() async {
-    ref
-        .read(subscribePriceStreamNotifierProvider.notifier)
-        .unsubscribeFromPriceStream();
     await ref.read(configurationProvider.notifier).deleteConfig();
     await _logout();
     cleanupConnectionStates();
@@ -1666,12 +1663,7 @@ class SideswapWallet {
 
     if (validateMnemonic(mnemonicRepository.mnemonic())) {
       _login(mnemonic: mnemonicRepository.mnemonic());
-    } else {
-      // TODO: Show error
-      ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
     }
-
-    notifyListeners();
   }
 
   Future<void> settingsEnableBiometric() async {
@@ -1729,8 +1721,9 @@ class SideswapWallet {
         ),
       );
     } else {
-      final mnemonicEncrypted =
-          ref.read(configurationProvider).mnemonicEncrypted;
+      final mnemonicEncrypted = ref
+          .read(configurationProvider)
+          .mnemonicEncrypted;
       // Temporary workaround for Jade
       if (mnemonicEncrypted.isEmpty) {
         return true;
@@ -1794,6 +1787,7 @@ class SideswapWallet {
     sendMsg(msg);
   }
 
+  // TODO (malcolmpl): new wallets - remove this, use paymentPageSendAssetsWithBalanceProvider
   List<AccountAsset> sendAssets() {
     return sendAssetsWithBalance();
   }
@@ -1834,6 +1828,11 @@ class SideswapWallet {
       logger.w('pinData is empty!');
       return;
     }
+
+    final proxySettingsRepository = ref.read(
+      proxySettingsRepositoryNotifierProvider,
+    );
+    sendProxySettings(proxySettingsRepository.getProxySettings());
 
     final msg = To();
     msg.decryptPin = To_DecryptPin();
@@ -1897,36 +1896,29 @@ class SideswapWallet {
     processPendingPushMessages();
   }
 
+  // TODO (malcolmpl): new wallets - remove this, use paymentPageSendAssetsWithBalanceProvider
   List<AccountAsset> sendAssetsWithBalance() {
-    final allAssets =
-        ref
-            .read(balancesNotifierProvider)
-            .entries
-            .where((e) => e.value > 0)
-            .map((e) => e.key)
-            .toList();
+    final allAssets = ref
+        .read(balancesNotifierProvider)
+        .entries
+        .where((e) => e.value > 0)
+        .map((e) => e.key)
+        .toList();
     if (allAssets.isEmpty) {
-      return [
-        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider)),
-      ];
+      return [AccountAsset(Account.REG, ref.read(liquidAssetIdStateProvider))];
     }
     return allAssets;
   }
 
-  void getPegOutAmount(
-    int? sendAmount,
-    int? recvAmount,
-    double feeRate,
-    AccountType accountType,
-  ) {
+  void getPegOutAmount(int? sendAmount, int? recvAmount, double feeRate) {
     assert((sendAmount == null) != (recvAmount == null));
     final msg = To();
     msg.pegOutAmount = To_PegOutAmount();
     msg.pegOutAmount.feeRate = feeRate;
     msg.pegOutAmount.isSendEntered = sendAmount != null;
-    msg.pegOutAmount.amount =
-        sendAmount != null ? Int64(sendAmount) : Int64(recvAmount!);
-    msg.pegOutAmount.account = getAccount(accountType);
+    msg.pegOutAmount.amount = sendAmount != null
+        ? Int64(sendAmount)
+        : Int64(recvAmount!);
     sendMsg(msg);
   }
 
@@ -1977,33 +1969,15 @@ class SideswapWallet {
     return network;
   }
 
-  To_ProxySettings getProxySettings() {
-    final proxy = To_ProxySettings();
-    final host = ref.read(configurationProvider).proxySettings?.host;
-    final port = ref.read(configurationProvider).proxySettings?.port;
-    final useProxy = ref.read(configurationProvider).useProxy;
-
-    if (useProxy &&
-        host != null &&
-        host.isNotEmpty &&
-        port != null &&
-        port > 0 &&
-        port < 65535) {
-      proxy.proxy = To_ProxySettings_Proxy(host: host, port: port);
-    }
-
-    return proxy;
-  }
-
   void sendNetworkSettings() {
     final msg = To();
     msg.networkSettings = getNetworkSettings();
     sendMsg(msg);
   }
 
-  void sendProxySettings() {
+  void sendProxySettings(To_ProxySettings toProxySettings) {
     final msg = To();
-    msg.proxySettings = getProxySettings();
+    msg.proxySettings = toProxySettings;
     sendMsg(msg);
   }
 
@@ -2124,7 +2098,7 @@ class SideswapWallet {
     });
   }
 
-  void _handleMarketList(From_MarketList marketList) async {
+  void _handleMarketList(From_MarketList marketList) {
     ref.read(marketsNotifierProvider.notifier).setState(marketList.markets);
   }
 
@@ -2214,9 +2188,10 @@ class SideswapWallet {
   }
 
   void _handleStartOrder(From_StartOrder startOrder) {
-    ref
-        .read(marketStartOrderNotifierProvider.notifier)
-        .setState(startOrder.orderId.toInt());
+    logger.d('Start order: $startOrder');
+    ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+    ref.invalidate(marketStartOrderNotifierProvider);
+    ref.read(marketStartOrderNotifierProvider.notifier).setState(startOrder);
 
     if (startOrder.hasSuccess()) {
       return;
@@ -2296,9 +2271,45 @@ class SideswapWallet {
         .read(bitcoinFeeRatesProvider.notifier)
         .setState(serverStatus.bitcoinFeeRates);
 
-    // TODO (malcolmpl): (old comment - need to check) remove subscribeToPriceStream here. It cause resubscription.
+    final pegRepository = ref.read(pegRepositoryProvider);
+    pegRepository.getPegOutAmount();
+  }
+
+  void _handleLoadTransactions(From_LoadTransactions loadTransactions) {
+    if (loadTransactions.hasErrorMsg()) {
+      ref
+          .read(loadTransactionsStateNotifierProvider.notifier)
+          .setState(
+            LoadTransactionsState.error(errorMsg: loadTransactions.errorMsg),
+          );
+      return;
+    }
     ref
-        .read(subscribePriceStreamNotifierProvider.notifier)
-        .subscribeToPriceStream();
+        .read(allTxsNotifierProvider.notifier)
+        .updateList(txs: loadTransactions.txs);
+    ref.invalidate(loadTransactionsStateNotifierProvider);
+  }
+
+  void _handleNewBlock(Empty newBlock) {
+    ref.read(newBlockNotifierProvider.notifier).update();
+  }
+
+  void _handleNewTx(Empty newTx) {
+    ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+  }
+
+  void _handleJadeVerifyAddress(GenericResponse jadeVerifyAddress) {
+    if (jadeVerifyAddress.hasErrorMsg()) {
+      ref
+          .read(jadeVerifyAddressStateNotifierProvider.notifier)
+          .setState(
+            JadeVerifyAddressState.error(message: jadeVerifyAddress.errorMsg),
+          );
+      return;
+    }
+
+    ref
+        .read(jadeVerifyAddressStateNotifierProvider.notifier)
+        .setState(JadeVerifyAddressState.success());
   }
 }

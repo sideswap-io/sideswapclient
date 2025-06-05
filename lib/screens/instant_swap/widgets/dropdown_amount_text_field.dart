@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/instant_swap/widgets/d_max_button.dart';
 import 'package:sideswap/desktop/main/d_payment_select_asset.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -14,13 +13,14 @@ import 'package:sideswap/screens/instant_swap/widgets/amount_text_field.dart';
 import 'package:sideswap/screens/instant_swap/widgets/asset_ticker_button.dart';
 import 'package:sideswap/screens/instant_swap/widgets/max_button.dart';
 import 'package:sideswap/screens/pay/payment_select_asset.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DropdownAmountTextField extends HookConsumerWidget {
   const DropdownAmountTextField({
     this.controller,
     this.focusNode,
-    required this.accountAssets,
-    required this.accountAsset,
+    required this.availableAssets,
+    required this.selectedAssetId,
     this.label,
     this.hideDivider = false,
     this.bottomLabel,
@@ -30,7 +30,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
     this.showMaxButton = false,
     this.showBalance = true,
     this.onMaxPressed,
-    this.onAccountAssetChanged,
+    this.onAssetChanged,
     this.onChanged,
     this.balanceAlignment,
     super.key,
@@ -38,8 +38,8 @@ class DropdownAmountTextField extends HookConsumerWidget {
 
   final TextEditingController? controller;
   final FocusNode? focusNode;
-  final List<AccountAsset> accountAssets;
-  final AccountAsset accountAsset;
+  final List<String> availableAssets;
+  final String selectedAssetId;
   final Widget? label;
   final Widget? bottomLabel;
   final bool hideDivider;
@@ -49,7 +49,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
   final bool showMaxButton;
   final bool showBalance;
   final void Function()? onMaxPressed;
-  final void Function(AccountAsset accountAsset)? onAccountAssetChanged;
+  final void Function(Asset asset)? onAssetChanged;
   final void Function(String value)? onChanged;
   final MainAxisAlignment? balanceAlignment;
 
@@ -59,13 +59,11 @@ class DropdownAmountTextField extends HookConsumerWidget {
     final textFieldFocusNode = focusNode ?? useFocusNode();
 
     final assetImageRepostory = ref.watch(assetImageRepositoryProvider);
-    final optionAsset = ref.watch(
-      assetFromAssetIdProvider(accountAsset.assetId),
-    );
+    final optionAsset = ref.watch(assetFromAssetIdProvider(selectedAssetId));
 
     final icon = useMemoized(() {
-      return assetImageRepostory.getSmallImage(accountAsset.assetId);
-    }, [accountAsset, assetImageRepostory]);
+      return assetImageRepostory.getSmallImage(selectedAssetId);
+    }, [selectedAssetId, assetImageRepostory]);
 
     useEffect(() {
       textFieldFocusNode.addListener(() {
@@ -89,10 +87,10 @@ class DropdownAmountTextField extends HookConsumerWidget {
           barrierColor: Colors.transparent,
           builder: (context) {
             return DPaymentSelectAsset(
-              availableAssets: accountAssets,
+              availableAssets: availableAssets,
               disabledAssets: [],
               onSelected: (value) {
-                onAccountAssetChanged?.call(value);
+                onAssetChanged?.call(value);
               },
             );
           },
@@ -101,10 +99,10 @@ class DropdownAmountTextField extends HookConsumerWidget {
         _ => MaterialPageRoute(
           builder: (context) {
             return PaymentSelectAsset(
-              availableAssets: accountAssets,
+              availableAssets: availableAssets,
               disabledAssets: [],
-              onSelected: (AccountAsset value) {
-                onAccountAssetChanged?.call(value);
+              onSelected: (Asset value) {
+                onAssetChanged?.call(value);
               },
             );
           },
@@ -112,7 +110,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
       };
 
       await Navigator.of(context, rootNavigator: true).push<void>(dialogRoute);
-    }, [accountAssets]);
+    }, [availableAssets]);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +214,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
         switch (showBalance) {
           true => Align(
             alignment: Alignment.centerRight,
-            child: DropdownAmountBalanceLine(accountAsset: accountAsset),
+            child: DropdownAmountBalanceLine(assetId: selectedAssetId),
           ),
           false => const SizedBox(),
         },
@@ -227,58 +225,56 @@ class DropdownAmountTextField extends HookConsumerWidget {
 }
 
 class DropdownAmountBalanceLine extends ConsumerWidget {
-  final AccountAsset accountAsset;
+  final String assetId;
   final MainAxisAlignment balanceAlignment;
 
   const DropdownAmountBalanceLine({
-    required this.accountAsset,
+    required this.assetId,
     this.balanceAlignment = MainAxisAlignment.end,
     super.key,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetBalance = ref.watch(
-      totalMaxAvailableBalanceForAssetAsStringProvider(accountAsset.assetId),
-    );
-
     final textStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
       fontSize: 13,
       color: SideSwapColors.airSuperiorityBlue,
     );
 
-    final balanceHint = 'Balance'.tr();
-    final asset =
-        ref.watch(assetFromAssetIdProvider(accountAsset.assetId)).toNullable();
+    final optionAsset = ref.watch(assetFromAssetIdProvider(assetId));
 
-    return Column(
-      children: [
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: balanceAlignment,
-          children: [
-            Text('$balanceHint:', style: textStyle),
-            Row(
-              children: [
-                const SizedBox(width: 4),
-                SelectableText(assetBalance, style: textStyle),
-                const SizedBox(width: 4),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final icon = ref
-                        .watch(assetImageRepositoryProvider)
-                        .getSmallImage(accountAsset.assetId);
+    return optionAsset.match(() => const SizedBox(), (asset) {
+      final assetBalanceString = ref.watch(assetBalanceStringProvider(asset));
 
-                    return SizedBox(width: 16, height: 16, child: icon);
-                  },
-                ),
-                const SizedBox(width: 4),
-                Text(asset?.ticker ?? '', style: textStyle),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
+      return Column(
+        children: [
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: balanceAlignment,
+            children: [
+              Text('Balance'.tr(), style: textStyle),
+              Row(
+                children: [
+                  const SizedBox(width: 4),
+                  SelectableText(assetBalanceString, style: textStyle),
+                  const SizedBox(width: 4),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final icon = ref
+                          .watch(assetImageRepositoryProvider)
+                          .getSmallImage(assetId);
+
+                      return SizedBox(width: 16, height: 16, child: icon);
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  Text(asset.ticker, style: textStyle),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 }

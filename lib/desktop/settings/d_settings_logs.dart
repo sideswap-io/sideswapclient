@@ -25,7 +25,7 @@ class DSettingsLogs extends ConsumerWidget {
       suggestedName: '$filename.txt',
     );
 
-    (switch (saveLocation) {
+    await (switch (saveLocation) {
       final saveLocation? => () async {
         await file.saveTo(saveLocation.path);
       }(),
@@ -59,7 +59,7 @@ class DSettingsLogs extends ConsumerWidget {
       ],
     );
 
-    (switch (result) {
+    await (switch (result) {
       1 => saveLog("sideswap"),
       2 => saveLog("sideswap_prev"),
       _ => () {}(),
@@ -68,13 +68,13 @@ class DSettingsLogs extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
-    final defaultButtonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .buttonThemeData
-            .defaultButtonStyle;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
+    final defaultButtonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonThemeData
+        .defaultButtonStyle;
 
     return PopScope(
       canPop: false,

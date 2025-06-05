@@ -14,10 +14,9 @@ final selectEnvDialogProvider =
     AutoDisposeNotifierProvider<SelectEnvDialog, bool>.internal(
       SelectEnvDialog.new,
       name: r'selectEnvDialogProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$selectEnvDialogHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$selectEnvDialogHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -31,10 +30,9 @@ final selectedEnvProvider =
     AutoDisposeNotifierProvider<SelectedEnv, int>.internal(
       SelectedEnv.new,
       name: r'selectedEnvProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$selectedEnvHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$selectedEnvHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -48,10 +46,9 @@ final selectEnvTapProvider =
     AutoDisposeNotifierProvider<SelectEnvTap, int>.internal(
       SelectEnvTap.new,
       name: r'selectEnvTapProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$selectEnvTapHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$selectEnvTapHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

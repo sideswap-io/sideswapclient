@@ -329,7 +329,7 @@ String toString() {
 /// @nodoc
 mixin _$SwapAsset {
 
- AccountAsset get asset; List<AccountAsset> get assetList;
+ String get assetId; Iterable<String> get assetList;
 /// Create a copy of SwapAsset
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -340,16 +340,16 @@ $SwapAssetCopyWith<SwapAsset> get copyWith => _$SwapAssetCopyWithImpl<SwapAsset>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwapAsset&&(identical(other.asset, asset) || other.asset == asset)&&const DeepCollectionEquality().equals(other.assetList, assetList));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwapAsset&&(identical(other.assetId, assetId) || other.assetId == assetId)&&const DeepCollectionEquality().equals(other.assetList, assetList));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,asset,const DeepCollectionEquality().hash(assetList));
+int get hashCode => Object.hash(runtimeType,assetId,const DeepCollectionEquality().hash(assetList));
 
 @override
 String toString() {
-  return 'SwapAsset(asset: $asset, assetList: $assetList)';
+  return 'SwapAsset(assetId: $assetId, assetList: $assetList)';
 }
 
 
@@ -360,7 +360,7 @@ abstract mixin class $SwapAssetCopyWith<$Res>  {
   factory $SwapAssetCopyWith(SwapAsset value, $Res Function(SwapAsset) _then) = _$SwapAssetCopyWithImpl;
 @useResult
 $Res call({
- AccountAsset asset, List<AccountAsset> assetList
+ String assetId, Iterable<String> assetList
 });
 
 
@@ -377,11 +377,11 @@ class _$SwapAssetCopyWithImpl<$Res>
 
 /// Create a copy of SwapAsset
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? asset = null,Object? assetList = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? assetId = null,Object? assetList = null,}) {
   return _then(_self.copyWith(
-asset: null == asset ? _self.asset : asset // ignore: cast_nullable_to_non_nullable
-as AccountAsset,assetList: null == assetList ? _self.assetList : assetList // ignore: cast_nullable_to_non_nullable
-as List<AccountAsset>,
+assetId: null == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
+as String,assetList: null == assetList ? _self.assetList : assetList // ignore: cast_nullable_to_non_nullable
+as Iterable<String>,
   ));
 }
 
@@ -392,17 +392,11 @@ as List<AccountAsset>,
 
 
 class _SwapAsset implements SwapAsset {
-  const _SwapAsset({required this.asset, required final  List<AccountAsset> assetList}): _assetList = assetList;
+  const _SwapAsset({required this.assetId, required this.assetList});
   
 
-@override final  AccountAsset asset;
- final  List<AccountAsset> _assetList;
-@override List<AccountAsset> get assetList {
-  if (_assetList is EqualUnmodifiableListView) return _assetList;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_assetList);
-}
-
+@override final  String assetId;
+@override final  Iterable<String> assetList;
 
 /// Create a copy of SwapAsset
 /// with the given fields replaced by the non-null parameter values.
@@ -414,16 +408,16 @@ _$SwapAssetCopyWith<_SwapAsset> get copyWith => __$SwapAssetCopyWithImpl<_SwapAs
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwapAsset&&(identical(other.asset, asset) || other.asset == asset)&&const DeepCollectionEquality().equals(other._assetList, _assetList));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwapAsset&&(identical(other.assetId, assetId) || other.assetId == assetId)&&const DeepCollectionEquality().equals(other.assetList, assetList));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,asset,const DeepCollectionEquality().hash(_assetList));
+int get hashCode => Object.hash(runtimeType,assetId,const DeepCollectionEquality().hash(assetList));
 
 @override
 String toString() {
-  return 'SwapAsset(asset: $asset, assetList: $assetList)';
+  return 'SwapAsset(assetId: $assetId, assetList: $assetList)';
 }
 
 
@@ -434,7 +428,7 @@ abstract mixin class _$SwapAssetCopyWith<$Res> implements $SwapAssetCopyWith<$Re
   factory _$SwapAssetCopyWith(_SwapAsset value, $Res Function(_SwapAsset) _then) = __$SwapAssetCopyWithImpl;
 @override @useResult
 $Res call({
- AccountAsset asset, List<AccountAsset> assetList
+ String assetId, Iterable<String> assetList
 });
 
 
@@ -451,11 +445,11 @@ class __$SwapAssetCopyWithImpl<$Res>
 
 /// Create a copy of SwapAsset
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? asset = null,Object? assetList = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? assetId = null,Object? assetList = null,}) {
   return _then(_SwapAsset(
-asset: null == asset ? _self.asset : asset // ignore: cast_nullable_to_non_nullable
-as AccountAsset,assetList: null == assetList ? _self._assetList : assetList // ignore: cast_nullable_to_non_nullable
-as List<AccountAsset>,
+assetId: null == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
+as String,assetList: null == assetList ? _self.assetList : assetList // ignore: cast_nullable_to_non_nullable
+as Iterable<String>,
   ));
 }
 

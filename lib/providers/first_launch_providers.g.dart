@@ -15,10 +15,9 @@ final firstLaunchStateNotifierProvider =
     NotifierProvider<FirstLaunchStateNotifier, FirstLaunchState>.internal(
       FirstLaunchStateNotifier.new,
       name: r'firstLaunchStateNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$firstLaunchStateNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$firstLaunchStateNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

@@ -16,7 +16,6 @@ import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
-import 'package:sideswap/screens/markets/widgets/market_accept_quote_success_dialog.dart';
 import 'package:sideswap/screens/markets/widgets/market_limit_order_submit_dialog.dart';
 import 'package:sideswap/screens/markets/widgets/market_start_order_error_dialog.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -66,8 +65,9 @@ class MarketsPageListener extends HookConsumerWidget {
     }, [stableMarkets, subscribedAssetPair]);
 
     final stokrSecurities = ref.watch(stokrSecuritiesProvider);
-    final stokrSettingsModel =
-        ref.watch(configurationProvider).stokrSettingsModel;
+    final stokrSettingsModel = ref
+        .watch(configurationProvider)
+        .stokrSettingsModel;
     final baseAsset = ref.watch(marketSubscribedBaseAssetProvider);
     final stokrLastSelectedAsset = ref.watch(
       stokrLastSelectedAssetNotifierProvider,
@@ -118,34 +118,6 @@ class MarketsPageListener extends HookConsumerWidget {
       return;
     }, [baseAsset]);
 
-    final showAcceptQuoteSuccessDialog = ref.watch(
-      marketAcceptQuoteSuccessShowDialogNotifierProvider,
-    );
-
-    useEffect(() {
-      if (showAcceptQuoteSuccessDialog) {
-        Future.microtask(() async {
-          ref
-              .read(marketAcceptQuoteSuccessShowDialogNotifierProvider.notifier)
-              .setState(false);
-
-          if (!context.mounted) {
-            return;
-          }
-          await showDialog<void>(
-            context: context,
-            builder: (context) {
-              return MarketAcceptQuoteSuccessDialog();
-            },
-            routeSettings: RouteSettings(name: acceptQuoteSuccessRouteName),
-            useRootNavigator: false,
-          );
-        });
-      }
-
-      return;
-    }, [showAcceptQuoteSuccessDialog]);
-
     final optionAccepQuoteSuccess = ref.watch(marketAcceptQuoteSuccessProvider);
     final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
     final allTxSorted = ref.watch(allTxsSortedProvider);
@@ -161,10 +133,6 @@ class MarketsPageListener extends HookConsumerWidget {
 
           final transItem = allTxSorted[index];
           final allPegsById = ref.read(allPegsByIdProvider);
-
-          Navigator.of(context, rootNavigator: false).popUntil((route) {
-            return route.settings.name != acceptQuoteSuccessRouteName;
-          });
 
           Future.microtask(() async {
             if (!FlavorConfig.isDesktop) {
@@ -313,7 +281,7 @@ class MarketsPageListener extends HookConsumerWidget {
 
     useEffect(() {
       optionStartOrderQuoteLowBalance.match(() {}, (quoteLowBalance) async {
-        Future.microtask(() async {
+        await Future.microtask(() async {
           if (!context.mounted) {
             return;
           }
@@ -345,7 +313,7 @@ class MarketsPageListener extends HookConsumerWidget {
 
     useEffect(() {
       optionStartOrderQuoteError.match(() {}, (quoteError) async {
-        Future.microtask(() async {
+        await Future.microtask(() async {
           if (!context.mounted) {
             return;
           }
@@ -370,6 +338,38 @@ class MarketsPageListener extends HookConsumerWidget {
       });
       return;
     }, [optionStartOrderQuoteError]);
+
+    final optionStartOrderUnregisteredGaid = ref.watch(
+      marketStartOrderUnregisteredGaidProvider,
+    );
+
+    useEffect(() {
+      optionStartOrderUnregisteredGaid.match(() {}, (unregisteredGaid) async {
+        await Future.microtask(() async {
+          if (!context.mounted) {
+            return;
+          }
+          ref.invalidate(marketStartOrderNotifierProvider);
+
+          await showDialog<void>(
+            context: context,
+            builder: (context) {
+              return MarketStartOrderUnregisteredGaidDialog(
+                optionStartOrderUnregisteredGaid:
+                    optionStartOrderUnregisteredGaid,
+              );
+            },
+            routeSettings: RouteSettings(
+              name: marketStartOrderUnregisteredGaidRouteName,
+            ),
+            useRootNavigator: false,
+          );
+
+          ref.invalidate(marketQuoteNotifierProvider);
+        });
+      });
+      return;
+    }, [optionStartOrderUnregisteredGaid]);
 
     final optionStartOrderError = ref.watch(
       marketStartOrderErrorNotifierProvider,

@@ -11,19 +11,19 @@ String _$launchPageDeleteWalletNotifierHash() =>
 
 /// See also [LaunchPageDeleteWalletNotifier].
 @ProviderFor(LaunchPageDeleteWalletNotifier)
-final launchPageDeleteWalletNotifierProvider = AutoDisposeNotifierProvider<
-  LaunchPageDeleteWalletNotifier,
-  LaunchPageDeleteWalletState
->.internal(
-  LaunchPageDeleteWalletNotifier.new,
-  name: r'launchPageDeleteWalletNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final launchPageDeleteWalletNotifierProvider =
+    AutoDisposeNotifierProvider<
+      LaunchPageDeleteWalletNotifier,
+      LaunchPageDeleteWalletState
+    >.internal(
+      LaunchPageDeleteWalletNotifier.new,
+      name: r'launchPageDeleteWalletNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$launchPageDeleteWalletNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$LaunchPageDeleteWalletNotifier =
     AutoDisposeNotifier<LaunchPageDeleteWalletState>;

@@ -11,19 +11,19 @@ String _$networkAccessTabNotifierHash() =>
 
 /// See also [NetworkAccessTabNotifier].
 @ProviderFor(NetworkAccessTabNotifier)
-final networkAccessTabNotifierProvider = AutoDisposeNotifierProvider<
-  NetworkAccessTabNotifier,
-  NetworkAccessTabState
->.internal(
-  NetworkAccessTabNotifier.new,
-  name: r'networkAccessTabNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final networkAccessTabNotifierProvider =
+    AutoDisposeNotifierProvider<
+      NetworkAccessTabNotifier,
+      NetworkAccessTabState
+    >.internal(
+      NetworkAccessTabNotifier.new,
+      name: r'networkAccessTabNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$networkAccessTabNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$NetworkAccessTabNotifier = AutoDisposeNotifier<NetworkAccessTabState>;
 String _$useProxyNotifierHash() => r'5e53759b98a7bdf4efbf5fa95f29e981af896339';
@@ -34,10 +34,9 @@ final useProxyNotifierProvider =
     AutoDisposeNotifierProvider<UseProxyNotifier, bool>.internal(
       UseProxyNotifier.new,
       name: r'useProxyNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$useProxyNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$useProxyNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

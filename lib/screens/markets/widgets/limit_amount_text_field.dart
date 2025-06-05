@@ -65,16 +65,15 @@ class LimitAmountTextField extends HookConsumerWidget {
         showConversion: showConversion,
         showBalance: showBalance,
         showAggregate: true,
-        error:
-            insufficientAmount
-                ? LimitMinimumFeeError(
-                  text: 'MINIMUM_FEE'.tr(args: [minimumFeeAmount]),
-                )
-                : null,
+        error: insufficientAmount
+            ? LimitMinimumFeeError(
+                text: 'MINIMUM_FEE'.tr(args: [minimumFeeAmount]),
+              )
+            : null,
         showMaxButton: showMaxButton,
         onMaxPressed: () {
           final totalBalance = ref.watch(
-            totalMaxAvailableBalanceForAssetAsStringProvider(baseAsset.assetId),
+            availableBalanceForAssetIdAsStringProvider(baseAsset.assetId),
           );
 
           ref

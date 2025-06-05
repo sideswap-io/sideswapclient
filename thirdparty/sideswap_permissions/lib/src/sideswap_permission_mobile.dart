@@ -4,42 +4,42 @@ import 'package:sideswap_permissions/src/sideswap_permissions_platform_interface
 class SideswapPermissionMobilePlugin
     extends SideswapPermissionPlatformInterface {
   @override
-  Future<bool> hasContactPermission() async {
+  Future<bool> hasContactPermission() {
     return PermissionHandler.hasContactPermission();
   }
 
   @override
-  Future<bool> requestContactPermission() async {
+  Future<bool> requestContactPermission() {
     return PermissionHandler.requestContactPermission();
   }
 
   @override
-  Future<bool> hasCameraPermission() async {
+  Future<bool> hasCameraPermission() {
     return PermissionHandler.hasCameraPermission();
   }
 
   @override
-  Future<bool> requestCameraPermission() async {
+  Future<bool> requestCameraPermission() {
     return PermissionHandler.requestCameraPermission();
   }
 
   @override
-  Future<bool> hasBluetoothScanPermission() async {
+  Future<bool> hasBluetoothScanPermission() {
     return PermissionHandler.hasBluetoothScanPermission();
   }
 
   @override
-  Future<bool> requestBluetoothScanPermission() async {
+  Future<bool> requestBluetoothScanPermission() {
     return PermissionHandler.requestBluetoothScanPermission();
   }
 
   @override
-  Future<bool> hasBluetoothConnectPermission() async {
+  Future<bool> hasBluetoothConnectPermission() {
     return PermissionHandler.hasBluetoothConnectPermission();
   }
 
   @override
-  Future<bool> requestBluetoothConnectPermission() async {
+  Future<bool> requestBluetoothConnectPermission() {
     return PermissionHandler.requestBluetoothConnectPermission();
   }
 }

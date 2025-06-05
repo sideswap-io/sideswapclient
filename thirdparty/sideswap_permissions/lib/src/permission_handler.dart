@@ -5,7 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sideswap_permissions/src/permission_logger.dart';
 
 class PermissionHandler {
-  static Future<bool> _hasPermission(Permission permission) async {
+  static Future<bool> _hasPermission(Permission permission) {
     return permission.isGranted;
   }
 
@@ -24,7 +24,7 @@ class PermissionHandler {
     return true;
   }
 
-  static Future<bool> hasContactPermission() async {
+  static Future<bool> hasContactPermission() {
     return _hasPermission(Permission.contacts);
   }
 
@@ -41,7 +41,7 @@ class PermissionHandler {
     return granted;
   }
 
-  static Future<bool> hasCameraPermission() async {
+  static Future<bool> hasCameraPermission() {
     return _hasPermission(Permission.camera);
   }
 
@@ -56,11 +56,11 @@ class PermissionHandler {
     return granted;
   }
 
-  static Future<bool> hasBluetoothScanPermission() async {
+  static Future<bool> hasBluetoothScanPermission() {
     return _hasBluetoothPermissions(permissions: [Permission.bluetoothScan]);
   }
 
-  static Future<bool> requestBluetoothScanPermission() async {
+  static Future<bool> requestBluetoothScanPermission() {
     return _requestBluetoothPermission(permissions: [Permission.bluetoothScan]);
   }
 
@@ -121,7 +121,7 @@ class PermissionHandler {
 
   static Future<bool> _requestBluetoothPermission({
     List<Permission> permissions = const [],
-  }) async {
+  }) {
     if (Platform.isAndroid) {
       return _requestPermission(permissions: permissions);
     }

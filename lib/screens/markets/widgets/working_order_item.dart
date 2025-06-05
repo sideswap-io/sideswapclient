@@ -384,7 +384,9 @@ class WorkingOrderItem extends HookConsumerWidget {
                   ),
                   SizedBox(width: 8),
                   ColoredContainer(
-                    theme: ColoredContainerStyle(horizontalPadding: 8),
+                    theme: ColoredContainerStyle(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    ),
                     child: Row(
                       children: [
                         Padding(

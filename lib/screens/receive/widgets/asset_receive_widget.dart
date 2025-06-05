@@ -17,6 +17,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 import 'package:sideswap/screens/swap/widgets/rounded_text_label.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class AssetReceiveWidget extends HookConsumerWidget {
   const AssetReceiveWidget({
@@ -41,10 +42,9 @@ class AssetReceiveWidget extends HookConsumerWidget {
     });
 
     final receiveAddress = ref.watch(currentReceiveAddressProvider);
-    final recvAddress =
-        isPegIn
-            ? ref.watch(swapPegAddressServerNotifierProvider)
-            : receiveAddress.recvAddress;
+    final recvAddress = isPegIn
+        ? ref.watch(swapPegAddressServerNotifierProvider)
+        : receiveAddress.recvAddress;
     final swapRecvAddr = ref.watch(swapRecvAddressExternalNotifierProvider);
 
     final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
@@ -54,10 +54,10 @@ class AssetReceiveWidget extends HookConsumerWidget {
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     var percentConversion =
         (pegInServerFeePercent == 0 || pegInServerFeePercent == 0)
-            ? 0
-            : swapDeliverAsset.asset.assetId == liquidAssetId
-            ? 100 - pegOutServerFeePercent
-            : 100 - pegInServerFeePercent;
+        ? 0
+        : swapDeliverAsset.assetId == liquidAssetId
+        ? 100 - pegOutServerFeePercent
+        : 100 - pegInServerFeePercent;
 
     final conversionStr = percentConversion.toStringAsFixed(2);
 
@@ -67,10 +67,9 @@ class AssetReceiveWidget extends HookConsumerWidget {
 
     final pegRepository = ref.watch(pegRepositoryProvider);
 
-    final smallFontStyle =
-        FlavorConfig.isDesktop
-            ? Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14)
-            : Theme.of(context).textTheme.bodyMedium;
+    final smallFontStyle = FlavorConfig.isDesktop
+        ? Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14)
+        : Theme.of(context).textTheme.bodyMedium;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -312,17 +311,16 @@ class AssetReceiveWidget extends HookConsumerWidget {
                         child: RoundedButton(
                           color: SideSwapColors.maastrichtBlue,
                           width: double.infinity,
-                          heigh: 39,
+                          height: 39,
                           borderRadius: BorderRadius.circular(8),
-                          child:
-                              Text(
-                                'Bitcoin address copied'.tr(),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ).tr(),
+                          child: Text(
+                            'Bitcoin address copied'.tr(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ).tr(),
                         ),
                       ),
                     ),
@@ -340,7 +338,7 @@ class AssetReceiveWidget extends HookConsumerWidget {
                 child: RoundedButton(
                   color: const Color(0xFF002336),
                   width: double.infinity,
-                  heigh: 39,
+                  height: 39,
                   borderRadius: BorderRadius.circular(8),
                   child: Consumer(
                     builder: (context, ref, child) {
@@ -348,7 +346,7 @@ class AssetReceiveWidget extends HookConsumerWidget {
                         currentReceiveAddressProvider,
                       );
                       return Text(
-                        receiveAddress.accountType.isAmp
+                        receiveAddress.account == Account.AMP_
                             ? 'AMP address copied'.tr()
                             : 'Liquid address copied'.tr(),
                         style: const TextStyle(

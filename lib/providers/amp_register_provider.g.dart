@@ -14,10 +14,9 @@ final stokrSecuritiesProvider =
     AutoDisposeProvider<List<SecuritiesItem>>.internal(
       stokrSecurities,
       name: r'stokrSecuritiesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$stokrSecuritiesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$stokrSecuritiesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -33,10 +32,9 @@ final pegxSecuritiesProvider =
     AutoDisposeProvider<List<SecuritiesItem>>.internal(
       pegxSecurities,
       name: r'pegxSecuritiesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$pegxSecuritiesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pegxSecuritiesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -52,10 +50,9 @@ final checkAmpStatusProvider =
     AutoDisposeProvider<CheckAmpStatusProvider>.internal(
       checkAmpStatus,
       name: r'checkAmpStatusProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$checkAmpStatusHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$checkAmpStatusHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -71,10 +68,9 @@ final stokrGaidNotifierProvider =
     NotifierProvider<StokrGaidNotifier, StokrGaidState>.internal(
       StokrGaidNotifier.new,
       name: r'stokrGaidNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$stokrGaidNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$stokrGaidNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

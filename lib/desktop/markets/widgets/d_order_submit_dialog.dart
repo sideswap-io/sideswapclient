@@ -99,6 +99,7 @@ class OrderSubmitSuccessDialog extends HookConsumerWidget {
                         : Theme.of(
                           context,
                         ).extension<MarketColorsStyle>()!.buyColor;
+
                 return Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -303,6 +304,34 @@ class OrderSubmitSuccessDialog extends HookConsumerWidget {
                           Text(order.offlineSwapTypeDescription),
                         ],
                       ),
+                      ...switch (order.isPriceTracking) {
+                        true => [
+                          SizedBox(height: 8),
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: SideSwapColors.glacier.withValues(
+                              alpha: 0.4,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                'Price tracking'.tr(),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleSmall?.copyWith(
+                                  color: SideSwapColors.brightTurquoise,
+                                ),
+                              ),
+                              Spacer(),
+                              Text('${order.priceTrackingPercent.toString()}%'),
+                            ],
+                          ),
+                        ],
+                        false => [],
+                      },
                       Spacer(),
                       DCustomFilledBigButton(
                         focusNode: okFocusNode,

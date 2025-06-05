@@ -38,18 +38,17 @@ class AmpRegister extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () =>
-            switch (pegxLoginState) {
-              PegxLoginStateLoginDialog() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxRegister);
-              },
-              PegxLoginStateLoading() => () {
-                ref.read(pegxWebsocketClientProvider).disconnect();
-              },
-              _ => () {},
-            }(),
+        () => switch (pegxLoginState) {
+          PegxLoginStateLoginDialog() => () {
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.pegxRegister);
+          },
+          PegxLoginStateLoading() => () {
+            ref.read(pegxWebsocketClientProvider).disconnect();
+          },
+          _ => () {},
+        }(),
       );
 
       return;
@@ -137,24 +136,22 @@ class AmpRegister extends HookConsumerWidget {
                                       items: stokrItems,
                                       registered:
                                           (stokrGaidState ==
-                                              const StokrGaidStateRegistered()),
+                                          const StokrGaidStateRegistered()),
                                       loading:
                                           (stokrGaidState ==
-                                              const StokrGaidStateLoading()),
+                                          const StokrGaidStateLoading()),
                                       onPressed:
                                           (stokrGaidState ==
-                                                  const StokrGaidStateUnregistered())
-                                              ? () {
-                                                ref
-                                                    .read(
-                                                      pageStatusNotifierProvider
-                                                          .notifier,
-                                                    )
-                                                    .setStatus(
-                                                      Status.stokrLogin,
-                                                    );
-                                              }
-                                              : null,
+                                              const StokrGaidStateUnregistered())
+                                          ? () {
+                                              ref
+                                                  .read(
+                                                    pageStatusNotifierProvider
+                                                        .notifier,
+                                                  )
+                                                  .setStatus(Status.stokrLogin);
+                                            }
+                                          : null,
                                     );
                                   },
                                 ),
@@ -172,28 +169,27 @@ class AmpRegister extends HookConsumerWidget {
                                       items: pegxItems,
                                       registered:
                                           (pegxGaidState ==
-                                              const PegxGaidStateRegistered()),
+                                          const PegxGaidStateRegistered()),
                                       loading:
                                           (pegxGaidState ==
-                                              const PegxGaidStateLoading()),
+                                          const PegxGaidStateLoading()),
                                       onPressed:
                                           (pegxGaidState ==
-                                                      const PegxGaidStateUnregistered()) ||
-                                                  (env ==
-                                                          SIDESWAP_ENV_TESTNET ||
-                                                      env ==
-                                                          SIDESWAP_ENV_LOCAL_TESTNET)
-                                              ? () {
-                                                ref
-                                                    .read(
-                                                      pegxLoginStateNotifierProvider
-                                                          .notifier,
-                                                    )
-                                                    .setState(
-                                                      const PegxLoginStateLoginDialog(),
-                                                    );
-                                              }
-                                              : null,
+                                                  const PegxGaidStateUnregistered()) ||
+                                              (env == SIDESWAP_ENV_TESTNET ||
+                                                  env ==
+                                                      SIDESWAP_ENV_LOCAL_TESTNET)
+                                          ? () {
+                                              ref
+                                                  .read(
+                                                    pegxLoginStateNotifierProvider
+                                                        .notifier,
+                                                  )
+                                                  .setState(
+                                                    const PegxLoginStateLoginDialog(),
+                                                  );
+                                            }
+                                          : null,
                                     );
                                   },
                                 ),
@@ -204,7 +200,7 @@ class AmpRegister extends HookConsumerWidget {
                           CustomBigButton(
                             width: double.infinity,
                             backgroundColor: SideSwapColors.brightTurquoise,
-                            onPressed: () async {
+                            onPressed: () {
                               if (ref
                                   .read(configurationProvider)
                                   .showAmpOnboarding) {

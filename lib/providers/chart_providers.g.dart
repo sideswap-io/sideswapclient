@@ -13,8 +13,9 @@ String _$chartsStatsHash() => r'7e934ec4cd22eb603d78fea80e9c2a8c146304a2';
 final chartsStatsProvider = AutoDisposeProvider<Stats>.internal(
   chartsStats,
   name: r'chartsStatsProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$chartsStatsHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$chartsStatsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -91,10 +92,9 @@ class ChartStatsRepositoryProvider
         (ref) => chartStatsRepository(ref as ChartStatsRepositoryRef, asset),
         from: chartStatsRepositoryProvider,
         name: r'chartStatsRepositoryProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$chartStatsRepositoryHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$chartStatsRepositoryHash,
         dependencies: ChartStatsRepositoryFamily._dependencies,
         allTransitiveDependencies:
             ChartStatsRepositoryFamily._allTransitiveDependencies,
@@ -173,19 +173,19 @@ String _$chartsSubscriptionFlagNotifierHash() =>
 
 /// See also [ChartsSubscriptionFlagNotifier].
 @ProviderFor(ChartsSubscriptionFlagNotifier)
-final chartsSubscriptionFlagNotifierProvider = AutoDisposeNotifierProvider<
-  ChartsSubscriptionFlagNotifier,
-  ChartsSubscriptionFlag
->.internal(
-  ChartsSubscriptionFlagNotifier.new,
-  name: r'chartsSubscriptionFlagNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final chartsSubscriptionFlagNotifierProvider =
+    AutoDisposeNotifierProvider<
+      ChartsSubscriptionFlagNotifier,
+      ChartsSubscriptionFlag
+    >.internal(
+      ChartsSubscriptionFlagNotifier.new,
+      name: r'chartsSubscriptionFlagNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$chartsSubscriptionFlagNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$ChartsSubscriptionFlagNotifier =
     AutoDisposeNotifier<ChartsSubscriptionFlag>;
@@ -193,19 +193,19 @@ String _$chartsNotifierHash() => r'6f8201489a8b2b54f4f249f46575dbe4de1ba0c7';
 
 /// See also [ChartsNotifier].
 @ProviderFor(ChartsNotifier)
-final chartsNotifierProvider = AutoDisposeNotifierProvider<
-  ChartsNotifier,
-  Map<AssetPair, List<Candle>>
->.internal(
-  ChartsNotifier.new,
-  name: r'chartsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final chartsNotifierProvider =
+    AutoDisposeNotifierProvider<
+      ChartsNotifier,
+      Map<AssetPair, List<Candle>>
+    >.internal(
+      ChartsNotifier.new,
+      name: r'chartsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$chartsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$ChartsNotifier = AutoDisposeNotifier<Map<AssetPair, List<Candle>>>;
 // ignore_for_file: type=lint

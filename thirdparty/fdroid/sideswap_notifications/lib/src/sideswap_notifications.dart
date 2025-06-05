@@ -50,23 +50,25 @@ class SideswapNotificationsPlugin {
   static AndroidPlatformEnum _androidPlatformEnum = AndroidPlatformEnum.none;
 
   Future<void> firebaseInitializeApp() async {
-    SideswapNotificationsPlatformInterface.instance.firebaseInitializeApp();
+    await SideswapNotificationsPlatformInterface.instance
+        .firebaseInitializeApp();
   }
 
   Future<void> notificationsInitialize({
     required TNotificationBackgroundHandler notificationBackgroundHandler,
     THandleIncomingNotification? handleIncomingNotification,
   }) async {
-    SideswapNotificationsPlatformInterface.instance.notificationsInitialize(
-      notificationBackgroundHandler: notificationBackgroundHandler,
-      handleIncomingNotification: handleIncomingNotification,
-    );
+    await SideswapNotificationsPlatformInterface.instance
+        .notificationsInitialize(
+          notificationBackgroundHandler: notificationBackgroundHandler,
+          handleIncomingNotification: handleIncomingNotification,
+        );
   }
 
   Future<void> firebaseRefreshToken({
     TRefreshTokenCallback? refreshTokenCallback,
   }) async {
-    SideswapNotificationsPlatformInterface.instance.firebaseRefreshToken(
+    await SideswapNotificationsPlatformInterface.instance.firebaseRefreshToken(
       refreshTokenCallback: refreshTokenCallback,
     );
   }

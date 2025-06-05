@@ -11,6 +11,7 @@ import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
 import 'package:sideswap/screens/instant_swap/widgets/asset_ticker_button.dart';
 import 'package:sideswap/screens/instant_swap/widgets/instant_swap_divider.dart';
 import 'package:sideswap/screens/instant_swap/widgets/max_button.dart';
+import 'package:sideswap/screens/receive/widgets/qr_receive_address.dart';
 
 part 'theme.g.dart';
 
@@ -192,6 +193,7 @@ class MobileThemeData {
       assetTickerButtonMobileStyle(),
       instantSwapDividerButtonStyle(),
       customBigButtonStyle(),
+      iconWrapTextButtonStyle(),
     ];
   }
 
@@ -248,7 +250,8 @@ class MobileThemeData {
     return ColoredContainerStyle(
       backgroundColor: SideSwapColors.navyBlue,
       borderColor: SideSwapColors.navyBlue,
-      horizontalPadding: 12,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      borderWidth: 1,
     );
   }
 
@@ -328,6 +331,23 @@ class MobileThemeData {
         textStyle: textTheme.labelMedium?.copyWith(
           color: SideSwapColors.brightTurquoise,
         ),
+      ),
+    );
+  }
+
+  IconWrapTextButtonStyle iconWrapTextButtonStyle() {
+    return IconWrapTextButtonStyle(
+      buttonStyle: TextButton.styleFrom(
+        foregroundColor: SideSwapColors.brightTurquoise,
+        padding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+          side: BorderSide(color: SideSwapColors.brightTurquoise),
+        ),
+        textStyle: textTheme.labelMedium?.copyWith(
+          color: SideSwapColors.brightTurquoise,
+        ),
+        iconSize: 24,
       ),
     );
   }

@@ -148,10 +148,9 @@ class DAddressesListItem extends ConsumerWidget {
     final addressesItemHelper = ref.watch(
       addressesItemHelperProvider(addressesItem),
     );
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .addressDetailsItemButtonStyle();
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .addressDetailsItemButtonStyle();
 
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16),
@@ -162,7 +161,7 @@ class DAddressesListItem extends ConsumerWidget {
               .setAddressDetailsItem(addressesItemHelper.addressesItem);
           await Navigator.of(context).push(
             RawDialogRoute<Widget>(
-              pageBuilder: (_, __, ___) => const DAddressesDetails(),
+              pageBuilder: (_, _, _) => const DAddressesDetails(),
             ),
           );
         },
@@ -330,10 +329,9 @@ class DAddressDetailsHeader extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .mainBottomNavigationBarButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .mainBottomNavigationBarButtonStyle;
 
     return Column(
       children: [
@@ -397,8 +395,9 @@ class DAddressDetailsHeader extends HookConsumerWidget {
                         ),
                       ),
                       onPressed: () async {
-                        final isTestnet =
-                            ref.read(envProvider.notifier).isTestnet();
+                        final isTestnet = ref
+                            .read(envProvider.notifier)
+                            .isTestnet();
                         final addressUrl = generateAddressUrl(
                           address: addressesItem.address,
                           testnet: isTestnet,
@@ -505,8 +504,9 @@ class DAddressDetailsHeader extends HookConsumerWidget {
                         ),
                       ),
                       onPressed: () async {
-                        final isTestnet =
-                            ref.read(envProvider.notifier).isTestnet();
+                        final isTestnet = ref
+                            .read(envProvider.notifier)
+                            .isTestnet();
                         final addressUrl = generateAddressUrl(
                           address: addressesItem.unconfidentialAddress,
                           testnet: isTestnet,
@@ -533,10 +533,9 @@ class DAddressDetailsAssets extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const flexes = [100, 850, 50];
     final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .mainBottomNavigationBarButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .mainBottomNavigationBarButtonStyle;
 
     final scrollController = useScrollController();
 
@@ -635,15 +634,14 @@ class DAddressDetailsAssets extends HookConsumerWidget {
                                             ),
                                           ),
                                           onPressed: () async {
-                                            final isTestnet =
-                                                ref
-                                                    .read(envProvider.notifier)
-                                                    .isTestnet();
+                                            final isTestnet = ref
+                                                .read(envProvider.notifier)
+                                                .isTestnet();
                                             final assetUrl = generateAssetUrl(
                                               assetId: utxo.assetId,
                                               testnet: isTestnet,
                                             );
-                                            openUrl(assetUrl);
+                                            await openUrl(assetUrl);
                                           },
                                         ),
                                       ),
@@ -682,10 +680,9 @@ class DAddressDetailsColumn extends HookConsumerWidget {
     const flexes = [560, 90, 110, 80, 55, 65];
 
     final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .mainBottomNavigationBarButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .mainBottomNavigationBarButtonStyle;
 
     final scrollController = useScrollController();
 

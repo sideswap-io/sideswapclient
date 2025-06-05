@@ -209,7 +209,7 @@ class DAnimatedPinButton extends HookConsumerWidget {
       style: buttonStyle,
       child: AnimatedBuilder(
         animation: color,
-        builder: (_, __) {
+        builder: (_, _) {
           return Container(
             decoration: ShapeDecoration(
               shape: const RoundedRectangleBorder(

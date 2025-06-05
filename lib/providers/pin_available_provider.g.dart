@@ -13,8 +13,9 @@ String _$pinAvailableHash() => r'02ef428a6810afed4af4e2ed5aa509faae1d0439';
 final pinAvailableProvider = AutoDisposeProvider<bool>.internal(
   pinAvailable,
   name: r'pinAvailableProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$pinAvailableHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$pinAvailableHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -29,10 +30,9 @@ String _$isPinAvailableHash() => r'84d45154432d3c1bde6234b04113f2924773946f';
 final isPinAvailableProvider = AutoDisposeProvider<bool>.internal(
   isPinAvailable,
   name: r'isPinAvailableProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$isPinAvailableHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isPinAvailableHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

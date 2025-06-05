@@ -75,10 +75,9 @@ String _$networkSettingsNeedSaveHash() =>
 final networkSettingsNeedSaveProvider = AutoDisposeProvider<bool>.internal(
   networkSettingsNeedSave,
   name: r'networkSettingsNeedSaveProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$networkSettingsNeedSaveHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$networkSettingsNeedSaveHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -91,19 +90,19 @@ String _$networkSettingsNotifierHash() =>
 
 /// See also [NetworkSettingsNotifier].
 @ProviderFor(NetworkSettingsNotifier)
-final networkSettingsNotifierProvider = AutoDisposeNotifierProvider<
-  NetworkSettingsNotifier,
-  NetworkSettingsModel
->.internal(
-  NetworkSettingsNotifier.new,
-  name: r'networkSettingsNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final networkSettingsNotifierProvider =
+    AutoDisposeNotifierProvider<
+      NetworkSettingsNotifier,
+      NetworkSettingsModel
+    >.internal(
+      NetworkSettingsNotifier.new,
+      name: r'networkSettingsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$networkSettingsNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$NetworkSettingsNotifier = AutoDisposeNotifier<NetworkSettingsModel>;
 // ignore_for_file: type=lint

@@ -15,10 +15,9 @@ final defaultConversionRateMultiplierProvider =
     AutoDisposeProvider<Decimal>.internal(
       defaultConversionRateMultiplier,
       name: r'defaultConversionRateMultiplierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$defaultConversionRateMultiplierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$defaultConversionRateMultiplierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -35,10 +34,9 @@ final requestConversionRatesProvider =
     NotifierProvider<RequestConversionRates, void>.internal(
       RequestConversionRates.new,
       name: r'requestConversionRatesProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$requestConversionRatesHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$requestConversionRatesHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -53,10 +51,9 @@ final conversionRatesNotifierProvider =
     NotifierProvider<ConversionRatesNotifier, ConversionRates>.internal(
       ConversionRatesNotifier.new,
       name: r'conversionRatesNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$conversionRatesNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$conversionRatesNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -69,19 +66,19 @@ String _$defaultConversionRateNotifierHash() =>
 ///
 /// Copied from [DefaultConversionRateNotifier].
 @ProviderFor(DefaultConversionRateNotifier)
-final defaultConversionRateNotifierProvider = AutoDisposeNotifierProvider<
-  DefaultConversionRateNotifier,
-  ConversionRate?
->.internal(
-  DefaultConversionRateNotifier.new,
-  name: r'defaultConversionRateNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final defaultConversionRateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      DefaultConversionRateNotifier,
+      ConversionRate?
+    >.internal(
+      DefaultConversionRateNotifier.new,
+      name: r'defaultConversionRateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$defaultConversionRateNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$DefaultConversionRateNotifier = AutoDisposeNotifier<ConversionRate?>;
 // ignore_for_file: type=lint

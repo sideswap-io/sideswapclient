@@ -10,7 +10,6 @@ import 'package:sideswap/desktop/markets/widgets/enter_amount_separator.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/instant_swap/widgets/dropdown_amount_text_field.dart';
@@ -22,7 +21,7 @@ class MarketAmountTextField extends HookConsumerWidget {
   const MarketAmountTextField({
     super.key,
     this.caption,
-    this.asset,
+    required this.asset,
     required this.controller,
     this.autofocus = false,
     this.focusNode,
@@ -39,7 +38,7 @@ class MarketAmountTextField extends HookConsumerWidget {
   });
 
   final String? caption;
-  final Asset? asset;
+  final Asset asset;
   final TextEditingController controller;
   final bool showConversion;
   final bool autofocus;
@@ -60,20 +59,19 @@ class MarketAmountTextField extends HookConsumerWidget {
 
     final icon = ref
         .watch(assetImageRepositoryProvider)
-        .getSmallImage(asset?.assetId);
+        .getSmallImage(asset.assetId);
     final precision = ref
         .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: asset?.assetId);
+        .getPrecisionForAssetId(assetId: asset.assetId);
 
-    final defaultCurrencyConversion =
-        showConversion
-            ? ref.watch(
-              defaultCurrencyConversionFromStringProvider(
-                asset?.assetId,
-                controllerText.value,
-              ),
-            )
-            : null;
+    final defaultCurrencyConversion = showConversion
+        ? ref.watch(
+            defaultCurrencyConversionFromStringProvider(
+              asset.assetId,
+              controllerText.value,
+            ),
+          )
+        : null;
 
     useEffect(() {
       controller.addListener(() {
@@ -82,8 +80,6 @@ class MarketAmountTextField extends HookConsumerWidget {
 
       return;
     }, const []);
-
-    final accountAsset = ref.watch(accountAssetFromAssetProvider(asset));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +114,7 @@ class MarketAmountTextField extends HookConsumerWidget {
           children: [
             icon,
             const SizedBox(width: 8),
-            Text(asset?.ticker ?? '', style: const TextStyle(fontSize: 18)),
+            Text(asset.ticker, style: const TextStyle(fontSize: 18)),
             switch (asset) {
               Asset(:final ampMarket) when ampMarket == true => const AmpFlag(),
               _ => const SizedBox(),
@@ -140,10 +136,9 @@ class MarketAmountTextField extends HookConsumerWidget {
                   hintText: hintText,
                   hintStyle: WidgetStateTextStyle.resolveWith((states) {
                     return TextStyle(
-                      color:
-                          states.contains(WidgetState.focused) && !readonly
-                              ? Colors.transparent
-                              : const Color(0x7FFFFFFF),
+                      color: states.contains(WidgetState.focused) && !readonly
+                          ? Colors.transparent
+                          : const Color(0x7FFFFFFF),
                     );
                   }),
                 ),
@@ -185,7 +180,7 @@ class MarketAmountTextField extends HookConsumerWidget {
           true => Align(
             alignment: Alignment.centerRight,
             child: DropdownAmountBalanceLine(
-              accountAsset: accountAsset,
+              assetId: asset.assetId,
               balanceAlignment: MainAxisAlignment.spaceBetween,
             ),
           ),
@@ -211,7 +206,7 @@ class LimitPanelAggregate extends ConsumerWidget {
     final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
     final aggregateVolume = ref.watch(marketLimitOrderAggregateVolumeProvider);
     final aggregateTooHigh = ref.watch(
-      makeLimitOrderAggregateVolumeTooHighProvider,
+      marketLimitOrderAggregateVolumeTooHighProvider,
     );
     final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
     final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
@@ -222,24 +217,22 @@ class LimitPanelAggregate extends ConsumerWidget {
     );
 
     final aggregateBidAmountStyle = textStyle?.copyWith(
-      color:
-          tradeDirState == TradeDir.BUY && aggregateTooHigh
-              ? SideSwapColors.bitterSweet
-              : SideSwapColors.airSuperiorityBlue,
+      color: tradeDirState == TradeDir.BUY && aggregateTooHigh
+          ? SideSwapColors.bitterSweet
+          : SideSwapColors.airSuperiorityBlue,
     );
 
-    final aggregateDescription =
-        tradeDirState == TradeDir.BUY
-            ? 'Aggregate bid amount:'.tr()
-            : 'Aggregate offer value:'.tr();
+    final aggregateDescription = tradeDirState == TradeDir.BUY
+        ? 'Aggregate bid amount:'.tr()
+        : 'Aggregate offer value:'.tr();
 
-    final balance =
-        tradeDirState == TradeDir.BUY
-            ? ref.watch(marketLimitPriceBalanceProvider)
-            : ref.watch(marketLimitAmountBalanceProvider);
+    final balance = tradeDirState == TradeDir.BUY
+        ? ref.watch(marketLimitPriceBalanceProvider)
+        : ref.watch(marketLimitAmountBalanceProvider);
 
-    final balanceHint =
-        tradeDirState == TradeDir.BUY ? 'Buying power'.tr() : 'Balance'.tr();
+    final balanceHint = tradeDirState == TradeDir.BUY
+        ? 'Buying power'.tr()
+        : 'Balance'.tr();
 
     return optionQuoteAsset.match(
       () => const SizedBox(),

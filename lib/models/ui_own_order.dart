@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:math';
 
 import 'package:decimal/decimal.dart';
@@ -133,14 +132,36 @@ class UiOwnOrder extends ConvertAmount {
 
         final totalDecimal = amountDecimal * priceDecimal;
 
+        final totalSatoshi = satoshiRepository.satoshiForAmount(
+          amount: totalDecimal.toString(),
+          assetId: assetPair.quote,
+        );
+        return super.amountToString.amountToString(
+          AmountToStringParameters(amount: totalSatoshi, precision: precision),
+        );
+      },
+    )();
+  }
+
+  String get totalLocalFormatted {
+    return quoteAsset.match(
+      () => () {
+        return '0.0';
+      },
+      (asset) => () {
+        final precision = assetUtils.getPrecisionForAssetId(
+          assetId: asset.assetId,
+        );
+
+        final totalDecimal = amountDecimal * priceDecimal;
+
         final formatterThousandsSeparator = NumberFormat(
           "#,##0.0#######",
           locale,
         );
-        final totalAsString =
-            precision > 0
-                ? totalDecimal.toStringAsFixed(precision)
-                : totalDecimal.toString();
+        final totalAsString = precision > 0
+            ? totalDecimal.toStringAsFixed(precision)
+            : totalDecimal.toString();
         final totalAsDecimal = Decimal.tryParse(totalAsString) ?? Decimal.zero;
 
         return formatterThousandsSeparator.format(totalAsDecimal.toDouble());
@@ -247,7 +268,17 @@ class UiOwnOrder extends ConvertAmount {
   }
 
   String get priceTextInputString {
-    return priceDecimal.toString();
+    final priceSatoshi = satoshiRepository.satoshiForAmount(
+      amount: priceDecimal.toString(),
+      assetId: assetPair.quote,
+    );
+    return super.amountToString.amountToString(
+      AmountToStringParameters(
+        amount: priceSatoshi,
+        precision: pricePrecision,
+        useNumberFormatter: false,
+      ),
+    );
   }
 
   String get priceMobileString {
@@ -277,6 +308,29 @@ class UiOwnOrder extends ConvertAmount {
         return asset.ampMarket;
       },
     );
+  }
+
+  bool get isPriceTracking {
+    return ownOrder.hasPriceTracking();
+  }
+
+  Decimal get priceTracking {
+    if (!isPriceTracking) {
+      return Decimal.zero;
+    }
+
+    final price = Decimal.tryParse('${ownOrder.priceTracking}') ?? Decimal.zero;
+    return price;
+  }
+
+  Decimal get priceTrackingPercent {
+    if (!isPriceTracking) {
+      return Decimal.zero;
+    }
+
+    final price = priceTracking - Decimal.one;
+    final priceAsPercent = price * Decimal.fromInt(100);
+    return priceAsPercent;
   }
 
   UiOwnOrder copyWith({

@@ -33,8 +33,9 @@ class DSettingsLicenses extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
 
     final licenseEntries = ref.watch(licensesEntriesProvider);
 
@@ -181,7 +182,7 @@ class DSettingsLicenses extends HookConsumerWidget {
                   height: 467,
                   child: ValueListenableBuilder(
                     valueListenable: licenses,
-                    builder: (context, List<Widget> licenses, __) {
+                    builder: (context, List<Widget> licenses, _) {
                       if (licenses.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.only(top: 16),
@@ -205,10 +206,9 @@ class DSettingsLicenses extends HookConsumerWidget {
                           child: ListView.separated(
                             controller: controller,
                             itemCount: licenses.length,
-                            separatorBuilder:
-                                (context, index) => const Divider(
-                                  color: SideSwapColors.chathamsBlue,
-                                ),
+                            separatorBuilder: (context, index) => const Divider(
+                              color: SideSwapColors.chathamsBlue,
+                            ),
                             itemBuilder: (context, index) {
                               return licenses.elementAt(index);
                             },

@@ -17,8 +17,9 @@ class DSettingsAboutUs extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .defaultDialogTheme;
 
     return PopScope(
       canPop: false,
@@ -98,8 +99,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
                         Navigator.pushAndRemoveUntil(
                           context,
                           RawDialogRoute<Widget>(
-                            pageBuilder:
-                                (_, __, ___) => const DSettingsLicenses(),
+                            pageBuilder: (_, _, _) => const DSettingsLicenses(),
                           ),
                           (route) => route.isFirst,
                         );

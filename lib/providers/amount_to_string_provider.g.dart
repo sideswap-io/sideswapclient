@@ -13,10 +13,9 @@ String _$amountToStringHash() => r'5b50e9d110ce6599c0b63aa9fb00ce154bc8c9ca';
 final amountToStringProvider = AutoDisposeProvider<AmountToString>.internal(
   amountToString,
   name: r'amountToStringProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$amountToStringHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$amountToStringHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

@@ -26,7 +26,6 @@ class InstantSwapListener extends HookConsumerWidget {
 
     ref.listen(exchangeTopSatoshiAmountProvider, (_, next) {
       if (next == 0) {
-        ref.invalidate(exchangeCustomErrorNotifierProvider);
         ref.invalidate(exchangeQuoteErrorProvider);
       }
     });
@@ -66,7 +65,6 @@ class InstantSwapListener extends HookConsumerWidget {
           Future.microtask(() async {
             ref.invalidate(exchangeQuoteNotifierProvider);
             ref.invalidate(acceptQuoteNotifierProvider);
-            ref.invalidate(exchangeCustomErrorNotifierProvider);
 
             if (!FlavorConfig.isDesktop) {
               ref.read(walletProvider).showTxDetails(transItem);
@@ -96,7 +94,6 @@ class InstantSwapListener extends HookConsumerWidget {
             await ref.read(desktopDialogProvider).showAcceptQuoteErrorDialog();
             ref.invalidate(exchangeQuoteNotifierProvider);
             ref.invalidate(acceptQuoteNotifierProvider);
-            ref.invalidate(exchangeCustomErrorNotifierProvider);
           });
         },
       )();
