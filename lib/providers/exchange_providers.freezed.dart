@@ -299,4 +299,98 @@ String toString() {
 
 
 
+/// @nodoc
+mixin _$InstantSwapState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InstantSwapState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'InstantSwapState()';
+}
+
+
+}
+
+/// @nodoc
+class $InstantSwapStateCopyWith<$Res>  {
+$InstantSwapStateCopyWith(InstantSwapState _, $Res Function(InstantSwapState) __);
+}
+
+
+/// @nodoc
+
+
+class InstantSwapStateEmpty implements InstantSwapState {
+  const InstantSwapStateEmpty();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InstantSwapStateEmpty);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'InstantSwapState.empty()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class InstantSwapStateInProgress implements InstantSwapState {
+  const InstantSwapStateInProgress();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InstantSwapStateInProgress);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'InstantSwapState.inProgress()';
+}
+
+
+}
+
+
+
+
 // dart format on

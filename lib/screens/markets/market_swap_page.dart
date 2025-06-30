@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -13,6 +14,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/preview_order_dialog_providers.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
@@ -42,6 +44,8 @@ class MarketSwapPage extends HookConsumerWidget {
       () => switch (jadeLockRepository.isUnlocked()) {
         true => switch (tradeButtonEnabled) {
           true => () async {
+            FocusManager.instance.primaryFocus?.unfocus();
+
             await marketTradeRepository.makeSwapTrade(
               context: context,
               optionQuoteSuccess: optionQuoteSuccess,
@@ -247,21 +251,55 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final acceptButtonClicked = useState(false);
+
     final optionQuoteSuccess = ref.watch(
       previewOrderQuoteSuccessNotifierProvider,
     );
     final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     final closeCallback = useCallback(() {
-      // Jade wallet will cleanup the quote state on its own
-      final isJadeWallet = ref.read(isJadeWalletProvider);
-      if (!isJadeWallet) {
-        ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
-      }
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != mobileOrderPreviewRouteName;
       });
+
+      Future.microtask(() {
+        ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+      });
     });
+
+    ref.listen(previewOrderDialogAcceptStateProvider, (_, state) {
+      (switch (state) {
+        PreviewOrderDialogAcceptStateAccepted() => () {
+          closeCallback();
+        },
+        _ => () {},
+      })();
+    });
+
+    final optionAccepQuoteSuccess = ref.watch(marketAcceptQuoteSuccessProvider);
+    final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
+
+    useEffect(() {
+      optionAccepQuoteSuccess.match(() {}, (txid) {
+        ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+        ref.invalidate(quoteEventNotifierProvider);
+        ref.invalidate(marketQuoteNotifierProvider);
+      });
+
+      return;
+    }, [optionAccepQuoteSuccess]);
+
+    useEffect(() {
+      optionAcceptQuoteError.match(() {}, (error) {
+        ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+        ref.invalidate(quoteEventNotifierProvider);
+        ref.invalidate(marketQuoteNotifierProvider);
+        closeCallback();
+      });
+
+      return;
+    }, [optionAcceptQuoteError]);
 
     useEffect(() {
       if (orderSignTtl != 0) {
@@ -272,6 +310,10 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
 
       return;
     }, [orderSignTtl]);
+
+    final previewOrderDialogAcceptState = ref.watch(
+      previewOrderDialogAcceptStateProvider,
+    );
 
     return SideSwapScaffold(
       backgroundColor: SideSwapColors.chathamsBlue,
@@ -307,40 +349,70 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
                         onPressed: () {
                           closeCallback();
                         },
-                        child: Text('Cancel'.tr()),
+                        child: switch (previewOrderDialogAcceptState) {
+                          PreviewOrderDialogAcceptStateAccepting() => Text(
+                            'Close'.tr(),
+                          ),
+                          _ => Text('Cancel'.tr()),
+                        },
                       ),
                     ),
                     SizedBox(width: 16),
                     Expanded(
                       child: CustomBigButton(
                         height: 54,
-                        onPressed: () async {
-                          ref
-                              .read(
-                                jadeAuthInProgressStateNotifierProvider
-                                    .notifier,
-                              )
-                              .setState(true);
-                          final authSucceed = await ref
-                              .read(walletProvider)
-                              .isAuthenticated();
-                          ref.invalidate(
-                            jadeAuthInProgressStateNotifierProvider,
-                          );
-                          if (!authSucceed) {
-                            return;
-                          }
+                        onPressed:
+                            !acceptButtonClicked.value &&
+                                previewOrderDialogAcceptState
+                                    is PreviewOrderDialogAcceptStateEmpty
+                            ? () async {
+                                ref
+                                    .read(
+                                      jadeAuthInProgressStateNotifierProvider
+                                          .notifier,
+                                    )
+                                    .setState(true);
+                                final authSucceed = await ref
+                                    .read(walletProvider)
+                                    .isAuthenticated();
+                                ref.invalidate(
+                                  jadeAuthInProgressStateNotifierProvider,
+                                );
+                                if (!authSucceed) {
+                                  return;
+                                }
 
-                          final msg = To();
-                          msg.acceptQuote = To_AcceptQuote(
-                            quoteId: Int64(quoteSuccess.quoteId),
-                          );
-                          ref.read(walletProvider).sendMsg(msg);
+                                final msg = To();
+                                msg.acceptQuote = To_AcceptQuote(
+                                  quoteId: Int64(quoteSuccess.quoteId),
+                                );
+                                ref.read(walletProvider).sendMsg(msg);
 
-                          closeCallback();
-                          ref.invalidate(marketQuoteNotifierProvider);
-                        },
-                        child: Text('Accept'.tr()),
+                                // now app will wait for market accept quote success or error provider
+                                acceptButtonClicked.value = true;
+                              }
+                            : null,
+                        child: Row(
+                          children: [
+                            Spacer(),
+                            Text('Accept'.tr()),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const SizedBox(width: 4),
+                                  switch (previewOrderDialogAcceptState) {
+                                    PreviewOrderDialogAcceptStateAccepting() =>
+                                      const SpinKitCircle(
+                                        color: Colors.white,
+                                        size: 32,
+                                      ),
+                                    _ => const SizedBox(),
+                                  },
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

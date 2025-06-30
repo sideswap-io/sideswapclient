@@ -49,13 +49,11 @@ class DUnconfirmedTx extends StatelessWidget {
         const Divider(height: 1, thickness: 0, color: SideSwapColors.jellyBean),
         Consumer(
           builder: (context, ref, _) {
-            final allNewTxSorted = ref.watch(allNewTxsSortedProvider);
+            final updatedTxs = ref.watch(updatedTxsNotifierProvider);
             final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
             final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
 
-            final txList = allNewTxSorted;
-
-            return switch (txList.isEmpty) {
+            return switch (updatedTxs.isEmpty) {
               true => Padding(
                 padding: const EdgeInsets.only(top: 63),
                 child: Text(
@@ -72,7 +70,7 @@ class DUnconfirmedTx extends StatelessWidget {
                     slivers: [
                       SliverList.builder(
                         itemBuilder: (context, index) {
-                          final transItem = txList[index];
+                          final transItem = updatedTxs[index];
 
                           return Consumer(
                             builder: (context, ref, child) {
@@ -155,7 +153,7 @@ class DUnconfirmedTx extends StatelessWidget {
                             },
                           );
                         },
-                        itemCount: txList.length,
+                        itemCount: updatedTxs.length,
                       ),
                     ],
                   ),

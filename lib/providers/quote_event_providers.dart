@@ -170,6 +170,8 @@ class QuoteLowBalance extends ConvertAmount {
   int get totalFee =>
       (_quoteLowBalance.serverFee + _quoteLowBalance.fixedFee).toInt();
   int get available => _quoteLowBalance.available.toInt();
+  int get sendAmount => _quoteLowBalance.sendAmount.toInt();
+  int get recvAmount => _quoteLowBalance.recvAmount.toInt();
 
   String get availableAmount {
     return convertAmountForAsset(available, deliverAsset);
@@ -186,34 +188,7 @@ class QuoteLowBalance extends ConvertAmount {
     },
   };
 
-  String get deliverAmount => switch (feeAsset == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-    },
-  };
+  String get deliverAmount => convertAmountForAsset(sendAmount, deliverAsset);
 
   Option<Asset> get receiveAsset => switch (assetType) {
     AssetType.BASE => switch (tradeDir) {
@@ -226,34 +201,7 @@ class QuoteLowBalance extends ConvertAmount {
     },
   };
 
-  String get receiveAmount => switch (feeAsset == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-      _ => switch (feeAsset) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-  };
+  String get receiveAmount => convertAmountForAsset(recvAmount, receiveAsset);
 }
 
 class QuoteSuccess extends ConvertAmount {
@@ -309,6 +257,8 @@ class QuoteSuccess extends ConvertAmount {
   int get fixedFee => _quoteSuccess.fixedFee.toInt();
   int get totalFee =>
       (_quoteSuccess.serverFee + _quoteSuccess.fixedFee).toInt();
+  int get sendAmount => _quoteSuccess.sendAmount.toInt();
+  int get recvAmount => _quoteSuccess.recvAmount.toInt();
 
   Option<Asset> get deliverAsset => switch (assetType) {
     AssetType.BASE => switch (tradeDir) {
@@ -321,40 +271,7 @@ class QuoteSuccess extends ConvertAmount {
     },
   };
 
-  String get deliverAmount => switch (feeAssetType == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        //* * sell base asset, no fee here (ie. import private order, if you find that fee is needed here then all deliver amount algo should be changed)
-        AssetType.BASE => convertAmountForAsset(baseAmount, baseAsset),
-        // sell quote asset, quote + fee
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-      _ => switch (feeAssetType) {
-        // buy base asset, quote + fee
-        AssetType.BASE => convertAmountForAsset(
-          quoteAmount + totalFee,
-          quoteAsset,
-        ),
-        // buy base asset, no fee here
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        // sell base asset, no fee here
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount + totalFee,
-          baseAsset,
-        ),
-        // buy quote asset, deliver + fee
-        _ => convertAmountForAsset(quoteAmount + totalFee, quoteAsset),
-      },
-    },
-  };
+  String get deliverAmount => convertAmountForAsset(sendAmount, deliverAsset);
 
   Option<Asset> get receiveAsset => switch (assetType) {
     AssetType.BASE => switch (tradeDir) {
@@ -367,37 +284,7 @@ class QuoteSuccess extends ConvertAmount {
     },
   };
 
-  String get receiveAmount => switch (feeAssetType == assetType) {
-    true => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        // sell quote asset, no fee here
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        // sell quote asset, no fee here
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-      _ => switch (feeAssetType) {
-        // buy base asset, no fee here
-        AssetType.BASE => convertAmountForAsset(baseAmount, baseAsset),
-        // buy base asset, quote - fee
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-    },
-    false => switch (tradeDir) {
-      TradeDir.SELL => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(
-          baseAmount - totalFee,
-          baseAsset,
-        ),
-        // sell base asset, quote - fee
-        _ => convertAmountForAsset(quoteAmount - totalFee, quoteAsset),
-      },
-      _ => switch (feeAssetType) {
-        AssetType.BASE => convertAmountForAsset(quoteAmount, quoteAsset),
-        // buy quote asset, no fee here
-        _ => convertAmountForAsset(baseAmount, baseAsset),
-      },
-    },
-  };
+  String get receiveAmount => convertAmountForAsset(recvAmount, receiveAsset);
 
   Option<Asset> get feeAsset => switch (feeAssetType) {
     AssetType.BASE => baseAsset,
@@ -448,7 +335,7 @@ class QuoteSuccess extends ConvertAmount {
     });
   }
 
-  Option<Asset> get priceAsset => feeAsset;
+  Option<Asset> get priceAsset => quoteAsset;
 }
 
 class QuoteUnregisteredGaid {

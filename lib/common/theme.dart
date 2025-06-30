@@ -275,6 +275,7 @@ class MobileThemeData {
         foregroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
+          side: BorderSide(color: SideSwapColors.brightTurquoise),
         ),
         padding: EdgeInsets.zero,
         minimumSize: Size(100, 45),

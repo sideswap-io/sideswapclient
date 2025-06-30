@@ -195,11 +195,16 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
           return;
         }, const []);
 
+        final disabledAmount = ref.watch(instantSwapDisabledAmountProvider);
+        final disabledDropdown = ref.watch(instantSwapDisabledDropdownProvider);
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: DropdownAmountTextField(
             controller: controller,
             focusNode: focusNode,
+            disabledAmount: disabledAmount,
+            disabledDropdown: disabledDropdown,
             showMaxButton: topAssetSatoshiBalance == 0 ? false : true,
             label: Text(
               'Deliver'.tr(),
@@ -361,14 +366,18 @@ class InstantSwapBottomDropdownAmountTextField extends HookConsumerWidget {
 
     final errorText = useState<String?>(null);
 
+    final disabledAmount = ref.watch(instantSwapDisabledAmountProvider);
+    final disabledDropdown = ref.watch(instantSwapDisabledDropdownProvider);
+
     return optionBottomAsset.match(
       () => const SizedBox(),
       (bottomAsset) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: DropdownAmountTextField(
-          disabledAmount: disabledAmount,
           controller: controller,
           focusNode: focusNode,
+          disabledAmount: disabledAmount,
+          disabledDropdown: disabledDropdown,
           errorText: errorText.value,
           label: Text(
             'Receive'.tr(),

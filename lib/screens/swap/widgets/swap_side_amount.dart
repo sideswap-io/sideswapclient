@@ -396,7 +396,9 @@ class SwapSideAmount extends HookConsumerWidget {
                           ],
                           if (isMaxVisible &&
                               labelGroupValue != const SwapWallet.extern()) ...[
-                            SwapSideAmountMaxButton(onMaxPressed: onMaxPressed),
+                            SwapSideAmountMaxButton(
+                              onMaxPressed: readOnly ? null : onMaxPressed,
+                            ),
                           ],
                         ],
                       ),

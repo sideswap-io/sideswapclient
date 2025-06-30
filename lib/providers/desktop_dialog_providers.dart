@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/desktop/home/widgets/d_export_csv_popup.dart';
 import 'package:sideswap/desktop/main/d_asset_info.dart';
 import 'package:sideswap/desktop/main/d_export_tx_success.dart';
 import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
@@ -14,6 +15,7 @@ import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/desktop/markets/widgets/d_accept_quote_error_dialog.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -22,13 +24,20 @@ part 'desktop_dialog_providers.g.dart';
 @riverpod
 DesktopDialog desktopDialog(Ref ref) {
   final context = ref.read(navigatorKeyProvider).currentContext!;
-  return DesktopDialog(context: context);
+  final currentTxPopupItemNotifier = ref.watch(
+    currentTxPopupItemNotifierProvider.notifier,
+  );
+  return DesktopDialog(currentTxPopupItemNotifier, context: context);
 }
 
 class DesktopDialog {
+  final CurrentTxPopupItemNotifier currentTxPopupItemNotifier;
   final BuildContext _context;
 
-  DesktopDialog({required BuildContext context}) : _context = context;
+  DesktopDialog(
+    this.currentTxPopupItemNotifier, {
+    required BuildContext context,
+  }) : _context = context;
 
   static const _popupRouteName = '/desktopPopup';
 
@@ -74,6 +83,17 @@ class DesktopDialog {
     );
   }
 
+  Future<T?> showExportCsv<T>() {
+    return showDialog<T>(
+      context: _context,
+      builder: (context) {
+        return const DExportCsvPopup();
+      },
+      routeSettings: const RouteSettings(name: _popupRouteName),
+      useRootNavigator: false,
+    );
+  }
+
   void showSelectInputs() {
     showDialog<void>(
       context: _context,
@@ -88,12 +108,13 @@ class DesktopDialog {
 
   Future<void> showTx(TransItem transItem, {required bool isPeg}) async {
     closePopups();
+
+    currentTxPopupItemNotifier.setCurrentTxId(transItem.id);
+
     await showDialog<void>(
       context: _context,
       builder: (context) {
-        return isPeg
-            ? DPegPopup(transItem: transItem)
-            : DTxPopup(transItem: transItem);
+        return isPeg ? DPegPopup() : DTxPopup();
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );

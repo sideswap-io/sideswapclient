@@ -7,14 +7,13 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class TxDetailsRowNotes extends ConsumerWidget {
+class TxDetailsRowNotes extends HookConsumerWidget {
   const TxDetailsRowNotes({super.key, required this.tx});
 
   final Tx tx;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memo = ref.watch(walletProvider).txMemo(tx);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -32,7 +31,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
           child: Align(
             alignment: Alignment.centerRight,
             child: Text(
-              memo.isEmpty ? 'Only visible to you'.tr() : memo,
+              tx.memo.isEmpty ? 'Only visible to you'.tr() : tx.memo,
               softWrap: false,
               maxLines: 1,
               overflow: TextOverflow.fade,

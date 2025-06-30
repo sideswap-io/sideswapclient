@@ -386,22 +386,29 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final needSave = ref.watch(networkSettingsNeedSaveProvider);
+    final needRestart = ref.watch(networkSettingsNeedRestartProvider);
 
     return switch (needSave) {
       true => CustomBigButton(
         onPressed: () async {
           final navigator = Navigator.of(context);
-          await ref
-              .read(utilsProvider)
-              .settingsErrorDialog(
-                title: 'Network changes will take effect on restart'.tr(),
-                icon: SettingsDialogIcon.restart,
-                buttonText: 'OK'.tr(),
-                onPressed: (context) {
-                  Navigator.of(context).pop();
-                  ref.read(networkSettingsNotifierProvider.notifier).save();
-                },
-              );
+
+          if (needRestart) {
+            await ref
+                .read(utilsProvider)
+                .settingsErrorDialog(
+                  title: 'Network changes will take effect on restart'.tr(),
+                  icon: SettingsDialogIcon.restart,
+                  buttonText: 'OK'.tr(),
+                  onPressed: (context) {
+                    Navigator.of(context).pop();
+                    ref.read(networkSettingsNotifierProvider.notifier).save();
+                  },
+                );
+          } else {
+            ref.read(networkSettingsNotifierProvider.notifier).applySettings();
+            ref.read(walletProvider).sendNetworkSettings();
+          }
 
           final serverState = ref.read(serverLoginNotifierProvider);
 
@@ -446,7 +453,7 @@ class SettingsNetworkServerButton extends HookConsumerWidget {
       child: SettingsCheckboxButton(
         checked:
             (networkSettingsModel.settingsNetworkType == buttonNetwork &&
-                networkSettingsModel.env == buttonEnv),
+            networkSettingsModel.env == buttonEnv),
         onChanged: (value) {
           ref
               .read(networkSettingsNotifierProvider.notifier)

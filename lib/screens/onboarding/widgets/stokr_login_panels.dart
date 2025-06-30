@@ -14,10 +14,9 @@ class StokrLoginPanels extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme =
-        FlavorConfig.isDesktop
-            ? ref.watch(desktopAppThemeNotifierProvider).textTheme
-            : Theme.of(context).textTheme;
+    final textTheme = FlavorConfig.isDesktop
+        ? ref.watch(desktopAppThemeNotifierProvider).textTheme
+        : Theme.of(context).textTheme;
     final ampId = ref.watch(ampIdNotifierProvider);
 
     return Column(
@@ -112,16 +111,20 @@ class StokrLoginPanels extends HookConsumerWidget {
                   RichText(
                     text: TextSpan(
                       text: 'AMP ID: ',
-                      style: textTheme.titleSmall?.copyWith(
-                        color: SideSwapColors.brightTurquoise,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
+                        color: SideSwapColors.brightTurquoise,
                       ),
                       children: [
                         TextSpan(
                           text: ampId,
-                          style: textTheme.titleSmall?.copyWith(
-                            color: SideSwapColors.brightTurquoise,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: SideSwapColors.brightTurquoise,
+                              ),
                         ),
                       ],
                     ),

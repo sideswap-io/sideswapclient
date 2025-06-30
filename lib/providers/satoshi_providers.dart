@@ -28,7 +28,7 @@ class SatoshiRepository implements AbstractSatoshiRepository {
 
   @override
   int? parseAssetAmount({required String amount, required int precision}) {
-    if (precision < 0 || precision > 8) {
+    if (precision < 0 || precision > 8 || amount.isEmpty) {
       return null;
     }
 

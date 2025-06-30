@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:csv/csv.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -19,6 +20,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'csv_provider.g.dart';
+part 'csv_provider.freezed.dart';
 
 @riverpod
 CsvRepository csvRepository(Ref ref) {
@@ -62,7 +64,6 @@ class CsvRepository {
 
     // Header
     final line = <String>[];
-    line.add('Wallet');
     line.add("txid");
     line.add("type");
     line.add("timestamp");
@@ -83,7 +84,6 @@ class CsvRepository {
       );
 
       final line = <String>[];
-      line.add('Regular');
       line.add(transItem.tx.txid);
       line.add(transItemHelper.txTypeName());
       line.add(txDateCsvExport(transItem.createdAt.toInt()));
@@ -134,19 +134,26 @@ class CsvRepository {
   }
 }
 
+@freezed
+sealed class CvsState with _$CvsState {
+  const factory CvsState.empty() = CvsStateEmpty;
+  const factory CvsState.success() = CvsStateSuccess;
+}
+
 @riverpod
 class CsvNotifier extends _$CsvNotifier {
   late CsvRepository _csvRepository;
 
   @override
-  FutureOr<bool> build() {
+  FutureOr<CvsState> build() {
     _csvRepository = ref.watch(csvRepositoryProvider);
-    return true;
+    return CvsState.empty();
   }
 
   Future<void> save() async {
-    state = const AsyncValue.loading();
+    state = AsyncValue.loading();
     ref.notifyListeners();
+
     final csvPath = await AsyncValue.guard(() async {
       final path = await _csvRepository.fetchOutputPath();
       return path;
@@ -167,7 +174,7 @@ class CsvNotifier extends _$CsvNotifier {
         );
         await file.saveTo(value);
 
-        state = const AsyncValue.data(true);
+        state = const AsyncValue.data(CvsState.success());
       },
       error: (error, stackTrace) {
         logger.e(error);
@@ -198,7 +205,7 @@ class CsvNotifier extends _$CsvNotifier {
         final filesToShare = [XFile(value, mimeType: 'text/csv')];
         await SharePlus.instance.share(ShareParams(files: filesToShare));
 
-        state = const AsyncValue.data(true);
+        state = const AsyncValue.data(CvsState.success());
       },
       error: (error, stackTrace) {
         logger.e(error);
@@ -207,5 +214,52 @@ class CsvNotifier extends _$CsvNotifier {
         state = AsyncValue.error(error, stackTrace);
       },
     );
+  }
+}
+
+@freezed
+sealed class ExportCsvState with _$ExportCsvState {
+  const factory ExportCsvState.empty() = ExportCsvStateEmpty;
+  const factory ExportCsvState.loading() = ExportCsvStateLoading;
+  const factory ExportCsvState.error([String? errorMsg]) = ExportCsvStateError;
+  const factory ExportCsvState.loaded([List<TransItem>? txs]) =
+      ExportCsvStateLoaded;
+}
+
+@riverpod
+class ExportCsvStateNotifier extends _$ExportCsvStateNotifier {
+  @override
+  ExportCsvState build() {
+    ref.listen(loadTransactionsStateNotifierProvider, (
+      _,
+      loadTransactionsState,
+    ) {
+      final allTxSorted = ref.read(allTxsSortedProvider);
+
+      (switch (loadTransactionsState) {
+        LoadTransactionsStateEmpty()
+            when state is ExportCsvStateLoading ||
+                state is ExportCsvStateLoaded =>
+          state = ExportCsvState.loaded(allTxSorted),
+        LoadTransactionsStateError() => state = ExportCsvState.error(
+          loadTransactionsState.errorMsg,
+        ),
+        LoadTransactionsStateLoading() => state = ExportCsvState.loading(),
+        _ => state = ExportCsvState.empty(),
+      });
+    });
+
+    init();
+
+    return const ExportCsvState.empty();
+  }
+
+  void init() {
+    final loadTransactionsState = ref.read(
+      loadTransactionsStateNotifierProvider,
+    );
+    if (loadTransactionsState is LoadTransactionsStateEmpty) {
+      ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+    }
   }
 }

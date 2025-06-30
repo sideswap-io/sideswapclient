@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/providers/tx_provider.dart';
-import 'package:sideswap/screens/markets/widgets/regular_flag.dart';
 import 'package:sideswap/screens/markets/widgets/sideswap_chip.dart';
 import 'package:sideswap/screens/tx/widgets/multiple_outputs_icon.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -22,10 +21,9 @@ class TxItemTransaction extends ConsumerWidget {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final txImageAssetName = transItemHelper.getTxImageAssetName();
     final status = transItemHelper.txStatus();
-    final confsColor =
-        transItem.hasConfs()
-            ? SideSwapColors.cornFlower
-            : SideSwapColors.brightTurquoise;
+    final confsColor = transItem.hasConfs()
+        ? SideSwapColors.cornFlower
+        : SideSwapColors.brightTurquoise;
 
     return SizedBox(
       height: 108,
@@ -47,46 +45,6 @@ class TxItemTransaction extends ConsumerWidget {
                   ],
                 ),
                 const Spacer(),
-                switch (transItem) {
-                  TransItem transItem when transItem.hasTx() =>
-                    const RegularFlag(
-                      textStyle: TextStyle(
-                        color: SideSwapColors.brightTurquoise,
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.12,
-                      ),
-                    ),
-                  // TODO (malcolmpl): new wallets
-                  // TransItem transItem
-                  //     when transItem.hasTx() &&
-                  //             transItem.account.id == AccountType.reg.id ||
-                  //         transItem.hasPeg() =>
-                  //   const RegularFlag(
-                  //     textStyle: TextStyle(
-                  //       color: SideSwapColors.brightTurquoise,
-                  //       fontSize: 12,
-                  //       fontFamily: 'Roboto',
-                  //       fontWeight: FontWeight.w500,
-                  //       letterSpacing: 0.12,
-                  //     ),
-                  //   ),
-                  // TransItem transItem
-                  //     when transItem.hasTx() &&
-                  //         transItem.account.id == AccountType.amp.id =>
-                  //   const AmpFlag(
-                  //     textStyle: TextStyle(
-                  //       color: SideSwapColors.brightTurquoise,
-                  //       fontSize: 12,
-                  //       fontFamily: 'Roboto',
-                  //       fontWeight: FontWeight.w500,
-                  //       letterSpacing: 0.12,
-                  //     ),
-                  //   ),
-                  _ => const SizedBox(),
-                },
-                const SizedBox(width: 10),
                 Text(
                   status,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -217,10 +175,9 @@ class TxItemSwapBalance extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final balances = transItemHelper.txSwapBalancesString();
-    final balanceColor =
-        balances.recvBalance.contains('+')
-            ? SideSwapColors.menthol
-            : Colors.white;
+    final balanceColor = balances.recvBalance.contains('+')
+        ? SideSwapColors.menthol
+        : Colors.white;
 
     return Column(
       children: [
@@ -275,8 +232,9 @@ class TxItemSendBalance extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final balanceStr = transItemHelper.txSendBalance();
-    final balanceColor =
-        balanceStr.contains('+') ? SideSwapColors.menthol : Colors.white;
+    final balanceColor = balanceStr.contains('+')
+        ? SideSwapColors.menthol
+        : Colors.white;
     final isMultipleOutput = transItemHelper.getSentMultipleOutputs();
 
     return Column(
@@ -302,15 +260,15 @@ class TxItemSendBalance extends ConsumerWidget {
             const SizedBox(width: 6),
             isMultipleOutput
                 ? Text(
-                  'Multiple outputs'.tr(),
-                  style: Theme.of(context).textTheme.bodyLarge,
-                )
+                    'Multiple outputs'.tr(),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  )
                 : Text(
-                  balanceStr,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(color: balanceColor),
-                ),
+                    balanceStr,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: balanceColor),
+                  ),
           ],
         ),
       ],
@@ -329,8 +287,8 @@ class TxItemReceivedBalance extends ConsumerWidget {
     final balance = transItemHelper.txReceivedBalance();
     final balanceColor =
         balance.recvBalance.contains('+') || balance.multipleOutputs
-            ? SideSwapColors.menthol
-            : Colors.white;
+        ? SideSwapColors.menthol
+        : Colors.white;
 
     return Column(
       children: [
@@ -375,8 +333,9 @@ class TxItemPegOutBalance extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final balanceStr = transItemHelper.txPegOutBalance().amount;
-    final balanceColor =
-        balanceStr.contains('+') ? SideSwapColors.menthol : Colors.white;
+    final balanceColor = balanceStr.contains('+')
+        ? SideSwapColors.menthol
+        : Colors.white;
 
     return Column(
       children: [
@@ -435,8 +394,9 @@ class TxItemPegInBalance extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final balanceStr = transItemHelper.txPegInBalance().amount;
-    final balanceColor =
-        balanceStr.contains('+') ? SideSwapColors.menthol : Colors.white;
+    final balanceColor = balanceStr.contains('+')
+        ? SideSwapColors.menthol
+        : Colors.white;
 
     return Column(
       children: [

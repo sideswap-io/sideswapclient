@@ -260,8 +260,9 @@ class ExchangeBottomAsset extends _$ExchangeBottomAsset {
 class ExchangeTopAmount extends _$ExchangeTopAmount {
   @override
   String build() {
-    ref.listen(exchangeAccepQuoteStateNotifierProvider, (_, next) {
-      if (next is ExchangeAcceptQuoteStateInProgress) {
+    ref.listen(exchangeAccepQuoteStateNotifierProvider, (prev, next) {
+      if (prev is ExchangeAcceptQuoteStateInProgress &&
+          next is ExchangeAcceptQuoteStateEmpty) {
         ref.invalidateSelf();
       }
     });
@@ -283,7 +284,10 @@ class ExchangeTopAmount extends _$ExchangeTopAmount {
       });
     });
 
-    ref.listen(exchangeQuoteSuccessProvider, (_, optionQuoteSuccess) {
+    ref.listen(instantSwapQuoteSuccessNotifierProvider, (
+      _,
+      optionQuoteSuccess,
+    ) {
       optionQuoteSuccess.match(() {}, (quoteSuccess) {
         quoteSuccess.deliverAsset.match(
           () {},
@@ -359,8 +363,9 @@ Future<int> exchangeTopDebounceSatoshiAmount(Ref ref) async {
 class ExchangeBottomAmount extends _$ExchangeBottomAmount {
   @override
   String build() {
-    ref.listen(exchangeAccepQuoteStateNotifierProvider, (_, next) {
-      if (next is ExchangeAcceptQuoteStateInProgress) {
+    ref.listen(exchangeAccepQuoteStateNotifierProvider, (prev, next) {
+      if (prev is ExchangeAcceptQuoteStateInProgress &&
+          next is ExchangeAcceptQuoteStateEmpty) {
         ref.invalidateSelf();
       }
     });
@@ -382,7 +387,10 @@ class ExchangeBottomAmount extends _$ExchangeBottomAmount {
       });
     });
 
-    ref.listen(exchangeQuoteSuccessProvider, (_, optionQuoteSuccess) {
+    ref.listen(instantSwapQuoteSuccessNotifierProvider, (
+      _,
+      optionQuoteSuccess,
+    ) {
       optionQuoteSuccess.match(() {}, (quoteSuccess) {
         quoteSuccess.receiveAsset.match(
           () {},
@@ -562,6 +570,10 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
     optionQuoteSuccess.match(() {}, (quoteSuccess) {
       (switch (jadeLockRepository.isUnlocked()) {
         true => () async {
+          // freeze quote values in ui until success or error arrive (in instant_swap_listener)
+          ref
+              .read(instantSwapStateNotifierProvider.notifier)
+              .setState(InstantSwapState.inProgress());
           var authorized = ref.read(jadeOneTimeAuthorizationProvider);
 
           if (!ref.read(jadeOneTimeAuthorizationProvider)) {
@@ -571,6 +583,8 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
           }
 
           if (!authorized) {
+            // unfreeze quote values
+            ref.invalidate(instantSwapStateNotifierProvider);
             return;
           }
 
@@ -587,7 +601,6 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
           ref
               .read(exchangeAccepQuoteStateNotifierProvider.notifier)
               .setState(ExchangeAcceptQuoteState.inProgress());
-          stopQuotes();
 
           final isJadeWallet = ref.read(isJadeWalletProvider);
 
@@ -596,6 +609,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
             return;
           }
 
+          stopQuotes();
           ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
         },
         _ => jadeLockRepository.refreshJadeLockState,
@@ -868,4 +882,62 @@ Option<String> exchangeAcceptQuoteError(Ref ref) {
       return Option<String>.none();
     },
   )();
+}
+
+@freezed
+sealed class InstantSwapState with _$InstantSwapState {
+  const factory InstantSwapState.empty() = InstantSwapStateEmpty;
+  const factory InstantSwapState.inProgress() = InstantSwapStateInProgress;
+}
+
+@riverpod
+class InstantSwapStateNotifier extends _$InstantSwapStateNotifier {
+  @override
+  InstantSwapState build() {
+    return InstantSwapState.empty();
+  }
+
+  void setState(InstantSwapState value) {
+    state = value;
+  }
+}
+
+@riverpod
+class InstantSwapQuoteSuccessNotifier
+    extends _$InstantSwapQuoteSuccessNotifier {
+  @override
+  Option<QuoteSuccess> build() {
+    ref.listen(instantSwapStateNotifierProvider, (_, next) {});
+    ref.listen(exchangeQuoteSuccessProvider, (_, next) {
+      next.match(() => ref.invalidateSelf(), (quoteSuccess) {
+        final instantSwapState = ref.read(instantSwapStateNotifierProvider);
+        if (instantSwapState is InstantSwapStateEmpty) {
+          setState(quoteSuccess);
+        } else if (instantSwapState is InstantSwapStateInProgress) {
+          // If we are in progress, we should not update the state
+          // because it will be used to show the preview order.
+          // We will update it when the instant swap is completed.
+        }
+      });
+    });
+    return Option.none();
+  }
+
+  void setState(QuoteSuccess value) {
+    state = Option.of(value);
+  }
+}
+
+@riverpod
+bool instantSwapDisabledAmount(Ref ref) {
+  final instantSwapState = ref.watch(instantSwapStateNotifierProvider);
+
+  return instantSwapState is! InstantSwapStateEmpty;
+}
+
+@riverpod
+bool instantSwapDisabledDropdown(Ref ref) {
+  final instantSwapState = ref.watch(instantSwapStateNotifierProvider);
+
+  return instantSwapState is! InstantSwapStateEmpty;
 }

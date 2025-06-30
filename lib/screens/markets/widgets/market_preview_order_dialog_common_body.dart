@@ -6,6 +6,7 @@ import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/preview_order_dialog_providers.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -15,6 +16,10 @@ class MarketPreviewOrderDialogCommonBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final dialogModifiers = ref.watch(
+      previewOrderDialogModifiersNotifierProvider,
+    );
+
     final optionQuoteSuccess = ref.watch(
       previewOrderQuoteSuccessNotifierProvider,
     );
@@ -81,6 +86,7 @@ class MarketPreviewOrderDialogCommonBody extends ConsumerWidget {
                       MarketPriceRow(
                         asset: quoteSuccess.priceAsset,
                         amount: quoteSuccess.priceString,
+                        showConversion: true,
                       ),
                     ],
                   ),
@@ -90,7 +96,7 @@ class MarketPreviewOrderDialogCommonBody extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Column(
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Text(
@@ -114,28 +120,35 @@ class MarketPreviewOrderDialogCommonBody extends ConsumerWidget {
                       thickness: 1,
                       color: SideSwapColors.glacier.withValues(alpha: 0.4),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          'Order type'.tr(),
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(color: SideSwapColors.brightTurquoise),
+                    ...switch (dialogModifiers.showOrderType) {
+                      true => [
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              'Order type'.tr(),
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: SideSwapColors.brightTurquoise,
+                                  ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              quoteSuccess.startOrderSuccess?.twoStep == true
+                                  ? 'Offline'.tr()
+                                  : 'Online'.tr(),
+                            ),
+                          ],
                         ),
-                        const Spacer(),
-                        Text(
-                          quoteSuccess.startOrderSuccess?.twoStep == true
-                              ? 'Offline'.tr()
-                              : 'Online'.tr(),
+                        const SizedBox(height: 8),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: SideSwapColors.glacier.withValues(alpha: 0.4),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                    ),
+                      false => [],
+                    },
                     const SizedBox(height: 8),
                     Row(
                       children: [

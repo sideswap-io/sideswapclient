@@ -88,7 +88,7 @@ class DSendPopupCreate extends HookConsumerWidget {
     final eiCreateTransaction = ref.watch(eiCreateTransactionNotifierProvider);
     final balances = ref.watch(assetBalanceProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final allAssets = ref.watch(allAlwaysShowAssetsProvider);
+    final allAssets = ref.watch(allVisibleAssetsProvider);
     final assetIds = allAssets
         .map((e) => e.assetId)
         .where(
@@ -825,7 +825,7 @@ class DSendPopupAddressAmountItem extends ConsumerWidget {
             Row(
               children: [
                 SizedBox(
-                  width: onPressed == null ? 250 : 222,
+                  width: 175,
                   child: Row(
                     children: switch (showRadioButton) {
                       true => [
@@ -861,8 +861,18 @@ class DSendPopupAddressAmountItem extends ConsumerWidget {
                     },
                   ),
                 ),
-                // const Spacer(),
-                Text(amount, style: Theme.of(context).textTheme.titleSmall),
+                SizedBox(
+                  width: 120,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        amount,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 8),
                 ...switch (icon) {
                   final icon? => [icon, const SizedBox(width: 8)],
@@ -892,10 +902,11 @@ class DSendPopupAddressAmountItem extends ConsumerWidget {
                   ],
                   _ => [
                     const SizedBox(
-                      width: 44, // ampFlag + margin
+                      width: 36, // ampFlag
                     ),
                   ],
                 },
+                Spacer(),
                 ...switch (onPressed) {
                   final onPressed? => [
                     const SizedBox(width: 8),

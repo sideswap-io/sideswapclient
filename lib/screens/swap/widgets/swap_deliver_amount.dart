@@ -6,6 +6,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/exchange_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -18,6 +19,12 @@ class SwapDeliverAmount extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(bitcoinCurrentFeeRateNotifierProvider, (_, next) {
+      // request peg out amount when fee rate changes
+      final pegRepository = ref.read(pegRepositoryProvider);
+      pegRepository.getPegOutAmount();
+    });
+
     final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
 
     final assetBalance =
@@ -60,6 +67,8 @@ class SwapDeliverAmount extends HookConsumerWidget {
           )
         : null;
 
+    final disabledAmount = ref.watch(instantSwapDisabledAmountProvider);
+
     return SwapSideAmount(
       text: 'Deliver'.tr(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -69,7 +78,8 @@ class SwapDeliverAmount extends HookConsumerWidget {
       balance: balanceStr,
       readOnly:
           swapSendWallet == const SwapWallet.extern() ||
-          swapState != const SwapState.idle(),
+          swapState != const SwapState.idle() ||
+          disabledAmount,
       onEditingCompleted: () {
         if (ref.read(swapEnabledStateProvider)) {
           ref.read(swapHelperProvider).swapAccept();

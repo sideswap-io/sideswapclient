@@ -86,22 +86,22 @@ class WorkingOrderItem extends HookConsumerWidget {
             actionsAlignment: MainAxisAlignment.spaceBetween,
             actions: <Widget>[
               TextButton(
-                style:
-                    Theme.of(
-                      context,
-                    ).extension<SideswapYesButtonStyle>()!.style,
+                style: Theme.of(
+                  context,
+                ).extension<SideswapYesButtonStyle>()!.style,
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop(true);
                 },
-                child: Text('Yes'.tr()).tr(),
+                child: Text('Yes').tr(),
               ),
               TextButton(
-                style:
-                    Theme.of(context).extension<SideswapNoButtonStyle>()!.style,
+                style: Theme.of(
+                  context,
+                ).extension<SideswapNoButtonStyle>()!.style,
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop(false);
                 },
-                child: Text('No'.tr()).tr(),
+                child: Text('No').tr(),
               ),
             ],
           );
@@ -133,15 +133,6 @@ class WorkingOrderItem extends HookConsumerWidget {
                     true => AmpFlag(),
                     _ => SizedBox(),
                   },
-                  Spacer(),
-                  ColoredContainer(
-                    child: Text(
-                      order.marketType == MarketType_.TOKEN
-                          ? 'Token market'.tr()
-                          : 'Swap market'.tr(),
-                      style: coloredContainerStyle,
-                    ),
-                  ),
                 ],
               ),
               Padding(
@@ -226,15 +217,14 @@ class WorkingOrderItem extends HookConsumerWidget {
               Consumer(
                 builder: (context, ref, child) {
                   final amountParsed = double.tryParse(order.total) ?? 0;
-                  final totalConversion =
-                      amountParsed == 0
-                          ? ''
-                          : ref.watch(
-                            defaultCurrencyConversionProvider(
-                              order.assetPair.quote,
-                              amountParsed,
-                            ),
-                          );
+                  final totalConversion = amountParsed == 0
+                      ? ''
+                      : ref.watch(
+                          defaultCurrencyConversionProvider(
+                            order.assetPair.quote,
+                            amountParsed,
+                          ),
+                        );
 
                   return switch (totalConversion.isEmpty) {
                     true => SizedBox(),
@@ -260,12 +250,13 @@ class WorkingOrderItem extends HookConsumerWidget {
                                     children: [
                                       Text(
                                         conversionTicker,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.labelLarge?.copyWith(
-                                          color:
-                                              SideSwapColors.airSuperiorityBlue,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge
+                                            ?.copyWith(
+                                              color: SideSwapColors
+                                                  .airSuperiorityBlue,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -296,11 +287,10 @@ class WorkingOrderItem extends HookConsumerWidget {
                           child: Text(
                             'Order amount become less than the minimum after partially matching or there is no UTXOs'
                                 .tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.labelLarge?.copyWith(
-                              color: SideSwapColors.airSuperiorityBlue,
-                            ),
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: SideSwapColors.airSuperiorityBlue,
+                                ),
                           ),
                         ),
                       ],
@@ -370,10 +360,9 @@ class WorkingOrderItem extends HookConsumerWidget {
                       backgroundColor: SideSwapColors.bitterSweet.withValues(
                         alpha: 0.14,
                       ),
-                      borderColor:
-                          order.tradeDir == TradeDir.SELL
-                              ? SideSwapColors.bitterSweet
-                              : SideSwapColors.turquoise,
+                      borderColor: order.tradeDir == TradeDir.SELL
+                          ? SideSwapColors.bitterSweet
+                          : SideSwapColors.turquoise,
                     ),
                     child: Text(
                       order.tradeDir == TradeDir.SELL
@@ -434,10 +423,9 @@ class WorkingOrderItem extends HookConsumerWidget {
                         width: 18,
                         height: 18,
                       ),
-                      style:
-                          Theme.of(context)
-                              .extension<WorkingOrderItemCancelButtonStyle>()!
-                              .style,
+                      style: Theme.of(
+                        context,
+                      ).extension<WorkingOrderItemCancelButtonStyle>()!.style,
                     ),
                     SizedBox(width: 6),
                   ],
@@ -458,10 +446,9 @@ class WorkingOrderItem extends HookConsumerWidget {
                         ref.read(walletProvider).sendMsg(msg);
                       }
                     },
-                    style:
-                        Theme.of(
-                          context,
-                        ).extension<WorkingOrderItemCancelButtonStyle>()!.style,
+                    style: Theme.of(
+                      context,
+                    ).extension<WorkingOrderItemCancelButtonStyle>()!.style,
                   ),
                 ],
               ),

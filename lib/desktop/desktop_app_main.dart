@@ -1,24 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/desktop_root_widget.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
-class DSideSwapScrollBehavior extends MaterialScrollBehavior {
-  // Override behavior methods and getters like dragDevices
-  @override
-  Set<PointerDeviceKind> get dragDevices => {
-    PointerDeviceKind.touch,
-    PointerDeviceKind.mouse,
-  };
+// class DSideSwapScrollBehavior extends MaterialScrollBehavior {
+//   // Override behavior methods and getters like dragDevices
+//   @override
+//   Set<PointerDeviceKind> get dragDevices => {
+//     PointerDeviceKind.touch,
+//     PointerDeviceKind.trackpad,
+//     PointerDeviceKind.mouse,
+//   };
 
-  // Override behavior methods and getters like multitouchDragStrategy
-  @override
-  MultitouchDragStrategy getMultitouchDragStrategy(BuildContext context) =>
-      MultitouchDragStrategy.sumAllPointers;
-}
+//   // Override behavior methods and getters like multitouchDragStrategy
+//   @override
+//   MultitouchDragStrategy getMultitouchDragStrategy(BuildContext context) =>
+//       MultitouchDragStrategy.sumAllPointers;
+// }
 
 class DesktopAppMain extends StatelessWidget {
   const DesktopAppMain({super.key});
@@ -63,7 +63,6 @@ class DesktopApp extends StatelessWidget {
             textSelectionTheme: desktopAppTheme.textSelectionTheme,
             extensions: desktopAppTheme.themeExtensions,
           ),
-          scrollBehavior: DSideSwapScrollBehavior(),
           builder: (context, widget) {
             return MediaQuery(
               data: MediaQuery.of(

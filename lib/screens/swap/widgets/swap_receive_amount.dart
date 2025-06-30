@@ -5,6 +5,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/exchange_providers.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -72,6 +73,8 @@ class SwapReceiveAmount extends HookConsumerWidget {
       }
     });
 
+    final disabledAmount = ref.watch(instantSwapDisabledAmountProvider);
+
     return SwapSideAmount(
       text: 'Receive'.tr(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -80,7 +83,8 @@ class SwapReceiveAmount extends HookConsumerWidget {
       isMaxVisible: false,
       readOnly:
           swapType == const SwapType.pegIn() ||
-          swapState != const SwapState.idle(),
+          swapState != const SwapState.idle() ||
+          disabledAmount,
       hintText: '0.0',
       showHintText: swapType == const SwapType.atomic(),
       dropdownReadOnly:

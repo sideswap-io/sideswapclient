@@ -85,6 +85,24 @@ final networkSettingsNeedSaveProvider = AutoDisposeProvider<bool>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef NetworkSettingsNeedSaveRef = AutoDisposeProviderRef<bool>;
+String _$networkSettingsNeedRestartHash() =>
+    r'be4b264d751aca880ae416a40220ca9563a0b097';
+
+/// See also [networkSettingsNeedRestart].
+@ProviderFor(networkSettingsNeedRestart)
+final networkSettingsNeedRestartProvider = AutoDisposeProvider<bool>.internal(
+  networkSettingsNeedRestart,
+  name: r'networkSettingsNeedRestartProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$networkSettingsNeedRestartHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef NetworkSettingsNeedRestartRef = AutoDisposeProviderRef<bool>;
 String _$networkSettingsNotifierHash() =>
     r'bb968b4af2a3f8480940d3d41bf5c742e12f0076';
 

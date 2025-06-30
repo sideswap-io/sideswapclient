@@ -16,255 +16,272 @@ import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
-import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DTxPopup extends HookConsumerWidget {
-  const DTxPopup({super.key, required this.transItem});
-
-  final TransItem transItem;
+  const DTxPopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final amountProvider = ref.watch(amountToStringProvider);
-
-    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
-
-    final balances = transItemHelper.txBalances();
-    final confs = transItemHelper.txConfs();
-    final status = transItemHelper.txStatus();
-
-    final openTxCallback = useCallback(({bool unblinded = false}) {
-      openTxidUrl(ref, transItem.tx.txid, true, unblinded);
-    });
+    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
 
     return DPopupWithClose(
       width: 634,
       height: 660,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TxImageSmall(
-                      assetName: transItemHelper.getTxImageAssetName(),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      transItemHelper.txTypeName(),
-                      style: Theme.of(context).textTheme.displaySmall,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    transItemHelper.txDateTimeStr(),
-                    style: const TextStyle(color: SideSwapColors.halfBaked),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ...switch (transItemHelper.txType()) {
-                  TxType.swap => [
-                    TxDetailsSwap(transItem: transItem),
-                    const SizedBox(height: 14),
-                    TxDetailsRow(
-                      description: 'Price per unit'.tr(),
-                      details: transItemHelper.txTargetPrice(),
-                    ),
-                  ],
-                  TxType.sent => [TxDetailsSent(transItem: transItem)],
-                  TxType.received => [TxDetailsReceive(transItem: transItem)],
-                  TxType.internal => [
-                    TxDetailsSideRow(
-                      leftText: 'Asset'.tr(),
-                      rightText: 'Amount'.tr(),
-                    ),
-                    const SizedBox(height: 8),
-                    TxDetailsBalancesList(transItem: transItem),
-                  ],
-                  _ => List<Widget>.generate(balances.length, (index) {
-                    final balance = balances[index];
-                    final asset = ref.watch(
-                      assetsStateProvider.select(
-                        (value) => value[balance.assetId],
-                      ),
-                    );
-                    final ticker =
-                        asset != null ? asset.ticker : kUnknownTicker;
-                    final balanceStr = amountProvider.amountToString(
-                      AmountToStringParameters(
-                        amount: balance.amount.toInt(),
-                        precision: asset?.precision ?? 8,
-                      ),
-                    );
+      child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
+        final allTxs = ref.watch(allTxsNotifierProvider);
 
-                    return TxDetailsRow(
-                      description: 'Amount'.tr(),
-                      details: '$balanceStr $ticker',
-                    );
-                  }),
-                },
-                const SizedBox(height: 14),
-                TxDetailsRow(
-                  description: 'Status'.tr(),
-                  details: status,
-                  detailsColor:
-                      (confs.count != 0)
-                          ? SideSwapColors.airSuperiorityBlue
-                          : Colors.white,
-                ),
-                const SizedBox(height: 14),
-                const DPopupSeparator(),
-                const SizedBox(height: 14),
-                DPopupField(name: 'Transaction ID'.tr(), value: ''),
-                Row(
-                  children: [
-                    Expanded(child: Text(transItem.tx.txid)),
-                    const SizedBox(width: 40),
-                    IconButton(
-                      onPressed:
-                          () => copyToClipboard(context, transItem.tx.txid),
-                      icon: SvgPicture.asset(
-                        'assets/copy2.svg',
-                        width: 22,
-                        height: 22,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Container(
-            color: SideSwapColors.chathamsBlue,
-            height: 138,
-            child: Padding(
+        final transItem = allTxs[txid];
+
+        if (transItem == null) {
+          return const SizedBox();
+        }
+
+        final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+
+        final balances = transItemHelper.txBalances();
+        final optionConfs = transItemHelper.txConfs();
+        final status = transItemHelper.txStatus();
+
+        final openTxCallback = useCallback(({bool unblinded = false}) {
+          openTxidUrl(ref, transItem.tx.txid, true, unblinded);
+        });
+
+        final amountProvider = ref.watch(amountToStringProvider);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  DPopupLinkButton(
-                    text: 'Link to explorer\n(blinded data)'.tr(),
-                    onPressed: () => openTxCallback(),
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TxImageSmall(
+                        assetName: transItemHelper.getTxImageAssetName(),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        transItemHelper.txTypeName(),
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  DPopupLinkButton(
-                    text: 'Link to explorer\n(unblinded data)'.tr(),
-                    onPressed: () => openTxCallback(unblinded: true),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Text(
+                      transItemHelper.txDateTimeStr(),
+                      style: const TextStyle(color: SideSwapColors.halfBaked),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ...switch (transItemHelper.txType()) {
+                    TxType.swap => [
+                      TxDetailsSwap(transItem: transItem),
+                      const SizedBox(height: 14),
+                      TxDetailsRow(
+                        description: 'Price per unit'.tr(),
+                        details: transItemHelper.txTargetPrice(),
+                      ),
+                    ],
+                    TxType.sent => [TxDetailsSent(transItem: transItem)],
+                    TxType.received => [TxDetailsReceive(transItem: transItem)],
+                    TxType.internal => [
+                      TxDetailsSideRow(
+                        leftText: 'Asset'.tr(),
+                        rightText: 'Amount'.tr(),
+                      ),
+                      const SizedBox(height: 8),
+                      TxDetailsBalancesList(transItem: transItem),
+                    ],
+                    _ => List<Widget>.generate(balances.length, (index) {
+                      final balance = balances[index];
+                      final asset = ref.watch(
+                        assetsStateProvider.select(
+                          (value) => value[balance.assetId],
+                        ),
+                      );
+                      final ticker = asset != null
+                          ? asset.ticker
+                          : kUnknownTicker;
+                      final balanceStr = amountProvider.amountToString(
+                        AmountToStringParameters(
+                          amount: balance.amount.toInt(),
+                          precision: asset?.precision ?? 8,
+                        ),
+                      );
+
+                      return TxDetailsRow(
+                        description: 'Amount'.tr(),
+                        details: '$balanceStr $ticker',
+                      );
+                    }),
+                  },
+                  const SizedBox(height: 14),
+                  TxDetailsRow(
+                    description: 'Status'.tr(),
+                    details: status,
+                    detailsColor: optionConfs.match(
+                      () => Colors.white,
+                      (_) => SideSwapColors.airSuperiorityBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const DPopupSeparator(),
+                  const SizedBox(height: 14),
+                  DPopupField(name: 'Transaction ID'.tr(), value: ''),
+                  Row(
+                    children: [
+                      Expanded(child: Text(transItem.tx.txid)),
+                      const SizedBox(width: 40),
+                      IconButton(
+                        onPressed: () =>
+                            copyToClipboard(context, transItem.tx.txid),
+                        icon: SvgPicture.asset(
+                          'assets/copy2.svg',
+                          width: 22,
+                          height: 22,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
+            const Spacer(),
+            Container(
+              color: SideSwapColors.chathamsBlue,
+              height: 138,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    DPopupLinkButton(
+                      text: 'Link to explorer\n(blinded data)'.tr(),
+                      onPressed: () => openTxCallback(),
+                    ),
+                    const SizedBox(width: 10),
+                    DPopupLinkButton(
+                      text: 'Link to explorer\n(unblinded data)'.tr(),
+                      onPressed: () => openTxCallback(unblinded: true),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
 
 class DPegPopup extends ConsumerWidget {
-  const DPegPopup({super.key, required this.transItem});
-
-  final TransItem transItem;
+  const DPegPopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final typeName = transItem.peg.isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr();
-    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
 
     return DPopupWithClose(
       width: 634,
       height: 660,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 40),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TxImageSmall(assetName: transItemHelper.getTxImageAssetName()),
-              const SizedBox(width: 8),
-              Text(typeName, style: Theme.of(context).textTheme.displaySmall),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              transItemHelper.txDateTimeStr(),
-              style: const TextStyle(color: SideSwapColors.halfBaked),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                DTxDetailsPegOut(transItem: transItem),
-                const SizedBox(height: 14),
-                const DPopupSeparator(),
-                const SizedBox(height: 14),
-                DPopupField(name: 'Transaction ID'.tr(), value: ''),
-                Row(
-                  children: [
-                    Expanded(child: Text(transItem.peg.txidSend)),
-                    const SizedBox(width: 40),
-                    IconButton(
-                      onPressed:
-                          () =>
-                              copyToClipboard(context, transItem.peg.txidRecv),
-                      icon: SvgPicture.asset(
-                        'assets/copy2.svg',
-                        width: 22,
-                        height: 22,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Container(
-            color: SideSwapColors.chathamsBlue,
-            height: 138,
-            child: Row(
+      child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
+        final allTxs = ref.watch(allTxsNotifierProvider);
+
+        final transItem = allTxs[txid];
+
+        if (transItem == null) {
+          return const SizedBox();
+        }
+
+        final typeName = transItem.peg.isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr();
+        final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 40),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                DPopupLinkButton(
-                  text: 'Link to explorer\n(pay-in)'.tr(),
-                  onPressed:
-                      () => openTxidUrl(
-                        ref,
-                        transItem.peg.txidSend,
-                        !transItem.peg.isPegIn,
-                        false,
+                TxImageSmall(assetName: transItemHelper.getTxImageAssetName()),
+                const SizedBox(width: 8),
+                Text(typeName, style: Theme.of(context).textTheme.displaySmall),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                transItemHelper.txDateTimeStr(),
+                style: const TextStyle(color: SideSwapColors.halfBaked),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                children: [
+                  DTxDetailsPegOut(transItem: transItem),
+                  const SizedBox(height: 14),
+                  const DPopupSeparator(),
+                  const SizedBox(height: 14),
+                  DPopupField(name: 'Transaction ID'.tr(), value: ''),
+                  Row(
+                    children: [
+                      Expanded(child: Text(transItem.peg.txidSend)),
+                      const SizedBox(width: 40),
+                      IconButton(
+                        onPressed: () =>
+                            copyToClipboard(context, transItem.peg.txidRecv),
+                        icon: SvgPicture.asset(
+                          'assets/copy2.svg',
+                          width: 22,
+                          height: 22,
+                        ),
                       ),
-                ),
-                const SizedBox(width: 10),
-                DPopupLinkButton(
-                  text: 'Link to explorer\n(pay-out)'.tr(),
-                  onPressed:
-                      transItem.peg.hasTxidRecv()
-                          ? () => openTxidUrl(
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            Container(
+              color: SideSwapColors.chathamsBlue,
+              height: 138,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DPopupLinkButton(
+                    text: 'Link to explorer\n(pay-in)'.tr(),
+                    onPressed: () => openTxidUrl(
+                      ref,
+                      transItem.peg.txidSend,
+                      !transItem.peg.isPegIn,
+                      false,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  DPopupLinkButton(
+                    text: 'Link to explorer\n(pay-out)'.tr(),
+                    onPressed: transItem.peg.hasTxidRecv()
+                        ? () => openTxidUrl(
                             ref,
                             transItem.peg.txidRecv,
                             transItem.peg.isPegIn,
                             true,
                           )
-                          : null,
-                ),
-              ],
+                        : null,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 }

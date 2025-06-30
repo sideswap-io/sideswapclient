@@ -148,12 +148,11 @@ class MobileOrderSubmitUnregisteredGaid extends HookConsumerWidget {
                         },
                         child: Text(
                           'https://$domainAgent',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyLarge?.copyWith(
-                            color: SideSwapColors.brightTurquoise,
-                            decoration: TextDecoration.underline,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: SideSwapColors.brightTurquoise,
+                                decoration: TextDecoration.underline,
+                              ),
                         ),
                       ),
                     ],
@@ -269,10 +268,9 @@ class MobileOrderSubmitSuccessDialog extends HookConsumerWidget {
         (order) {
           final isSell = order.tradeDir == TradeDir.SELL;
           final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
-          final dirColor =
-              isSell
-                  ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
-                  : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
+          final dirColor = isSell
+              ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
+              : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
 
           return Center(
             child: Padding(

@@ -8,6 +8,7 @@ import 'package:sideswap_notifications_platform_interface/sideswap_notifications
 
 TNotificationBackgroundHandler? _notificationBackgroundHandler;
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 

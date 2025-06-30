@@ -266,7 +266,61 @@ final loadTransactionsStateNotifierProvider =
 
 typedef _$LoadTransactionsStateNotifier =
     AutoDisposeNotifier<LoadTransactionsState>;
-String _$allTxsNotifierHash() => r'74f3c3e6653b873271e3cb7d219b35293bcde25d';
+String _$txHistoryStateNotifierHash() =>
+    r'dc0fbe31da100e30a398e18c8472871847dac046';
+
+/// See also [TxHistoryStateNotifier].
+@ProviderFor(TxHistoryStateNotifier)
+final txHistoryStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      TxHistoryStateNotifier,
+      TxHistoryState
+    >.internal(
+      TxHistoryStateNotifier.new,
+      name: r'txHistoryStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$txHistoryStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$TxHistoryStateNotifier = AutoDisposeNotifier<TxHistoryState>;
+String _$updatedTxsNotifierHash() =>
+    r'fab6799e61c387bdd052a13121e35b0e91b9d6b5';
+
+/// See also [UpdatedTxsNotifier].
+@ProviderFor(UpdatedTxsNotifier)
+final updatedTxsNotifierProvider =
+    NotifierProvider<UpdatedTxsNotifier, List<TransItem>>.internal(
+      UpdatedTxsNotifier.new,
+      name: r'updatedTxsNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$updatedTxsNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$UpdatedTxsNotifier = Notifier<List<TransItem>>;
+String _$showTransactionNotifierHash() =>
+    r'28517822ef0fc61252540051ce1836a4dcc272b5';
+
+/// See also [ShowTransactionNotifier].
+@ProviderFor(ShowTransactionNotifier)
+final showTransactionNotifierProvider =
+    NotifierProvider<ShowTransactionNotifier, Option<TransItem>>.internal(
+      ShowTransactionNotifier.new,
+      name: r'showTransactionNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$showTransactionNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ShowTransactionNotifier = Notifier<Option<TransItem>>;
+String _$allTxsNotifierHash() => r'bd3705bf68d982bfe0d36341d1286eacd75001ab';
 
 /// See also [AllTxsNotifier].
 @ProviderFor(AllTxsNotifier)
@@ -282,5 +336,22 @@ final allTxsNotifierProvider =
     );
 
 typedef _$AllTxsNotifier = Notifier<Map<String, TransItem>>;
+String _$currentTxPopupItemNotifierHash() =>
+    r'0c7899d6c1b81e81cc143a60bd7a0acb5590df05';
+
+/// See also [CurrentTxPopupItemNotifier].
+@ProviderFor(CurrentTxPopupItemNotifier)
+final currentTxPopupItemNotifierProvider =
+    NotifierProvider<CurrentTxPopupItemNotifier, Option<String>>.internal(
+      CurrentTxPopupItemNotifier.new,
+      name: r'currentTxPopupItemNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$currentTxPopupItemNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$CurrentTxPopupItemNotifier = Notifier<Option<String>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

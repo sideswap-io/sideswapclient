@@ -18,12 +18,14 @@ class DPopupWithClose extends StatelessWidget {
     this.width,
     this.height,
     this.onClose,
+    this.alignment = AlignmentDirectional.topStart,
   });
 
   final Widget child;
   final double? width;
   final double? height;
   final VoidCallback? onClose;
+  final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,7 @@ class DPopupWithClose extends StatelessWidget {
         width: width,
         height: height,
         onClose: onClose,
+        alignment: alignment,
         child: child,
       ),
       _ => Scaffold(
@@ -42,6 +45,7 @@ class DPopupWithClose extends StatelessWidget {
           width: width,
           height: height,
           onClose: onClose,
+          alignment: alignment,
           child: child,
         ),
       ),
@@ -56,12 +60,14 @@ class DPopupWithCloseContent extends StatelessWidget {
     this.width,
     this.height,
     this.onClose,
+    this.alignment = AlignmentDirectional.topStart,
   });
 
   final Widget child;
   final double? width;
   final double? height;
   final VoidCallback? onClose;
+  final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +84,7 @@ class DPopupWithCloseContent extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Stack(
+              alignment: alignment,
               children: [
                 child,
                 Align(

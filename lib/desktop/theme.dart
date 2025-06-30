@@ -416,10 +416,10 @@ class DesktopAppTheme {
           backgroundColor: ButtonState.resolveWith((states) {
             return switch (states) {
               Set<ButtonStates>() when states.isDisabled => Colors.transparent,
-              Set<ButtonStates>() when states.isPressing => Colors.transparent
-                  .lerpWith(Colors.black, 0.15),
-              Set<ButtonStates>() when states.isHovering => Colors.transparent
-                  .lerpWith(Colors.black, 0.1),
+              Set<ButtonStates>() when states.isPressing =>
+                Colors.transparent.lerpWith(Colors.black, 0.15),
+              Set<ButtonStates>() when states.isHovering =>
+                Colors.transparent.lerpWith(Colors.black, 0.1),
               _ => Colors.transparent,
             };
           }),
@@ -432,10 +432,10 @@ class DesktopAppTheme {
         backgroundColor: ButtonState.resolveWith((states) {
           return switch (states) {
             Set<ButtonStates>() when states.isDisabled => Colors.transparent,
-            Set<ButtonStates>() when states.isPressing => Colors.transparent
-                .lerpWith(Colors.black, 0.25),
-            Set<ButtonStates>() when states.isHovering => Colors.transparent
-                .lerpWith(Colors.black, 0.2),
+            Set<ButtonStates>() when states.isPressing =>
+              Colors.transparent.lerpWith(Colors.black, 0.25),
+            Set<ButtonStates>() when states.isHovering =>
+              Colors.transparent.lerpWith(Colors.black, 0.2),
             _ => Colors.transparent,
           };
         }),
@@ -465,10 +465,10 @@ class DesktopAppTheme {
         backgroundColor: ButtonState.resolveWith((states) {
           return switch (states) {
             Set<ButtonStates>() when states.isDisabled => Colors.transparent,
-            Set<ButtonStates>() when states.isPressing => Colors.transparent
-                .lerpWith(Colors.black, 0.25),
-            Set<ButtonStates>() when states.isHovering => Colors.transparent
-                .lerpWith(Colors.black, 0.2),
+            Set<ButtonStates>() when states.isPressing =>
+              Colors.transparent.lerpWith(Colors.black, 0.25),
+            Set<ButtonStates>() when states.isHovering =>
+              Colors.transparent.lerpWith(Colors.black, 0.2),
             _ => Colors.transparent,
           };
         }),
@@ -516,19 +516,16 @@ class DesktopAppTheme {
           return switch (states) {
             Set<ButtonStates>() when states.isDisabled && value =>
               SideSwapColors.steelBlue.lerpWith(Colors.black, 0.1),
-            Set<ButtonStates>() when states.isDisabled && !value => Colors
-                .transparent
-                .lerpWith(Colors.black, .1),
+            Set<ButtonStates>() when states.isDisabled && !value =>
+              Colors.transparent.lerpWith(Colors.black, .1),
             Set<ButtonStates>() when states.isPressing && value =>
               SideSwapColors.steelBlue.lerpWith(Colors.black, 0.15),
-            Set<ButtonStates>() when states.isPressing && !value => Colors
-                .transparent
-                .lerpWith(Colors.black, .15),
+            Set<ButtonStates>() when states.isPressing && !value =>
+              Colors.transparent.lerpWith(Colors.black, .15),
             Set<ButtonStates>() when states.isHovering && value =>
               SideSwapColors.steelBlue.lerpWith(Colors.black, 0.1),
-            Set<ButtonStates>() when states.isHovering && !value => Colors
-                .transparent
-                .lerpWith(Colors.black, .1),
+            Set<ButtonStates>() when states.isHovering && !value =>
+              Colors.transparent.lerpWith(Colors.black, .1),
             _ when value => SideSwapColors.steelBlue,
             _ => Colors.transparent,
           };
@@ -545,12 +542,12 @@ class DesktopAppTheme {
         }),
         backgroundColor: ButtonState.resolveWith((states) {
           return switch (states) {
-            Set<ButtonStates>() when states.isDisabled => SideSwapColors.blumine
-                .lerpWith(Colors.black, 0.1),
-            Set<ButtonStates>() when states.isPressing => SideSwapColors.blumine
-                .lerpWith(Colors.black, 0.15),
-            Set<ButtonStates>() when states.isHovering => SideSwapColors.blumine
-                .lerpWith(Colors.black, 0.1),
+            Set<ButtonStates>() when states.isDisabled =>
+              SideSwapColors.blumine.lerpWith(Colors.black, 0.1),
+            Set<ButtonStates>() when states.isPressing =>
+              SideSwapColors.blumine.lerpWith(Colors.black, 0.15),
+            Set<ButtonStates>() when states.isHovering =>
+              SideSwapColors.blumine.lerpWith(Colors.black, 0.1),
             _ => SideSwapColors.blumine,
           };
         }),
@@ -562,12 +559,12 @@ class DesktopAppTheme {
     iconButtonStyle: DButtonStyle(
       backgroundColor: ButtonState.resolveWith((states) {
         return switch (states) {
-          Set<ButtonStates>() when states.isDisabled => Colors.transparent
-              .lerpWith(Colors.black, 0.3),
-          Set<ButtonStates>() when states.isPressing => Colors.transparent
-              .lerpWith(Colors.black, 0.2),
-          Set<ButtonStates>() when states.isHovering => Colors.transparent
-              .lerpWith(Colors.black, 0.1),
+          Set<ButtonStates>() when states.isDisabled =>
+            Colors.transparent.lerpWith(Colors.black, 0.3),
+          Set<ButtonStates>() when states.isPressing =>
+            Colors.transparent.lerpWith(Colors.black, 0.2),
+          Set<ButtonStates>() when states.isHovering =>
+            Colors.transparent.lerpWith(Colors.black, 0.1),
           _ => Colors.transparent,
         };
       }),
@@ -596,12 +593,12 @@ class DesktopAppTheme {
       }),
       backgroundColor: ButtonState.resolveWith((states) {
         return switch (states) {
-          Set<ButtonStates>() when states.isDisabled => Colors.transparent
-              .lerpWith(Colors.black, 0.1),
-          Set<ButtonStates>() when states.isPressing => Colors.transparent
-              .lerpWith(Colors.black, 0.15),
-          Set<ButtonStates>() when states.isHovering => Colors.transparent
-              .lerpWith(Colors.black, 0.1),
+          Set<ButtonStates>() when states.isDisabled =>
+            Colors.transparent.lerpWith(Colors.black, 0.1),
+          Set<ButtonStates>() when states.isPressing =>
+            Colors.transparent.lerpWith(Colors.black, 0.15),
+          Set<ButtonStates>() when states.isHovering =>
+            Colors.transparent.lerpWith(Colors.black, 0.1),
           _ => Colors.transparent,
         };
       }),
@@ -641,15 +638,12 @@ class DesktopAppTheme {
       ),
       backgroundColor: ButtonState.resolveWith((states) {
         return switch (states) {
-          Set<ButtonStates>() when states.isDisabled => SideSwapColors
-              .brightTurquoise
-              .lerpWith(Colors.black, 0.3),
-          Set<ButtonStates>() when states.isPressing => SideSwapColors
-              .brightTurquoise
-              .lerpWith(Colors.black, 0.2),
-          Set<ButtonStates>() when states.isHovering => SideSwapColors
-              .brightTurquoise
-              .lerpWith(Colors.black, 0.1),
+          Set<ButtonStates>() when states.isDisabled =>
+            SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3),
+          Set<ButtonStates>() when states.isPressing =>
+            SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.2),
+          Set<ButtonStates>() when states.isHovering =>
+            SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1),
           _ => SideSwapColors.brightTurquoise,
         };
       }),
@@ -742,8 +736,8 @@ class DesktopAppTheme {
         ),
         foregroundColor: ButtonState.resolveWith((states) {
           return switch (states) {
-            Set<ButtonStates>() when states.isDisabled => Colors.white
-                .withValues(alpha: 0.5),
+            Set<ButtonStates>() when states.isDisabled =>
+              Colors.white.withValues(alpha: 0.5),
             Set<ButtonStates>() when states.isPressing => Colors.white,
             Set<ButtonStates>() when states.isHovering => Colors.white,
             _ => Colors.white,
@@ -751,15 +745,12 @@ class DesktopAppTheme {
         }),
         backgroundColor: ButtonState.resolveWith((states) {
           return switch (states) {
-            Set<ButtonStates>() when states.isDisabled => SideSwapColors
-                .lapisLazuli
-                .withValues(alpha: 0.5),
-            Set<ButtonStates>() when states.isPressing => SideSwapColors
-                .lapisLazuli
-                .lerpWith(Colors.black, 0.15),
-            Set<ButtonStates>() when states.isHovering => SideSwapColors
-                .lapisLazuli
-                .lerpWith(Colors.black, 0.1),
+            Set<ButtonStates>() when states.isDisabled =>
+              SideSwapColors.lapisLazuli.withValues(alpha: 0.5),
+            Set<ButtonStates>() when states.isPressing =>
+              SideSwapColors.lapisLazuli.lerpWith(Colors.black, 0.15),
+            Set<ButtonStates>() when states.isHovering =>
+              SideSwapColors.lapisLazuli.lerpWith(Colors.black, 0.1),
             _ => SideSwapColors.lapisLazuli,
           };
         }),
@@ -780,6 +771,7 @@ class DesktopAppTheme {
         foregroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
+          side: BorderSide(color: SideSwapColors.brightTurquoise),
         ),
         padding: EdgeInsets.zero,
         minimumSize: Size(100, 45),
@@ -871,12 +863,10 @@ class DesktopAppTheme {
           return switch (states) {
             Set<ButtonStates>() when states.isDisabled =>
               SideSwapColors.brightTurquoise.toAccentColor().darker,
-            Set<ButtonStates>() when states.isPressing => SideSwapColors
-                .brightTurquoise
-                .lerpWith(Colors.black, 0.25),
-            Set<ButtonStates>() when states.isHovering => SideSwapColors
-                .brightTurquoise
-                .lerpWith(Colors.black, 0.2),
+            Set<ButtonStates>() when states.isPressing =>
+              SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.25),
+            Set<ButtonStates>() when states.isHovering =>
+              SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.2),
             _ => SideSwapColors.brightTurquoise,
           };
         }),

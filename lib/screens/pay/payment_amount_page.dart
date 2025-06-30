@@ -14,6 +14,7 @@ import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/payment_amount_receiver_field.dart';
@@ -111,14 +112,14 @@ class PaymentAmountPageBody extends HookConsumerWidget {
     final tickerAmountFocusNode = useFocusNode();
     final enabled = useState(false);
     final isMaxPressed = useState(false);
-    final availableAssets = ref
-        .watch(paymentPageSendAssetsWithBalanceProvider)
-        .toList();
+    final availableAssets = ref.watch(allVisibleAssetsProvider).toList();
+
     // TODO (malcolmpl): move validate function to paymentPageRepository
     final paymentPageRepository = ref.watch(paymentPageRepositoryProvider);
     final optionAsset = ref.watch(paymentPageSelectedAssetProvider);
 
     Future<void> validate(String value) async {
+      final optionAsset = ref.read(paymentPageSelectedAssetProvider);
       await optionAsset.match(() {}, (asset) async {
         if (value.isEmpty) {
           await Future.microtask(
@@ -198,10 +199,9 @@ class PaymentAmountPageBody extends HookConsumerWidget {
             ? ""
             : amountAsAsset.toStringAsFixed(asset.precision);
 
-        if (!availableAssets.contains(asset.assetId)) {
-          availableAssets.add(asset.assetId);
+        if (!availableAssets.contains(asset)) {
+          availableAssets.add(asset);
         }
-        availableAssets.sort();
 
         if (amount.value != '0') {
           tickerAmountController.text = amount.value;
@@ -231,14 +231,13 @@ class PaymentAmountPageBody extends HookConsumerWidget {
 
     useEffect(() {
       optionAsset.match(() {}, (asset) {
-        if (!availableAssets.contains(asset.assetId)) {
-          availableAssets.add(asset.assetId);
+        if (!availableAssets.contains(asset)) {
+          availableAssets.add(asset);
         }
-        availableAssets.sort();
       });
 
       return;
-    }, [availableAssets]);
+    }, [availableAssets, optionAsset]);
 
     useEffect(() {
       isMaxPressed.value = false;
@@ -369,7 +368,9 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: PaymentSendAmount(
-                    availableDropdownAssets: availableAssets,
+                    availableDropdownAssets: availableAssets
+                        .map((e) => e.assetId)
+                        .toList(),
                     controller: tickerAmountController,
                     dropdownValue: asset.assetId,
                     focusNode: tickerAmountFocusNode,

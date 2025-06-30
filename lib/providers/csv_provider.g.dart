@@ -23,12 +23,12 @@ final csvRepositoryProvider = AutoDisposeProvider<CsvRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CsvRepositoryRef = AutoDisposeProviderRef<CsvRepository>;
-String _$csvNotifierHash() => r'988d881f95ab8c9882503d4f49d3bf3d2a2a00c9';
+String _$csvNotifierHash() => r'3bbe56ecefa0b4254737ce10426c28eea7973f99';
 
 /// See also [CsvNotifier].
 @ProviderFor(CsvNotifier)
 final csvNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<CsvNotifier, bool>.internal(
+    AutoDisposeAsyncNotifierProvider<CsvNotifier, CvsState>.internal(
       CsvNotifier.new,
       name: r'csvNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -38,6 +38,26 @@ final csvNotifierProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$CsvNotifier = AutoDisposeAsyncNotifier<bool>;
+typedef _$CsvNotifier = AutoDisposeAsyncNotifier<CvsState>;
+String _$exportCsvStateNotifierHash() =>
+    r'bd8d48b545b617b456a470d6e69a7d975765dc9c';
+
+/// See also [ExportCsvStateNotifier].
+@ProviderFor(ExportCsvStateNotifier)
+final exportCsvStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      ExportCsvStateNotifier,
+      ExportCsvState
+    >.internal(
+      ExportCsvStateNotifier.new,
+      name: r'exportCsvStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$exportCsvStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ExportCsvStateNotifier = AutoDisposeNotifier<ExportCsvState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

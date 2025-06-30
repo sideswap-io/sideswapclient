@@ -538,7 +538,7 @@
   "MINIMUM_MUL_FEE": "Minimum amount * price: {}",
   "Order error": "Order error",
   "Order quote error": "Order quote error",
-  "Order low balance error": "Order low balance error",
+  "Insufficient balance": "Insufficient balance",
   "Limit order": "Limit order",
   "Market order": "Market order",
   "Please send BTC to the following address:": "Please send BTC to the following address:",
@@ -572,5 +572,9 @@
   "Error loading transactions: {}": "Error loading transactions: {}",
   "Verify": "Verify",
   "Verified": "Verified",
-  "Swap proposal": "Swap proposal"
+  "Swap proposal": "Swap proposal",
+  "Export CSV": "Export CSV",
+  "Transactions loaded: {}": "Transactions loaded: {}",
+  "Loading transactions...": "Loading transactions...",
+  "For partial fills, please place a limit order at the bid/offer price, or use the market order function.": "For partial fills, please place a limit order at the bid/offer price, or use the market order function."
 }

@@ -16,6 +16,7 @@ import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/markets/widgets/d_limit_panel_review_order_dialog.dart';
 import 'package:sideswap/desktop/markets/widgets/product_columns.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/preview_order_dialog_providers.dart';
 import 'package:sideswap/screens/markets/widgets/limit_amount_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/limit_price_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
@@ -501,6 +502,9 @@ class MarketAmountPanel extends HookConsumerWidget {
             await marketTradeRepository.makeSwapTrade(
               context: context,
               optionQuoteSuccess: optionQuoteSuccess,
+              optionModifiers: Option.of(
+                PreviewOrderDialogModifiers(showOrderType: false),
+              ),
             );
           },
           _ => null,

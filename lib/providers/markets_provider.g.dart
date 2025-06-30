@@ -1269,7 +1269,7 @@ typedef MarketDecimalLastPriceRef =
     AutoDisposeProviderRef<
       Option<({Decimal decimalLastPrice, Option<Asset> quoteAsset})>
     >;
-String _$marketOrderAmountHash() => r'ba175fac7ac0364835248b01106a904fd7e0c4e2';
+String _$marketOrderAmountHash() => r'4285448e3f9839e8d5669050a8cf498d9c502b20';
 
 /// See also [marketOrderAmount].
 @ProviderFor(marketOrderAmount)
@@ -1438,7 +1438,7 @@ final marketAcceptQuoteErrorProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef MarketAcceptQuoteErrorRef = AutoDisposeProviderRef<Option<String>>;
-String _$limitOrderAmountHash() => r'cb89eacf8042f7467f758a1f49fa1209c18177ab';
+String _$limitOrderAmountHash() => r'7302d13cb29075ed7b638565233ee6bb2d733c42';
 
 /// See also [limitOrderAmount].
 @ProviderFor(limitOrderAmount)
@@ -1455,7 +1455,7 @@ final limitOrderAmountProvider = AutoDisposeProvider<OrderAmount>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef LimitOrderAmountRef = AutoDisposeProviderRef<OrderAmount>;
-String _$limitOrderPriceHash() => r'ce395206d793c868d9d2d8c7b8d01a9eedc34545';
+String _$limitOrderPriceHash() => r'6ecdfb580de4460b3fb8abea41f24205320f2646';
 
 /// See also [limitOrderPrice].
 @ProviderFor(limitOrderPrice)

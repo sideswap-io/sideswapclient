@@ -16,6 +16,7 @@ import 'package:rxdart/subjects.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/models/jade_model.dart';
@@ -39,6 +40,7 @@ import 'package:sideswap/providers/login_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/new_block_providers.dart';
+import 'package:sideswap/providers/new_tx_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
@@ -124,17 +126,6 @@ String envName(int env) {
   throw Exception('unexpected env value');
 }
 
-// TODO (malcolmpl): new wallets
-// Account getAccount(AccountType accountType) {
-//   final account = Account();
-//   account.id = accountType.id;
-//   return account;
-// }
-
-// AccountType getAccountType(Account account) {
-//   return AccountType(account.id);
-// }
-
 class PinDecryptedData {
   final From_DecryptPin_Error? error;
   final bool success;
@@ -196,9 +187,6 @@ class SideswapWallet {
   Map<int, List<String>> backupCheckAllWords = {};
   Map<int, int> backupCheckSelectedWords = {};
 
-  final newTransItemSubject = BehaviorSubject<TransItem>();
-  StreamSubscription<TransItem>? txDetailsSubscription;
-
   final _recvSubject = PublishSubject<From>();
   StreamSubscription<From>? _recvSubscription;
 
@@ -208,11 +196,6 @@ class SideswapWallet {
   var pendingPushMessages = <String>[];
 
   var clientReady = false;
-
-  late TransItem txDetails;
-
-  final _txMemoUpdates = <String, String>{};
-  String _currentTxMemoUpdate = '';
 
   PublishSubject<String> explorerUrlSubject = PublishSubject<String>();
 
@@ -354,22 +337,15 @@ class SideswapWallet {
   }
 
   void updateTxs(From_UpdatedTxs txs) {
-    for (final item in txs.items) {
-      newTransItemSubject.add(item);
-    }
-
-    ref.read(allTxsNotifierProvider.notifier).update(txs: txs);
+    ref.read(updatedTxsNotifierProvider.notifier).update(txs);
   }
 
   void removedTxs(From_RemovedTxs txs) {
-    ref.read(allTxsNotifierProvider.notifier).remove(txs: txs);
+    ref.read(updatedTxsNotifierProvider.notifier).remove(txs);
+    ref.read(allTxsNotifierProvider.notifier).remove(txs);
   }
 
   void updatePegs(From_UpdatedPegs pegs) {
-    for (final item in pegs.items) {
-      newTransItemSubject.add(item);
-    }
-
     ref.read(allPegsNotifierProvider.notifier).update(pegs: pegs);
   }
 
@@ -653,6 +629,7 @@ class SideswapWallet {
         ref
             .read(serverConnectionNotifierProvider.notifier)
             .setServerConnectionState(true);
+        ref.read(sideswapNotificationProvider).requestTxFromBackend();
         break;
       case From_Msg.serverDisconnected:
         ref.invalidate(serverConnectionNotifierProvider);
@@ -687,7 +664,11 @@ class SideswapWallet {
         logger.w('local message: ${from.localMessage}');
         await ref
             .read(localNotificationsProvider)
-            .showNotification(from.localMessage.title, from.localMessage.body);
+            .showNotification(
+              from.localMessage.title,
+              from.localMessage.body,
+              payload: from.localMessage.body,
+            );
         break;
       case From_Msg.jadePorts:
         final jadePorts = from.jadePorts.ports.toList();
@@ -849,8 +830,13 @@ class SideswapWallet {
       case From_Msg.jadeVerifyAddress:
         _handleJadeVerifyAddress(from.jadeVerifyAddress);
         break;
+      case From_Msg.showTransaction:
+        _handleShowTransaction(from.showTransaction);
+        break;
       // TODO: Handle this cases
       case From_Msg.orderCancel:
+        logger.w('OrderCancel: ${from.orderCancel}');
+        break;
       case From_Msg.notSet:
         throw UnimplementedError('invalid message: $from');
     }
@@ -1239,7 +1225,6 @@ class SideswapWallet {
         return false;
       }(),
       Status.txEditMemo => () {
-        _applyTxMemoChange();
         ref
             .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.txDetails);
@@ -1393,41 +1378,26 @@ class SideswapWallet {
   }
 
   void showTxDetails(TransItem tx) {
+    ref.read(currentTxPopupItemNotifierProvider.notifier).setCurrentTxId(tx.id);
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txDetails);
-    txDetails = tx;
-
-    _listenTxDetailsChanges();
-
-    notifyListeners();
   }
 
   void showSwapTxDetails(TransItem transItem) {
+    ref
+        .read(currentTxPopupItemNotifierProvider.notifier)
+        .setCurrentTxId(transItem.id);
+
     if (!FlavorConfig.isDesktop) {
       ref
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.swapTxDetails);
-      txDetails = transItem;
-
-      _listenTxDetailsChanges();
-
-      notifyListeners();
-    } else {
-      final allPegsById = ref.read(allPegsByIdProvider);
-      ref
-          .read(desktopDialogProvider)
-          .showTx(transItem, isPeg: allPegsById.containsKey(transItem.id));
+      return;
     }
-  }
 
-  void _listenTxDetailsChanges() {
-    txDetailsSubscription?.cancel();
-    txDetailsSubscription = newTransItemSubject.listen((value) {
-      if (value.id == txDetails.id) {
-        // FIXME: Check that correct account is used here
-        txDetails = value;
-        notifyListeners();
-      }
-    });
+    final allPegsById = ref.read(allPegsByIdProvider);
+    ref
+        .read(desktopDialogProvider)
+        .showTx(transItem, isPeg: allPegsById.containsKey(transItem.id));
   }
 
   String commonAddrErrorStr(String addr, AddrType addrType) {
@@ -1508,35 +1478,6 @@ class SideswapWallet {
 
   void editTxMemo(Object arguments) {
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txEditMemo);
-  }
-
-  String txMemo(Tx? tx) {
-    if (tx == null) {
-      return '';
-    }
-
-    final updatedMemo = _txMemoUpdates[tx.txid];
-    if (updatedMemo != null) {
-      return updatedMemo;
-    }
-    return tx.memo;
-  }
-
-  void onTxMemoChanged(String value) {
-    _currentTxMemoUpdate = value;
-  }
-
-  void _applyTxMemoChange() {
-    final txid = txDetails.tx.txid;
-    _txMemoUpdates[txid] = _currentTxMemoUpdate;
-
-    var msg = To();
-    msg.setMemo = To_SetMemo();
-    // FIXME: Use correct account type here
-    msg.setMemo.account = Account.REG;
-    msg.setMemo.txid = txid;
-    msg.setMemo.memo = _currentTxMemoUpdate;
-    sendMsg(msg);
   }
 
   Future<void> settingsViewBackup() async {
@@ -2295,7 +2236,7 @@ class SideswapWallet {
   }
 
   void _handleNewTx(Empty newTx) {
-    ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+    ref.read(newTxNotifierProvider.notifier).update();
   }
 
   void _handleJadeVerifyAddress(GenericResponse jadeVerifyAddress) {
@@ -2311,5 +2252,11 @@ class SideswapWallet {
     ref
         .read(jadeVerifyAddressStateNotifierProvider.notifier)
         .setState(JadeVerifyAddressState.success());
+  }
+
+  void _handleShowTransaction(From_ShowTransaction showTransaction) {
+    ref
+        .read(showTransactionNotifierProvider.notifier)
+        .setState(showTransaction.tx);
   }
 }

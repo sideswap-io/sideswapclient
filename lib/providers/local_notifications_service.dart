@@ -151,7 +151,29 @@ class LocalNotificationService {
             (NotificationResponse response) async {
               if (FlavorConfig.isDesktop) {
                 logger.d('Desktop notification received');
-                await WindowManager.instance.show();
+                await windowManager.waitUntilReadyToShow(null, () async {
+                  await windowManager.show();
+                  await windowManager.restore();
+                  await windowManager.focus();
+                });
+
+                try {
+                  if (response.payload == null) {
+                    return;
+                  }
+
+                  String txid = switch (response.payload!.split(":")) {
+                    [_, var txid] => txid.trim(),
+                    _ => '',
+                  };
+                  txid.isNotEmpty
+                      ? selectNotificationSubject.add(
+                          FCMPayload(type: FCMPayloadType.unknown, txid: txid),
+                        )
+                      : null;
+                } catch (e) {
+                  logger.e('Cannot parse payload: $e');
+                }
                 return;
               }
 

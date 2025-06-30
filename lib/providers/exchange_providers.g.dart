@@ -343,6 +343,42 @@ final exchangeAcceptQuoteErrorProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ExchangeAcceptQuoteErrorRef = AutoDisposeProviderRef<Option<String>>;
+String _$instantSwapDisabledAmountHash() =>
+    r'dcc4be6c88cdc7fcbcf8013566beb1a2f22e1c88';
+
+/// See also [instantSwapDisabledAmount].
+@ProviderFor(instantSwapDisabledAmount)
+final instantSwapDisabledAmountProvider = AutoDisposeProvider<bool>.internal(
+  instantSwapDisabledAmount,
+  name: r'instantSwapDisabledAmountProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$instantSwapDisabledAmountHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef InstantSwapDisabledAmountRef = AutoDisposeProviderRef<bool>;
+String _$instantSwapDisabledDropdownHash() =>
+    r'd10a11473f69c639003d21d6bbe7461a7fe67a8d';
+
+/// See also [instantSwapDisabledDropdown].
+@ProviderFor(instantSwapDisabledDropdown)
+final instantSwapDisabledDropdownProvider = AutoDisposeProvider<bool>.internal(
+  instantSwapDisabledDropdown,
+  name: r'instantSwapDisabledDropdownProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$instantSwapDisabledDropdownHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef InstantSwapDisabledDropdownRef = AutoDisposeProviderRef<bool>;
 String _$exchangeCurrentEditAssetHash() =>
     r'a26b92c2144b9147e4072b1403614610d838e2ee';
 
@@ -396,7 +432,7 @@ final exchangeBottomAssetProvider =
     );
 
 typedef _$ExchangeBottomAsset = AutoDisposeNotifier<Option<Asset>>;
-String _$exchangeTopAmountHash() => r'b62e0e07aa2b86aafb3062e0db8ee55ac718b1b2';
+String _$exchangeTopAmountHash() => r'a8a0bfafee1d254eccedb457fa1476ddffb82311';
 
 /// See also [ExchangeTopAmount].
 @ProviderFor(ExchangeTopAmount)
@@ -413,7 +449,7 @@ final exchangeTopAmountProvider =
 
 typedef _$ExchangeTopAmount = AutoDisposeNotifier<String>;
 String _$exchangeBottomAmountHash() =>
-    r'e3bc3a2c4c913192a992171aa789460a9dc38c72';
+    r'59719637da7443c0699f934fe2aeacd390776a71';
 
 /// See also [ExchangeBottomAmount].
 @ProviderFor(ExchangeBottomAmount)
@@ -430,7 +466,7 @@ final exchangeBottomAmountProvider =
 
 typedef _$ExchangeBottomAmount = AutoDisposeNotifier<String>;
 String _$exchangeQuoteNotifierHash() =>
-    r'cfdacbcf5fb38fe88e0891a1d75f40dc7e74e8cb';
+    r'e68324208f9c96bae0a667e345399ec5d0da223b';
 
 /// Exchange quotes
 ///
@@ -492,5 +528,46 @@ final exchangeAccepQuoteStateNotifierProvider =
 
 typedef _$ExchangeAccepQuoteStateNotifier =
     AutoDisposeNotifier<ExchangeAcceptQuoteState>;
+String _$instantSwapStateNotifierHash() =>
+    r'c526c298648b046a08c7c549ea4121129ad70468';
+
+/// See also [InstantSwapStateNotifier].
+@ProviderFor(InstantSwapStateNotifier)
+final instantSwapStateNotifierProvider =
+    AutoDisposeNotifierProvider<
+      InstantSwapStateNotifier,
+      InstantSwapState
+    >.internal(
+      InstantSwapStateNotifier.new,
+      name: r'instantSwapStateNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$instantSwapStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$InstantSwapStateNotifier = AutoDisposeNotifier<InstantSwapState>;
+String _$instantSwapQuoteSuccessNotifierHash() =>
+    r'47eaf04f03338f6de2af7feaad8c1624d19a77cf';
+
+/// See also [InstantSwapQuoteSuccessNotifier].
+@ProviderFor(InstantSwapQuoteSuccessNotifier)
+final instantSwapQuoteSuccessNotifierProvider =
+    AutoDisposeNotifierProvider<
+      InstantSwapQuoteSuccessNotifier,
+      Option<QuoteSuccess>
+    >.internal(
+      InstantSwapQuoteSuccessNotifier.new,
+      name: r'instantSwapQuoteSuccessNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$instantSwapQuoteSuccessNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$InstantSwapQuoteSuccessNotifier =
+    AutoDisposeNotifier<Option<QuoteSuccess>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

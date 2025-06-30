@@ -16,6 +16,7 @@ import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
@@ -809,6 +810,9 @@ class SwapHelper {
     ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
 
     ref.read(swapSendTextAmountNotifierProvider.notifier).setAmount(amount);
+
+    final pegRepository = ref.read(pegRepositoryProvider);
+    pegRepository.getPegOutAmount();
   }
 
   void setDeliverAsset(String assetId) {

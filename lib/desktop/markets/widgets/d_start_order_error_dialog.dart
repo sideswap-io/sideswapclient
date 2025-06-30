@@ -237,18 +237,18 @@ class DStartOrderLowBalanceErrorDialog extends ConsumerWidget {
         );
 
     return DContentDialog(
-      constraints: const BoxConstraints(maxWidth: 450, maxHeight: 400),
+      constraints: const BoxConstraints(maxWidth: 450, maxHeight: 440),
       style: defaultDialogTheme,
       title: DContentDialogTitle(
         content: Text(
-          'Order low balance error'.tr(),
+          'Insufficient balance'.tr(),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         onClose: onClose,
       ),
       content: SizedBox(
         width: 450,
-        height: 300,
+        height: 340,
         child: optionStartOrderQuoteLowBalance.match(
           () => () {
             return SizedBox();
@@ -318,6 +318,19 @@ class DStartOrderLowBalanceErrorDialog extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    Icon(Icons.info),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'For partial fills, please place a limit order at the bid/offer price, or use the market order function.'
+                            .tr(),
+                      ),
+                    ),
+                  ],
                 ),
                 Spacer(),
                 DCustomFilledBigButton(

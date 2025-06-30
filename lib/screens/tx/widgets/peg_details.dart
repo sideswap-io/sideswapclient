@@ -13,183 +13,178 @@ import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
-import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class PegDetails extends ConsumerStatefulWidget {
-  const PegDetails({super.key, required this.transItem});
-
-  final TransItem transItem;
+class PegDetails extends ConsumerWidget {
+  const PegDetails({super.key});
 
   @override
-  TxDetailsPegState createState() => TxDetailsPegState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
 
-class TxDetailsPegState extends ConsumerState<PegDetails> {
-  @override
-  void initState() {
-    super.initState();
-  }
+    return optionCurrentTxid.match(() => const SizedBox(), (txid) {
+      final allTxs = ref.watch(allTxsNotifierProvider);
 
-  @override
-  Widget build(BuildContext context) {
-    final amountProvider = ref.watch(amountToStringProvider);
-    final transItemHelper = ref.watch(
-      transItemHelperProvider(widget.transItem),
-    );
+      final transItem = allTxs[txid];
 
-    final amountSendStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: widget.transItem.peg.amountSend.toInt()),
-    );
-    final amountSend = double.tryParse(amountSendStr) ?? 0;
-    final amountRecvStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: widget.transItem.peg.amountRecv.toInt()),
-    );
-    final amountRecv = double.tryParse(amountRecvStr) ?? 0;
-    var conversionReceived = .0;
-    if (amountSend != 0 && amountRecv != 0) {
-      conversionReceived = amountRecv * 100 / amountSend;
-    }
-    final isPegIn = widget.transItem.peg.isPegIn;
-    final sendTicker = isPegIn ? kBitcoinTicker : kLiquidBitcoinTicker;
-    final recvTicker = isPegIn ? kLiquidBitcoinTicker : kBitcoinTicker;
-    final conversionRate =
-        '1 $sendTicker = ${conversionReceived.toStringAsFixed(2)}% $recvTicker';
+      if (transItem == null) {
+        return const SizedBox();
+      }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            TxCircleImage(
-              txCircleImageType:
-                  isPegIn ? TxCircleImageType.pegIn : TxCircleImageType.pegOut,
-              width: 24,
-              height: 24,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(
-                isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr(),
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
+      final amountProvider = ref.watch(amountToStringProvider);
+      final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+
+      final amountSendStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: transItem.peg.amountSend.toInt()),
+      );
+      final amountSend = double.tryParse(amountSendStr) ?? 0;
+      final amountRecvStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: transItem.peg.amountRecv.toInt()),
+      );
+      final amountRecv = double.tryParse(amountRecvStr) ?? 0;
+      var conversionReceived = .0;
+      if (amountSend != 0 && amountRecv != 0) {
+        conversionReceived = amountRecv * 100 / amountSend;
+      }
+      final isPegIn = transItem.peg.isPegIn;
+      final sendTicker = isPegIn ? kBitcoinTicker : kLiquidBitcoinTicker;
+      final recvTicker = isPegIn ? kLiquidBitcoinTicker : kBitcoinTicker;
+      final conversionRate =
+          '1 $sendTicker = ${conversionReceived.toStringAsFixed(2)}% $recvTicker';
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              TxCircleImage(
+                txCircleImageType: isPegIn
+                    ? TxCircleImageType.pegIn
+                    : TxCircleImageType.pegOut,
+                width: 24,
+                height: 24,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr(),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 11),
-          child: Text(
-            transItemHelper.txDateTimeStr(),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 11),
+            child: Text(
+              transItemHelper.txDateTimeStr(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: Colors.white,
+              ),
             ),
           ),
-        ),
-        const Padding(padding: EdgeInsets.only(top: 18), child: SizedBox()),
-        Consumer(
-          builder: (context, ref, child) {
-            final details = amountProvider.amountToStringNamed(
-              AmountToStringNamedParameters(
-                amount: widget.transItem.peg.amountSend.toInt(),
-                ticker: sendTicker,
-              ),
-            );
-            return TxDetailsRow(
-              description:
-                  isPegIn
-                      ? 'BTC Peg-in amount'.tr()
-                      : 'L-BTC Peg-out amount'.tr(),
-              details: details,
-            );
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: Consumer(
+          const Padding(padding: EdgeInsets.only(top: 18), child: SizedBox()),
+          Consumer(
             builder: (context, ref, child) {
               final details = amountProvider.amountToStringNamed(
                 AmountToStringNamedParameters(
-                  amount: widget.transItem.peg.amountRecv.toInt(),
-                  ticker: recvTicker,
+                  amount: transItem.peg.amountSend.toInt(),
+                  ticker: sendTicker,
                 ),
               );
               return TxDetailsRow(
-                description:
-                    isPegIn ? 'L-BTC received'.tr() : 'BTC received'.tr(),
-                details: isPegIn ? details : '$details - txFee',
+                description: isPegIn
+                    ? 'BTC Peg-in amount'.tr()
+                    : 'L-BTC Peg-out amount'.tr(),
+                details: details,
               );
             },
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: TxDetailsRow(
-            description: 'Conversion rate'.tr(),
-            details: conversionRate,
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Consumer(
+              builder: (context, ref, child) {
+                final details = amountProvider.amountToStringNamed(
+                  AmountToStringNamedParameters(
+                    amount: transItem.peg.amountRecv.toInt(),
+                    ticker: recvTicker,
+                  ),
+                );
+                return TxDetailsRow(
+                  description: isPegIn
+                      ? 'L-BTC received'.tr()
+                      : 'BTC received'.tr(),
+                  details: isPegIn ? details : '$details - txFee',
+                );
+              },
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: TxDetailsRow(
-            description: 'Status'.tr(),
-            details: transItemHelper.txStatus(),
-            detailsColor:
-                widget.transItem.confs.count != 0
-                    ? SideSwapColors.airSuperiorityBlue
-                    : Colors.white,
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: TxDetailsRow(
+              description: 'Conversion rate'.tr(),
+              details: conversionRate,
+            ),
           ),
-        ),
-        const Padding(
-          padding: EdgeInsets.only(top: 12.5),
-          child: DottedLine(
-            dashColor: Colors.white,
-            dashGapColor: Colors.transparent,
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: TxDetailsRow(
+              description: 'Status'.tr(),
+              details: transItemHelper.txStatus(),
+              detailsColor: transItem.confs.count != 0
+                  ? SideSwapColors.airSuperiorityBlue
+                  : Colors.white,
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 20.5),
-          child: TxDetailsColumn(
-            description:
-                isPegIn
-                    ? 'BTC Peg-in address'.tr()
-                    : 'L-BTC delivery address'.tr(),
-            details: widget.transItem.peg.addrSend,
+          const Padding(
+            padding: EdgeInsets.only(top: 12.5),
+            child: DottedLine(
+              dashColor: Colors.white,
+              dashGapColor: Colors.transparent,
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: TxDetailsColumn(
-            description:
-                isPegIn
-                    ? 'L-BTC receiving address'.tr()
-                    : 'BTC receiving address'.tr(),
-            details: widget.transItem.peg.addrRecv,
+          Padding(
+            padding: const EdgeInsets.only(top: 20.5),
+            child: TxDetailsColumn(
+              description: isPegIn
+                  ? 'BTC Peg-in address'.tr()
+                  : 'L-BTC delivery address'.tr(),
+              details: transItem.peg.addrSend,
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: TxDetailsColumn(
-            description: 'Transaction ID'.tr(),
-            details: widget.transItem.peg.txidSend,
-            isCopyVisible: true,
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: TxDetailsColumn(
+              description: isPegIn
+                  ? 'L-BTC receiving address'.tr()
+                  : 'BTC receiving address'.tr(),
+              details: transItem.peg.addrRecv,
+            ),
           ),
-        ),
-        const Spacer(),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 40),
-          child: TxDetailsBottomButtons(
-            id: widget.transItem.peg.txidRecv,
-            isLiquid: isPegIn,
-            blindType: BlindType.unblinded,
-            enabled: widget.transItem.peg.hasTxidRecv(),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: TxDetailsColumn(
+              description: 'Transaction ID'.tr(),
+              details: transItem.peg.txidSend,
+              isCopyVisible: true,
+            ),
           ),
-        ),
-      ],
-    );
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 40),
+            child: TxDetailsBottomButtons(
+              id: transItem.peg.txidRecv,
+              isLiquid: isPegIn,
+              blindType: BlindType.unblinded,
+              enabled: transItem.peg.hasTxidRecv(),
+            ),
+          ),
+        ],
+      );
+    });
   }
 }

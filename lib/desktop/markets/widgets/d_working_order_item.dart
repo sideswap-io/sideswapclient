@@ -65,7 +65,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(true);
                     },
-                    child: Text('Yes'.tr()).tr(),
+                    child: Text('Yes').tr(),
                   ),
                   TextButton(
                     focusNode: dialogCancelFocusNode,
@@ -75,7 +75,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(false);
                     },
-                    child: Text('No'.tr()).tr(),
+                    child: Text('No').tr(),
                   ),
                 ],
               );

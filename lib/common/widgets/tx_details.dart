@@ -18,113 +18,129 @@ import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class TxDetails extends ConsumerWidget {
-  const TxDetails({super.key, required this.transItem});
-
-  final TransItem transItem;
+  const TxDetails({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final amountProvider = ref.watch(amountToStringProvider);
-    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
-    final price = transItemHelper.txTargetPrice();
-    final balances = transItemHelper.txBalances();
-    final confs = transItemHelper.txConfs();
-    final status = transItemHelper.txStatus();
+    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
+    final allTxs = ref.watch(allTxsNotifierProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            TxImageSmall(assetName: transItemHelper.getTxImageAssetName()),
-            const SizedBox(width: 8),
-            Text(
-              transItemHelper.txTypeName(),
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+    return optionCurrentTxid.match(() => const SizedBox(), (txid) {
+      final transItem = allTxs[txid];
+
+      if (transItem == null) {
+        return const SizedBox();
+      }
+
+      final amountProvider = ref.watch(amountToStringProvider);
+      final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+      final price = transItemHelper.txTargetPrice();
+      final balances = transItemHelper.txBalances();
+      final optionConfs = transItemHelper.txConfs();
+      final status = transItemHelper.txStatus();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              TxImageSmall(assetName: transItemHelper.getTxImageAssetName()),
+              const SizedBox(width: 8),
+              Text(
+                transItemHelper.txTypeName(),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 11),
-        Text(
-          transItemHelper.txDateTimeStr(),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-            color: Colors.white,
+            ],
           ),
-        ),
-        const SizedBox(height: 18),
-        ...switch (transItemHelper.txType()) {
-          TxType.swap => [
-            TxDetailsSwap(transItem: transItem),
-            const SizedBox(height: 12),
-            TxDetailsRow(description: 'Price per unit'.tr(), details: price),
-          ],
-          TxType.sent => [TxDetailsSent(transItem: transItem)],
-          TxType.received => [TxDetailsReceive(transItem: transItem)],
-          TxType.internal => [
-            TxDetailsSideRow(leftText: 'Asset'.tr(), rightText: 'Amount'.tr()),
-            const SizedBox(height: 8),
-            TxDetailsBalancesList(transItem: transItem),
-          ],
-          _ => List<Widget>.generate(balances.length, (index) {
-            final balance = balances[index];
-            final asset = ref.watch(
-              assetsStateProvider.select((value) => value[balance.assetId]),
-            );
-            final ticker = asset != null ? asset.ticker : kUnknownTicker;
-            final balanceStr = amountProvider.amountToString(
-              AmountToStringParameters(
-                amount: balance.amount.toInt(),
-                precision: asset?.precision ?? 8,
+          const SizedBox(height: 11),
+          Text(
+            transItemHelper.txDateTimeStr(),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 18),
+          ...switch (transItemHelper.txType()) {
+            TxType.swap => [
+              TxDetailsSwap(transItem: transItem),
+              const SizedBox(height: 12),
+              TxDetailsRow(description: 'Price per unit'.tr(), details: price),
+            ],
+            TxType.sent => [TxDetailsSent(transItem: transItem)],
+            TxType.received => [TxDetailsReceive(transItem: transItem)],
+            TxType.internal => [
+              TxDetailsSideRow(
+                leftText: 'Asset'.tr(),
+                rightText: 'Amount'.tr(),
               ),
-            );
+              const SizedBox(height: 8),
+              TxDetailsBalancesList(transItem: transItem),
+            ],
+            _ => List<Widget>.generate(balances.length, (index) {
+              final balance = balances[index];
+              final asset = ref.watch(
+                assetsStateProvider.select((value) => value[balance.assetId]),
+              );
+              final ticker = asset != null ? asset.ticker : kUnknownTicker;
+              final balanceStr = amountProvider.amountToString(
+                AmountToStringParameters(
+                  amount: balance.amount.toInt(),
+                  precision: asset?.precision ?? 8,
+                ),
+              );
 
-            return TxDetailsRow(
-              description: 'Amount'.tr(),
-              details: '$balanceStr $ticker',
-            );
-          }),
-        },
-        const SizedBox(height: 14),
-        TxDetailsRow(
-          description: 'Status'.tr(),
-          details: status,
-          detailsColor: (confs.count != 0)
-              ? SideSwapColors.airSuperiorityBlue
-              : Colors.white,
-        ),
-        ...switch (transItemHelper.txType()) {
-          TxType txType when txType != TxType.swap => [
-            const SizedBox(height: 14),
-            TxDetailsRowNotes(tx: transItem.tx),
-          ],
-          _ => [const SizedBox()],
-        },
-        const SizedBox(height: 20),
-        const DottedLine(
-          dashColor: Colors.white,
-          dashGapColor: Colors.transparent,
-        ),
-        const SizedBox(height: 16),
-        TxDetailsColumn(
-          description: 'Transaction ID'.tr(),
-          details: transItem.tx.txid,
-          isCopyVisible: true,
-        ),
-        const Spacer(),
-        SizedBox(
-          width: double.maxFinite,
-          height: 54,
-          child: TxDetailsBottomButtons(id: transItem.tx.txid, isLiquid: true),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
+              return TxDetailsRow(
+                description: 'Amount'.tr(),
+                details: '$balanceStr $ticker',
+              );
+            }),
+          },
+          const SizedBox(height: 14),
+          TxDetailsRow(
+            description: 'Status'.tr(),
+            details: status,
+            detailsColor: optionConfs.match(
+              () => Colors.white,
+              (_) => SideSwapColors.airSuperiorityBlue,
+            ),
+          ),
+          ...switch (transItemHelper.txType()) {
+            TxType txType when txType != TxType.swap => [
+              const SizedBox(height: 14),
+              TxDetailsRowNotes(tx: transItem.tx),
+            ],
+            _ => [const SizedBox()],
+          },
+          const SizedBox(height: 20),
+          const DottedLine(
+            dashColor: Colors.white,
+            dashGapColor: Colors.transparent,
+          ),
+          const SizedBox(height: 16),
+          TxDetailsColumn(
+            description: 'Transaction ID'.tr(),
+            details: transItem.tx.txid,
+            isCopyVisible: true,
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.maxFinite,
+            height: 54,
+            child: TxDetailsBottomButtons(
+              id: transItem.tx.txid,
+              isLiquid: true,
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      );
+    });
   }
 }
 

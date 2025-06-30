@@ -38,7 +38,7 @@ import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
-import 'package:sideswap/screens/balances.dart';
+import 'package:sideswap/screens/tx_memo.dart';
 import 'package:sideswap/screens/home/wallet_locked.dart';
 import 'package:sideswap/screens/markets/market_limit_page.dart';
 import 'package:sideswap/screens/markets/market_swap_page.dart';
@@ -205,7 +205,7 @@ class MobileRoutePage {
         const MaterialPage<Widget>(child: WalletMain()),
         const MaterialPage<Widget>(child: TxDetailsPopup()),
       ],
-      Status.txEditMemo => [const MaterialPage<Widget>(child: WalletTxMemo())],
+      Status.txEditMemo => [const MaterialPage<Widget>(child: TxMemo())],
       Status.swapWaitPegTx => [
         const MaterialPage<Widget>(child: WalletMain()),
         const MaterialPage<Widget>(child: PegInAddress()),

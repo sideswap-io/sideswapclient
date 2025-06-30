@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/styles/button_styles.dart';
 import 'package:sideswap/desktop/d_jade_info_dialog.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
@@ -41,9 +43,35 @@ class JadeStatusListener extends HookConsumerWidget {
     });
 
     useEffect(() {
-      if (jadeLockState == JadeLockStateError()) {
-        // TODO (malcolmpl): if JadeLockStateError - show error
-        Future.microtask(() {
+      if (jadeLockState is JadeLockStateError) {
+        Future.microtask(() async {
+          if (!context.mounted) return;
+          await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Jade Unlock Error'),
+                content: const Text(
+                  'There was an error with the Jade unlock. Please try again.',
+                ),
+                actionsAlignment: MainAxisAlignment.spaceBetween,
+                actions: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: TextButton(
+                      style: Theme.of(
+                        context,
+                      ).extension<SideswapYesButtonStyle>()!.style,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('Close').tr(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
           ref.invalidate(jadeLockStateNotifierProvider);
         });
       }
@@ -61,7 +89,6 @@ class JadeStatusListener extends HookConsumerWidget {
             ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
             // rest of MarketTradeRepository.makeSwapTrade
             ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
-            ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
           }
         });
       }

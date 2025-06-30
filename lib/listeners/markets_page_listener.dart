@@ -268,6 +268,7 @@ class MarketsPageListener extends HookConsumerWidget {
             optionQuoteSuccess: optionStartOrderQuoteSuccess,
           );
 
+          ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
           ref.invalidate(marketStartOrderNotifierProvider);
         });
       });

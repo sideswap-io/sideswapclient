@@ -28,7 +28,7 @@ chown -R "$(whoami)" ./flutter
 echo "Building sideswap rust library..."
 git clone https://github.com/sideswap-io/sideswap_rust
 pushd sideswap_rust
-git checkout 0ba7485f77c86d1a6ae64a0cfedba22afe4ed98a
+git checkout 91791efbceb3fac4774d1e42a519e70b14b876cf
 cargo build --release --package sideswap_client
 popd
 

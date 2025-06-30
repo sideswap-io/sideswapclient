@@ -43,6 +43,8 @@ class MarketLimitPage extends HookConsumerWidget {
           return;
         }
 
+        FocusManager.instance.primaryFocus?.unfocus();
+
         ref
             .read(jadeAuthInProgressStateNotifierProvider.notifier)
             .setState(true);
@@ -182,12 +184,11 @@ class LimitTtlPopupMenu extends HookConsumerWidget {
                   description,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     fontSize: 13,
-                    color:
-                        selected
-                            ? SideSwapColors.airSuperiorityBlue
-                            : over.value
-                            ? SideSwapColors.brightTurquoise
-                            : Colors.white,
+                    color: selected
+                        ? SideSwapColors.airSuperiorityBlue
+                        : over.value
+                        ? SideSwapColors.brightTurquoise
+                        : Colors.white,
                   ),
                 ),
               ),

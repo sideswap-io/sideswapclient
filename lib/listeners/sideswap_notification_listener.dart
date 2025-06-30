@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/client_ffi.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -48,13 +51,35 @@ class SideswapNotificationProvider {
         .read(localNotificationsProvider)
         .selectNotificationSubject
         .stream
-        .listen(_onNotificationData);
+        .listen((payload) {
+          _onNotificationData(payload);
+        });
     ref
         .read(localNotificationsProvider)
         .didReceiveLocalNotificationSubject
         .stream
         .listen(_oniOSNotification);
-    ref.read(walletProvider).newTransItemSubject.stream.listen(_onNewTransItem);
+    ref.listen(updatedTxsNotifierProvider, (_, updatedTxs) {
+      for (final tx in updatedTxs) {
+        _onNewTransItem(tx);
+      }
+    });
+    ref.listen(showTransactionNotifierProvider, (_, showTransaction) {
+      showTransaction.match(() {}, (tx) {
+        if (_onNewTransItem(tx)) {
+          // stop receiving tx data
+          _delayedNotifications.removeWhere(
+            (e) => e.txid == (tx.hasTx() ? tx.tx.txid : tx.peg.txidSend),
+          );
+          final msg = To();
+          msg.showTransaction = To_ShowTransaction();
+          ref.read(walletProvider).sendMsg(msg);
+
+          // cleanup
+          ref.invalidate(showTransactionNotifierProvider);
+        }
+      });
+    });
   }
 
   final _delayedNotifications = <FCMPayload>[];
@@ -97,14 +122,30 @@ class SideswapNotificationProvider {
           _delayedNotifications.add(payload);
           // check if we already have txid on list
           final allTxs = ref.read(allTxsNotifierProvider);
-          for (var txs in allTxs.values) {
-            _onNewTransItem(txs);
+          var isHandled = false;
+          for (var tx in allTxs.values) {
+            final ret = _onNewTransItem(tx);
+            if (ret) {
+              _delayedNotifications.removeWhere((e) => e.txid == tx.tx.txid);
+              isHandled = true;
+            }
           }
           final allPegs = ref.read(allPegsNotifierProvider);
           for (var pegs in allPegs.values) {
-            for (var item in pegs) {
-              _onNewTransItem(item);
+            for (var tx in pegs) {
+              final ret = _onNewTransItem(tx);
+              if (ret) {
+                _delayedNotifications.removeWhere(
+                  (e) => e.txid == tx.peg.txidSend,
+                );
+                isHandled = true;
+              }
             }
+          }
+
+          final serverConnected = ref.read(serverConnectionNotifierProvider);
+          if (!isHandled && serverConnected && payload.txid != null) {
+            _requestTxFromBackend(payload.txid!);
           }
         } else {
           logger.w('Empty payload: $fcmMessage');
@@ -126,9 +167,7 @@ class SideswapNotificationProvider {
         );
 
         logger.d('Delayed found: ${transItem.toDebugString()}');
-        _onNotificationData(fcmPayload);
-        _delayedNotifications.removeWhere((e) => e.txid == txid);
-        return true;
+        return _onNotificationData(fcmPayload);
       } on StateError {
         return false;
       }
@@ -142,15 +181,19 @@ class SideswapNotificationProvider {
         );
 
         logger.d('Delayed found: ${transItem.toDebugString()}');
-        _onNotificationData(fcmPayload);
-        _delayedNotifications.removeWhere((e) => e.txid == txid);
-        return true;
+        return _onNotificationData(fcmPayload);
       } on StateError {
         return false;
       }
     }
 
-    logger.d('Delayed not found!');
+    // maybe we don't have this txid, ask server about it
+    final txid = transItem.tx.hasTxid()
+        ? transItem.tx.txid
+        : transItem.peg.txidSend;
+    _requestTxFromBackend(txid);
+
+    logger.d('Delayed not found! Asking BE for tx');
     return false;
   }
 
@@ -273,26 +316,48 @@ class SideswapNotificationProvider {
     }
   }
 
-  void _onNotificationData(FCMPayload fcmPayload) {
+  bool _onNotificationData(FCMPayload fcmPayload) {
     logger.d('Notification data: $fcmPayload');
 
     final txid = fcmPayload.txid;
 
     final fcmTxType = fcmPayload.type;
     if (fcmTxType == null) {
-      return;
+      return false;
     }
 
     final allTxs = ref.read(allTxsNotifierProvider);
 
     for (final tx in allTxs.values) {
       if (tx.tx.txid == txid) {
+        if (FlavorConfig.isDesktop) {
+          final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+          final newWalletMainArguments = walletMainArguments.fromIndexDesktop(
+            3,
+          ); // transactions page
+          ref
+              .read(uiStateArgsNotifierProvider.notifier)
+              .setWalletMainArguments(
+                newWalletMainArguments,
+              ); // open transactions page
+
+          final allPegsById = ref.read(allPegsByIdProvider);
+          ref
+              .read(desktopDialogProvider)
+              .showTx(
+                tx,
+                isPeg: allPegsById.containsKey(tx.id),
+              ); // show tx popup
+          return true;
+        }
+
         if (fcmTxType == FCMPayloadType.swap) {
           ref.read(walletProvider).showSwapTxDetails(tx);
-        } else {
-          ref.read(walletProvider).showTxDetails(tx);
+          return true;
         }
-        return;
+
+        ref.read(walletProvider).showTxDetails(tx);
+        return true;
       }
     }
 
@@ -301,8 +366,26 @@ class SideswapNotificationProvider {
     for (final list in allPegs.values) {
       for (final peg in list) {
         if (peg.peg.txidSend == txid) {
+          if (FlavorConfig.isDesktop) {
+            final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+            final newWalletMainArguments = walletMainArguments.fromIndexDesktop(
+              3,
+            ); // transactions page
+            ref
+                .read(uiStateArgsNotifierProvider.notifier)
+                .setWalletMainArguments(
+                  newWalletMainArguments,
+                ); // open transactions page
+
+            final allPegsById = ref.read(allPegsByIdProvider);
+            ref
+                .read(desktopDialogProvider)
+                .showTx(peg, isPeg: allPegsById.containsKey(peg.id));
+            return true;
+          }
+
           ref.read(walletProvider).showTxDetails(peg);
-          return;
+          return true;
         }
       }
     }
@@ -310,7 +393,11 @@ class SideswapNotificationProvider {
     logger.d('onNotificationData payload not found: $fcmPayload');
     // can't display now, push as delayed notification
     // and wait for data from server
-    _delayedNotifications.add(fcmPayload);
+    if (!_delayedNotifications.contains(fcmPayload)) {
+      _delayedNotifications.add(fcmPayload);
+    }
+
+    return false;
   }
 
   void _oniOSNotification(ReceivedNotification receivedNotification) async {
@@ -369,6 +456,23 @@ class SideswapNotificationProvider {
           payload: payload?.toJsonString() ?? '',
           type: type,
         );
+  }
+
+  void requestTxFromBackend() {
+    if (_delayedNotifications.isEmpty) {
+      return;
+    }
+    final txid = _delayedNotifications.first.txid;
+
+    if (txid != null) {
+      _requestTxFromBackend(txid);
+    }
+  }
+
+  void _requestTxFromBackend(String txid) {
+    final msg = To();
+    msg.showTransaction = To_ShowTransaction(txid: txid);
+    ref.read(walletProvider).sendMsg(msg);
   }
 }
 

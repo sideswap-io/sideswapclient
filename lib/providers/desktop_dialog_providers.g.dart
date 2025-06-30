@@ -6,7 +6,7 @@ part of 'desktop_dialog_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$desktopDialogHash() => r'01d3776a1fa006f0c0b70eaade62dceab6501450';
+String _$desktopDialogHash() => r'3a347a8b1ec29b988d070f2bf3792e92ebfe741f';
 
 /// See also [desktopDialog].
 @ProviderFor(desktopDialog)

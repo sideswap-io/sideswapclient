@@ -126,7 +126,8 @@ class PaymentSelectAssetTabBar extends HookConsumerWidget {
     return switch (filteredAccountAssets.isEmpty) {
       true => const SizedBox(),
       _ => Container(
-        color: SideSwapColors.chathamsBlue,
+        // color: SideSwapColors.chathamsBlue,
+        color: SideSwapColors.blumine,
         child: PaymentAssetList(onSelected: onSelected),
       ),
     };
@@ -162,7 +163,7 @@ class PaymentAssetList extends ConsumerWidget {
                     child: AssetItem(
                       asset: asset,
                       disabled: disabled,
-                      backgroundColor: SideSwapColors.blumine,
+                      backgroundColor: SideSwapColors.chathamsBlue,
                       onSelected: (Asset value) {
                         Navigator.of(context).pop();
                         onSelected?.call(value);

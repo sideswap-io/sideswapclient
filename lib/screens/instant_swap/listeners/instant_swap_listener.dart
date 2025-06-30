@@ -77,6 +77,8 @@ class InstantSwapListener extends HookConsumerWidget {
                   );
             }
             ref.invalidate(exchangeAccepQuoteStateNotifierProvider);
+            // unfreeze quote values
+            ref.invalidate(instantSwapStateNotifierProvider);
           });
         },
       )();
@@ -94,6 +96,8 @@ class InstantSwapListener extends HookConsumerWidget {
             await ref.read(desktopDialogProvider).showAcceptQuoteErrorDialog();
             ref.invalidate(exchangeQuoteNotifierProvider);
             ref.invalidate(acceptQuoteNotifierProvider);
+            // unfreeze quote values
+            ref.invalidate(instantSwapStateNotifierProvider);
           });
         },
       )();

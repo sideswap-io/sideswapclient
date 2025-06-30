@@ -67,8 +67,9 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
   }
 
   void setModel(NetworkSettingsModel networkSettingsModel) {
-    final settingsNetworkType =
-        ref.read(configurationProvider).settingsNetworkType;
+    final settingsNetworkType = ref
+        .read(configurationProvider)
+        .settingsNetworkType;
     final host = ref.read(configurationProvider).networkHost;
     final port = ref.read(configurationProvider).networkPort;
     final useTls = ref.read(configurationProvider).networkUseTLS;
@@ -178,4 +179,13 @@ bool networkSettingsNeedSave(Ref ref) {
   return (networkSettingsModel is NetworkSettingsModelApply &&
       (networkSettingsModel.settingsNetworkType != settingsNetworkType ||
           networkSettingsModel.env != env));
+}
+
+@riverpod
+bool networkSettingsNeedRestart(Ref ref) {
+  final env = ref.watch(envProvider);
+  final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+
+  return (networkSettingsModel is NetworkSettingsModelApply &&
+      networkSettingsModel.env != env);
 }

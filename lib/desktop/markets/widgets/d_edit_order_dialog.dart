@@ -218,7 +218,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(true);
                     },
-                    child: Text('Yes'.tr()).tr(),
+                    child: Text('Yes').tr(),
                   ),
                   TextButton(
                     focusNode: dialogNoFocusNode,
@@ -228,7 +228,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(false);
                     },
-                    child: Text('No'.tr()).tr(),
+                    child: Text('No').tr(),
                   ),
                 ],
               );
@@ -600,7 +600,9 @@ class DEditOrderDialog extends HookConsumerWidget {
                             msg.orderEdit = To_OrderEdit(
                               orderId: order.orderId,
                               baseAmount: Int64(editAmount.asSatoshi()),
-                              price: editPrice.asDouble(),
+                              price: order.isPriceTracking
+                                  ? null
+                                  : editPrice.asDouble(),
                               priceTracking: order.isPriceTracking
                                   ? newPriceTracking
                                   : null,

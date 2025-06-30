@@ -425,13 +425,20 @@ class DSettingsNetworkAccessSaveOrBackButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final needSave = ref.watch(networkSettingsNeedSaveProvider);
+    final needRestart = ref.watch(networkSettingsNeedRestartProvider);
 
     return Center(
       child: switch (needSave) {
         true => DCustomTextBigButton(
           width: 266,
           onPressed: () {
-            ref.read(desktopDialogProvider).showNeedRestartDialog();
+            if (needRestart) {
+              ref.read(desktopDialogProvider).showNeedRestartDialog();
+              return;
+            }
+
+            ref.read(networkSettingsNotifierProvider.notifier).applySettings();
+            ref.read(walletProvider).sendNetworkSettings();
           },
           child: Text('SAVE'.tr()),
         ),

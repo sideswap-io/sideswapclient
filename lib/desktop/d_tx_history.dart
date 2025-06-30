@@ -33,7 +33,7 @@ class DTxHistory extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
-      ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+      ref.read(txHistoryStateNotifierProvider.notifier).setVisible();
 
       return;
     }, const []);

@@ -3,6 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,6 +13,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/new_block_providers.dart';
+import 'package:sideswap/providers/new_tx_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -41,11 +43,98 @@ class LoadTransactionsStateNotifier extends _$LoadTransactionsStateNotifier {
   }
 }
 
+@freezed
+sealed class TxHistoryState with _$TxHistoryState {
+  const factory TxHistoryState.invisible() = TxHistoryStateInvisible;
+  const factory TxHistoryState.visible() = TxHistoryStateVisible;
+}
+
+@riverpod
+class TxHistoryStateNotifier extends _$TxHistoryStateNotifier {
+  @override
+  TxHistoryState build() {
+    return TxHistoryState.invisible();
+  }
+
+  void setVisible() {
+    Future.microtask(() => state = TxHistoryState.visible());
+  }
+}
+
+@Riverpod(keepAlive: true)
+class UpdatedTxsNotifier extends _$UpdatedTxsNotifier {
+  @override
+  List<TransItem> build() {
+    return [];
+  }
+
+  void update(From_UpdatedTxs txs) {
+    state = [...txs.items];
+  }
+
+  void remove(From_RemovedTxs txs) {
+    final allTxs = [...state];
+
+    for (var txid in txs.txids) {
+      allTxs.removeWhere((e) => e.id == txid);
+    }
+
+    state = allTxs;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ShowTransactionNotifier extends _$ShowTransactionNotifier {
+  @override
+  Option<TransItem> build() {
+    return Option.none();
+  }
+
+  void setState(TransItem tx) {
+    state = Option.of(tx);
+  }
+}
+
 @Riverpod(keepAlive: true)
 class AllTxsNotifier extends _$AllTxsNotifier {
   @override
   Map<String, TransItem> build() {
+    ref.listen(txHistoryStateNotifierProvider, (_, next) {
+      if (next is TxHistoryStateInvisible) {
+        return;
+      }
+
+      loadTransactions();
+    });
+
+    ref.listen(updatedTxsNotifierProvider, (_, next) {
+      updateList(txs: next);
+    });
+
+    ref.listen(showTransactionNotifierProvider, (_, next) {
+      if (next.isNone()) {
+        return;
+      }
+
+      final tx = next.getOrElse(() => TransItem());
+      state[tx.id] = tx;
+    });
+
+    ref.listen(newTxNotifierProvider, (_, _) {
+      final txHistoryState = ref.read(txHistoryStateNotifierProvider);
+      if (txHistoryState is TxHistoryStateInvisible) {
+        return;
+      }
+
+      loadTransactions();
+    });
+
     ref.listen(newBlockNotifierProvider, (_, _) {
+      final txHistoryState = ref.read(txHistoryStateNotifierProvider);
+      if (txHistoryState is TxHistoryStateInvisible) {
+        return;
+      }
+
       var txShouldUpdated = false;
       for (final transItem in state.values) {
         if (transItem.hasConfs()) {
@@ -60,46 +149,41 @@ class AllTxsNotifier extends _$AllTxsNotifier {
     return {};
   }
 
-  void update({required From_UpdatedTxs txs}) {
-    final allTxs = {...state};
-
-    for (var item in txs.items) {
-      allTxs[item.id] = item;
-    }
-
-    state = allTxs;
-  }
-
   void updateList({required List<TransItem> txs}) {
     final allTxs = {...state};
 
-    for (var item in txs) {
+    for (final item in txs) {
       allTxs[item.id] = item;
     }
 
     state = allTxs;
   }
 
-  void remove({required From_RemovedTxs txs}) {
+  void remove(From_RemovedTxs txs) {
     final allTxs = {...state};
 
-    for (var txid in txs.txids) {
+    for (final txid in txs.txids) {
       allTxs.remove(txid);
     }
 
     state = allTxs;
   }
 
-  Future<void> loadTransactions() async {
-    await Future.microtask(
-      () => ref
-          .read(loadTransactionsStateNotifierProvider.notifier)
-          .setState(LoadTransactionsState.loading()),
-    );
+  void loadTransactions() {
+    Future.microtask(() {
+      final loadTransactionsState = ref.read(
+        loadTransactionsStateNotifierProvider,
+      );
+      if (loadTransactionsState is LoadTransactionsStateEmpty) {
+        ref
+            .read(loadTransactionsStateNotifierProvider.notifier)
+            .setState(LoadTransactionsState.loading());
 
-    final msg = To();
-    msg.loadTransactions = Empty();
-    ref.read(walletProvider).sendMsg(msg);
+        final msg = To();
+        msg.loadTransactions = Empty();
+        ref.read(walletProvider).sendMsg(msg);
+      }
+    });
   }
 }
 
@@ -191,34 +275,6 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(Ref ref) {
     allAssets[item.key] = tempAssets;
   }
   return allAssets;
-
-  // final transactions = <TxItem>[...allTxs.values.map((e) => TxItem(item: e))];
-  // for (final itemList in allPegs.values) {
-  //   transactions.addAll(itemList.map((e) => TxItem(item: e)));
-  // }
-
-  // transactions.sort((a, b) => b.compareTo(a));
-
-  // final tempAssets = <TxItem>[];
-  // final dateFormat = DateFormat('yyyy-MM-dd');
-  // for (var item in transactions) {
-  //   if (tempAssets.isEmpty) {
-  //     tempAssets.add(item.copyWith(showDate: true));
-  //   } else {
-  //     final last = DateTime.parse(
-  //       dateFormat.format(
-  //         DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt),
-  //       ),
-  //     );
-  //     final current = DateTime.parse(
-  //       dateFormat.format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)),
-  //     );
-  //     final diff = last.difference(current).inDays;
-  //     tempAssets.add(item.copyWith(showDate: diff != 0));
-  //   }
-  // }
-
-  // return allAssets;
 }
 
 // Version with map of assetid and transaction list
@@ -291,21 +347,6 @@ Map<String, List<TxItem>> assetTransactions(Ref ref) {
   }
   return allAssets;
 }
-
-// TODO (malcolmpl): new wallets
-// @riverpod
-// List<TxItem> transactionsForAccount(Ref ref, AccountType accountType) {
-//   final allAssets = ref.watch(accountAssetTransactionsProvider);
-
-//   final transactions = <TxItem>[];
-//   for (final accountAsset in allAssets.keys) {
-//     if (accountAsset.account == accountType) {
-//       transactions.addAll(allAssets[accountAsset] ?? []);
-//     }
-//   }
-
-//   return transactions;
-// }
 
 @riverpod
 List<TxItem> distinctTransactionsForAccount(Ref ref) {
@@ -905,10 +946,10 @@ class TransItemHelper {
     };
   }
 
-  Confs txConfs() {
+  Option<Confs> txConfs() {
     return switch (transItem.hasConfs()) {
-      true => transItem.confs,
-      _ => Confs(),
+      true => Option.of(transItem.confs),
+      _ => Option.none(),
     };
   }
 
@@ -927,9 +968,9 @@ class TransItemHelper {
 
     final unconfirmed = 'Unconfirmed'.tr();
     final confirmed = 'Confirmed'.tr();
-    return !transItem.hasConfs()
-        ? '$confirmed 2/2'
-        : '$unconfirmed ${transItem.confs.count}/${transItem.confs.total}';
+    return transItem.hasConfs()
+        ? '$unconfirmed ${transItem.confs.count}/${transItem.confs.total}'
+        : '$confirmed 2/2';
   }
 
   String txDateTimeStr() {
@@ -953,5 +994,17 @@ class TransItemHelper {
       ),
       _ => (txId: transItem.tx.txid, isLiquid: true, unblinded: false),
     };
+  }
+}
+
+@Riverpod(keepAlive: true)
+class CurrentTxPopupItemNotifier extends _$CurrentTxPopupItemNotifier {
+  @override
+  Option<String> build() {
+    return Option.none();
+  }
+
+  void setCurrentTxId(String txId) {
+    state = Option.of(txId);
   }
 }

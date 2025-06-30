@@ -21,6 +21,7 @@ import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/preview_order_dialog_providers.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -700,6 +701,16 @@ OrderAmount marketOrderAmount(Ref ref) {
       final assetId = marketSideState == MarketSideStateBase()
           ? assetPair.base
           : assetPair.quote;
+
+      if (amountString.isEmpty) {
+        return OrderAmount(
+          amount: Decimal.zero,
+          satoshi: 0,
+          assetId: assetId,
+          assetPair: assetPair,
+        );
+      }
+
       final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: amountDecimal.toString(),
@@ -973,22 +984,6 @@ Option<String> marketAcceptQuoteSuccess(Ref ref) {
   )();
 }
 
-// @riverpod
-// class MarketAcceptQuoteSuccessShowDialogNotifier
-//     extends _$MarketAcceptQuoteSuccessShowDialogNotifier {
-//   @override
-//   bool build() {
-//     final optionAcceptQuoteSuccess = ref.watch(
-//       marketAcceptQuoteSuccessProvider,
-//     );
-//     return optionAcceptQuoteSuccess.match(() => false, (_) => true);
-//   }
-
-//   void setState(bool value) {
-//     state = value;
-//   }
-// }
-
 @riverpod
 Option<String> marketAcceptQuoteError(Ref ref) {
   final optionAcceptQuote = ref.watch(marketAcceptQuoteProvider);
@@ -1098,6 +1093,15 @@ OrderAmount limitOrderAmount(Ref ref) {
     },
     (assetPair) => () {
       final assetId = assetPair.base;
+      if (amountString.isEmpty) {
+        return OrderAmount(
+          amount: Decimal.zero,
+          satoshi: 0,
+          assetId: assetId,
+          assetPair: assetPair,
+        );
+      }
+
       final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: amountDecimal.toString(),
@@ -1154,6 +1158,16 @@ OrderAmount limitOrderPrice(Ref ref) {
       final assetId = marketSideState == MarketSideStateBase()
           ? assetPair.quote
           : assetPair.base;
+
+      if (priceString.isEmpty) {
+        return OrderAmount(
+          amount: Decimal.zero,
+          satoshi: 0,
+          assetId: assetId,
+          assetPair: assetPair,
+        );
+      }
+
       final priceDecimal = Decimal.tryParse(priceString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: priceDecimal.toString(),
@@ -1731,6 +1745,7 @@ abstract class AbstractMarketTradeRepository {
   Future<void> makeSwapTrade({
     required BuildContext context,
     required Option<QuoteSuccess> optionQuoteSuccess,
+    Option<PreviewOrderDialogModifiers> optionModifiers = const Option.none(),
   });
 }
 
@@ -1743,7 +1758,15 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
   Future<void> makeSwapTrade({
     required BuildContext context,
     required Option<QuoteSuccess> optionQuoteSuccess,
+    Option<PreviewOrderDialogModifiers> optionModifiers = const Option.none(),
   }) async {
+    optionModifiers.match(
+      () => ref.invalidate(previewOrderDialogModifiersNotifierProvider),
+      (modifiers) => ref
+          .read(previewOrderDialogModifiersNotifierProvider.notifier)
+          .setState(modifiers),
+    );
+
     await optionQuoteSuccess.match(
       () => () {},
       (quoteSuccess) => () async {
@@ -1783,7 +1806,6 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
             return;
           }
 
-          ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
           ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
         }
       },

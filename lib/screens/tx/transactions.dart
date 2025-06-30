@@ -25,7 +25,7 @@ class Transactions extends HookConsumerWidget {
     final storageKey = useMemoized(() => PageStorageKey(pageStorageKeyData));
 
     useEffect(() {
-      ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+      ref.read(txHistoryStateNotifierProvider.notifier).setVisible();
 
       return;
     }, const []);
@@ -69,33 +69,23 @@ class Transactions extends HookConsumerWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            ScrollConfiguration(
-              behavior: allTransactions.isEmpty
-                  ? ScrollConfiguration.of(context).copyWith(scrollbars: false)
-                  : ScrollConfiguration.of(context),
-              child: CustomScrollView(
-                key: storageKey,
-                physics: allTransactions.isEmpty
-                    ? const NeverScrollableScrollPhysics()
-                    : null,
-                slivers: [
-                  SliverList.builder(
-                    itemBuilder: (context, index) {
-                      return allTransactions.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: TxListItem(txItem: allTransactions[index]),
-                            )
-                          : const EmptyTxListItem();
-                    },
-                    itemCount: allTransactions.isNotEmpty
-                        ? allTransactions.length
-                        : 10,
-                  ),
-                ],
-              ),
+            CustomScrollView(
+              key: storageKey,
+              slivers: [
+                SliverList.builder(
+                  itemBuilder: (context, index) {
+                    return allTransactions.isNotEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: TxListItem(txItem: allTransactions[index]),
+                          )
+                        : const EmptyTxListItem();
+                  },
+                  itemCount: allTransactions.isNotEmpty
+                      ? allTransactions.length
+                      : 10,
+                ),
+              ],
             ),
             switch (loadTransactionsState) {
               LoadTransactionsStateLoading() => const Center(

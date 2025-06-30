@@ -172,4 +172,98 @@ as String?,
 
 }
 
+/// @nodoc
+mixin _$TxHistoryState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TxHistoryState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'TxHistoryState()';
+}
+
+
+}
+
+/// @nodoc
+class $TxHistoryStateCopyWith<$Res>  {
+$TxHistoryStateCopyWith(TxHistoryState _, $Res Function(TxHistoryState) __);
+}
+
+
+/// @nodoc
+
+
+class TxHistoryStateInvisible implements TxHistoryState {
+  const TxHistoryStateInvisible();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TxHistoryStateInvisible);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'TxHistoryState.invisible()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class TxHistoryStateVisible implements TxHistoryState {
+  const TxHistoryStateVisible();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TxHistoryStateVisible);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'TxHistoryState.visible()';
+}
+
+
+}
+
+
+
+
 // dart format on
