@@ -9,6 +9,7 @@ import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DNetworkAccessOnboarding extends ConsumerWidget {
   const DNetworkAccessOnboarding({super.key});
@@ -46,9 +47,14 @@ class DNetworkAccessOnboardingSaveOrBackButton extends ConsumerWidget {
       child: switch (needSave) {
         true => DCustomTextBigButton(
           width: 266,
-          onPressed: () {
+          onPressed: () async {
             if (needRestart) {
-              ref.read(desktopDialogProvider).showNeedRestartDialog();
+              await ref.read(desktopDialogProvider).showNeedRestartDialog();
+
+              final pageStatus = ref.read(pageStatusNotifierProvider);
+              if (context.mounted && pageStatus == Status.noWallet) {
+                Navigator.of(context).pop();
+              }
               return;
             }
 

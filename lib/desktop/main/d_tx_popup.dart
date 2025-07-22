@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -12,6 +13,7 @@ import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
@@ -190,9 +192,17 @@ class DPegPopup extends ConsumerWidget {
       width: 634,
       height: 660,
       child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
-        final allTxs = ref.watch(allTxsNotifierProvider);
+        final allPegs = ref.watch(allPegsNotifierProvider);
 
-        final transItem = allTxs[txid];
+        final transItem = allPegs.values
+            .map(
+              (item) => item.firstWhereOrNull(
+                (pegTransItem) =>
+                    pegTransItem.peg.txidRecv == txid ||
+                    pegTransItem.peg.txidSend == txid,
+              ),
+            )
+            .firstWhereOrNull((item) => item != null);
 
         if (transItem == null) {
           return const SizedBox();

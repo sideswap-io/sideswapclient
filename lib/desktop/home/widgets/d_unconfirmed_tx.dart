@@ -2,7 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/desktop/widgets/d_transparent_button.dart';
+import 'package:sideswap/desktop/common/button/d_button.dart';
+import 'package:sideswap/desktop/common/button/d_button_theme.dart';
+import 'package:sideswap/desktop/common/button/d_hover_button.dart';
+import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_amount.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_date.dart';
@@ -14,15 +17,15 @@ import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DUnconfirmedTx extends StatelessWidget {
   const DUnconfirmedTx({super.key});
 
-  static DateFormat dateFormatDate = DateFormat('y-MM-dd ');
-  static DateFormat dateFormatTime = DateFormat('HH:mm:ss');
-
   @override
   Widget build(BuildContext context) {
+    const flexes = [183, 97, 205, 205, 105, 46];
+
     return Column(
       children: [
         SizedBox(
@@ -34,7 +37,8 @@ class DUnconfirmedTx extends StatelessWidget {
               ).textTheme.labelMedium?.copyWith(color: SideSwapColors.glacier),
             ),
             child: DFlexesRow(
-              flexes: const [183, 97, 205, 205, 125, 26],
+              flexes: flexes,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 DTxHistoryHeader(text: 'Date'.tr()),
                 DTxHistoryHeader(text: 'Type'.tr()),
@@ -50,8 +54,6 @@ class DUnconfirmedTx extends StatelessWidget {
         Consumer(
           builder: (context, ref, _) {
             final updatedTxs = ref.watch(updatedTxsNotifierProvider);
-            final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-            final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
 
             return switch (updatedTxs.isEmpty) {
               true => Padding(
@@ -64,104 +66,124 @@ class DUnconfirmedTx extends StatelessWidget {
                 ),
               ),
               false => Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverList.builder(
-                        itemBuilder: (context, index) {
-                          final transItem = updatedTxs[index];
+                child: CustomScrollView(
+                  slivers: [
+                    SliverList.builder(
+                      itemBuilder: (context, index) {
+                        final transItem = updatedTxs[index];
 
-                          return Consumer(
-                            builder: (context, ref, child) {
-                              final transItemHelper = ref.watch(
-                                transItemHelperProvider(transItem),
-                              );
+                        return Consumer(
+                          builder: (context, ref, child) {
+                            final buttonStyle = ref
+                                .watch(desktopAppThemeNotifierProvider)
+                                .buttonWithoutBorderStyle;
 
-                              return DTransparentButton(
-                                onPressed: () {
-                                  final allPegsById = ref.read(
-                                    allPegsByIdProvider,
-                                  );
-                                  ref
-                                      .read(desktopDialogProvider)
-                                      .showTx(
-                                        transItem,
-                                        isPeg: allPegsById.containsKey(
-                                          transItem.id,
-                                        ),
-                                      );
-                                },
-                                child: DFlexesRow(
-                                  flexes: const [183, 97, 205, 205, 125, 26],
-                                  children: [
-                                    DTxHistoryDate(
-                                      dateFormatDate: dateFormatDate,
-                                      dateFormatTime: dateFormatTime,
-                                      tx: transItem,
-                                      dateTextStyle: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                      timeTextStyle: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                            color: SideSwapColors
-                                                .airSuperiorityBlue,
-                                          ),
-                                    ),
-                                    DTxHistoryType(
-                                      transItem: transItem,
-                                      textStyle: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                    ),
-                                    DTxHistoryAmount(
-                                      balance: transItemHelper.getSentBalance(
-                                        liquidAssetId,
-                                        bitcoinAssetId,
+                            return DButton(
+                              style: buttonStyle?.merge(
+                                DButtonStyle(
+                                  shape: ButtonState.all(
+                                    const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(0),
                                       ),
-                                      multipleOutputs: transItemHelper
-                                          .getSentMultipleOutputs(),
-                                      textStyle: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
                                     ),
-                                    DTxHistoryAmount(
-                                      balance: transItemHelper.getRecvBalance(
-                                        liquidAssetId,
-                                        bitcoinAssetId,
-                                      ),
-                                      multipleOutputs: transItemHelper
-                                          .getRecvMultipleOutputs(),
-                                      textStyle: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                    ),
-                                    DTxHistoryConfs(
-                                      tx: transItem,
-                                      textStyle: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                    ),
-                                    DTxBlindedUrlIconButton(
-                                      txid: transItem.tx.txid,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              );
-                            },
-                          );
-                        },
-                        itemCount: updatedTxs.length,
-                      ),
-                    ],
-                  ),
+                              ),
+                              onPressed: () {
+                                final allPegsById = ref.read(
+                                  allPegsByIdProvider,
+                                );
+                                ref
+                                    .read(desktopDialogProvider)
+                                    .showTx(
+                                      transItem,
+                                      isPeg: transItem.hasPeg()
+                                          ? allPegsById.containsKey(
+                                              transItem.peg.isPegIn
+                                                  ? transItem.peg.txidRecv
+                                                  : transItem.peg.txidSend,
+                                            )
+                                          : false,
+                                    );
+                              },
+                              child: DUnconfirmedTxItem(
+                                transItem: transItem,
+                                flexes: flexes,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      itemCount: updatedTxs.length,
+                    ),
+                  ],
                 ),
               ),
             };
           },
         ),
+      ],
+    );
+  }
+}
+
+class DUnconfirmedTxItem extends ConsumerWidget {
+  const DUnconfirmedTxItem({super.key, this.transItem, required this.flexes});
+
+  final TransItem? transItem;
+  final List<int> flexes;
+
+  static DateFormat dateFormatDate = DateFormat('y-MM-dd ');
+  static DateFormat dateFormatTime = DateFormat('HH:mm:ss');
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (transItem == null) {
+      return const SizedBox();
+    }
+
+    final transItemHelper = ref.watch(transItemHelperProvider(transItem!));
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+
+    return DFlexesRow(
+      flexes: flexes,
+      children: [
+        DTxHistoryDate(
+          dateFormatDate: dateFormatDate,
+          dateFormatTime: dateFormatTime,
+          tx: transItem!,
+          dateTextStyle: Theme.of(context).textTheme.titleSmall,
+          timeTextStyle: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: SideSwapColors.airSuperiorityBlue,
+          ),
+        ),
+        DTxHistoryType(
+          transItem: transItem!,
+          textStyle: Theme.of(context).textTheme.titleSmall,
+        ),
+        DTxHistoryAmount(
+          balance: transItemHelper.getSentBalance(
+            liquidAssetId,
+            bitcoinAssetId,
+          ),
+          multipleOutputs: transItemHelper.getSentMultipleOutputs(),
+          textStyle: Theme.of(context).textTheme.titleSmall,
+        ),
+        DTxHistoryAmount(
+          balance: transItemHelper.getRecvBalance(
+            liquidAssetId,
+            bitcoinAssetId,
+          ),
+          multipleOutputs: transItemHelper.getRecvMultipleOutputs(),
+          textStyle: Theme.of(context).textTheme.titleSmall,
+        ),
+        DTxHistoryConfs(
+          tx: transItem!,
+          textStyle: Theme.of(context).textTheme.titleSmall,
+        ),
+        DTxBlindedUrlIconButton(txid: transItem!.tx.txid),
       ],
     );
   }

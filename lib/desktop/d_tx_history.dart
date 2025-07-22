@@ -240,7 +240,13 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                       .read(desktopDialogProvider)
                       .showTx(
                         transItem,
-                        isPeg: allPegsById.containsKey(transItem.id),
+                        isPeg: transItem.hasPeg()
+                            ? allPegsById.containsKey(
+                                transItem.peg.isPegIn
+                                    ? transItem.peg.txidRecv
+                                    : transItem.peg.txidSend,
+                              )
+                            : false,
                       );
                 },
               ),

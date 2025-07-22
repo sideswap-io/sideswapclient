@@ -113,7 +113,7 @@ class PegRepository implements AbstractPegRepository {
 
   @override
   void getPegOutAmount() {
-    ref.read(swapHelperProvider).swapReset();
+    ref.read(swapHelperProvider).clearNetworkStates();
     final swapType = ref.read(swapTypeProvider);
 
     if (swapType == const SwapType.pegOut()) {
@@ -121,14 +121,12 @@ class PegRepository implements AbstractPegRepository {
       final optionCurrentFeeRate = ref.read(
         bitcoinCurrentFeeRateNotifierProvider,
       );
-      final sendAmount =
-          (subscribe == const SwapPriceSubscribeState.send())
-              ? ref.read(swapSendSatoshiAmountProvider)
-              : null;
-      final recvAmount =
-          (subscribe == const SwapPriceSubscribeState.recv())
-              ? ref.read(swapRecvSatoshiAmountProvider)
-              : null;
+      final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
+          ? ref.read(swapSendSatoshiAmountProvider)
+          : null;
+      final recvAmount = (subscribe == const SwapPriceSubscribeState.recv())
+          ? ref.read(swapRecvSatoshiAmountProvider)
+          : null;
       if (((sendAmount ?? 0) > 0 || (recvAmount ?? 0) > 0)) {
         optionCurrentFeeRate.match(() {}, (feeRate) {
           ref
@@ -179,7 +177,11 @@ Map<String, TransItem> allPegsById(Ref ref) {
     final peg = allPegs[key]!;
 
     for (var item in peg) {
-      allPegsByIdMap[item.id] = item;
+      if (item.peg.isPegIn) {
+        allPegsByIdMap[item.peg.txidRecv] = item;
+        continue;
+      }
+      allPegsByIdMap[item.peg.txidSend] = item;
     }
   }
 

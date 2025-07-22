@@ -33,6 +33,11 @@ class SatoshiRepository implements AbstractSatoshiRepository {
     }
 
     final newValue = amount.replaceAll(' ', '');
+
+    if (newValue.isEmpty) {
+      return null;
+    }
+
     final newAmount = Decimal.tryParse(newValue);
 
     if (newAmount == null) {

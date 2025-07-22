@@ -51,8 +51,8 @@ class DesktopDialog {
     );
   }
 
-  void showNeedRestartDialog() {
-    showDialog<void>(
+  Future<void> showNeedRestartDialog() async {
+    await showDialog<void>(
       context: _context,
       builder: (context) {
         return const DNeedRestartPopupDialog();
@@ -109,7 +109,13 @@ class DesktopDialog {
   Future<void> showTx(TransItem transItem, {required bool isPeg}) async {
     closePopups();
 
-    currentTxPopupItemNotifier.setCurrentTxId(transItem.id);
+    currentTxPopupItemNotifier.setCurrentTxId(
+      transItem.hasPeg()
+          ? transItem.peg.isPegIn
+                ? transItem.peg.txidRecv
+                : transItem.peg.txidSend
+          : transItem.tx.txid,
+    );
 
     await showDialog<void>(
       context: _context,

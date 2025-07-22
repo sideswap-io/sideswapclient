@@ -43,87 +43,86 @@ class DFirstLaunch extends HookConsumerWidget {
           useRootNavigator: false,
           barrierDismissible: false,
           context: ref.read(navigatorKeyProvider).currentContext!,
-          builder:
-              (_) => DContentDialog(
-                constraints: const BoxConstraints(maxWidth: 628),
-                title: Center(child: Text('Select env'.tr())),
-                content: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Changes will take effect after application restart.'
-                                .tr(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ...envValues().map(
-                      (e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Consumer(
-                          builder: (context, ref, _) {
-                            final selectedEnv = ref.watch(selectedEnvProvider);
-
-                            return DRadioButton(
-                              checked: e == selectedEnv,
-                              semanticLabel: envName(e),
-                              content: Text(envName(e)),
-                              onChanged: (value) async {
-                                await ref
-                                    .read(selectedEnvProvider.notifier)
-                                    .setSelectedEnv(e);
-                              },
-                            );
-                          },
+          builder: (_) => DContentDialog(
+            constraints: const BoxConstraints(maxWidth: 628),
+            title: Center(child: Text('Select env'.tr())),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Changes will take effect after application restart.'
+                            .tr(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                actions: [
-                  DCustomTextBigButton(
-                    width: 266,
+                const SizedBox(height: 10),
+                ...envValues().map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Consumer(
-                      builder: ((context, ref, _) {
-                        final env = ref.watch(envProvider);
+                      builder: (context, ref, _) {
                         final selectedEnv = ref.watch(selectedEnvProvider);
-                        return env == selectedEnv
-                            ? Text('CLOSE'.tr())
-                            : Text('SWITCH AND EXIT'.tr());
-                      }),
+
+                        return DRadioButton(
+                          checked: e == selectedEnv,
+                          semanticLabel: envName(e),
+                          content: Text(envName(e)),
+                          onChanged: (value) async {
+                            await ref
+                                .read(selectedEnvProvider.notifier)
+                                .setSelectedEnv(e);
+                          },
+                        );
+                      },
                     ),
-                    onPressed: () {
-                      final selectedEnv = ref.read(selectedEnvProvider);
-                      ref.read(envProvider.notifier).setEnv(selectedEnv);
-
-                      // and also reset network settings model
-                      ref
-                          .read(networkSettingsNotifierProvider.notifier)
-                          .setModel(const NetworkSettingsModelEmpty());
-
-                      exit(0);
-                    },
                   ),
-                  DCustomFilledBigButton(
-                    child: Text('CANCEL'.tr()),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ref.read(walletProvider).goBack();
-                    },
-                  ),
-                ],
+                ),
+              ],
+            ),
+            actions: [
+              DCustomTextBigButton(
+                width: 266,
+                child: Consumer(
+                  builder: ((context, ref, _) {
+                    final env = ref.watch(envProvider);
+                    final selectedEnv = ref.watch(selectedEnvProvider);
+                    return env == selectedEnv
+                        ? Text('CLOSE'.tr())
+                        : Text('SWITCH AND EXIT'.tr());
+                  }),
+                ),
+                onPressed: () {
+                  final selectedEnv = ref.read(selectedEnvProvider);
+                  ref.read(envProvider.notifier).setEnv(selectedEnv);
+
+                  // and also reset network settings model
+                  ref
+                      .read(networkSettingsNotifierProvider.notifier)
+                      .setModel(const NetworkSettingsModelEmpty());
+
+                  exit(0);
+                },
               ),
+              DCustomFilledBigButton(
+                child: Text('CANCEL'.tr()),
+                onPressed: () {
+                  Navigator.pop(context);
+                  ref.read(walletProvider).goBack();
+                },
+              ),
+            ],
+          ),
         );
       }
     });

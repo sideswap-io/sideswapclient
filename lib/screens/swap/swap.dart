@@ -19,6 +19,7 @@ class SwapMain extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(swapStateNotifierProvider, (_, _) {});
     ref.listen<bool>(showAddressLabelProvider, (_, next) {
       final errorText = ref.read(swapAddressErrorProvider);
       if (next && errorText == null) {

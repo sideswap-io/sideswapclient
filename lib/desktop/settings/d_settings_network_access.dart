@@ -431,9 +431,9 @@ class DSettingsNetworkAccessSaveOrBackButton extends ConsumerWidget {
       child: switch (needSave) {
         true => DCustomTextBigButton(
           width: 266,
-          onPressed: () {
+          onPressed: () async {
             if (needRestart) {
-              ref.read(desktopDialogProvider).showNeedRestartDialog();
+              await ref.read(desktopDialogProvider).showNeedRestartDialog();
               return;
             }
 

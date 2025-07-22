@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
@@ -23,8 +25,21 @@ class PegDetails extends ConsumerWidget {
 
     return optionCurrentTxid.match(() => const SizedBox(), (txid) {
       final allTxs = ref.watch(allTxsNotifierProvider);
+      final allPegs = ref.watch(allPegsNotifierProvider);
 
-      final transItem = allTxs[txid];
+      final txTransItem = allTxs[txid];
+
+      final transItem =
+          allPegs.values
+              .map(
+                (item) => item.firstWhereOrNull(
+                  (pegTransItem) =>
+                      pegTransItem.peg.txidRecv == txid ||
+                      pegTransItem.peg.txidSend == txid,
+                ),
+              )
+              .firstWhereOrNull((item) => item != null) ??
+          txTransItem;
 
       if (transItem == null) {
         return const SizedBox();

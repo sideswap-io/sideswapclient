@@ -116,8 +116,8 @@ class AllTxsNotifier extends _$AllTxsNotifier {
         return;
       }
 
-      final tx = next.getOrElse(() => TransItem());
-      state[tx.id] = tx;
+      final transItem = next.getOrElse(() => TransItem());
+      state[transItem.tx.txid] = transItem;
     });
 
     ref.listen(newTxNotifierProvider, (_, _) {
@@ -152,8 +152,8 @@ class AllTxsNotifier extends _$AllTxsNotifier {
   void updateList({required List<TransItem> txs}) {
     final allTxs = {...state};
 
-    for (final item in txs) {
-      allTxs[item.id] = item;
+    for (final transItem in txs) {
+      allTxs[transItem.tx.txid] = transItem;
     }
 
     state = allTxs;
@@ -192,10 +192,22 @@ List<TransItem> allTxsSorted(Ref ref) {
   final allTxs = ref.watch(allTxsNotifierProvider);
   final allPegsById = ref.watch(allPegsByIdProvider);
 
-  final allTxsSorted = allTxs.values.toList()..addAll(allPegsById.values);
-  allTxsSorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  // map all peg tx id, both side, to the list
+  final pegIds = [
+    ...allPegsById.values.map((e) => e.peg.txidSend),
+    ...allPegsById.values.map((e) => e.peg.txidRecv),
+  ];
 
-  return allTxsSorted;
+  // all tx's to set
+  final allTxSorted = {...allTxs.values};
+  // remove all tx's which txid is on the peg list
+  allTxSorted.retainWhere((e) => !pegIds.contains(e.tx.txid));
+  // merge both lists
+  final distinctTx = [...allTxSorted, ...allPegsById.values];
+  // and sort them by date
+  distinctTx.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+  return distinctTx;
 }
 
 @riverpod

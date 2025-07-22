@@ -320,7 +320,7 @@ final showTransactionNotifierProvider =
     );
 
 typedef _$ShowTransactionNotifier = Notifier<Option<TransItem>>;
-String _$allTxsNotifierHash() => r'bd3705bf68d982bfe0d36341d1286eacd75001ab';
+String _$allTxsNotifierHash() => r'80dd466da9971da9434e5a8c8e3acfe9e3e7bd01';
 
 /// See also [AllTxsNotifier].
 @ProviderFor(AllTxsNotifier)

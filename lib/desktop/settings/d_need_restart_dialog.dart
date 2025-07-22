@@ -56,6 +56,15 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
                   onPressed: () {
                     Navigator.of(context).pop();
                     ref.read(networkSettingsNotifierProvider.notifier).save();
+                    final pageStatus = ref.read(pageStatusNotifierProvider);
+                    if (pageStatus == Status.noWallet) {
+                      // call once more to back noWallet page
+                      ref
+                          .read(pageStatusNotifierProvider.notifier)
+                          .setStatus(Status.noWallet);
+                      return;
+                    }
+
                     ref
                         .read(pageStatusNotifierProvider.notifier)
                         .setStatus(Status.registered);

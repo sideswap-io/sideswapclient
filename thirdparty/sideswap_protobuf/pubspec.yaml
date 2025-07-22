@@ -1,10 +1,10 @@
 name: sideswap_protobuf
 description: Sideswap protobuf classes
-version: 0.0.14
+version: 0.0.15
 
 environment:
   sdk: ^3.8.1
-  flutter: ^3.32.1
+  flutter: ^3.32.5
 
 dependencies:
   fixnum: ^1.1.1

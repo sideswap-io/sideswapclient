@@ -328,8 +328,8 @@ class SideswapNotificationProvider {
 
     final allTxs = ref.read(allTxsNotifierProvider);
 
-    for (final tx in allTxs.values) {
-      if (tx.tx.txid == txid) {
+    for (final transItem in allTxs.values) {
+      if (transItem.tx.txid == txid) {
         if (FlavorConfig.isDesktop) {
           final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
           final newWalletMainArguments = walletMainArguments.fromIndexDesktop(
@@ -345,18 +345,24 @@ class SideswapNotificationProvider {
           ref
               .read(desktopDialogProvider)
               .showTx(
-                tx,
-                isPeg: allPegsById.containsKey(tx.id),
+                transItem,
+                isPeg: transItem.hasPeg()
+                    ? allPegsById.containsKey(
+                        transItem.peg.isPegIn
+                            ? transItem.peg.txidRecv
+                            : transItem.peg.txidSend,
+                      )
+                    : false,
               ); // show tx popup
           return true;
         }
 
         if (fcmTxType == FCMPayloadType.swap) {
-          ref.read(walletProvider).showSwapTxDetails(tx);
+          ref.read(walletProvider).showSwapTxDetails(transItem);
           return true;
         }
 
-        ref.read(walletProvider).showTxDetails(tx);
+        ref.read(walletProvider).showTxDetails(transItem);
         return true;
       }
     }

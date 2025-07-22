@@ -23,7 +23,9 @@ class DFlexesRow extends StatelessWidget {
         flexes.length,
         (index) => Expanded(
           flex: flexes[index],
-          child: children.length > index ? children[index] : Container(),
+          child: Row(
+            children: [children.length > index ? children[index] : Container()],
+          ),
         ),
       ),
     );

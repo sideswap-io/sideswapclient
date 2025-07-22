@@ -24,7 +24,7 @@ final pegRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PegRepositoryRef = AutoDisposeProviderRef<AbstractPegRepository>;
-String _$allPegsByIdHash() => r'a8dab04c1e70e6dedf0735de4d297102ccb18238';
+String _$allPegsByIdHash() => r'7b18515605c1569d0529896ce29d896b64e46194';
 
 /// See also [allPegsById].
 @ProviderFor(allPegsById)

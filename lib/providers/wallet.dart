@@ -499,7 +499,13 @@ class SideswapWallet {
                   .read(desktopDialogProvider)
                   .showTx(
                     transItem,
-                    isPeg: allPegsById.containsKey(transItem.id),
+                    isPeg: transItem.hasPeg()
+                        ? allPegsById.containsKey(
+                            transItem.peg.isPegIn
+                                ? transItem.peg.txidRecv
+                                : transItem.peg.txidSend,
+                          )
+                        : false,
                   );
             }
             break;
@@ -1377,15 +1383,29 @@ class SideswapWallet {
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.paymentPage);
   }
 
-  void showTxDetails(TransItem tx) {
-    ref.read(currentTxPopupItemNotifierProvider.notifier).setCurrentTxId(tx.id);
+  void showTxDetails(TransItem transItem) {
+    ref
+        .read(currentTxPopupItemNotifierProvider.notifier)
+        .setCurrentTxId(
+          transItem.hasPeg()
+              ? transItem.peg.isPegIn
+                    ? transItem.peg.txidRecv
+                    : transItem.peg.txidSend
+              : transItem.tx.txid,
+        );
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txDetails);
   }
 
   void showSwapTxDetails(TransItem transItem) {
     ref
         .read(currentTxPopupItemNotifierProvider.notifier)
-        .setCurrentTxId(transItem.id);
+        .setCurrentTxId(
+          transItem.hasPeg()
+              ? transItem.peg.isPegIn
+                    ? transItem.peg.txidRecv
+                    : transItem.peg.txidSend
+              : transItem.tx.txid,
+        );
 
     if (!FlavorConfig.isDesktop) {
       ref
@@ -1397,7 +1417,16 @@ class SideswapWallet {
     final allPegsById = ref.read(allPegsByIdProvider);
     ref
         .read(desktopDialogProvider)
-        .showTx(transItem, isPeg: allPegsById.containsKey(transItem.id));
+        .showTx(
+          transItem,
+          isPeg: transItem.hasPeg()
+              ? allPegsById.containsKey(
+                  transItem.peg.isPegIn
+                      ? transItem.peg.txidRecv
+                      : transItem.peg.txidSend,
+                )
+              : false,
+        );
   }
 
   String commonAddrErrorStr(String addr, AddrType addrType) {
