@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -41,6 +40,142 @@ class $SwapTypeCopyWith<$Res>  {
 $SwapTypeCopyWith(SwapType _, $Res Function(SwapType) __);
 }
 
+
+/// Adds pattern-matching-related methods to [SwapType].
+extension SwapTypePatterns on SwapType {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( SwapTypeAtomic value)?  atomic,TResult Function( SwapTypePegIn value)?  pegIn,TResult Function( SwapTypePegOut value)?  pegOut,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case SwapTypeAtomic() when atomic != null:
+return atomic(_that);case SwapTypePegIn() when pegIn != null:
+return pegIn(_that);case SwapTypePegOut() when pegOut != null:
+return pegOut(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( SwapTypeAtomic value)  atomic,required TResult Function( SwapTypePegIn value)  pegIn,required TResult Function( SwapTypePegOut value)  pegOut,}){
+final _that = this;
+switch (_that) {
+case SwapTypeAtomic():
+return atomic(_that);case SwapTypePegIn():
+return pegIn(_that);case SwapTypePegOut():
+return pegOut(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( SwapTypeAtomic value)?  atomic,TResult? Function( SwapTypePegIn value)?  pegIn,TResult? Function( SwapTypePegOut value)?  pegOut,}){
+final _that = this;
+switch (_that) {
+case SwapTypeAtomic() when atomic != null:
+return atomic(_that);case SwapTypePegIn() when pegIn != null:
+return pegIn(_that);case SwapTypePegOut() when pegOut != null:
+return pegOut(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  atomic,TResult Function()?  pegIn,TResult Function()?  pegOut,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case SwapTypeAtomic() when atomic != null:
+return atomic();case SwapTypePegIn() when pegIn != null:
+return pegIn();case SwapTypePegOut() when pegOut != null:
+return pegOut();case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  atomic,required TResult Function()  pegIn,required TResult Function()  pegOut,}) {final _that = this;
+switch (_that) {
+case SwapTypeAtomic():
+return atomic();case SwapTypePegIn():
+return pegIn();case SwapTypePegOut():
+return pegOut();}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  atomic,TResult? Function()?  pegIn,TResult? Function()?  pegOut,}) {final _that = this;
+switch (_that) {
+case SwapTypeAtomic() when atomic != null:
+return atomic();case SwapTypePegIn() when pegIn != null:
+return pegIn();case SwapTypePegOut() when pegOut != null:
+return pegOut();case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -168,6 +303,136 @@ $SwapWalletCopyWith(SwapWallet _, $Res Function(SwapWallet) __);
 }
 
 
+/// Adds pattern-matching-related methods to [SwapWallet].
+extension SwapWalletPatterns on SwapWallet {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( SwapWalletLocal value)?  local,TResult Function( SwapWalletExtern value)?  extern,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case SwapWalletLocal() when local != null:
+return local(_that);case SwapWalletExtern() when extern != null:
+return extern(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( SwapWalletLocal value)  local,required TResult Function( SwapWalletExtern value)  extern,}){
+final _that = this;
+switch (_that) {
+case SwapWalletLocal():
+return local(_that);case SwapWalletExtern():
+return extern(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( SwapWalletLocal value)?  local,TResult? Function( SwapWalletExtern value)?  extern,}){
+final _that = this;
+switch (_that) {
+case SwapWalletLocal() when local != null:
+return local(_that);case SwapWalletExtern() when extern != null:
+return extern(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  local,TResult Function()?  extern,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case SwapWalletLocal() when local != null:
+return local();case SwapWalletExtern() when extern != null:
+return extern();case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  local,required TResult Function()  extern,}) {final _that = this;
+switch (_that) {
+case SwapWalletLocal():
+return local();case SwapWalletExtern():
+return extern();}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  local,TResult? Function()?  extern,}) {final _that = this;
+switch (_that) {
+case SwapWalletLocal() when local != null:
+return local();case SwapWalletExtern() when extern != null:
+return extern();case _:
+  return null;
+
+}
+}
+
+}
+
 /// @nodoc
 
 
@@ -261,6 +526,136 @@ class $SwapStateCopyWith<$Res>  {
 $SwapStateCopyWith(SwapState _, $Res Function(SwapState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [SwapState].
+extension SwapStatePatterns on SwapState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( SwapStateIdle value)?  idle,TResult Function( SwapStateSent value)?  sent,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case SwapStateIdle() when idle != null:
+return idle(_that);case SwapStateSent() when sent != null:
+return sent(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( SwapStateIdle value)  idle,required TResult Function( SwapStateSent value)  sent,}){
+final _that = this;
+switch (_that) {
+case SwapStateIdle():
+return idle(_that);case SwapStateSent():
+return sent(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( SwapStateIdle value)?  idle,TResult? Function( SwapStateSent value)?  sent,}){
+final _that = this;
+switch (_that) {
+case SwapStateIdle() when idle != null:
+return idle(_that);case SwapStateSent() when sent != null:
+return sent(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  sent,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case SwapStateIdle() when idle != null:
+return idle();case SwapStateSent() when sent != null:
+return sent();case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  sent,}) {final _that = this;
+switch (_that) {
+case SwapStateIdle():
+return idle();case SwapStateSent():
+return sent();}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  sent,}) {final _that = this;
+switch (_that) {
+case SwapStateIdle() when idle != null:
+return idle();case SwapStateSent() when sent != null:
+return sent();case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -387,6 +782,130 @@ as Iterable<String>,
 
 }
 
+
+/// Adds pattern-matching-related methods to [SwapAsset].
+extension SwapAssetPatterns on SwapAsset {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SwapAsset value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SwapAsset() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SwapAsset value)  $default,){
+final _that = this;
+switch (_that) {
+case _SwapAsset():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SwapAsset value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SwapAsset() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String assetId,  Iterable<String> assetList)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SwapAsset() when $default != null:
+return $default(_that.assetId,_that.assetList);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String assetId,  Iterable<String> assetList)  $default,) {final _that = this;
+switch (_that) {
+case _SwapAsset():
+return $default(_that.assetId,_that.assetList);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String assetId,  Iterable<String> assetList)?  $default,) {final _that = this;
+switch (_that) {
+case _SwapAsset() when $default != null:
+return $default(_that.assetId,_that.assetList);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

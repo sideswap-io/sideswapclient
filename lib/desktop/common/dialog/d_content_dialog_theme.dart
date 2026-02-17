@@ -43,12 +43,11 @@ class DContentDialogThemeData {
     DTypography? typography,
   }) {
     final container = ProviderContainer();
-    final themeMenuColor =
-        container.read(desktopAppThemeNotifierProvider).menuColor;
-    final themeMicaBackgroundColor =
-        container.read(desktopAppThemeNotifierProvider).micaBackgroundColor;
-    final themeTypography =
-        container.read(desktopAppThemeNotifierProvider).typography;
+    final themeMenuColor = container.read(desktopAppThemeProvider).menuColor;
+    final themeMicaBackgroundColor = container
+        .read(desktopAppThemeProvider)
+        .micaBackgroundColor;
+    final themeTypography = container.read(desktopAppThemeProvider).typography;
 
     return DContentDialogThemeData(
       decoration: BoxDecoration(

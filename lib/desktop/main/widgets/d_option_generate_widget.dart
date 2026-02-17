@@ -29,14 +29,15 @@ class DOptionGenerateWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bgColor = isSelected ? SideSwapColors.navyBlue : Colors.transparent;
-    final accentColor =
-        isSelected ? Colors.white : SideSwapColors.ceruleanFrost;
+    final accentColor = isSelected
+        ? Colors.white
+        : SideSwapColors.ceruleanFrost;
     return DCustomTextBigButton(
       width: 247,
       height: 280,
       onPressed: onPressed,
       style: ref
-          .watch(desktopAppThemeNotifierProvider)
+          .watch(desktopAppThemeProvider)
           .buttonThemeData
           .defaultButtonStyle
           ?.merge(

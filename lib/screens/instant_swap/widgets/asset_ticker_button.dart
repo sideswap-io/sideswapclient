@@ -18,8 +18,9 @@ class AssetTickerButton extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (FlavorConfig.isDesktop) {
       true => () {
-        final buttonStyle =
-            ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
+        final buttonStyle = ref
+            .watch(desktopAppThemeProvider)
+            .buttonWithoutBorderStyle;
 
         return DButton(style: buttonStyle, onPressed: onPressed, child: child);
       },

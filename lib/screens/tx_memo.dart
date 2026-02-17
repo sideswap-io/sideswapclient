@@ -16,7 +16,7 @@ class TxMemo extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentTxPopupItem = ref.watch(currentTxPopupItemNotifierProvider);
+    final currentTxPopupItem = ref.watch(currentTxPopupItemProvider);
 
     final focusNode = useFocusNode();
 
@@ -65,7 +65,7 @@ class TxMemo extends HookConsumerWidget {
                         padding: const EdgeInsets.only(top: 10),
                         child: HookConsumer(
                           builder: (context, ref, child) {
-                            final allTxs = ref.watch(allTxsNotifierProvider);
+                            final allTxs = ref.watch(allTxsProvider);
 
                             final transItem = allTxs[txid];
 
@@ -89,7 +89,7 @@ class TxMemo extends HookConsumerWidget {
                               ref.read(walletProvider).sendMsg(msg);
                               transItem.tx.memo = value;
                               ref
-                                  .read(allTxsNotifierProvider.notifier)
+                                  .read(allTxsProvider.notifier)
                                   .updateList(txs: [transItem]);
                             });
 

@@ -23,7 +23,7 @@ class DSelectInputsPopup extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -145,16 +145,23 @@ class DInputsListHeader extends StatelessWidget {
                     CustomCheckBox(
                       value: selectedInputsHelper.containsModel(addressesModel),
                       onChecked: (value) {
-                        if (value) {
-                          ref
-                              .read(selectedInputsNotifierProvider.notifier)
-                              .addAllItemsFromModel(addressesModel);
+                        if (!value) {
+                          ref.read(selectedInputsProvider.notifier).removeAll();
                           return;
                         }
 
-                        ref
-                            .read(selectedInputsNotifierProvider.notifier)
-                            .removeAll();
+                        for (final addressesItem in addressesModel.addresses!) {
+                          var currentUtxosLenght = selectedInputsHelper.count();
+                          for (final utxo in addressesItem.utxos!) {
+                            currentUtxosLenght++;
+                            if (currentUtxosLenght > maxUtxosCount) {
+                              break;
+                            }
+                            ref
+                                .read(selectedInputsProvider.notifier)
+                                .addItem(utxo);
+                          }
+                        }
                       },
                     ),
                   _ => const SizedBox(),
@@ -203,7 +210,7 @@ class DInputsDetails extends StatelessWidget {
           ),
           const Spacer(),
           ColoredContainer(
-            height: 224,
+            height: 214,
             theme: ColoredContainerStyle(
               backgroundColor: SideSwapColors.chathamsBlue,
               borderColor: SideSwapColors.chathamsBlue,
@@ -228,7 +235,7 @@ class DInputsDetails extends StatelessWidget {
                         );
 
                         return Text(
-                          '${selectedInputsHelper.count()}',
+                          '${selectedInputsHelper.count()} / ${selectedInputsHelper.maxUtxos()}',
                           style: Theme.of(context).textTheme.titleSmall,
                         );
                       },
@@ -282,7 +289,7 @@ class DInputsTotalAmountList extends HookConsumerWidget {
     final scrollController = useScrollController();
 
     return SizedBox(
-      height: 135,
+      height: 130,
       child: Column(
         children: [
           SizedBox(
@@ -474,18 +481,18 @@ class DInputsListItem extends HookConsumerWidget {
     }, [animationController]);
 
     return SizedBox(
-      height:
-          expanded == true
-              ? height * (addressesItem.utxos!.length) + height
-              : height,
+      height: expanded == true
+          ? height * (addressesItem.utxos!.length) + height
+          : height,
       child: Column(
         children: [
           DHoverButton(
             builder: (context, states) {
               return Container(
                 height: height,
-                color:
-                    expanded ? SideSwapColors.chathamsBlue : Colors.transparent,
+                color: expanded
+                    ? SideSwapColors.chathamsBlue
+                    : Colors.transparent,
                 child: Column(
                   children: [
                     const Spacer(),
@@ -508,19 +515,13 @@ class DInputsListItem extends HookConsumerWidget {
                                   onChecked: (value) {
                                     if (value) {
                                       ref
-                                          .read(
-                                            selectedInputsNotifierProvider
-                                                .notifier,
-                                          )
+                                          .read(selectedInputsProvider.notifier)
                                           .addAllItems(addressesItem.utxos);
                                       return;
                                     }
 
                                     ref
-                                        .read(
-                                          selectedInputsNotifierProvider
-                                              .notifier,
-                                        )
+                                        .read(selectedInputsProvider.notifier)
                                         .removeAllItems(addressesItem.utxos);
                                   },
                                 );
@@ -544,10 +545,9 @@ class DInputsListItem extends HookConsumerWidget {
                                 AnimatedDropdownArrow(
                                   target: expanded ? 1 : 0,
                                   initFrom: expanded ? 1 : 0,
-                                  iconColor:
-                                      expanded
-                                          ? SideSwapColors.brightTurquoise
-                                          : Colors.white,
+                                  iconColor: expanded
+                                      ? SideSwapColors.brightTurquoise
+                                      : Colors.white,
                                 ),
                               ],
                             ),
@@ -573,7 +573,7 @@ class DInputsListItem extends HookConsumerWidget {
             },
             onPressed: () {
               ref
-                  .read(inputListItemExpandedStatesNotifierProvider.notifier)
+                  .read(inputListItemExpandedStatesProvider.notifier)
                   .updateState(addressesItem.hashCode, !expanded);
             },
           ),
@@ -623,9 +623,7 @@ class DInputsListItemTx extends StatelessWidget {
           ...List.generate(addressesItem.utxos?.length ?? 0, ((index) {
             return HookConsumer(
               builder: (context, ref, child) {
-                final selectedInputs = ref.watch(
-                  selectedInputsNotifierProvider,
-                );
+                final selectedInputs = ref.watch(selectedInputsProvider);
                 final selectedInputsHelper = ref.watch(
                   selectedInputsHelperProvider,
                 );
@@ -731,13 +729,13 @@ class DInputsListItemTx extends StatelessWidget {
                   onPressed: () {
                     if (!checkboxValue.value) {
                       ref
-                          .read(selectedInputsNotifierProvider.notifier)
+                          .read(selectedInputsProvider.notifier)
                           .addItem(addressesItem.utxos?[index]);
                       return;
                     }
 
                     ref
-                        .read(selectedInputsNotifierProvider.notifier)
+                        .read(selectedInputsProvider.notifier)
                         .removeItem(addressesItem.utxos?[index]);
                   },
                 );

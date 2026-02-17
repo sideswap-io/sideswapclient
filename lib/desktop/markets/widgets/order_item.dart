@@ -113,7 +113,7 @@ class OrderItem extends HookConsumerWidget {
             if (uiOrder != null &&
                 uiOrder.offlineSwapType != OfflineSwapType.twoStep()) {
               ref
-                  .read(marketEditDetailsOrderNotifierProvider.notifier)
+                  .read(marketEditDetailsOrderProvider.notifier)
                   .setState(uiOrder);
 
               await showDialog<void>(
@@ -125,16 +125,16 @@ class OrderItem extends HookConsumerWidget {
                 useRootNavigator: false,
               );
 
-              ref.invalidate(marketEditDetailsOrderNotifierProvider);
+              ref.invalidate(marketEditDetailsOrderProvider);
               return;
             }
           }
 
           // otherwise start public order
-          ref.invalidate(marketTypeSwitchStateNotifierProvider);
+          ref.invalidate(marketTypeSwitchStateProvider);
 
           if (order?.orderId != null) {
-            ref.invalidate(marketQuoteNotifierProvider);
+            ref.invalidate(marketQuoteProvider);
             final msg = To();
             msg.startOrder = To_StartOrder(
               orderId: order!.orderId!.id,

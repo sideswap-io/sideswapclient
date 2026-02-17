@@ -1,6 +1,5 @@
 import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -40,7 +39,7 @@ class BalancesNotifier extends _$BalancesNotifier {
 
 @riverpod
 Map<String, int> assetBalance(Ref ref) {
-  final balances = ref.watch(balancesNotifierProvider);
+  final balances = ref.watch(balancesProvider);
   final balanceMap = <String, int>{};
   for (final accountAsset in balances.keys) {
     if (accountAsset.assetId == null) {
@@ -56,7 +55,7 @@ Map<String, int> assetBalance(Ref ref) {
 
 @riverpod
 int outputsBalanceForAsset(Ref ref, String assetId) {
-  final outputsData = ref.watch(outputsReaderNotifierProvider);
+  final outputsData = ref.watch(outputsReaderProvider);
 
   return switch (outputsData) {
     Right(value: final r) when r.receivers != null && r.receivers!.isNotEmpty =>
@@ -75,7 +74,7 @@ int outputsBalanceForAsset(Ref ref, String assetId) {
 /// Inputs related providers
 @riverpod
 int selectedInputsBalanceForAsset(Ref ref, String assetId) {
-  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+  final selectedInputs = ref.watch(selectedInputsProvider);
 
   return switch (selectedInputs) {
     List<UtxosItem> items when items.isNotEmpty => () {
@@ -97,7 +96,7 @@ int maxAvailableBalanceWithInputsForAsset(Ref ref, String assetId) {
 
 @riverpod
 int balanceWithInputsForAsset(Ref ref, String assetId) {
-  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+  final selectedInputs = ref.watch(selectedInputsProvider);
 
   final outputsBalance = ref.watch(outputsBalanceForAssetProvider(assetId));
   final allBalances = ref.watch(assetBalanceProvider);
@@ -128,13 +127,13 @@ String balanceStringWithInputsForAsset(Ref ref, String assetId) {
 
 @riverpod
 String balanceStringWithInputs(Ref ref) {
-  final selectedAssetId = ref.watch(sendAssetIdNotifierProvider);
+  final selectedAssetId = ref.watch(sendAssetIdProvider);
   return ref.watch(balanceStringWithInputsForAssetProvider(selectedAssetId));
 }
 
 @riverpod
 Decimal assetBalanceWithInputsInDefaultCurrency(Ref ref, String assetId) {
-  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final portfolioPrices = ref.watch(portfolioPricesProvider);
   final assetPortfolioUsdPrice = portfolioPrices[assetId];
   final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
   final assetBalanceStr = ref.watch(
@@ -180,7 +179,7 @@ Decimal amountUsd(Ref ref, String? assetId, num amount) {
     return Decimal.zero;
   }
 
-  final assetPrice = ref.watch(portfolioPricesNotifierProvider)[assetId];
+  final assetPrice = ref.watch(portfolioPricesProvider)[assetId];
 
   final internalAssetPrice = Decimal.tryParse('$assetPrice') ?? Decimal.zero;
 
@@ -200,7 +199,7 @@ bool isAmountUsdAvailable(Ref ref, String? assetId) {
     return false;
   }
 
-  final assetPrice = ref.watch(portfolioPricesNotifierProvider)[assetId];
+  final assetPrice = ref.watch(portfolioPricesProvider)[assetId];
 
   return assetPrice != null;
 }
@@ -267,7 +266,7 @@ String defaultCurrencyConversionFromString(
 @riverpod
 String assetsTotalLbtcBalance(Ref ref, Iterable<Asset> assets) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final portfolioPrices = ref.watch(portfolioPricesProvider);
   final liquidIndexPrice = portfolioPrices[liquidAssetId];
   if (liquidIndexPrice == null) {
     return '0.0';
@@ -314,7 +313,7 @@ Decimal _assetsTotalUsdBalance(Ref ref, Iterable<Asset> assets) {
 
 @riverpod
 Decimal _assetBalanceInUsd(Ref ref, Asset asset) {
-  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final portfolioPrices = ref.watch(portfolioPricesProvider);
   final assetPortfolioPrice = portfolioPrices[asset.assetId];
 
   return switch (assetPortfolioPrice) {
@@ -366,7 +365,7 @@ Decimal assetsTotalDefaultCurrencyBalance(Ref ref, Iterable<Asset> assets) {
 
 @riverpod
 Decimal assetBalanceInDefaultCurrency(Ref ref, Asset asset) {
-  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final portfolioPrices = ref.watch(portfolioPricesProvider);
   final assetPortfolioUsdPrice = portfolioPrices[asset.assetId];
   final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
   final assetBalanceStr = ref.watch(assetBalanceStringProvider(asset));
@@ -443,8 +442,6 @@ String availableBalanceForAssetIdAsString(Ref ref, String? assetId) {
 
 @riverpod
 String defaultCurrencyTicker(Ref ref) {
-  final defaultConversionRate = ref.watch(
-    defaultConversionRateNotifierProvider,
-  );
+  final defaultConversionRate = ref.watch(defaultConversionRateProvider);
   return defaultConversionRate?.name ?? '';
 }

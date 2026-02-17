@@ -23,6 +23,7 @@ class MainActivity : FlutterFragmentActivity() {
     private val ANDROID_KEY_STORE = "AndroidKeyStore";
 
     private val CHANNEL = "app.sideswap.io/encryption"
+    private val MINIMIZECHANNEL = "app.sideswap.io/minimize"
 
     private val ERROR_OTHER = "other";
     private val ERROR_NEGATIVE = "negative";
@@ -74,6 +75,17 @@ class MainActivity : FlutterFragmentActivity() {
                 "decryptFallback" -> {
                     val data = call.arguments as ByteArray;
                     processFallback(Cipher.DECRYPT_MODE, result, data)
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MINIMIZECHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "minimizeApp" -> {
+                    moveTaskToBack(true)
+                    result.success(null)
                 }
                 else -> {
                     result.notImplemented()

@@ -10,7 +10,7 @@ class WorkingOrdersEmpty extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isConnected = ref.watch(serverConnectionNotifierProvider);
+    final isConnected = ref.watch(serverConnectionProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {

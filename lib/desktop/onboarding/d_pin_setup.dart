@@ -29,12 +29,12 @@ class DPinSetup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
 
-    final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
+    final firstLaunchState = ref.watch(firstLaunchStateProvider);
 
-    if (firstLaunchState != const FirstLaunchStateEmpty()) {
+    if (firstLaunchState != const FirstLaunchStateTypeEmpty()) {
       return SideSwapScaffoldPage(
         onEscapeKey:
             onEscapeKey ??
@@ -101,7 +101,7 @@ class DPinSetupContent extends HookConsumerWidget {
 
     ref.listen(pinKeyboardIndexProvider, (_, _) {});
 
-    final pinFieldState = ref.watch(pinFieldStateNotifierProvider);
+    final pinFieldState = ref.watch(pinFieldStateProvider);
 
     useEffect(() {
       if (pinFieldState == const PinFieldState.first() &&
@@ -123,7 +123,7 @@ class DPinSetupContent extends HookConsumerWidget {
         if (firstPinFocusNode.hasFocus) {
           Future.microtask(() {
             ref
-                .read(pinFieldStateNotifierProvider.notifier)
+                .read(pinFieldStateProvider.notifier)
                 .setPinFieldState(const PinFieldState.first());
           });
         }
@@ -136,7 +136,7 @@ class DPinSetupContent extends HookConsumerWidget {
         if (secondPinFocusNode.hasFocus) {
           Future.microtask(() {
             ref
-                .read(pinFieldStateNotifierProvider.notifier)
+                .read(pinFieldStateProvider.notifier)
                 .setPinFieldState(const PinFieldState.second());
           });
         }
@@ -168,7 +168,7 @@ class DPinSetupContent extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 10),
               child: Consumer(
                 builder: ((context, ref, child) {
-                  final firstPin = ref.watch(firstPinNotifierProvider);
+                  final firstPin = ref.watch(firstPinProvider);
                   final firstPinEnabled = ref.watch(firstPinEnabledProvider);
 
                   return DPinTextField(
@@ -210,14 +210,12 @@ class DPinSetupContent extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 10),
               child: Consumer(
                 builder: ((context, ref, child) {
-                  final secondPin = ref.watch(secondPinNotifierProvider);
+                  final secondPin = ref.watch(secondPinProvider);
                   if (pinFieldState == const PinFieldState.second()) {
                     secondPinFocusNode.requestFocus();
                   }
                   final secondPinEnabled = ref.watch(secondPinEnabledProvider);
-                  final pinSetupState = ref.watch(
-                    pinSetupStateNotifierProvider,
-                  );
+                  final pinSetupState = ref.watch(pinSetupStateProvider);
                   final errorMessage = (pinSetupState is PinSetupStateError)
                       ? pinSetupState.message
                       : '';
@@ -249,12 +247,10 @@ class DPinSetupContent extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 12),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final firstLaunchState = ref.watch(
-                    firstLaunchStateNotifierProvider,
-                  );
+                  final firstLaunchState = ref.watch(firstLaunchStateProvider);
 
                   final acceptType = switch (firstLaunchState) {
-                    FirstLaunchStateEmpty() => switch (isPinEnabled) {
+                    FirstLaunchStateTypeEmpty() => switch (isPinEnabled) {
                       true => switch (pinFieldState) {
                         PinFieldStateSecond() => PinKeyboardAcceptType.disable,
                         _ => PinKeyboardAcceptType.icon,

@@ -5,6 +5,24 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/wallet.dart';
 
+class CustomCloseButton extends ConsumerWidget {
+  const CustomCloseButton({
+    this.onPressed,
+    this.style,
+    this.icon = Icons.close,
+    super.key,
+  });
+
+  final void Function()? onPressed;
+  final CustomBackButtonStyle? style;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return CustomBackButton(onPressed: onPressed, style: style, icon: icon);
+  }
+}
+
 class CustomBackButton extends ConsumerWidget {
   const CustomBackButton({
     this.onPressed,

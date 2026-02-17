@@ -29,10 +29,8 @@ class DPinWelcome extends HookConsumerWidget {
 
     return SideSwapScaffoldPage(
       onEscapeKey: () {
-        ref.invalidate(firstLaunchStateNotifierProvider);
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.noWallet);
+        ref.invalidate(firstLaunchStateProvider);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
       },
       content: Center(
         child: SizedBox(

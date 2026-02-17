@@ -6,22 +6,59 @@ part of 'send_asset_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$sendAssetIdNotifierHash() =>
-    r'60f8938e2ab58617eacfce88d0fdd62812dec7bf';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [SendAssetIdNotifier].
 @ProviderFor(SendAssetIdNotifier)
-final sendAssetIdNotifierProvider =
-    NotifierProvider<SendAssetIdNotifier, String>.internal(
-      SendAssetIdNotifier.new,
-      name: r'sendAssetIdNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendAssetIdNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const sendAssetIdProvider = SendAssetIdNotifierProvider._();
 
-typedef _$SendAssetIdNotifier = Notifier<String>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class SendAssetIdNotifierProvider
+    extends $NotifierProvider<SendAssetIdNotifier, String> {
+  const SendAssetIdNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendAssetIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendAssetIdNotifierHash();
+
+  @$internal
+  @override
+  SendAssetIdNotifier create() => SendAssetIdNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$sendAssetIdNotifierHash() =>
+    r'9e013542189cdc74b89f28720f8e01fbd5f69dba';
+
+abstract class _$SendAssetIdNotifier extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

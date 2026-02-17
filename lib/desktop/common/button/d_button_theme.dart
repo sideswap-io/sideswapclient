@@ -122,14 +122,15 @@ class DButtonTheme extends InheritedTheme {
 
   static DButtonThemeData of(BuildContext context) {
     final container = ProviderContainer();
-    final buttonThemeData =
-        container.read(desktopAppThemeNotifierProvider).buttonThemeData;
+    final buttonThemeData = container
+        .read(desktopAppThemeProvider)
+        .buttonThemeData;
     return buttonThemeData.merge(_getInheritedButtonThemeData(context));
   }
 
   static DButtonThemeData? _getInheritedButtonThemeData(BuildContext context) {
-    final DButtonTheme? buttonTheme =
-        context.dependOnInheritedWidgetOfExactType<DButtonTheme>();
+    final DButtonTheme? buttonTheme = context
+        .dependOnInheritedWidgetOfExactType<DButtonTheme>();
     return buttonTheme?.data;
   }
 
@@ -243,12 +244,12 @@ class DButtonThemeData with Diagnosticable {
     final bool isDark = theme.brightness == Brightness.dark;
     return states.isPressing
         ? isDark
-            ? theme.colorScheme.secondary
-            : theme.colorScheme.secondary
+              ? theme.colorScheme.secondary
+              : theme.colorScheme.secondary
         : states.isHovering
         ? isDark
-            ? theme.colorScheme.secondary
-            : theme.colorScheme.secondary
+              ? theme.colorScheme.secondary
+              : theme.colorScheme.secondary
         : theme.colorScheme.secondary;
   }
 

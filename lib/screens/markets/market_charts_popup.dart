@@ -13,7 +13,7 @@ class MarketChartsPopup extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final popupCallback = useCallback(() {
-      ref.read(chartsSubscriptionFlagNotifierProvider.notifier).unsubscribe();
+      ref.read(chartsSubscriptionFlagProvider.notifier).unsubscribe();
       Navigator.of(context).pop();
     });
 

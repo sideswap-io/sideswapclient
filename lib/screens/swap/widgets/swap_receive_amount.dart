@@ -29,13 +29,13 @@ class SwapReceiveAmount extends HookConsumerWidget {
       AmountToStringParameters(amount: assetBalance ?? 0, precision: precision),
     );
     final swapType = ref.watch(swapTypeProvider);
-    final swapState = ref.watch(swapStateNotifierProvider);
+    final swapState = ref.watch(swapStateProvider);
 
     // Show error in one place only
-    final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
+    final subscribe = ref.watch(swapPriceSubscribeProvider);
     final serverError = subscribe != const SwapPriceSubscribeStateRecv()
         ? ''
-        : ref.watch(swapNetworkErrorNotifierProvider);
+        : ref.watch(swapNetworkErrorProvider);
     final feeRates = ref.watch(bitcoinFeeRatesProvider);
     final addressErrorText = ref.watch(swapAddressErrorProvider);
     final showAddressLabel = ref.watch(showAddressLabelProvider);
@@ -44,7 +44,7 @@ class SwapReceiveAmount extends HookConsumerWidget {
     final swapAddressRecvController = useTextEditingController();
     final receiveFocusNode = useFocusNode();
 
-    ref.listen(swapRecvTextAmountNotifierProvider, (previous, next) {
+    ref.listen(swapRecvTextAmountProvider, (previous, next) {
       final oldSelection = swapRecvAmountController.selection;
       swapRecvAmountController.value = TextEditingValue(
         text: next,
@@ -52,7 +52,7 @@ class SwapReceiveAmount extends HookConsumerWidget {
       );
     });
 
-    ref.listen(swapRecvAddressExternalNotifierProvider, (_, next) {
+    ref.listen(swapRecvAddressExternalProvider, (_, next) {
       if (swapType == SwapType.pegIn()) {
         return;
       }
@@ -111,27 +111,25 @@ class SwapReceiveAmount extends HookConsumerWidget {
       errorDescription: serverError,
       onDropdownChanged: ref.read(swapHelperProvider).setReceiveAsset,
       onChanged: (value) {
-        ref.invalidate(swapStateNotifierProvider);
-        ref.read(swapSendTextAmountNotifierProvider.notifier).setAmount('0');
+        ref.invalidate(swapStateProvider);
+        ref.read(swapSendTextAmountProvider.notifier).setAmount('0');
 
-        ref.read(swapRecvTextAmountNotifierProvider.notifier).setAmount(value);
+        ref.read(swapRecvTextAmountProvider.notifier).setAmount(value);
 
-        ref.read(swapPriceSubscribeNotifierProvider.notifier).setRecv();
+        ref.read(swapPriceSubscribeProvider.notifier).setRecv();
       },
       onAddressEditingCompleted: () {
         ref
-            .read(swapRecvAddressExternalNotifierProvider.notifier)
+            .read(swapRecvAddressExternalProvider.notifier)
             .setState(swapAddressRecvController.text);
         FocusScope.of(context).requestFocus(FocusNode());
       },
       onAddressChanged: (text) {
-        ref
-            .read(swapRecvAddressExternalNotifierProvider.notifier)
-            .setState(text);
+        ref.read(swapRecvAddressExternalProvider.notifier).setState(text);
       },
       onAddressLabelClose: () {
         ref.invalidate(showAddressLabelProvider);
-        ref.invalidate(swapRecvAddressExternalNotifierProvider);
+        ref.invalidate(swapRecvAddressExternalProvider);
       },
       showAccountsInPopup: true,
     );

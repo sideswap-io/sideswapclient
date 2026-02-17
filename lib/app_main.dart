@@ -11,6 +11,7 @@ import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/proxy_settings_listener.dart';
 import 'package:sideswap/listeners/send_asset_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
+import 'package:sideswap/listeners/swaption_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/universal_link_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
@@ -81,7 +82,7 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final mobileThemeData = ref.watch(mobileAppThemeNotifierProvider);
+    final mobileThemeData = ref.watch(mobileAppThemeProvider);
 
     return MaterialApp(
       title: 'SideSwap',
@@ -181,17 +182,15 @@ class RootWidget extends HookConsumerWidget {
     }, const []);
 
     final navigatorKey = ref.watch(navigatorKeyProvider);
-    final serverLoginState = ref.watch(serverLoginNotifierProvider);
+    final serverLoginState = ref.watch(serverLoginProvider);
 
     useEffect(() {
       (switch (serverLoginState) {
         ServerLoginStateError(message: String msg) => Future.microtask(
           () async {
             await ref.read(utilsProvider).showErrorDialog(msg);
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.noWallet);
-            ref.invalidate(serverLoginNotifierProvider);
+            ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
+            ref.invalidate(serverLoginProvider);
           },
         ),
         _ => () {}(),
@@ -209,6 +208,7 @@ class RootWidget extends HookConsumerWidget {
         const PinListener(),
         const UiStatesListener(),
         const SideswapNotificationListener(),
+        const SwaptionNotificationListener(),
         const JadeStatusListener(),
         const WarmupAppListener(),
         const UniversalLinkListener(),

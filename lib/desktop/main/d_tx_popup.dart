@@ -24,13 +24,13 @@ class DTxPopup extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
+    final optionCurrentTxid = ref.watch(currentTxPopupItemProvider);
 
     return DPopupWithClose(
       width: 634,
       height: 660,
       child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
-        final allTxs = ref.watch(allTxsNotifierProvider);
+        final allTxs = ref.watch(allTxsProvider);
 
         final transItem = allTxs[txid];
 
@@ -42,7 +42,7 @@ class DTxPopup extends HookConsumerWidget {
 
         final balances = transItemHelper.txBalances();
         final optionConfs = transItemHelper.txConfs();
-        final status = transItemHelper.txStatus();
+        final txStatus = transItemHelper.txStatus();
 
         final openTxCallback = useCallback(({bool unblinded = false}) {
           openTxidUrl(ref, transItem.tx.txid, true, unblinded);
@@ -124,7 +124,7 @@ class DTxPopup extends HookConsumerWidget {
                   const SizedBox(height: 14),
                   TxDetailsRow(
                     description: 'Status'.tr(),
-                    details: status,
+                    details: txStatus.status,
                     detailsColor: optionConfs.match(
                       () => Colors.white,
                       (_) => SideSwapColors.airSuperiorityBlue,
@@ -186,13 +186,13 @@ class DPegPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
+    final optionCurrentTxid = ref.watch(currentTxPopupItemProvider);
 
     return DPopupWithClose(
       width: 634,
       height: 660,
       child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
-        final allPegs = ref.watch(allPegsNotifierProvider);
+        final allPegs = ref.watch(allPegsProvider);
 
         final transItem = allPegs.values
             .map(

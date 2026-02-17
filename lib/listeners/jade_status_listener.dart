@@ -16,20 +16,20 @@ class JadeStatusListener extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jadeLockState = ref.watch(jadeLockStateNotifierProvider);
-    final jadeStatus = ref.watch(jadeStatusNotifierProvider);
+    final jadeLockState = ref.watch(jadeLockStateProvider);
+    final jadeStatus = ref.watch(jadeStatusProvider);
     final showAmpOnboarding = ref
         .watch(configurationProvider)
         .showAmpOnboarding;
-    final jadeInfoDialogRoute = ref.watch(jadeInfoDialogNotifierProvider);
+    final jadeInfoDialogRoute = ref.watch(jadeInfoDialogProvider);
 
-    ref.listen(jadeStatusNotifierProvider, (previous, next) {
+    ref.listen(jadeStatusProvider, (previous, next) {
       if (previous == const JadeStatusSignMessage() &&
           next == const JadeStatusIdle()) {
         if (FlavorConfig.isDesktop) {
           Future.microtask(
             () => ref
-                .read(jadeOnboardingRegistrationNotifierProvider.notifier)
+                .read(jadeOnboardingRegistrationProvider.notifier)
                 .setState(const JadeOnboardingRegistrationStateDone()),
           );
         } else {
@@ -72,7 +72,7 @@ class JadeStatusListener extends HookConsumerWidget {
               );
             },
           );
-          ref.invalidate(jadeLockStateNotifierProvider);
+          ref.invalidate(jadeLockStateProvider);
         });
       }
       return;
@@ -86,16 +86,16 @@ class JadeStatusListener extends HookConsumerWidget {
         Future.microtask(() {
           if (context.mounted) {
             Navigator.of(context).removeRoute(jadeInfoDialogRoute);
-            ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
+            ref.read(jadeInfoDialogProvider.notifier).setState(null);
             // rest of MarketTradeRepository.makeSwapTrade
-            ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+            ref.invalidate(previewOrderQuoteSuccessProvider);
           }
         });
       }
 
       if (jadeInfoDialogRoute != null && !jadeInfoDialogRoute.isActive) {
         Future.microtask(() {
-          ref.read(jadeInfoDialogNotifierProvider.notifier).setState(null);
+          ref.read(jadeInfoDialogProvider.notifier).setState(null);
         });
       }
 
@@ -113,9 +113,7 @@ class JadeStatusListener extends HookConsumerWidget {
               );
 
               Navigator.of(context).push(dialogRoute);
-              ref
-                  .read(jadeInfoDialogNotifierProvider.notifier)
-                  .setState(dialogRoute);
+              ref.read(jadeInfoDialogProvider.notifier).setState(dialogRoute);
             }
           });
         } else {
@@ -141,9 +139,7 @@ class JadeStatusListener extends HookConsumerWidget {
               );
 
               Navigator.of(context, rootNavigator: true).push(dialogRoute);
-              ref
-                  .read(jadeInfoDialogNotifierProvider.notifier)
-                  .setState(dialogRoute);
+              ref.read(jadeInfoDialogProvider.notifier).setState(dialogRoute);
             }
           });
         }
@@ -153,7 +149,7 @@ class JadeStatusListener extends HookConsumerWidget {
     }, [jadeStatus, jadeInfoDialogRoute]);
 
     final jadeOnboardingRegistration = ref.watch(
-      jadeOnboardingRegistrationNotifierProvider,
+      jadeOnboardingRegistrationProvider,
     );
 
     useEffect(() {
@@ -165,7 +161,7 @@ class JadeStatusListener extends HookConsumerWidget {
           const JadeOnboardingRegistrationStateDone()) {
         Future.microtask(() {
           ref
-              .read(jadeOnboardingRegistrationNotifierProvider.notifier)
+              .read(jadeOnboardingRegistrationProvider.notifier)
               .setState(const JadeOnboardingRegistrationStateIdle());
         });
       }

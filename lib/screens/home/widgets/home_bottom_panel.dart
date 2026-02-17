@@ -19,26 +19,24 @@ class HomeBottomPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final paymentHelper = ref.watch(paymentHelperProvider);
-
-    ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
+    ref.listen<QrCodeResultModel>(qrCodeResultModelProvider, (_, next) {
       logger.d(next);
       (switch (next) {
         QrCodeResultModelData() => () {
           if (next.result?.outputsData != null) {
             // go to the confirm transaction page directly
-            paymentHelper.outputsPaymentSend();
+            ref.read(paymentHelperProvider).outputsPaymentSend();
             return;
           }
 
           Future.microtask(() {
             ref
-                .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+                .read(paymentAmountPageArgumentsProvider.notifier)
                 .setPaymentAmountPageArguments(
                   PaymentAmountPageArguments(result: next.result),
                 );
             ref
-                .read(pageStatusNotifierProvider.notifier)
+                .read(pageStatusProvider.notifier)
                 .setStatus(Status.paymentAmountPage);
           });
         },
@@ -66,7 +64,7 @@ class HomeBottomPanel extends ConsumerWidget {
                 onTap: () {
                   // ref.read(walletProvider).selectAssetReceiveFromWalletMain();
                   ref
-                      .read(pageStatusNotifierProvider.notifier)
+                      .read(pageStatusProvider.notifier)
                       .setStatus(Status.generateWalletAddress);
                 },
                 label: 'Receive'.tr(),
@@ -78,12 +76,12 @@ class HomeBottomPanel extends ConsumerWidget {
                 ),
               ),
               RoundedButtonWithLabel(
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).push<void>(
-                    MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              getAddressQrScanner(bitcoinAddress: false),
+                onTap: () async {
+                  await Navigator.of(context, rootNavigator: true).push<void>(
+                    DialogRoute(
+                      builder: (context) =>
+                          getAddressQrScanner(bitcoinAddress: false),
+                      context: context,
                     ),
                   );
                 },

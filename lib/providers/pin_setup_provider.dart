@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/biometric_available_provider.dart';
@@ -87,7 +86,7 @@ class FirstPinNotifier extends _$FirstPinNotifier {
 
     state = value;
     ref
-        .read(pinSetupStateNotifierProvider.notifier)
+        .read(pinSetupStateProvider.notifier)
         .setPinSetupState(const PinSetupState.idle());
   }
 }
@@ -107,7 +106,7 @@ class SecondPinNotifier extends _$SecondPinNotifier {
 
     state = value;
     ref
-        .read(pinSetupStateNotifierProvider.notifier)
+        .read(pinSetupStateProvider.notifier)
         .setPinSetupState(const PinSetupState.idle());
   }
 }
@@ -116,7 +115,7 @@ class SecondPinNotifier extends _$SecondPinNotifier {
 class FirstPinEnabled extends _$FirstPinEnabled {
   @override
   bool build() {
-    final pinSetupState = ref.watch(pinSetupStateNotifierProvider);
+    final pinSetupState = ref.watch(pinSetupStateProvider);
     if (pinSetupState == const PinSetupState.done()) {
       return false;
     }
@@ -133,7 +132,7 @@ class FirstPinEnabled extends _$FirstPinEnabled {
 class SecondPinEnabled extends _$SecondPinEnabled {
   @override
   bool build() {
-    final pinSetupState = ref.watch(pinSetupStateNotifierProvider);
+    final pinSetupState = ref.watch(pinSetupStateProvider);
 
     if (pinSetupState == const PinSetupState.done()) {
       return false;
@@ -165,67 +164,67 @@ class PinHelper {
 
   void onSuccess() {
     ref
-        .read(pinSetupExitNotifierProvider.notifier)
+        .read(pinSetupExitProvider.notifier)
         .setPinSetupExitState(const PinSetupExitState.success());
   }
 
   void onBack() {
     ref
-        .read(pinSetupExitNotifierProvider.notifier)
+        .read(pinSetupExitProvider.notifier)
         .setPinSetupExitState(const PinSetupExitState.back());
   }
 
   void initPinSetupSettings() {
     ref
-        .read(pinSetupExitNotifierProvider.notifier)
+        .read(pinSetupExitProvider.notifier)
         .setPinSetupExitState(const PinSetupExitState.empty());
     ref
-        .read(pinSetupCallerNotifierProvider.notifier)
+        .read(pinSetupCallerProvider.notifier)
         .setPinSetupCallerState(const PinSetupCallerState.settings());
     _clearStates();
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.pinSetup);
   }
 
   void initPinSetupNewWalletPinWelcome() {
     ref
-        .read(pinSetupExitNotifierProvider.notifier)
+        .read(pinSetupExitProvider.notifier)
         .setPinSetupExitState(const PinSetupExitState.empty());
     ref
-        .read(pinSetupCallerNotifierProvider.notifier)
+        .read(pinSetupCallerProvider.notifier)
         .setPinSetupCallerState(
           const PinSetupCallerState.newWalletPinWelcome(),
         );
     _clearStates();
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.pinSetup);
   }
 
   void initPinSetupPinWelcome() {
     ref
-        .read(pinSetupExitNotifierProvider.notifier)
+        .read(pinSetupExitProvider.notifier)
         .setPinSetupExitState(const PinSetupExitState.empty());
     ref
-        .read(pinSetupCallerNotifierProvider.notifier)
+        .read(pinSetupCallerProvider.notifier)
         .setPinSetupCallerState(const PinSetupCallerState.pinWelcome());
     _clearStates();
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.pinSetup);
   }
 
   void _done() {
     ref
-        .read(pinSetupStateNotifierProvider.notifier)
+        .read(pinSetupStateProvider.notifier)
         .setPinSetupState(const PinSetupState.done());
 
     _clearStates();
   }
 
   void _clearStates() {
-    ref.invalidate(pinSetupStateNotifierProvider);
-    ref.invalidate(pinFieldStateNotifierProvider);
+    ref.invalidate(pinSetupStateProvider);
+    ref.invalidate(pinFieldStateProvider);
 
-    ref.invalidate(firstPinNotifierProvider);
+    ref.invalidate(firstPinProvider);
     ref.invalidate(firstPinEnabledProvider);
 
-    ref.invalidate(secondPinNotifierProvider);
+    ref.invalidate(secondPinProvider);
     ref.invalidate(secondPinEnabledProvider);
   }
 
@@ -247,7 +246,7 @@ class PinHelper {
   }
 
   void _onNumber(String number) {
-    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    final pinFieldState = ref.read(pinFieldStateProvider);
     if (pinFieldState == const PinFieldStateFirst()) {
       _onFirstPinNumber(number);
       return;
@@ -257,7 +256,7 @@ class PinHelper {
   }
 
   void _onFirstPinNumber(String number) {
-    final firstPin = ref.read(firstPinNotifierProvider);
+    final firstPin = ref.read(firstPinProvider);
     if (firstPin.length == _maxPinLength) {
       return;
     }
@@ -268,24 +267,24 @@ class PinHelper {
       ref.read(secondPinEnabledProvider.notifier).setSecondPinEnabled(true);
     }
 
-    ref.read(firstPinNotifierProvider.notifier).setFirstPin(newFirstPin);
+    ref.read(firstPinProvider.notifier).setFirstPin(newFirstPin);
   }
 
   void _onSecondPinNumber(String number) {
-    final secondPin = ref.read(secondPinNotifierProvider);
+    final secondPin = ref.read(secondPinProvider);
     if (secondPin.length == _maxPinLength) {
       return;
     }
 
     final newSecondPin = '$secondPin$number';
-    ref.read(secondPinNotifierProvider.notifier).setSecondPin(newSecondPin);
+    ref.read(secondPinProvider.notifier).setSecondPin(newSecondPin);
   }
 
   void _onBackspace() {
-    final firstPin = ref.read(firstPinNotifierProvider);
+    final firstPin = ref.read(firstPinProvider);
     final firstPinEnabled = ref.read(firstPinEnabledProvider);
 
-    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    final pinFieldState = ref.read(pinFieldStateProvider);
     if (pinFieldState == const PinFieldStateFirst()) {
       if (firstPin.isEmpty || !firstPinEnabled) {
         return;
@@ -294,15 +293,15 @@ class PinHelper {
       final newFirstPin = firstPin.substring(0, firstPin.length - 1);
 
       if (newFirstPin.length < 4) {
-        ref.read(secondPinNotifierProvider.notifier).setSecondPin('');
+        ref.read(secondPinProvider.notifier).setSecondPin('');
         ref.read(secondPinEnabledProvider.notifier).setSecondPinEnabled(false);
       }
 
-      ref.read(firstPinNotifierProvider.notifier).setFirstPin(newFirstPin);
+      ref.read(firstPinProvider.notifier).setFirstPin(newFirstPin);
       return;
     }
 
-    final secondPin = ref.read(secondPinNotifierProvider);
+    final secondPin = ref.read(secondPinProvider);
     final secondPinEnabled = ref.read(secondPinEnabledProvider);
 
     if (secondPin.isEmpty || !secondPinEnabled) {
@@ -310,31 +309,31 @@ class PinHelper {
     }
 
     final newSecondPin = secondPin.substring(0, secondPin.length - 1);
-    ref.read(secondPinNotifierProvider.notifier).setSecondPin(newSecondPin);
+    ref.read(secondPinProvider.notifier).setSecondPin(newSecondPin);
   }
 
   void _onEnter() {
-    final pinSetupState = ref.read(pinSetupStateNotifierProvider);
+    final pinSetupState = ref.read(pinSetupStateProvider);
     if (pinSetupState == const PinSetupState.done()) {
       return;
     }
 
-    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    final pinFieldState = ref.read(pinFieldStateProvider);
     final secondPinEnabled = ref.read(secondPinEnabledProvider);
 
     if (pinFieldState == const PinFieldState.first() && secondPinEnabled) {
       ref
-          .read(pinFieldStateNotifierProvider.notifier)
+          .read(pinFieldStateProvider.notifier)
           .setPinFieldState(const PinFieldState.second());
       return;
     }
 
-    final firstPin = ref.read(firstPinNotifierProvider);
-    final secondPin = ref.read(secondPinNotifierProvider);
+    final firstPin = ref.read(firstPinProvider);
+    final secondPin = ref.read(secondPinProvider);
     if (pinFieldState == const PinFieldState.second() && secondPinEnabled) {
       if (firstPin != secondPin) {
         ref
-            .read(pinSetupStateNotifierProvider.notifier)
+            .read(pinSetupStateProvider.notifier)
             .setPinSetupState(
               PinSetupState.error(message: "PIN code doesn't match".tr()),
             );
@@ -352,16 +351,16 @@ class PinHelper {
       return;
     }
 
-    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    final pinFieldState = ref.read(pinFieldStateProvider);
     if (pinFieldState == const PinFieldState.first()) {
       ref
-          .read(pinFieldStateNotifierProvider.notifier)
+          .read(pinFieldStateProvider.notifier)
           .setPinFieldState(const PinFieldState.second());
       return;
     }
 
     ref
-        .read(pinFieldStateNotifierProvider.notifier)
+        .read(pinFieldStateProvider.notifier)
         .setPinFieldState(const PinFieldState.first());
   }
 
@@ -378,7 +377,7 @@ class PinHelper {
 
     logger.e('Biometric authentication failed on sending pin');
     ref
-        .read(pinSetupStateNotifierProvider.notifier)
+        .read(pinSetupStateProvider.notifier)
         .setPinSetupState(
           PinSetupState.error(message: 'Biometric authentication failed'.tr()),
         );
@@ -389,7 +388,7 @@ class PinHelper {
 
     if (!result) {
       ref
-          .read(pinSetupStateNotifierProvider.notifier)
+          .read(pinSetupStateProvider.notifier)
           .setPinSetupState(
             PinSetupState.error(
               message: 'Error setup new PIN code - mnemonic error'.tr(),
@@ -399,7 +398,7 @@ class PinHelper {
     }
 
     ref
-        .read(pinSetupStateNotifierProvider.notifier)
+        .read(pinSetupStateProvider.notifier)
         .setPinSetupState(const PinSetupState.done());
   }
 
@@ -408,7 +407,7 @@ class PinHelper {
 
     if (pinDataState is PinDataStateError) {
       ref
-          .read(pinSetupStateNotifierProvider.notifier)
+          .read(pinSetupStateProvider.notifier)
           .setPinSetupState(
             PinSetupState.error(message: 'Error setup new PIN code'.tr()),
           );
@@ -418,7 +417,7 @@ class PinHelper {
     logger.d('PIN OK');
 
     _done();
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSuccess);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.pinSuccess);
     enablePinProtection();
   }
 

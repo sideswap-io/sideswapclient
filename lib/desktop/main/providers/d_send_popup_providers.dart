@@ -1,6 +1,5 @@
 import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -30,7 +29,7 @@ class SendPopupAmountNotifier extends _$SendPopupAmountNotifier {
 
 @riverpod
 Decimal sendPopupDecimalAmount(Ref ref) {
-  final amount = ref.watch(sendPopupAmountNotifierProvider);
+  final amount = ref.watch(sendPopupAmountProvider);
   if (amount.isEmpty) {
     return Decimal.zero;
   }
@@ -55,7 +54,7 @@ class SendPopupSelectedAssetIdNotifier
     extends _$SendPopupSelectedAssetIdNotifier {
   @override
   String build() {
-    final assetId = ref.watch(sendAssetIdNotifierProvider);
+    final assetId = ref.watch(sendAssetIdProvider);
     return assetId;
   }
 
@@ -69,8 +68,8 @@ class SendPopupReceiveConversionNotifier
     extends _$SendPopupReceiveConversionNotifier {
   @override
   String build() {
-    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdNotifierProvider);
-    final amount = ref.watch(sendPopupAmountNotifierProvider);
+    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdProvider);
+    final amount = ref.watch(sendPopupAmountProvider);
     final conversion = ref.watch(
       defaultCurrencyConversionFromStringProvider(selectedAssetId, amount),
     );
@@ -87,7 +86,7 @@ class SendPopupValidDataInserted extends _$SendPopupValidDataInserted {
   @override
   FutureOr<bool> build() {
     final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
-    final amountString = ref.watch(sendPopupAmountNotifierProvider);
+    final amountString = ref.watch(sendPopupAmountProvider);
     final balanceString = ref.watch(balanceStringWithInputsProvider);
 
     return switch (parseAddressResult) {
@@ -116,7 +115,7 @@ class SendPopupAddMoreOutputsButtonEnabled
     extends _$SendPopupAddMoreOutputsButtonEnabled {
   @override
   FutureOr<bool> build() {
-    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createTxState = ref.watch(createTxStateProvider);
     if (createTxState == const CreateTxStateCreating()) {
       return future;
     }
@@ -130,12 +129,12 @@ class SendPopupAddMoreOutputsButtonEnabled
 class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
   @override
   FutureOr<bool> build() {
-    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createTxState = ref.watch(createTxStateProvider);
     if (createTxState == const CreateTxStateCreating()) {
       return future;
     }
 
-    final outputsData = ref.watch(outputsReaderNotifierProvider);
+    final outputsData = ref.watch(outputsReaderProvider);
     final sendPopupFuture = ref.watch(
       sendPopupValidDataInsertedProvider.future,
     );
@@ -149,7 +148,7 @@ class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
 
 @riverpod
 bool sendPopupShowInsufficientFunds(Ref ref) {
-  final amountString = ref.watch(sendPopupAmountNotifierProvider);
+  final amountString = ref.watch(sendPopupAmountProvider);
   final balanceString = ref.watch(balanceStringWithInputsProvider);
 
   final amount = double.tryParse(amountString) ?? 0.0;
@@ -160,9 +159,7 @@ bool sendPopupShowInsufficientFunds(Ref ref) {
 
 @riverpod
 String? sendPopupDefaultCurrencyConversion(Ref ref) {
-  final receiveConversion = ref.watch(
-    sendPopupReceiveConversionNotifierProvider,
-  );
+  final receiveConversion = ref.watch(sendPopupReceiveConversionProvider);
   final showInsufficientFunds = ref.watch(
     sendPopupShowInsufficientFundsProvider,
   );
@@ -218,7 +215,7 @@ class SendPopupAddressResult {
 
 @riverpod
 Either<Exception, SendPopupAddressResult> sendPopupParseAddress(Ref ref) {
-  final address = ref.watch(sendPopupAddressNotifierProvider);
+  final address = ref.watch(sendPopupAddressProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
 

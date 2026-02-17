@@ -6,80 +6,217 @@ part of 'currency_rates_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$defaultConversionRateMultiplierHash() =>
-    r'1dd0bcb252377233de4cc5af4efd0c90b52c9388';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [defaultConversionRateMultiplier].
-@ProviderFor(defaultConversionRateMultiplier)
-final defaultConversionRateMultiplierProvider =
-    AutoDisposeProvider<Decimal>.internal(
-      defaultConversionRateMultiplier,
-      name: r'defaultConversionRateMultiplierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$defaultConversionRateMultiplierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+@ProviderFor(RequestConversionRates)
+const requestConversionRatesProvider = RequestConversionRatesProvider._();
+
+final class RequestConversionRatesProvider
+    extends $NotifierProvider<RequestConversionRates, void> {
+  const RequestConversionRatesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'requestConversionRatesProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$requestConversionRatesHash();
+
+  @$internal
+  @override
+  RequestConversionRates create() => RequestConversionRates();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(void value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<void>(value),
     );
+  }
+}
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DefaultConversionRateMultiplierRef = AutoDisposeProviderRef<Decimal>;
 String _$requestConversionRatesHash() =>
     r'0fbf0c36dd2aabb24a681ff4da5ed63beb3bb799';
 
-/// See also [RequestConversionRates].
-@ProviderFor(RequestConversionRates)
-final requestConversionRatesProvider =
-    NotifierProvider<RequestConversionRates, void>.internal(
-      RequestConversionRates.new,
-      name: r'requestConversionRatesProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$requestConversionRatesHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$RequestConversionRates extends $Notifier<void> {
+  void build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    build();
+    final ref = this.ref as $Ref<void, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<void, void>,
+              void,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, null);
+  }
+}
 
-typedef _$RequestConversionRates = Notifier<void>;
+@ProviderFor(ConversionRatesNotifier)
+const conversionRatesProvider = ConversionRatesNotifierProvider._();
+
+final class ConversionRatesNotifierProvider
+    extends $NotifierProvider<ConversionRatesNotifier, ConversionRates> {
+  const ConversionRatesNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'conversionRatesProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$conversionRatesNotifierHash();
+
+  @$internal
+  @override
+  ConversionRatesNotifier create() => ConversionRatesNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ConversionRates value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ConversionRates>(value),
+    );
+  }
+}
+
 String _$conversionRatesNotifierHash() =>
     r'd2d2975bcaebd2085767977c1b3a56b823b04f67';
 
-/// See also [ConversionRatesNotifier].
-@ProviderFor(ConversionRatesNotifier)
-final conversionRatesNotifierProvider =
-    NotifierProvider<ConversionRatesNotifier, ConversionRates>.internal(
-      ConversionRatesNotifier.new,
-      name: r'conversionRatesNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$conversionRatesNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$ConversionRatesNotifier = Notifier<ConversionRates>;
-String _$defaultConversionRateNotifierHash() =>
-    r'e4dbc3426994bd57dc3a1e8a52bbed5b032d7f09';
+abstract class _$ConversionRatesNotifier extends $Notifier<ConversionRates> {
+  ConversionRates build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<ConversionRates, ConversionRates>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ConversionRates, ConversionRates>,
+              ConversionRates,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
 /// Default conversion rate helpers ============
-///
-/// Copied from [DefaultConversionRateNotifier].
-@ProviderFor(DefaultConversionRateNotifier)
-final defaultConversionRateNotifierProvider =
-    AutoDisposeNotifierProvider<
-      DefaultConversionRateNotifier,
-      ConversionRate?
-    >.internal(
-      DefaultConversionRateNotifier.new,
-      name: r'defaultConversionRateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$defaultConversionRateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
 
-typedef _$DefaultConversionRateNotifier = AutoDisposeNotifier<ConversionRate?>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(DefaultConversionRateNotifier)
+const defaultConversionRateProvider = DefaultConversionRateNotifierProvider._();
+
+/// Default conversion rate helpers ============
+final class DefaultConversionRateNotifierProvider
+    extends $NotifierProvider<DefaultConversionRateNotifier, ConversionRate?> {
+  /// Default conversion rate helpers ============
+  const DefaultConversionRateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'defaultConversionRateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$defaultConversionRateNotifierHash();
+
+  @$internal
+  @override
+  DefaultConversionRateNotifier create() => DefaultConversionRateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ConversionRate? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ConversionRate?>(value),
+    );
+  }
+}
+
+String _$defaultConversionRateNotifierHash() =>
+    r'afe76159f28ec17884c506718b6ed41342f736ca';
+
+/// Default conversion rate helpers ============
+
+abstract class _$DefaultConversionRateNotifier
+    extends $Notifier<ConversionRate?> {
+  ConversionRate? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<ConversionRate?, ConversionRate?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ConversionRate?, ConversionRate?>,
+              ConversionRate?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(defaultConversionRateMultiplier)
+const defaultConversionRateMultiplierProvider =
+    DefaultConversionRateMultiplierProvider._();
+
+final class DefaultConversionRateMultiplierProvider
+    extends $FunctionalProvider<Decimal, Decimal, Decimal>
+    with $Provider<Decimal> {
+  const DefaultConversionRateMultiplierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'defaultConversionRateMultiplierProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$defaultConversionRateMultiplierHash();
+
+  @$internal
+  @override
+  $ProviderElement<Decimal> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Decimal create(Ref ref) {
+    return defaultConversionRateMultiplier(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Decimal value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Decimal>(value),
+    );
+  }
+}
+
+String _$defaultConversionRateMultiplierHash() =>
+    r'afb9c595ce11e912472d78b10870ce614b4fe1d5';

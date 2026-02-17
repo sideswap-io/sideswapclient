@@ -30,7 +30,7 @@ class DSettingsNetworkAccess extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
 
     return PopScope(
@@ -61,7 +61,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkAccessTab = ref.watch(networkAccessTabNotifierProvider);
+    final networkAccessTab = ref.watch(networkAccessTabProvider);
 
     return Center(
       child: SizedBox(
@@ -80,7 +80,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
               inactiveText: 'Network access server'.tr(),
               onToggle: (value) {
                 ref
-                    .read(networkAccessTabNotifierProvider.notifier)
+                    .read(networkAccessTabProvider.notifier)
                     .setNetworkAccessTab(
                       value
                           ? const NetworkAccessTabStateProxy()
@@ -114,7 +114,7 @@ class DSettingsNetworkAccessProxy extends HookConsumerWidget {
     final hostController = useTextEditingController();
     final portController = useTextEditingController();
 
-    final useProxy = ref.watch(useProxyNotifierProvider);
+    final useProxy = ref.watch(useProxyProvider);
 
     final validateCallback = useCallback(() {
       final host = hostController.text;
@@ -170,9 +170,7 @@ class DSettingsNetworkAccessProxy extends HookConsumerWidget {
               FlutterSwitch(
                 value: useProxy,
                 onToggle: (value) {
-                  ref
-                      .read(useProxyNotifierProvider.notifier)
-                      .setProxyState(value);
+                  ref.read(useProxyProvider.notifier).setProxyState(value);
                 },
                 width: 40,
                 height: 22,
@@ -226,7 +224,7 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
     return SizedBox(
       width: 344,
@@ -241,7 +239,7 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
                 networkSettingsModel.env == SIDESWAP_ENV_PROD,
             onChanged: (value) {
               ref
-                  .read(networkSettingsNotifierProvider.notifier)
+                  .read(networkSettingsProvider.notifier)
                   .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.blockstream,
@@ -259,7 +257,7 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
                 networkSettingsModel.env == SIDESWAP_ENV_PROD,
             onChanged: (value) {
               ref
-                  .read(networkSettingsNotifierProvider.notifier)
+                  .read(networkSettingsProvider.notifier)
                   .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.sideswap,
@@ -276,7 +274,7 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
                 SettingsNetworkType.sideswapChina,
             onChanged: (value) {
               ref
-                  .read(networkSettingsNotifierProvider.notifier)
+                  .read(networkSettingsProvider.notifier)
                   .setModel(
                     const NetworkSettingsModelApply(
                       settingsNetworkType: SettingsNetworkType.sideswapChina,
@@ -315,7 +313,7 @@ class DSettingsNetworkTestnetServers extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
     final isExpanded = useState(switch (networkSettingsModel.env) {
       SIDESWAP_ENV_TESTNET => true,
@@ -381,7 +379,7 @@ class DSettingsNetworkTestnetServers extends HookConsumerWidget {
                       networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
                   onChanged: (value) {
                     ref
-                        .read(networkSettingsNotifierProvider.notifier)
+                        .read(networkSettingsProvider.notifier)
                         .setModel(
                           const NetworkSettingsModelApply(
                             settingsNetworkType:
@@ -400,7 +398,7 @@ class DSettingsNetworkTestnetServers extends HookConsumerWidget {
                       networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
                   onChanged: (value) {
                     ref
-                        .read(networkSettingsNotifierProvider.notifier)
+                        .read(networkSettingsProvider.notifier)
                         .setModel(
                           const NetworkSettingsModelApply(
                             settingsNetworkType: SettingsNetworkType.sideswap,
@@ -437,7 +435,7 @@ class DSettingsNetworkAccessSaveOrBackButton extends ConsumerWidget {
               return;
             }
 
-            ref.read(networkSettingsNotifierProvider.notifier).applySettings();
+            ref.read(networkSettingsProvider.notifier).applySettings();
             ref.read(walletProvider).sendNetworkSettings();
           },
           child: Text('SAVE'.tr()),

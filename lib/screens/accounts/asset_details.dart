@@ -86,7 +86,7 @@ class AssetDetailsTransactionsPanel extends HookConsumerWidget {
     final allAssets = ref.watch(assetTransactionsProvider);
     final hightPercentController = ref.watch(heightPercentControllerProvider);
 
-    final optionSelectedAsset = ref.watch(selectedWalletAssetNotifierProvider);
+    final optionSelectedAsset = ref.watch(selectedWalletAssetProvider);
 
     return optionSelectedAsset.match(() => const SizedBox(), (asset) {
       final txItemList = allAssets[asset.assetId] ?? <TxItem>[];
@@ -99,9 +99,7 @@ class AssetDetailsTransactionsPanel extends HookConsumerWidget {
         minHeight: minExtent * screenHeight - minimizedPadding,
         maxHeight: maxExtent * screenHeight - maximizedPadding,
         onPanelSlide: (position) {
-          ref
-              .read(panelPositionNotifierProvider.notifier)
-              .setPanelPosition(position);
+          ref.read(panelPositionProvider.notifier).setPanelPosition(position);
           hightPercentController.add(1 - position);
         },
         color: SideSwapColors.chathamsBlue,
@@ -125,12 +123,12 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionSelectedAsset = ref.watch(selectedWalletAssetNotifierProvider);
+    final optionSelectedAsset = ref.watch(selectedWalletAssetProvider);
 
     useEffect(() {
       optionSelectedAsset.match(() {}, (asset) {
         ref
-            .read(tokenMarketNotifierProvider.notifier)
+            .read(tokenMarketProvider.notifier)
             .requestAssetDetails(assetId: asset.assetId);
       });
 
@@ -194,9 +192,7 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
             ),
             Consumer(
               builder: (context, ref, child) {
-                final details = ref.watch(
-                  tokenMarketNotifierProvider,
-                )[asset.assetId];
+                final details = ref.watch(tokenMarketProvider)[asset.assetId];
                 final issuedAmount = details?.stats?.issuedAmount ?? 0;
                 final burnedAmount = details?.stats?.burnedAmount ?? 0;
                 final circulatingAmount = issuedAmount - burnedAmount;
@@ -349,9 +345,7 @@ class AssetDetailsSlidingPanelHeader extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 3),
                   child: Consumer(
                     builder: (context, ref, child) {
-                      final panelPosition = ref.watch(
-                        panelPositionNotifierProvider,
-                      );
+                      final panelPosition = ref.watch(panelPositionProvider);
 
                       return MaximizeListButton(
                         position: panelPosition,
@@ -382,9 +376,9 @@ class AssetDetailsBackButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return CustomBackButton(
       onPressed: () {
-        final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+        final walletMainArguments = ref.read(uiStateArgsProvider);
         ref
-            .read(uiStateArgsNotifierProvider.notifier)
+            .read(uiStateArgsProvider.notifier)
             .setWalletMainArguments(
               walletMainArguments.copyWith(
                 navigationItemEnum: WalletMainNavigationItemEnum.accounts,
@@ -439,7 +433,7 @@ class AssetDetailsTopHeader extends HookConsumerWidget {
                 child: Consumer(
                   builder: (context, ref, child) {
                     final optionSelectedAsset = ref.watch(
-                      selectedWalletAssetNotifierProvider,
+                      selectedWalletAssetProvider,
                     );
 
                     return optionSelectedAsset.match(() => const SizedBox(), (

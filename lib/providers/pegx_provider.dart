@@ -6,7 +6,6 @@ import 'dart:typed_data';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:web_socket_channel/io.dart';
@@ -71,16 +70,15 @@ class PegxRegisterFailedNotifier extends _$PegxRegisterFailedNotifier {
   }
 }
 
-final pegxWebsocketClientProvider = AutoDisposeProvider((ref) {
+@Riverpod(keepAlive: true)
+PegxWebsocketClient pegxWebsocketClient(Ref ref) {
   final env = ref.watch(envProvider);
   final client = PegxWebsocketClient(ref, env);
-
-  ref.keepAlive();
 
   client.connectToSocket();
 
   return client;
-});
+}
 
 class PegxWebsocketClient {
   final Ref ref;
@@ -168,7 +166,7 @@ class PegxWebsocketClient {
         // logger.d('Pegx <= $notif');
         // logger.w("Notify register failed: ${notif.registerFailed.text}");
         ref
-            .read(pegxRegisterFailedNotifierProvider.notifier)
+            .read(pegxRegisterFailedProvider.notifier)
             .setState(notif.loginOrRegisterFailed.text);
         break;
       case Notif_Body.loginOrRegisterSucceed:
@@ -203,7 +201,7 @@ class PegxWebsocketClient {
         // logger.d('Pegx <= $resp');
         // logger.w('Resp login');
         ref
-            .read(pegxLoginStateNotifierProvider.notifier)
+            .read(pegxLoginStateProvider.notifier)
             .setState(
               PegxLoginStateLogin(requestId: resp.loginOrRegister.requestId),
             );
@@ -214,16 +212,16 @@ class PegxWebsocketClient {
         // logger.w("Resp resume");
 
         final gaids = resp.resume.accounts[0].gaids;
-        final ampId = ref.read(ampIdNotifierProvider);
+        final ampId = ref.read(ampIdProvider);
         if (gaids.contains(ampId)) {
           ref
-              .read(pegxLoginStateNotifierProvider.notifier)
+              .read(pegxLoginStateProvider.notifier)
               .setState(const PegxLoginStateGaidAdded());
           return;
         }
 
         ref
-            .read(pegxLoginStateNotifierProvider.notifier)
+            .read(pegxLoginStateProvider.notifier)
             .setState(const PegxLoginStateLogged());
         _accountKey = resp.resume.accounts[0].accountKey;
 
@@ -236,7 +234,7 @@ class PegxWebsocketClient {
         _lastAddGaidId = Int64();
         // logger.d('Pegx <= $resp');
         ref
-            .read(pegxLoginStateNotifierProvider.notifier)
+            .read(pegxLoginStateProvider.notifier)
             .setState(const PegxLoginStateGaidAdded());
         break;
       case Resp_Body.loadAssets:
@@ -270,7 +268,7 @@ class PegxWebsocketClient {
     if (error.id == _lastAddGaidId) {
       _lastAddGaidId = Int64();
       ref
-          .read(pegxLoginStateNotifierProvider.notifier)
+          .read(pegxLoginStateProvider.notifier)
           .setState(const PegxLoginStateGaidError());
       return;
     }
@@ -297,7 +295,7 @@ class PegxWebsocketClient {
   void disconnect() {
     if (_isConnected) {
       ref
-          .read(pegxLoginStateNotifierProvider.notifier)
+          .read(pegxLoginStateProvider.notifier)
           .setState(const PegxLoginStateLoading());
       logger.d('Pegx disconnected.');
       _client?.sink.close(status.normalClosure);
@@ -345,10 +343,10 @@ class PegxWebsocketClient {
     }
 
     ref
-        .read(pegxLoginStateNotifierProvider.notifier)
+        .read(pegxLoginStateProvider.notifier)
         .setState(const PegxLoginStateGaidWaiting());
 
-    final ampId = ref.read(ampIdNotifierProvider);
+    final ampId = ref.read(ampIdProvider);
     // handle amp error
     if (ampId.isEmpty) {
       errorAndGoBack('Adding AMP ID failed. Try again.'.tr());
@@ -364,11 +362,11 @@ class PegxWebsocketClient {
   }
 
   void errorAndGoBack(String error) {
-    ref.read(pegxRegisterFailedNotifierProvider.notifier).setState(error);
+    ref.read(pegxRegisterFailedProvider.notifier).setState(error);
 
     disconnect();
 
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.ampRegister);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.ampRegister);
   }
 
   /// generates a random Int64 whose value falls between [min] (inclusive) and [max] (exclusive)

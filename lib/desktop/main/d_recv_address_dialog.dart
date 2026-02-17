@@ -15,7 +15,7 @@ class DReceiveAddressDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
+    final selectedAccountType = ref.watch(selectedAccountTypeProvider);
     final receiveAddress = ref.watch(currentReceiveAddressProvider);
 
     final isAmp = selectedAccountType == Account.AMP_;

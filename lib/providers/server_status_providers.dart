@@ -59,6 +59,6 @@ class BitcoinFeeRates extends _$BitcoinFeeRates {
   }
 
   void setState(List<FeeRate> feeRates) {
-    state = [...feeRates];
+    state = [...feeRates]..sort((a, b) => a.value.compareTo(b.value));
   }
 }

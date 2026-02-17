@@ -16,7 +16,7 @@ class Markets extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedMarketTypeButton = ref.watch(
-      selectedMarketTypeButtonNotifierProvider,
+      selectedMarketTypeButtonProvider,
     );
 
     return Column(
@@ -38,7 +38,7 @@ class Markets extends HookConsumerWidget {
             SizedBox(),
             Consumer(
               builder: (context, ref, child) {
-                final ownOrders = ref.watch(marketOwnOrdersNotifierProvider);
+                final ownOrders = ref.watch(marketOwnOrdersProvider);
 
                 return switch (ownOrders.isEmpty) {
                   true => Flexible(child: WorkingOrdersEmpty()),

@@ -1,6 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/models/stokr_model.dart';
@@ -82,9 +80,9 @@ class StokrGaidNotifier extends _$StokrGaidNotifier {
 }
 
 @riverpod
-CheckAmpStatusProvider checkAmpStatus(Ref ref) {
-  final loginState = ref.watch(serverLoginNotifierProvider);
-  final ampId = ref.watch(ampIdNotifierProvider);
+CheckAmpStatusImpl checkAmpStatus(Ref ref) {
+  final loginState = ref.watch(serverLoginProvider);
+  final ampId = ref.watch(ampIdProvider);
   final pegxSecurities = ref.watch(pegxSecuritiesProvider);
 
   final sswp = pegxSecurities.where((e) => e.token == 'SSWP');
@@ -92,24 +90,25 @@ CheckAmpStatusProvider checkAmpStatus(Ref ref) {
 
   final stokrSecurities = ref.watch(stokrSecuritiesProvider);
 
-  return CheckAmpStatusProvider(
+  return CheckAmpStatusImpl(
     ref: ref,
     loginState: loginState,
     ampId: ampId,
     pegxAssetId: pegxAssetId,
-    stokrAssetId:
-        stokrSecurities.isNotEmpty ? stokrSecurities.first.assetId : null,
+    stokrAssetId: stokrSecurities.isNotEmpty
+        ? stokrSecurities.first.assetId
+        : null,
   );
 }
 
-class CheckAmpStatusProvider {
+class CheckAmpStatusImpl {
   final Ref ref;
   final ServerLoginState loginState;
   final String ampId;
   final String? pegxAssetId;
   final String? stokrAssetId;
 
-  CheckAmpStatusProvider({
+  CheckAmpStatusImpl({
     required this.ref,
     required this.loginState,
     required this.ampId,
@@ -121,10 +120,10 @@ class CheckAmpStatusProvider {
     Future.microtask(() {
       // cleanup amp states before recheck
       ref
-          .read(pegxGaidNotifierProvider.notifier)
+          .read(pegxGaidProvider.notifier)
           .setState(const PegxGaidStateLoading());
       ref
-          .read(stokrGaidNotifierProvider.notifier)
+          .read(stokrGaidProvider.notifier)
           .setStokrGaidState(const StokrGaidStateLoading());
     }).then((_) {
       if (loginState != const ServerLoginStateLogin()) {

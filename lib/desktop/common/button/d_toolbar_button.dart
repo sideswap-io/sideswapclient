@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
@@ -14,7 +13,7 @@ class DTopToolbarButton extends StatelessWidget {
   });
 
   final String name;
-  final String icon;
+  final Widget icon;
   final VoidCallback? onPressed;
 
   @override
@@ -28,12 +27,11 @@ class DTopToolbarButton extends StatelessWidget {
           child: DFocusBorder(
             focused: states.isFocused,
             child: Container(
-              color:
-                  states.isHovering
-                      ? states.isPressing
-                          ? Colors.transparent.toAccentColor().darker
-                          : Colors.transparent.toAccentColor().dark
-                      : Colors.transparent,
+              color: states.isHovering
+                  ? states.isPressing
+                        ? Colors.transparent.toAccentColor().darker
+                        : Colors.transparent.toAccentColor().dark
+                  : Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 0,
@@ -44,7 +42,7 @@ class DTopToolbarButton extends StatelessWidget {
                   child: Center(
                     child: Row(
                       children: [
-                        SvgPicture.asset(icon, width: 18, height: 18),
+                        icon,
                         ...switch (name.isNotEmpty) {
                           true => [
                             const SizedBox(width: 6),
@@ -52,10 +50,9 @@ class DTopToolbarButton extends StatelessWidget {
                               name,
                               style: TextStyle(
                                 fontSize: 12,
-                                color:
-                                    states.isHovering
-                                        ? SideSwapColors.brightTurquoise
-                                        : Colors.white,
+                                color: states.isHovering
+                                    ? SideSwapColors.brightTurquoise
+                                    : Colors.white,
                               ),
                             ),
                           ],

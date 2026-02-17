@@ -6,46 +6,123 @@ part of 'preview_order_dialog_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$previewOrderDialogAcceptStateHash() =>
-    r'6811c3d6832bc62d74fc7d8c6cc35e04e4c58b85';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [previewOrderDialogAcceptState].
-@ProviderFor(previewOrderDialogAcceptState)
-final previewOrderDialogAcceptStateProvider =
-    AutoDisposeProvider<PreviewOrderDialogAcceptState>.internal(
-      previewOrderDialogAcceptState,
-      name: r'previewOrderDialogAcceptStateProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$previewOrderDialogAcceptStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+@ProviderFor(PreviewOrderDialogModifiersNotifier)
+const previewOrderDialogModifiersProvider =
+    PreviewOrderDialogModifiersNotifierProvider._();
+
+final class PreviewOrderDialogModifiersNotifierProvider
+    extends
+        $NotifierProvider<
+          PreviewOrderDialogModifiersNotifier,
+          PreviewOrderDialogModifiers
+        > {
+  const PreviewOrderDialogModifiersNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'previewOrderDialogModifiersProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$previewOrderDialogModifiersNotifierHash();
+
+  @$internal
+  @override
+  PreviewOrderDialogModifiersNotifier create() =>
+      PreviewOrderDialogModifiersNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PreviewOrderDialogModifiers value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PreviewOrderDialogModifiers>(value),
     );
+  }
+}
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PreviewOrderDialogAcceptStateRef =
-    AutoDisposeProviderRef<PreviewOrderDialogAcceptState>;
 String _$previewOrderDialogModifiersNotifierHash() =>
     r'e3f0c953eae04f04d70a08609055f75822975826';
 
-/// See also [PreviewOrderDialogModifiersNotifier].
-@ProviderFor(PreviewOrderDialogModifiersNotifier)
-final previewOrderDialogModifiersNotifierProvider =
-    NotifierProvider<
-      PreviewOrderDialogModifiersNotifier,
-      PreviewOrderDialogModifiers
-    >.internal(
-      PreviewOrderDialogModifiersNotifier.new,
-      name: r'previewOrderDialogModifiersNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$previewOrderDialogModifiersNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$PreviewOrderDialogModifiersNotifier
+    extends $Notifier<PreviewOrderDialogModifiers> {
+  PreviewOrderDialogModifiers build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<PreviewOrderDialogModifiers, PreviewOrderDialogModifiers>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                PreviewOrderDialogModifiers,
+                PreviewOrderDialogModifiers
+              >,
+              PreviewOrderDialogModifiers,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$PreviewOrderDialogModifiersNotifier =
-    Notifier<PreviewOrderDialogModifiers>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(previewOrderDialogAcceptState)
+const previewOrderDialogAcceptStateProvider =
+    PreviewOrderDialogAcceptStateProvider._();
+
+final class PreviewOrderDialogAcceptStateProvider
+    extends
+        $FunctionalProvider<
+          PreviewOrderDialogAcceptState,
+          PreviewOrderDialogAcceptState,
+          PreviewOrderDialogAcceptState
+        >
+    with $Provider<PreviewOrderDialogAcceptState> {
+  const PreviewOrderDialogAcceptStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'previewOrderDialogAcceptStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$previewOrderDialogAcceptStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<PreviewOrderDialogAcceptState> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PreviewOrderDialogAcceptState create(Ref ref) {
+    return previewOrderDialogAcceptState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PreviewOrderDialogAcceptState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PreviewOrderDialogAcceptState>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$previewOrderDialogAcceptStateHash() =>
+    r'a619d8c222aef5dd0c7a8e1651dbf92d574619da';

@@ -14,9 +14,7 @@ class DPegxSubmitFinishDialog extends HookConsumerWidget {
       content: [
         DPegxLoginDialog(
           onClose: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.ampRegister);
+            ref.read(pageStatusProvider.notifier).setStatus(Status.ampRegister);
           },
           content: const DPegxSubmitFinishDialogBody(),
         ),

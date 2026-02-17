@@ -26,7 +26,7 @@ class DPreviewOrderDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -39,9 +39,7 @@ class DPreviewOrderDialog extends HookConsumerWidget {
 
     final acceptButtonClicked = useState(false);
 
-    final optionQuoteSuccess = ref.watch(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
+    final optionQuoteSuccess = ref.watch(previewOrderQuoteSuccessProvider);
     final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     final closeCallback = useCallback(() {
@@ -50,7 +48,7 @@ class DPreviewOrderDialog extends HookConsumerWidget {
       });
 
       Future.microtask(() {
-        ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+        ref.invalidate(previewOrderQuoteSuccessProvider);
       });
     });
 
@@ -68,9 +66,9 @@ class DPreviewOrderDialog extends HookConsumerWidget {
 
     useEffect(() {
       optionAccepQuoteSuccess.match(() {}, (txid) {
-        ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
-        ref.invalidate(quoteEventNotifierProvider);
-        ref.invalidate(marketQuoteNotifierProvider);
+        ref.read(quoteEventProvider.notifier).stopQuotes();
+        ref.invalidate(quoteEventProvider);
+        ref.invalidate(marketQuoteProvider);
       });
 
       return;
@@ -78,9 +76,9 @@ class DPreviewOrderDialog extends HookConsumerWidget {
 
     useEffect(() {
       optionAcceptQuoteError.match(() {}, (error) {
-        ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
-        ref.invalidate(quoteEventNotifierProvider);
-        ref.invalidate(marketQuoteNotifierProvider);
+        ref.read(quoteEventProvider.notifier).stopQuotes();
+        ref.invalidate(quoteEventProvider);
+        ref.invalidate(marketQuoteProvider);
         closeCallback();
       });
 

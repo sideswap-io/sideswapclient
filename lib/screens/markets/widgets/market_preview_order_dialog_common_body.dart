@@ -16,13 +16,9 @@ class MarketPreviewOrderDialogCommonBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dialogModifiers = ref.watch(
-      previewOrderDialogModifiersNotifierProvider,
-    );
+    final dialogModifiers = ref.watch(previewOrderDialogModifiersProvider);
 
-    final optionQuoteSuccess = ref.watch(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
+    final optionQuoteSuccess = ref.watch(previewOrderQuoteSuccessProvider);
     final orderSignTtl = ref.watch(orderSignTtlProvider);
     final assetImage = ref.watch(assetImageRepositoryProvider);
 

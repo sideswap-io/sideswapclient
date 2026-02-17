@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/assets_precache_provider.dart';
 import 'package:sideswap/providers/licenses_provider.dart';
@@ -29,12 +28,11 @@ class WarmupApp extends _$WarmupApp {
     }
 
     try {
-      final (v1, v2, v3) =
-          await (
-            ref.read(clearImageCacheFutureProvider.future),
-            ref.read(licensesLoaderFutureProvider.future),
-            ref.read(assetsPrecacheFutureProvider.future),
-          ).wait;
+      final (v1, v2, v3) = await (
+        ref.read(clearImageCacheFutureProvider.future),
+        ref.read(licensesLoaderFutureProvider.future),
+        ref.read(assetsPrecacheFutureProvider.future),
+      ).wait;
 
       if (!v1 || !v2 || !v3) {
         Error.throwWithStackTrace('WarmupApp failed', StackTrace.current);
@@ -46,7 +44,7 @@ class WarmupApp extends _$WarmupApp {
       Error.throwWithStackTrace(e.errors.$1, st);
     }
 
-    ref.read(networkSettingsNotifierProvider.notifier).applySettings();
+    ref.read(networkSettingsProvider.notifier).applySettings();
 
     state = const AsyncValue.data(WarmupAppState.initialized());
   }

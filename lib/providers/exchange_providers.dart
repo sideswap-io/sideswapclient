@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:collection/collection.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/ref_debounce_extension.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -260,7 +259,7 @@ class ExchangeBottomAsset extends _$ExchangeBottomAsset {
 class ExchangeTopAmount extends _$ExchangeTopAmount {
   @override
   String build() {
-    ref.listen(exchangeAccepQuoteStateNotifierProvider, (prev, next) {
+    ref.listen(exchangeAccepQuoteStateProvider, (prev, next) {
       if (prev is ExchangeAcceptQuoteStateInProgress &&
           next is ExchangeAcceptQuoteStateEmpty) {
         ref.invalidateSelf();
@@ -284,10 +283,7 @@ class ExchangeTopAmount extends _$ExchangeTopAmount {
       });
     });
 
-    ref.listen(instantSwapQuoteSuccessNotifierProvider, (
-      _,
-      optionQuoteSuccess,
-    ) {
+    ref.listen(instantSwapQuoteSuccessProvider, (_, optionQuoteSuccess) {
       optionQuoteSuccess.match(() {}, (quoteSuccess) {
         quoteSuccess.deliverAsset.match(
           () {},
@@ -363,7 +359,7 @@ Future<int> exchangeTopDebounceSatoshiAmount(Ref ref) async {
 class ExchangeBottomAmount extends _$ExchangeBottomAmount {
   @override
   String build() {
-    ref.listen(exchangeAccepQuoteStateNotifierProvider, (prev, next) {
+    ref.listen(exchangeAccepQuoteStateProvider, (prev, next) {
       if (prev is ExchangeAcceptQuoteStateInProgress &&
           next is ExchangeAcceptQuoteStateEmpty) {
         ref.invalidateSelf();
@@ -387,10 +383,7 @@ class ExchangeBottomAmount extends _$ExchangeBottomAmount {
       });
     });
 
-    ref.listen(instantSwapQuoteSuccessNotifierProvider, (
-      _,
-      optionQuoteSuccess,
-    ) {
+    ref.listen(instantSwapQuoteSuccessProvider, (_, optionQuoteSuccess) {
       optionQuoteSuccess.match(() {}, (quoteSuccess) {
         quoteSuccess.receiveAsset.match(
           () {},
@@ -472,7 +465,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
   @override
   Option<From_Quote> build() {
     ref.listen(exchangeCurrentEditAssetProvider, (_, _) {});
-    final optionQuoteEvent = ref.watch(quoteEventNotifierProvider);
+    final optionQuoteEvent = ref.watch(quoteEventProvider);
 
     return optionQuoteEvent;
   }
@@ -490,7 +483,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
         };
 
         ref
-            .read(quoteEventNotifierProvider.notifier)
+            .read(quoteEventProvider.notifier)
             .startQuotes(
               amount: 0,
               assetPair: assetPair,
@@ -519,7 +512,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
         };
 
         ref
-            .read(quoteEventNotifierProvider.notifier)
+            .read(quoteEventProvider.notifier)
             .startQuotes(
               assetPair: assetPair,
               assetType: assetType,
@@ -548,7 +541,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
         };
 
         ref
-            .read(quoteEventNotifierProvider.notifier)
+            .read(quoteEventProvider.notifier)
             .startQuotes(
               assetPair: assetPair,
               assetType: assetType,
@@ -561,7 +554,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
   }
 
   void stopQuotes() {
-    ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+    ref.read(quoteEventProvider.notifier).stopQuotes();
   }
 
   void acceptQuote({required Option<QuoteSuccess> optionQuoteSuccess}) {
@@ -572,7 +565,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
         true => () async {
           // freeze quote values in ui until success or error arrive (in instant_swap_listener)
           ref
-              .read(instantSwapStateNotifierProvider.notifier)
+              .read(instantSwapStateProvider.notifier)
               .setState(InstantSwapState.inProgress());
           var authorized = ref.read(jadeOneTimeAuthorizationProvider);
 
@@ -584,12 +577,12 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
 
           if (!authorized) {
             // unfreeze quote values
-            ref.invalidate(instantSwapStateNotifierProvider);
+            ref.invalidate(instantSwapStateProvider);
             return;
           }
 
           ref
-              .read(previewOrderQuoteSuccessNotifierProvider.notifier)
+              .read(previewOrderQuoteSuccessProvider.notifier)
               .setState(quoteSuccess);
 
           final msg = To();
@@ -599,7 +592,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
           ref.read(walletProvider).sendMsg(msg);
 
           ref
-              .read(exchangeAccepQuoteStateNotifierProvider.notifier)
+              .read(exchangeAccepQuoteStateProvider.notifier)
               .setState(ExchangeAcceptQuoteState.inProgress());
 
           final isJadeWallet = ref.read(isJadeWalletProvider);
@@ -610,7 +603,7 @@ class ExchangeQuoteNotifier extends _$ExchangeQuoteNotifier {
           }
 
           stopQuotes();
-          ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+          ref.invalidate(previewOrderQuoteSuccessProvider);
         },
         _ => jadeLockRepository.refreshJadeLockState,
       }());
@@ -629,7 +622,7 @@ String exchangeSwapButtonText(Ref ref) {
     return continueText;
   }
 
-  final jadeLockState = ref.watch(jadeLockStateNotifierProvider);
+  final jadeLockState = ref.watch(jadeLockStateProvider);
   return switch (jadeLockState) {
     JadeLockStateUnlocked() => continueText,
     _ => unlockText,
@@ -638,7 +631,7 @@ String exchangeSwapButtonText(Ref ref) {
 
 @riverpod
 Option<QuoteError> exchangeQuoteError(Ref ref) {
-  final optionQuote = ref.watch(exchangeQuoteNotifierProvider);
+  final optionQuote = ref.watch(exchangeQuoteProvider);
   final optionAcceptQuoteError = ref.watch(exchangeAcceptQuoteErrorProvider);
 
   return optionQuote.match(
@@ -684,7 +677,7 @@ class ExchangeIndexPrice extends _$ExchangeIndexPrice {
     final assetsState = ref.watch(assetsStateProvider);
     final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
-    ref.listen(exchangeQuoteNotifierProvider, (_, optionQuote) {
+    ref.listen(exchangeQuoteProvider, (_, optionQuote) {
       optionQuote.match(() {}, (quote) {
         double? priceTaker;
 
@@ -726,7 +719,7 @@ class ExchangeIndexPrice extends _$ExchangeIndexPrice {
 @riverpod
 Option<QuoteLowBalance> exchangeLowBalanceError(Ref ref) {
   final optionAssetPair = ref.watch(exchangeAssetPairProvider);
-  final optionQuote = ref.watch(exchangeQuoteNotifierProvider);
+  final optionQuote = ref.watch(exchangeQuoteProvider);
   final optionMarketInfo = ref.watch(exchangeMarketInfoProvider);
 
   return optionAssetPair.match(
@@ -765,7 +758,7 @@ Option<QuoteLowBalance> exchangeLowBalanceError(Ref ref) {
 @riverpod
 Option<QuoteSuccess> exchangeQuoteSuccess(Ref ref) {
   final optionAssetPair = ref.watch(exchangeAssetPairProvider);
-  final optionQuote = ref.watch(exchangeQuoteNotifierProvider);
+  final optionQuote = ref.watch(exchangeQuoteProvider);
   final optionMarketInfo = ref.watch(exchangeMarketInfoProvider);
 
   return optionQuote.match(
@@ -805,7 +798,7 @@ Option<QuoteSuccess> exchangeQuoteSuccess(Ref ref) {
 
 @riverpod
 bool exchangeSwapButtonEnabled(Ref ref) {
-  final acceptQuoteState = ref.watch(exchangeAccepQuoteStateNotifierProvider);
+  final acceptQuoteState = ref.watch(exchangeAccepQuoteStateProvider);
   if (acceptQuoteState is ExchangeAcceptQuoteStateInProgress) {
     return false;
   }
@@ -845,7 +838,7 @@ class ExchangeAccepQuoteStateNotifier
 
 @riverpod
 Option<From_AcceptQuote> exchangeAcceptQuote(Ref ref) {
-  return ref.watch(acceptQuoteNotifierProvider);
+  return ref.watch(acceptQuoteProvider);
 }
 
 @riverpod
@@ -907,10 +900,10 @@ class InstantSwapQuoteSuccessNotifier
     extends _$InstantSwapQuoteSuccessNotifier {
   @override
   Option<QuoteSuccess> build() {
-    ref.listen(instantSwapStateNotifierProvider, (_, next) {});
+    ref.listen(instantSwapStateProvider, (_, next) {});
     ref.listen(exchangeQuoteSuccessProvider, (_, next) {
       next.match(() => ref.invalidateSelf(), (quoteSuccess) {
-        final instantSwapState = ref.read(instantSwapStateNotifierProvider);
+        final instantSwapState = ref.read(instantSwapStateProvider);
         if (instantSwapState is InstantSwapStateEmpty) {
           setState(quoteSuccess);
         } else if (instantSwapState is InstantSwapStateInProgress) {
@@ -930,14 +923,14 @@ class InstantSwapQuoteSuccessNotifier
 
 @riverpod
 bool instantSwapDisabledAmount(Ref ref) {
-  final instantSwapState = ref.watch(instantSwapStateNotifierProvider);
+  final instantSwapState = ref.watch(instantSwapStateProvider);
 
   return instantSwapState is! InstantSwapStateEmpty;
 }
 
 @riverpod
 bool instantSwapDisabledDropdown(Ref ref) {
-  final instantSwapState = ref.watch(instantSwapStateNotifierProvider);
+  final instantSwapState = ref.watch(instantSwapStateProvider);
 
   return instantSwapState is! InstantSwapStateEmpty;
 }

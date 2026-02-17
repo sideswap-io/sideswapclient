@@ -13,10 +13,10 @@ import 'package:sideswap/providers/inputs_providers.dart';
 class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
   const DSelectInputsWalletTypeFlagPopupMenu({super.key});
 
-  Future<InputsWalletTypeFlag?> showFilterMenu(
+  Future<InputsWalletFlagType?> showFilterMenu(
     BuildContext context,
     GlobalKey buttonKey,
-    InputsWalletTypeFlag walletTypeFlag,
+    InputsWalletFlagType walletFlagType,
   ) async {
     final box = buttonKey.currentContext?.findRenderObject() as RenderBox;
     final buttonOffset = box.localToGlobal(Offset.zero);
@@ -31,7 +31,7 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
       overlay.size.height, // same as MediaQuery.of(context).size.height,
     );
 
-    final result = await showMenu<InputsWalletTypeFlag>(
+    final result = await showMenu<InputsWalletFlagType>(
       context: context,
       position: position,
       color: SideSwapColors.prussianBlue,
@@ -40,7 +40,7 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
       items: [
         PopupMenuItem(
           height: 32,
-          value: const InputsWalletTypeFlagRegular(),
+          value: const InputsWalletFlagTypeRegular(),
           padding: const EdgeInsets.symmetric(horizontal: 9),
           child: HookBuilder(
             builder: (context) {
@@ -61,12 +61,12 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontSize: 13,
                         color:
-                            walletTypeFlag ==
-                                    const InputsWalletTypeFlagRegular()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                            walletFlagType ==
+                                const InputsWalletFlagTypeRegular()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -77,7 +77,7 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
         ),
         PopupMenuItem(
           height: 32,
-          value: const InputsWalletTypeFlagAmp(),
+          value: const InputsWalletFlagTypeAmp(),
           padding: const EdgeInsets.symmetric(horizontal: 9),
           child: HookBuilder(
             builder: (context) {
@@ -98,12 +98,11 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
                       'AMP'.tr(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontSize: 13,
-                        color:
-                            walletTypeFlag == const InputsWalletTypeFlagAmp()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                        color: walletFlagType == const InputsWalletFlagTypeAmp()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -124,39 +123,38 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
     final clicked = useState(false);
 
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .addressesButtonStyle(false);
 
-    final walletTypeFlag = ref.watch(inputsWalletTypeFlagNotifierProvider);
+    final walletFlagType = ref.watch(inputsWalletFlagProvider);
 
     return SizedBox(
       height: 32,
       child: DButton(
         key: buttonKey,
-        style:
-            clicked.value
-                ? buttonStyle?.merge(
-                  DButtonStyle(
-                    backgroundColor: ButtonState.all(
-                      SideSwapColors.prussianBlue,
-                    ),
-                  ),
-                )
-                : buttonStyle,
+        style: clicked.value
+            ? buttonStyle?.merge(
+                DButtonStyle(
+                  backgroundColor: ButtonState.all(SideSwapColors.prussianBlue),
+                ),
+              )
+            : buttonStyle,
         onPressed: () async {
           clicked.value = true;
           final result = await showFilterMenu(
             context,
             buttonKey,
-            walletTypeFlag,
+            walletFlagType,
           );
           (switch (result) {
-            InputsWalletTypeFlag result => ref
-                .read(inputsWalletTypeFlagNotifierProvider.notifier)
-                .setInputsWalletTypeFlag(result),
-            _ => ref
-                .read(inputsWalletTypeFlagNotifierProvider.notifier)
-                .setInputsWalletTypeFlag(const InputsWalletTypeFlagRegular()),
+            InputsWalletFlagType result =>
+              ref
+                  .read(inputsWalletFlagProvider.notifier)
+                  .setInputsWalletTypeFlag(result),
+            _ =>
+              ref
+                  .read(inputsWalletFlagProvider.notifier)
+                  .setInputsWalletTypeFlag(const InputsWalletFlagTypeRegular()),
           });
 
           clicked.value = false;
@@ -167,9 +165,9 @@ class DSelectInputsWalletTypeFlagPopupMenu extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                switch (walletTypeFlag) {
-                  InputsWalletTypeFlagRegular() => 'Regular'.tr(),
-                  InputsWalletTypeFlagAmp() => 'AMP'.tr(),
+                switch (walletFlagType) {
+                  InputsWalletFlagTypeRegular() => 'Regular'.tr(),
+                  InputsWalletFlagTypeAmp() => 'AMP'.tr(),
                 },
                 style: Theme.of(
                   context,

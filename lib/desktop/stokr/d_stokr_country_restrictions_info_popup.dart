@@ -22,8 +22,9 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
     final baseAsset = ref.watch(marketSubscribedBaseAssetProvider).toNullable();
 
     return DContentDialog(

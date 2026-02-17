@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:decimal/decimal.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';

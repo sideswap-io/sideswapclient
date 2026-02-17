@@ -19,7 +19,7 @@ class SwapDeliverAmount extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(bitcoinCurrentFeeRateNotifierProvider, (_, next) {
+    ref.listen(bitcoinCurrentFeeRateProvider, (_, next) {
       // request peg out amount when fee rate changes
       final pegRepository = ref.read(pegRepositoryProvider);
       pegRepository.getPegOutAmount();
@@ -37,17 +37,17 @@ class SwapDeliverAmount extends HookConsumerWidget {
       AmountToStringParameters(amount: assetBalance, precision: precision),
     );
     final swapSendWallet = ref.watch(swapSendWalletProvider);
-    final swapState = ref.watch(swapStateNotifierProvider);
+    final swapState = ref.watch(swapStateProvider);
     final swapType = ref.watch(swapTypeProvider);
-    final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
+    final subscribe = ref.watch(swapPriceSubscribeProvider);
     final serverError = subscribe == const SwapPriceSubscribeState.recv()
         ? ''
-        : ref.watch(swapNetworkErrorNotifierProvider);
+        : ref.watch(swapNetworkErrorProvider);
     final showInsufficientFunds = ref.watch(showInsufficientFundsProvider);
 
     final swapSendAmountController = useTextEditingController();
 
-    ref.listen(swapSendTextAmountNotifierProvider, (previous, next) {
+    ref.listen(swapSendTextAmountProvider, (previous, next) {
       final oldSelection = swapSendAmountController.selection;
       swapSendAmountController.value = TextEditingValue(
         text: next,
@@ -97,12 +97,12 @@ class SwapDeliverAmount extends HookConsumerWidget {
       errorDescription: serverError,
       onDropdownChanged: ref.read(swapHelperProvider).setDeliverAsset,
       onChanged: (value) {
-        ref.invalidate(swapStateNotifierProvider);
-        ref.read(swapRecvTextAmountNotifierProvider.notifier).setAmount('0');
+        ref.invalidate(swapStateProvider);
+        ref.read(swapRecvTextAmountProvider.notifier).setAmount('0');
 
-        ref.read(swapSendTextAmountNotifierProvider.notifier).setAmount(value);
+        ref.read(swapSendTextAmountProvider.notifier).setAmount(value);
 
-        ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
+        ref.read(swapPriceSubscribeProvider.notifier).setSend();
         final pegRepository = ref.read(pegRepositoryProvider);
         pegRepository.getPegOutAmount();
       },

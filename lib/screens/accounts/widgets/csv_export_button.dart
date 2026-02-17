@@ -9,7 +9,8 @@ class CsvExportButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exportCsvState = ref.watch(exportCsvStateNotifierProvider);
+    ref.listen(csvProvider, (_, _) {});
+    final exportCsvState = ref.watch(exportCsvStateProvider);
 
     final disabled = switch (exportCsvState) {
       ExportCsvStateLoaded() => false,
@@ -23,7 +24,7 @@ class CsvExportButton extends HookConsumerWidget {
             ? null
             : () async {
                 final box = context.findRenderObject() as RenderBox?;
-                await ref.read(csvNotifierProvider.notifier).share(box);
+                await ref.read(csvProvider.notifier).share(box);
               },
         borderRadius: BorderRadius.circular(21),
         child: Container(

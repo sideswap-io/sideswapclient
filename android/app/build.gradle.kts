@@ -80,10 +80,11 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("net.java.dev.jna:jna:5.14.0@aar")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     if (getGradle().getStartParameter().getTaskRequests().toString().contains("Full")) {
-        "fullImplementation"("com.google.firebase:firebase-messaging:23.4.1")
-        "fullImplementation"(platform("com.google.firebase:firebase-bom:32.7.2"))
-        "fullImplementation"("com.google.firebase:firebase-analytics-ktx")
+        "fullImplementation"("com.google.firebase:firebase-messaging:25.0.0")
+        "fullImplementation"(platform("com.google.firebase:firebase-bom:34.1.0"))
+        "fullImplementation"("com.google.firebase:firebase-analytics")
     }
 }

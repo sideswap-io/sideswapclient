@@ -15,8 +15,8 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdNotifierProvider);
-    final textTheme = ref.watch(desktopAppThemeNotifierProvider).textTheme;
+    final ampId = ref.watch(ampIdProvider);
+    final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
 
     return SizedBox(
       width: 628,
@@ -59,7 +59,7 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
                   height: 49,
                   onPressed: () {
                     ref
-                        .read(pageStatusNotifierProvider.notifier)
+                        .read(pageStatusProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
                   child: Text('FINISH'.tr()),

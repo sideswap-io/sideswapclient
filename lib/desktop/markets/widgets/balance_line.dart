@@ -14,7 +14,7 @@ class BalanceLine extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
 
     return switch (onMaxPressed) {
       final onMaxPressed? when tradeDirState == TradeDir.SELL => Column(
@@ -40,8 +40,9 @@ class BalanceLine extends ConsumerWidget {
                         border: Border.all(
                           color: SideSwapColors.brightTurquoise,
                         ),
-                        color:
-                            states.isFocused ? const Color(0xFF007CA1) : null,
+                        color: states.isFocused
+                            ? const Color(0xFF007CA1)
+                            : null,
                       ),
                       child: Text(
                         'Max'.tr().toUpperCase(),

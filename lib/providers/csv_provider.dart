@@ -6,7 +6,6 @@ import 'package:csv/csv.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,7 +23,7 @@ part 'csv_provider.freezed.dart';
 
 @riverpod
 CsvRepository csvRepository(Ref ref) {
-  final allTxs = ref.watch(allTxsNotifierProvider);
+  final allTxs = ref.watch(allTxsProvider);
   final assets = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
 
@@ -230,10 +229,7 @@ sealed class ExportCsvState with _$ExportCsvState {
 class ExportCsvStateNotifier extends _$ExportCsvStateNotifier {
   @override
   ExportCsvState build() {
-    ref.listen(loadTransactionsStateNotifierProvider, (
-      _,
-      loadTransactionsState,
-    ) {
+    ref.listen(loadTransactionsStateProvider, (_, loadTransactionsState) {
       final allTxSorted = ref.read(allTxsSortedProvider);
 
       (switch (loadTransactionsState) {
@@ -255,11 +251,9 @@ class ExportCsvStateNotifier extends _$ExportCsvStateNotifier {
   }
 
   void init() {
-    final loadTransactionsState = ref.read(
-      loadTransactionsStateNotifierProvider,
-    );
+    final loadTransactionsState = ref.read(loadTransactionsStateProvider);
     if (loadTransactionsState is LoadTransactionsStateEmpty) {
-      ref.read(allTxsNotifierProvider.notifier).loadTransactions();
+      ref.read(allTxsProvider.notifier).loadTransactions();
     }
   }
 }

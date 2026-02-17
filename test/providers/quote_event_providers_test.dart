@@ -2,11 +2,10 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
-
-import '../utils.dart';
 
 class MockWallet extends Mock implements SideswapWallet {}
 
@@ -19,34 +18,30 @@ void main() {
     });
 
     test('initial state is Option.none', () {
-      final container = createContainer(
+      final container = ProviderContainer.test(
         overrides: [walletProvider.overrideWithValue(mockWallet)],
       );
-      final quoteEventNotifier = container.read(quoteEventNotifierProvider);
+      final quoteEventNotifier = container.read(quoteEventProvider);
       expect(quoteEventNotifier, Option.none());
     });
 
     test('setQuote updates the state', () {
-      final container = createContainer(
+      final container = ProviderContainer.test(
         overrides: [walletProvider.overrideWithValue(mockWallet)],
       );
-      final quoteEventNotifier = container.read(
-        quoteEventNotifierProvider.notifier,
-      );
+      final quoteEventNotifier = container.read(quoteEventProvider.notifier);
       final quote = From_Quote();
       quote.success = From_Quote_Success();
 
       quoteEventNotifier.setQuote(quote);
-      expect(container.read(quoteEventNotifierProvider), Option.of(quote));
+      expect(container.read(quoteEventProvider), Option.of(quote));
     });
 
     test('startQuotes sends a startQuotes message', () {
-      final container = createContainer(
+      final container = ProviderContainer.test(
         overrides: [walletProvider.overrideWithValue(mockWallet)],
       );
-      final quoteEventNotifier = container.read(
-        quoteEventNotifierProvider.notifier,
-      );
+      final quoteEventNotifier = container.read(quoteEventProvider.notifier);
       final assetPair = AssetPair(base: 'base', quote: 'quote');
       const assetType = AssetType.BASE;
       const amount = 100;
@@ -71,12 +66,10 @@ void main() {
     });
 
     test('stopQuotes sends a stopQuotes message and invalidates self', () {
-      final container = createContainer(
+      final container = ProviderContainer.test(
         overrides: [walletProvider.overrideWithValue(mockWallet)],
       );
-      final quoteEventNotifier = container.read(
-        quoteEventNotifierProvider.notifier,
-      );
+      final quoteEventNotifier = container.read(quoteEventProvider.notifier);
 
       quoteEventNotifier.stopQuotes();
 
@@ -85,7 +78,7 @@ void main() {
 
       verify(() => mockWallet.sendMsg(expectedMsg)).called(1);
       // Check that invalidateSelf was called (indirectly by checking state)
-      expect(container.read(quoteEventNotifierProvider), Option.none());
+      expect(container.read(quoteEventProvider), Option.none());
     });
   });
 
@@ -111,28 +104,23 @@ void main() {
     });
 
     test('initial state is Option.none', () {
-      final container = createContainer(
+      final container = ProviderContainer.test(
         overrides: [walletProvider.overrideWithValue(mockWallet)],
       );
-      final acceptQuoteNotifier = container.read(acceptQuoteNotifierProvider);
+      final acceptQuoteNotifier = container.read(acceptQuoteProvider);
       expect(acceptQuoteNotifier, Option.none());
     });
 
     test('setState updates the state', () {
-      final container = createContainer(
+      final container = ProviderContainer.test(
         overrides: [walletProvider.overrideWithValue(mockWallet)],
       );
-      final acceptQuoteNotifier = container.read(
-        acceptQuoteNotifierProvider.notifier,
-      );
+      final acceptQuoteNotifier = container.read(acceptQuoteProvider.notifier);
       final acceptQuote = From_AcceptQuote();
       acceptQuote.success = From_AcceptQuote_Success();
 
       acceptQuoteNotifier.setState(acceptQuote);
-      expect(
-        container.read(acceptQuoteNotifierProvider),
-        Option.of(acceptQuote),
-      );
+      expect(container.read(acceptQuoteProvider), Option.of(acceptQuote));
     });
   });
 }

@@ -21,14 +21,14 @@ class AssetDetailsHeader extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, _) {});
-    ref.listen(marketPublicOrdersNotifierProvider, (_, _) {});
+    ref.listen(marketSubscribedAssetPairProvider, (_, _) {});
+    ref.listen(marketPublicOrdersProvider, (_, _) {});
 
-    final optionSelectedAsset = ref.watch(selectedWalletAssetNotifierProvider);
+    final optionSelectedAsset = ref.watch(selectedWalletAssetProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final marketsInfo = ref.watch(marketsNotifierProvider);
+    final marketsInfo = ref.watch(marketsProvider);
     final assetsState = ref.watch(assetsStateProvider);
-    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+    final walletMainArguments = ref.watch(uiStateArgsProvider);
 
     final swapButtonCallback = useCallback(
       () {
@@ -42,7 +42,7 @@ class AssetDetailsHeader extends HookConsumerWidget {
                 final quoteAsset = assetsState[marketInfo.assetPair.quote];
                 if (quoteAsset != null) {
                   ref
-                      .read(marketSubscribedAssetPairNotifierProvider.notifier)
+                      .read(marketSubscribedAssetPairProvider.notifier)
                       .setState(marketInfo.assetPair);
                 }
               }
@@ -57,7 +57,7 @@ class AssetDetailsHeader extends HookConsumerWidget {
                 final baseAsset = assetsState[marketInfo.assetPair.base];
                 if (baseAsset != null) {
                   ref
-                      .read(marketSubscribedAssetPairNotifierProvider.notifier)
+                      .read(marketSubscribedAssetPairProvider.notifier)
                       .setState(marketInfo.assetPair);
                 }
               }
@@ -65,14 +65,14 @@ class AssetDetailsHeader extends HookConsumerWidget {
           }
 
           ref
-              .read(selectedMarketTypeButtonNotifierProvider.notifier)
+              .read(selectedMarketTypeButtonProvider.notifier)
               .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap);
           final newWalletMainArguments = walletMainArguments.copyWith(
             currentIndex: 2,
             navigationItemEnum: WalletMainNavigationItemEnum.markets,
           );
           ref
-              .read(uiStateArgsNotifierProvider.notifier)
+              .read(uiStateArgsProvider.notifier)
               .setWalletMainArguments(newWalletMainArguments);
         });
       },
@@ -169,7 +169,7 @@ class AssetDetailsHeader extends HookConsumerWidget {
                                 asset.ampMarket ? Account.AMP_ : Account.REG,
                               );
                           ref
-                              .read(pageStatusNotifierProvider.notifier)
+                              .read(pageStatusProvider.notifier)
                               .setStatus(Status.generateWalletAddress);
                         },
                         label: 'Receive'.tr(),

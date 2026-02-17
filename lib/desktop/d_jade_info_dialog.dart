@@ -17,13 +17,14 @@ class DJadeInfoDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jadeStatus = ref.watch(jadeStatusNotifierProvider);
+    final jadeStatus = ref.watch(jadeStatusProvider);
     final jadeOnboardingRegistration = ref.watch(
-      jadeOnboardingRegistrationNotifierProvider,
+      jadeOnboardingRegistrationProvider,
     );
-    final showAmpOnboarding =
-        ref.watch(configurationProvider).showAmpOnboarding;
-    final orderTtlState = ref.watch(orderTtlNotifierProvider);
+    final showAmpOnboarding = ref
+        .watch(configurationProvider)
+        .showAmpOnboarding;
+    final orderTtlState = ref.watch(orderTtlProvider);
     final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     useEffect(() {
@@ -39,7 +40,7 @@ class DJadeInfoDialog extends HookConsumerWidget {
       if (!showAmpOnboarding) {
         Future.microtask(
           () => ref
-              .read(pageStatusNotifierProvider.notifier)
+              .read(pageStatusProvider.notifier)
               .setStatus(Status.registered),
         );
         return;
@@ -87,9 +88,7 @@ class DJadeInfoDialog extends HookConsumerWidget {
                         const SizedBox(width: 16),
                         Consumer(
                           builder: (context, ref, child) {
-                            final jadeStatus = ref.watch(
-                              jadeStatusNotifierProvider,
-                            );
+                            final jadeStatus = ref.watch(jadeStatusProvider);
 
                             final statusText = switch (jadeStatus) {
                               JadeStatusIdle() => 'Idle'.tr(),
@@ -123,13 +122,13 @@ class DJadeInfoDialog extends HookConsumerWidget {
                                           children: [
                                             Text(
                                               'Time-to-live'.tr(),
-                                              style: Theme.of(
-                                                context,
-                                              ).textTheme.titleSmall?.copyWith(
-                                                color:
-                                                    SideSwapColors
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleSmall
+                                                  ?.copyWith(
+                                                    color: SideSwapColors
                                                         .brightTurquoise,
-                                              ),
+                                                  ),
                                             ),
                                             Spacer(),
                                             Text('$orderSignTtl s.'),

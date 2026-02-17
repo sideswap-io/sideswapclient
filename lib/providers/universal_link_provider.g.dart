@@ -6,42 +6,104 @@ part of 'universal_link_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$universalLinkHash() => r'aa026a40d609d07a0da9f79e3319ae23b9027b4f';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [universalLink].
-@ProviderFor(universalLink)
-final universalLinkProvider = Provider<UniversalLink>.internal(
-  universalLink,
-  name: r'universalLinkProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$universalLinkHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(UniversalLinkResultStateNotifier)
+const universalLinkResultStateProvider =
+    UniversalLinkResultStateNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef UniversalLinkRef = ProviderRef<UniversalLink>;
+final class UniversalLinkResultStateNotifierProvider
+    extends
+        $NotifierProvider<UniversalLinkResultStateNotifier, LinkResultState> {
+  const UniversalLinkResultStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'universalLinkResultStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$universalLinkResultStateNotifierHash();
+
+  @$internal
+  @override
+  UniversalLinkResultStateNotifier create() =>
+      UniversalLinkResultStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LinkResultState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LinkResultState>(value),
+    );
+  }
+}
+
 String _$universalLinkResultStateNotifierHash() =>
     r'6f16af74c06ecf8838e7a7e4b8011d753cc0b1a5';
 
-/// See also [UniversalLinkResultStateNotifier].
-@ProviderFor(UniversalLinkResultStateNotifier)
-final universalLinkResultStateNotifierProvider =
-    NotifierProvider<
-      UniversalLinkResultStateNotifier,
-      LinkResultState
-    >.internal(
-      UniversalLinkResultStateNotifier.new,
-      name: r'universalLinkResultStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$universalLinkResultStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$UniversalLinkResultStateNotifier
+    extends $Notifier<LinkResultState> {
+  LinkResultState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<LinkResultState, LinkResultState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<LinkResultState, LinkResultState>,
+              LinkResultState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$UniversalLinkResultStateNotifier = Notifier<LinkResultState>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(universalLink)
+const universalLinkProvider = UniversalLinkProvider._();
+
+final class UniversalLinkProvider
+    extends $FunctionalProvider<UniversalLink, UniversalLink, UniversalLink>
+    with $Provider<UniversalLink> {
+  const UniversalLinkProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'universalLinkProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$universalLinkHash();
+
+  @$internal
+  @override
+  $ProviderElement<UniversalLink> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  UniversalLink create(Ref ref) {
+    return universalLink(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UniversalLink value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UniversalLink>(value),
+    );
+  }
+}
+
+String _$universalLinkHash() => r'd8444c7b862f78f1924f913b162b48d1f5076c60';

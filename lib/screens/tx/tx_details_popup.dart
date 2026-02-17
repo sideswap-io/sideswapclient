@@ -17,17 +17,17 @@ class TxDetailsPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
+    final optionCurrentTxid = ref.watch(currentTxPopupItemProvider);
 
     return SideSwapPopup(
       onClose: () {
-        ref.invalidate(marketQuoteNotifierProvider);
-        ref.invalidate(acceptQuoteNotifierProvider);
+        ref.invalidate(marketQuoteProvider);
+        ref.invalidate(acceptQuoteProvider);
         ref.read(walletProvider).goBack();
       },
       child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
-        final allTxs = ref.watch(allTxsNotifierProvider);
-        final allPegs = ref.watch(allPegsNotifierProvider);
+        final allTxs = ref.watch(allTxsProvider);
+        final allPegs = ref.watch(allPegsProvider);
 
         final txTransItem = allTxs[txid];
 

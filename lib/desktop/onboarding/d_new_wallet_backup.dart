@@ -29,7 +29,7 @@ class DWalletBackupState extends ConsumerState<DNewWalletBackup> {
               MapEntry(index, WordItem(word: words[index], isCorrect: true)),
         ),
       );
-      ref.read(mnemonicWordItemsNotifierProvider.notifier).setItems(wordItems);
+      ref.read(mnemonicWordItemsProvider.notifier).setItems(wordItems);
     });
   }
 

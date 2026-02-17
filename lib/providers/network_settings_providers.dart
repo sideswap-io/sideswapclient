@@ -174,7 +174,7 @@ bool networkSettingsNeedSave(Ref ref) {
   );
   final env = ref.watch(envProvider);
 
-  final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+  final networkSettingsModel = ref.watch(networkSettingsProvider);
 
   return (networkSettingsModel is NetworkSettingsModelApply &&
       (networkSettingsModel.settingsNetworkType != settingsNetworkType ||
@@ -184,7 +184,7 @@ bool networkSettingsNeedSave(Ref ref) {
 @riverpod
 bool networkSettingsNeedRestart(Ref ref) {
   final env = ref.watch(envProvider);
-  final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+  final networkSettingsModel = ref.watch(networkSettingsProvider);
 
   return (networkSettingsModel is NetworkSettingsModelApply &&
       networkSettingsModel.env != env);

@@ -75,16 +75,15 @@ class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
         return Consumer(
           builder: ((context, ref, child) {
             final wordItem = ref
-                .watch(mnemonicWordItemsNotifierProvider.notifier)
+                .watch(mnemonicWordItemsProvider.notifier)
                 .word(index);
 
             return DButton(
-              onPressed:
-                  widget.enabled
-                      ? () {
-                        widget.onPressed?.call(index);
-                      }
-                      : null,
+              onPressed: widget.enabled
+                  ? () {
+                      widget.onPressed?.call(index);
+                    }
+                  : null,
               style: DButtonStyle(
                 padding: ButtonState.all(EdgeInsets.zero),
                 textStyle: ButtonState.all(
@@ -141,9 +140,9 @@ class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                             fontWeight: FontWeight.normal,
                             color:
                                 wordItem.isCorrect ||
-                                        widget.itemSelected == index
-                                    ? Colors.white
-                                    : SideSwapColors.bitterSweet,
+                                    widget.itemSelected == index
+                                ? Colors.white
+                                : SideSwapColors.bitterSweet,
                           ),
                         ),
                       ),

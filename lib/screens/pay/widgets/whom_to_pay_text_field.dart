@@ -24,7 +24,8 @@ class WhomToPayTextField extends StatelessWidget {
         controller: addressController,
         onScanTap: () {
           Navigator.of(context, rootNavigator: true).push<void>(
-            MaterialPageRoute(
+            DialogRoute(
+              context: context,
               builder: (context) {
                 return getAddressQrScanner(bitcoinAddress: false);
               },

@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/home/widgets/home_bottom_panel.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
+import 'package:sideswap/screens/home/widgets/swaption_connections_button.dart';
 
 class Home extends ConsumerWidget {
   const Home({super.key});
@@ -25,8 +26,12 @@ class Home extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: Container()),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: SwaptionConnectionsButton(),
+                        ),
                         Padding(
                           padding: const EdgeInsets.only(right: 16),
                           child: RoundedButton(

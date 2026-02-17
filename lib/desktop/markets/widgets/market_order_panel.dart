@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/theme_extensions.dart';
 import 'package:sideswap/common/widgets/animated_dropdown_arrow.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/common/button/d_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -40,7 +41,7 @@ class MarketOrderPanel extends HookConsumerWidget {
     const headerDefaultColor = SideSwapColors.prussianBlue;
     const panelColor = SideSwapColors.chathamsBlue;
 
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
 
     const headerActiveColor = SideSwapColors.ataneoBlue;
 
@@ -133,6 +134,8 @@ class MarketOrderPanel extends HookConsumerWidget {
       return;
     }, [animationController]);
 
+    final productName = ref.watch(subscribedMarketProductNameProvider);
+
     return Container(
       key: marketOrderPanelKey,
       width: 377,
@@ -145,90 +148,115 @@ class MarketOrderPanel extends HookConsumerWidget {
           DHoverButton(
             key: buttonKey,
             builder: (context, states) {
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: states.isHovering || expanded.value
-                      ? headerActiveColor
-                      : headerDefaultColor,
-                  borderRadius: drawProductColumns.value
-                      ? const BorderRadius.vertical(top: Radius.circular(8))
-                      : const BorderRadius.all(Radius.circular(8)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Product'.tr(),
-                      style: const TextStyle(
-                        color: SideSwapColors.brightTurquoise,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 7),
-                    Row(
-                      children: [
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final marketInfo = ref.watch(
-                              subscribedMarketInfoProvider,
-                            );
-
-                            return marketInfo.match(() => SizedBox(), (
-                              marketInfo,
-                            ) {
-                              final productName = ref.watch(
-                                subscribedMarketProductNameProvider,
-                              );
-
-                              return Text(
-                                productName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              );
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        AnimatedDropdownArrow(target: expanded.value ? 1 : 0),
-                        const Spacer(),
-                        SwitchButton(
-                          width: 142,
-                          height: 32,
-                          borderRadius: 8,
-                          borderWidth: 2,
+              return Tooltip(
+                message: productName,
+                waitDuration: Duration(seconds: 1),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: states.isHovering || expanded.value
+                        ? headerActiveColor
+                        : headerDefaultColor,
+                    borderRadius: drawProductColumns.value
+                        ? const BorderRadius.vertical(top: Radius.circular(8))
+                        : const BorderRadius.all(Radius.circular(8)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Product'.tr(),
+                        style: const TextStyle(
+                          color: SideSwapColors.brightTurquoise,
+                          fontWeight: FontWeight.w500,
                           fontSize: 13,
-                          activeText: 'Sell'.tr(),
-                          inactiveText: 'Buy'.tr(),
-                          value: tradeDirState == TradeDir.SELL,
-                          activeToggleBackground: tradeDirState == TradeDir.SELL
-                              ? Theme.of(
-                                  context,
-                                ).extension<MarketColorsStyle>()!.sellColor!
-                              : Theme.of(
-                                  context,
-                                ).extension<MarketColorsStyle>()!.buyColor!,
-                          inactiveToggleBackground: SideSwapColors.darkCerulean,
-                          backgroundColor: SideSwapColors.darkCerulean,
-                          borderColor: SideSwapColors.darkCerulean,
-                          onToggle: (value) {
-                            if (value) {
-                              ref
-                                  .read(tradeDirStateNotifierProvider.notifier)
-                                  .setSide(TradeDir.SELL);
-                            } else {
-                              ref
-                                  .read(tradeDirStateNotifierProvider.notifier)
-                                  .setSide(TradeDir.BUY);
-                            }
-                          },
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 7),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final marketInfo = ref.watch(
+                                  subscribedMarketInfoProvider,
+                                );
+
+                                return marketInfo.match(() => SizedBox(), (
+                                  marketInfo,
+                                ) {
+                                  final optionBaseAsset = ref.watch(
+                                    baseAssetByMarketInfoProvider(marketInfo),
+                                  );
+                                  final optionQuoteAsset = ref.watch(
+                                    quoteAssetByMarketInfoProvider(marketInfo),
+                                  );
+
+                                  return optionBaseAsset.match(
+                                    () => const SizedBox.shrink(),
+                                    (baseAsset) => optionQuoteAsset.match(
+                                      () => const SizedBox.shrink(),
+                                      (quoteAsset) => Row(
+                                        children: [
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              maxWidth: 60,
+                                            ),
+                                            child: MiddleEllipsisText(
+                                              text: baseAsset.ticker,
+                                            ),
+                                          ),
+                                          Text(' / '),
+                                          Text(quoteAsset.ticker),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          AnimatedDropdownArrow(target: expanded.value ? 1 : 0),
+                          const Spacer(),
+                          SwitchButton(
+                            width: 142,
+                            height: 32,
+                            borderRadius: 8,
+                            borderWidth: 2,
+                            fontSize: 13,
+                            activeText: 'Sell'.tr(),
+                            inactiveText: 'Buy'.tr(),
+                            value: tradeDirState == TradeDir.SELL,
+                            activeToggleBackground:
+                                tradeDirState == TradeDir.SELL
+                                ? Theme.of(
+                                    context,
+                                  ).extension<MarketColorsStyle>()!.sellColor!
+                                : Theme.of(
+                                    context,
+                                  ).extension<MarketColorsStyle>()!.buyColor!,
+                            inactiveToggleBackground:
+                                SideSwapColors.darkCerulean,
+                            backgroundColor: SideSwapColors.darkCerulean,
+                            borderColor: SideSwapColors.darkCerulean,
+                            onToggle: (value) {
+                              if (value) {
+                                ref
+                                    .read(tradeDirStateProvider.notifier)
+                                    .setSide(TradeDir.SELL);
+                              } else {
+                                ref
+                                    .read(tradeDirStateProvider.notifier)
+                                    .setSide(TradeDir.BUY);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -243,7 +271,7 @@ class MarketOrderPanel extends HookConsumerWidget {
                 Consumer(
                   builder: (context, ref, child) {
                     final marketTypeSwitchState = ref.watch(
-                      marketTypeSwitchStateNotifierProvider,
+                      marketTypeSwitchStateProvider,
                     );
 
                     return switch (marketTypeSwitchState) {
@@ -266,9 +294,7 @@ class MarketTypeSwitch extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final marketTypeSwitchState = ref.watch(
-      marketTypeSwitchStateNotifierProvider,
-    );
+    final marketTypeSwitchState = ref.watch(marketTypeSwitchStateProvider);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -290,13 +316,13 @@ class MarketTypeSwitch extends ConsumerWidget {
         onToggle: (value) {
           if (value) {
             ref
-                .read(marketTypeSwitchStateNotifierProvider.notifier)
+                .read(marketTypeSwitchStateProvider.notifier)
                 .setState(MarketTypeSwitchState.limit());
             return;
           }
 
           ref
-              .read(marketTypeSwitchStateNotifierProvider.notifier)
+              .read(marketTypeSwitchStateProvider.notifier)
               .setState(MarketTypeSwitchState.market());
         },
       ),
@@ -352,7 +378,7 @@ class MarketAssetSwitchButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final marketSideState = ref.watch(marketSideStateNotifierProvider);
+    final marketSideState = ref.watch(marketSideStateProvider);
     final baseAsset = ref.watch(marketSubscribedBaseAssetProvider);
     final quoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
 
@@ -378,13 +404,13 @@ class MarketAssetSwitchButtons extends ConsumerWidget {
           onToggle: (value) {
             if (value) {
               ref
-                  .read(marketSideStateNotifierProvider.notifier)
+                  .read(marketSideStateProvider.notifier)
                   .setState(MarketSideState.quote());
               return;
             }
 
             ref
-                .read(marketSideStateNotifierProvider.notifier)
+                .read(marketSideStateProvider.notifier)
                 .setState(MarketSideState.base());
           },
         ),
@@ -409,14 +435,14 @@ class MarketAmountPanel extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final marketSideState = ref.watch(marketSideStateNotifierProvider);
+    final marketSideState = ref.watch(marketSideStateProvider);
     final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
     final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
     final tradeButtonEnabled = ref.watch(marketOrderTradeButtonEnabledProvider);
     final optionSubscribedAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
+      marketSubscribedAssetPairProvider,
     );
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
     final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
 
@@ -427,7 +453,7 @@ class MarketAmountPanel extends HookConsumerWidget {
         amountController.clear();
         Future.microtask(
           () => ref
-              .read(marketOrderAmountControllerNotifierProvider.notifier)
+              .read(marketOrderAmountControllerProvider.notifier)
               .setState(amountController.text),
         );
       });
@@ -438,7 +464,7 @@ class MarketAmountPanel extends HookConsumerWidget {
       amountController.addListener(() {
         Future.microtask(
           () => ref
-              .read(marketOrderAmountControllerNotifierProvider.notifier)
+              .read(marketOrderAmountControllerProvider.notifier)
               .setState(amountController.text),
         );
       });
@@ -452,7 +478,7 @@ class MarketAmountPanel extends HookConsumerWidget {
       amountController.clear();
       Future.microtask(
         () => ref
-            .read(marketOrderAmountControllerNotifierProvider.notifier)
+            .read(marketOrderAmountControllerProvider.notifier)
             .setState(amountController.text),
       );
 
@@ -1008,14 +1034,12 @@ class LimitPanel extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final optionMarketInfo = ref.watch(subscribedMarketInfoProvider);
     final tradeButtonEnabled = ref.watch(limitOrderTradeButtonEnabledProvider);
-    final optionAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
-    );
+    final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
     final orderAmount = ref.watch(limitOrderAmountProvider);
     final orderPrice = ref.watch(limitOrderPriceProvider);
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
-    final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
-    final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
+    final limitTtlFlag = ref.watch(limitTtlFlagProvider);
+    final orderType = ref.watch(marketLimitOrderTypeProvider);
     final offlineSwapType = ref.watch(marketLimitOfflineSwapProvider);
     final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
     final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
@@ -1262,7 +1286,7 @@ class LimitPanelOrderType extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
+    final orderType = ref.watch(marketLimitOrderTypeProvider);
 
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -1280,12 +1304,12 @@ class LimitPanelOrderType extends ConsumerWidget {
             value: orderType == OrderType.public(),
             onToggle: (value) {
               if (value) {
-                ref.invalidate(marketLimitOrderTypeNotifierProvider);
+                ref.invalidate(marketLimitOrderTypeProvider);
                 return;
               }
 
               ref
-                  .read(marketLimitOrderTypeNotifierProvider.notifier)
+                  .read(marketLimitOrderTypeProvider.notifier)
                   .setState(OrderType.private());
             },
           ),
@@ -1462,10 +1486,8 @@ class LimitPanelTtl extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
-    final buttonThemes = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .buttonThemeData;
-    final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
+    final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
+    final limitTtlFlag = ref.watch(limitTtlFlagProvider);
 
     return Row(
       children: [
@@ -1497,10 +1519,8 @@ class LimitPanelTtl extends HookConsumerWidget {
               );
               (switch (result) {
                 LimitTtlFlag result =>
-                  ref
-                      .read(limitTtlFlagNotifierProvider.notifier)
-                      .setState(result),
-                _ => ref.invalidate(limitTtlFlagNotifierProvider),
+                  ref.read(limitTtlFlagProvider.notifier).setState(result),
+                _ => ref.invalidate(limitTtlFlagProvider),
               });
 
               clicked.value = false;

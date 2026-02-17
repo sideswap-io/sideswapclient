@@ -20,8 +20,8 @@ class StokrLogin extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapPopup(
       onClose: () {
-        ref.invalidate(stokrGaidNotifierProvider);
-        ref.invalidate(pegxGaidNotifierProvider);
+        ref.invalidate(stokrGaidProvider);
+        ref.invalidate(pegxGaidProvider);
         ref.read(walletProvider).goBack();
       },
       bottomNavigationBar: const StokrBottomPanel(),

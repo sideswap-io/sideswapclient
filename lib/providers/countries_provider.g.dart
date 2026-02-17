@@ -6,44 +6,97 @@ part of 'countries_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(countriesFuture)
+const countriesFutureProvider = CountriesFutureProvider._();
+
+final class CountriesFutureProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<CountryCode>>,
+          List<CountryCode>,
+          FutureOr<List<CountryCode>>
+        >
+    with
+        $FutureModifier<List<CountryCode>>,
+        $FutureProvider<List<CountryCode>> {
+  const CountriesFutureProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'countriesFutureProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$countriesFutureHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<CountryCode>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<CountryCode>> create(Ref ref) {
+    return countriesFuture(ref);
+  }
+}
+
 String _$countriesFutureHash() => r'89d3f7207c5e6ddcfc81ce65e71af5dde97a9f0d';
 
-/// See also [countriesFuture].
-@ProviderFor(countriesFuture)
-final countriesFutureProvider =
-    AutoDisposeFutureProvider<List<CountryCode>>.internal(
-      countriesFuture,
-      name: r'countriesFutureProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$countriesFutureHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+@ProviderFor(DefaultSystemCountryAsyncNotifier)
+const defaultSystemCountryAsyncProvider =
+    DefaultSystemCountryAsyncNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef CountriesFutureRef = AutoDisposeFutureProviderRef<List<CountryCode>>;
+final class DefaultSystemCountryAsyncNotifierProvider
+    extends
+        $AsyncNotifierProvider<DefaultSystemCountryAsyncNotifier, CountryCode> {
+  const DefaultSystemCountryAsyncNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'defaultSystemCountryAsyncProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$defaultSystemCountryAsyncNotifierHash();
+
+  @$internal
+  @override
+  DefaultSystemCountryAsyncNotifier create() =>
+      DefaultSystemCountryAsyncNotifier();
+}
+
 String _$defaultSystemCountryAsyncNotifierHash() =>
     r'530e06e77bc6e13b38b4ac3fe0a53b36829a6b55';
 
-/// See also [DefaultSystemCountryAsyncNotifier].
-@ProviderFor(DefaultSystemCountryAsyncNotifier)
-final defaultSystemCountryAsyncNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<
-      DefaultSystemCountryAsyncNotifier,
-      CountryCode
-    >.internal(
-      DefaultSystemCountryAsyncNotifier.new,
-      name: r'defaultSystemCountryAsyncNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$defaultSystemCountryAsyncNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$DefaultSystemCountryAsyncNotifier =
-    AutoDisposeAsyncNotifier<CountryCode>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$DefaultSystemCountryAsyncNotifier
+    extends $AsyncNotifier<CountryCode> {
+  FutureOr<CountryCode> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AsyncValue<CountryCode>, CountryCode>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<CountryCode>, CountryCode>,
+              AsyncValue<CountryCode>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

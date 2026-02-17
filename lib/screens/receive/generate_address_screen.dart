@@ -18,12 +18,12 @@ class GenerateAddressScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
+    final selectedAccountType = ref.watch(selectedAccountTypeProvider);
 
     useEffect(() {
       Future.microtask(() {
         ref.invalidate(currentReceiveAddressProvider);
-        ref.invalidate(selectedAccountTypeNotifierProvider);
+        ref.invalidate(selectedAccountTypeProvider);
       });
 
       return;
@@ -66,13 +66,13 @@ class GenerateAddressScreen extends HookConsumerWidget {
                     onPressed: () {
                       if (selectedAccountType == Account.REG) {
                         ref
-                            .read(pageStatusNotifierProvider.notifier)
+                            .read(pageStatusProvider.notifier)
                             .setStatus(Status.walletAddressDetail);
                         return;
                       }
 
                       ref
-                          .read(selectedAccountTypeNotifierProvider.notifier)
+                          .read(selectedAccountTypeProvider.notifier)
                           .setAccountType(Account.REG);
                     },
                   );
@@ -92,13 +92,13 @@ class GenerateAddressScreen extends HookConsumerWidget {
                     onPressed: () {
                       if (selectedAccountType == Account.AMP_) {
                         ref
-                            .read(pageStatusNotifierProvider.notifier)
+                            .read(pageStatusProvider.notifier)
                             .setStatus(Status.walletAddressDetail);
                         return;
                       }
 
                       ref
-                          .read(selectedAccountTypeNotifierProvider.notifier)
+                          .read(selectedAccountTypeProvider.notifier)
                           .setAccountType(Account.AMP_);
                     },
                   );
@@ -113,7 +113,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
                 textColor: Colors.white,
                 onPressed: () {
                   ref
-                      .read(pageStatusNotifierProvider.notifier)
+                      .read(pageStatusProvider.notifier)
                       .setStatus(Status.walletAddressDetail);
                 },
               ),

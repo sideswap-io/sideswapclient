@@ -26,12 +26,12 @@ class DAmpRegister extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stokrItems = ref.watch(stokrSecuritiesProvider);
     final pegxItems = ref.watch(pegxSecuritiesProvider);
-    final ampId = ref.watch(ampIdNotifierProvider);
+    final ampId = ref.watch(ampIdProvider);
     final textTheme = ref.watch(
-      desktopAppThemeNotifierProvider.select((value) => value.textTheme),
+      desktopAppThemeProvider.select((value) => value.textTheme),
     );
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
-    final registerFailedReason = ref.watch(pegxRegisterFailedNotifierProvider);
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
+    final registerFailedReason = ref.watch(pegxRegisterFailedProvider);
     final checkAmpStatus = ref.watch(checkAmpStatusProvider);
 
     useEffect(() {
@@ -51,15 +51,14 @@ class DAmpRegister extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () =>
-            (switch (pegxLoginState) {
-              PegxLoginStateLoginDialog() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxRegister);
-              },
-              _ => () {},
-            }()),
+        () => (switch (pegxLoginState) {
+          PegxLoginStateLoginDialog() => () {
+            ref
+                .read(pageStatusProvider.notifier)
+                .setStatus(Status.pegxRegister);
+          },
+          _ => () {},
+        }()),
       );
 
       return;
@@ -78,7 +77,7 @@ class DAmpRegister extends HookConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
         Future.microtask(() {
-          ref.read(pegxRegisterFailedNotifierProvider.notifier).setState('');
+          ref.read(pegxRegisterFailedProvider.notifier).setState('');
         });
       }
       return;
@@ -112,61 +111,52 @@ class DAmpRegister extends HookConsumerWidget {
                     children: [
                       Consumer(
                         builder: (context, ref, child) {
-                          final stokrGaidState = ref.watch(
-                            stokrGaidNotifierProvider,
-                          );
+                          final stokrGaidState = ref.watch(stokrGaidProvider);
 
                           return AmpServiceRegisterBox(
                             boxLogo: 'assets/stokr_logo.svg',
                             onPressed:
                                 (stokrGaidState ==
-                                        const StokrGaidStateUnregistered())
-                                    ? () {
-                                      ref
-                                          .read(
-                                            pageStatusNotifierProvider.notifier,
-                                          )
-                                          .setStatus(Status.stokrLogin);
-                                    }
-                                    : null,
+                                    const StokrGaidStateUnregistered())
+                                ? () {
+                                    ref
+                                        .read(pageStatusProvider.notifier)
+                                        .setStatus(Status.stokrLogin);
+                                  }
+                                : null,
                             items: stokrItems,
                             registered:
                                 (stokrGaidState ==
-                                    const StokrGaidStateRegistered()),
+                                const StokrGaidStateRegistered()),
                             loading:
                                 (stokrGaidState ==
-                                    const StokrGaidStateLoading()),
+                                const StokrGaidStateLoading()),
                           );
                         },
                       ),
                       Consumer(
                         builder: (context, ref, child) {
-                          final pegxGaidState = ref.watch(
-                            pegxGaidNotifierProvider,
-                          );
+                          final pegxGaidState = ref.watch(pegxGaidProvider);
                           final env = ref.watch(envProvider);
                           return AmpServiceRegisterBox(
                             boxLogo: 'assets/pegx_logo.svg',
                             onPressed:
                                 (pegxGaidState ==
-                                            const PegxGaidStateUnregistered()) ||
-                                        (env == SIDESWAP_ENV_TESTNET ||
-                                            env == SIDESWAP_ENV_LOCAL_TESTNET)
-                                    ? () {
-                                      ref
-                                          .read(
-                                            pegxLoginStateNotifierProvider
-                                                .notifier,
-                                          )
-                                          .setState(
-                                            const PegxLoginStateLoginDialog(),
-                                          );
-                                    }
-                                    : null,
+                                        const PegxGaidStateUnregistered()) ||
+                                    (env == SIDESWAP_ENV_TESTNET ||
+                                        env == SIDESWAP_ENV_LOCAL_TESTNET)
+                                ? () {
+                                    ref
+                                        .read(pegxLoginStateProvider.notifier)
+                                        .setState(
+                                          const PegxLoginStateLoginDialog(),
+                                        );
+                                  }
+                                : null,
                             items: pegxItems,
                             registered:
                                 (pegxGaidState ==
-                                    const PegxGaidStateRegistered()),
+                                const PegxGaidStateRegistered()),
                             loading:
                                 (pegxGaidState == const PegxGaidStateLoading()),
                           );
@@ -179,9 +169,10 @@ class DAmpRegister extends HookConsumerWidget {
               const Spacer(),
               Consumer(
                 builder: (context, ref, child) {
-                  final stokrGaidState = ref.watch(stokrGaidNotifierProvider);
-                  final textTheme =
-                      ref.watch(desktopAppThemeNotifierProvider).textTheme;
+                  final stokrGaidState = ref.watch(stokrGaidProvider);
+                  final textTheme = ref
+                      .watch(desktopAppThemeProvider)
+                      .textTheme;
 
                   return switch (stokrGaidState) {
                     StokrGaidStateRegistered() => DCustomFilledBigButton(
@@ -191,7 +182,7 @@ class DAmpRegister extends HookConsumerWidget {
                             .read(configurationProvider.notifier)
                             .setShowAmpOnboarding(false);
                         ref
-                            .read(pageStatusNotifierProvider.notifier)
+                            .read(pageStatusProvider.notifier)
                             .setStatus(Status.registered);
                       },
                       child: Text('CONTINUE'.tr(), style: textTheme.labelLarge),
@@ -203,7 +194,7 @@ class DAmpRegister extends HookConsumerWidget {
                             .read(configurationProvider.notifier)
                             .setShowAmpOnboarding(false);
                         ref
-                            .read(pageStatusNotifierProvider.notifier)
+                            .read(pageStatusProvider.notifier)
                             .setStatus(Status.registered);
                       },
                       child: Text(

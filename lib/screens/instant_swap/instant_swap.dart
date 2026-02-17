@@ -145,10 +145,12 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
           );
           if (optionCurrentEditAsset == optionTopAsset) {
             if (next == 0) {
-              ref.read(exchangeQuoteNotifierProvider.notifier).stopQuotes();
-              ref
-                  .read(exchangeQuoteNotifierProvider.notifier)
-                  .requestIndPriceQuote(optionExchangeSide, optionAssetPair);
+              Future.microtask(() {
+                ref.read(exchangeQuoteProvider.notifier).stopQuotes();
+                ref
+                    .read(exchangeQuoteProvider.notifier)
+                    .requestIndPriceQuote(optionExchangeSide, optionAssetPair);
+              });
             } else {
               optionTopAsset.match(() {}, (topAsset) {
                 final topBalance = ref.read(
@@ -159,12 +161,12 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
                 );
 
                 if (topSatoshiAmount > topBalance) {
-                  ref.invalidate(exchangeBottomAmountProvider);
+                  Future.microtask(
+                    () => ref.invalidate(exchangeBottomAmountProvider),
+                  );
                 }
 
-                ref
-                    .read(exchangeQuoteNotifierProvider.notifier)
-                    .startSellQuotes(next);
+                ref.read(exchangeQuoteProvider.notifier).startSellQuotes(next);
               });
             }
           }
@@ -182,7 +184,9 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
                 exchangeTopSatoshiAmountProvider,
               );
               if (satoshiTopAmount == 0) {
-                ref.invalidate(exchangeBottomAmountProvider);
+                Future.microtask(
+                  () => ref.invalidate(exchangeBottomAmountProvider),
+                );
               }
             }, (_) {});
             return;
@@ -333,14 +337,14 @@ class InstantSwapBottomDropdownAmountTextField extends HookConsumerWidget {
       final optionCurrentEditAsset = ref.read(exchangeCurrentEditAssetProvider);
       if (optionCurrentEditAsset == optionBottomAsset) {
         if (bottomSatoshiAmount == 0) {
-          ref.read(exchangeQuoteNotifierProvider.notifier).stopQuotes();
+          ref.read(exchangeQuoteProvider.notifier).stopQuotes();
           ref
-              .read(exchangeQuoteNotifierProvider.notifier)
+              .read(exchangeQuoteProvider.notifier)
               .requestIndPriceQuote(optionExchangeSide, optionAssetPair);
         } else {
           optionBottomAsset.match(() {}, (bottomAsset) {
             ref
-                .read(exchangeQuoteNotifierProvider.notifier)
+                .read(exchangeQuoteProvider.notifier)
                 .startBuyQuotes(bottomSatoshiAmount);
           });
         }
@@ -357,7 +361,7 @@ class InstantSwapBottomDropdownAmountTextField extends HookConsumerWidget {
             exchangeBottomSatoshiAmountProvider,
           );
           if (satoshiBottomAmount == 0) {
-            ref.invalidate(exchangeTopAmountProvider);
+            Future.microtask(() => ref.invalidate(exchangeTopAmountProvider));
           }
         }, (_) {});
         return;
@@ -420,9 +424,7 @@ class InstantSwapButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final optionQuoteSuccess = ref.watch(exchangeQuoteSuccessProvider);
     final enabled = ref.watch(exchangeSwapButtonEnabledProvider);
-    final exchangeQuoteNotifier = ref.watch(
-      exchangeQuoteNotifierProvider.notifier,
-    );
+    final exchangeQuoteNotifier = ref.watch(exchangeQuoteProvider.notifier);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -457,7 +459,7 @@ class InstantSwapButton extends ConsumerWidget {
             Consumer(
               builder: (context, ref, _) {
                 final acceptQuoteState = ref.watch(
-                  exchangeAccepQuoteStateNotifierProvider,
+                  exchangeAccepQuoteStateProvider,
                 );
                 if (acceptQuoteState is ExchangeAcceptQuoteStateInProgress) {
                   return const Padding(

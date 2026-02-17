@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -115,7 +114,7 @@ Iterable<Asset> allAlwaysShowAssets(Ref ref) {
 List<AccountAsset> allVisibleAccountAssets(Ref ref) {
   final allAccounts = ref.watch(allAlwaysShowAccountAssetsProvider);
   final defaultAccounts = ref.watch(defaultAccountsStateProvider);
-  final balances = ref.watch(balancesNotifierProvider);
+  final balances = ref.watch(balancesProvider);
 
   final allVisibleAccounts = allAccounts
       .where((e) => defaultAccounts.contains(e) || (balances[e] ?? 0) > 0)

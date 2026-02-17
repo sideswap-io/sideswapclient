@@ -33,7 +33,7 @@ class DLimitPanelReviewOrderDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -130,9 +130,7 @@ class LimitReviewOrderProduct extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
-    );
+    final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
 
     return optionAssetPair.match(() => const SizedBox(), (assetPair) {
       final baseAsset = ref.watch(
@@ -199,7 +197,7 @@ class LimitReviewPricePerUnit extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final priceAmount = ref.watch(limitReviewOrderPriceProvider);
     final icon = ref
         .read(assetImageRepositoryProvider)
@@ -242,7 +240,7 @@ class LimitReviewOrderAggregatedTotal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final aggregateVolume = ref.watch(limitReviewOrderAggregateVolumeProvider);
     final aggregateTooHigh = ref.watch(
       limitReviewOrderAggregateVolumeTooHighProvider,
@@ -302,7 +300,7 @@ class LimitReviewOrderSide extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final side = tradeDirState == TradeDir.SELL ? 'Sell'.tr() : 'Buy'.tr();
     final sideColor = tradeDirState == TradeDir.SELL
         ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
@@ -378,7 +376,7 @@ class LimitReviewOrderType extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
+    final orderType = ref.watch(marketLimitOrderTypeProvider);
 
     return ColoredContainer(
       child: Row(
@@ -397,12 +395,12 @@ class LimitReviewOrderType extends ConsumerWidget {
             value: orderType == OrderType.public(),
             onToggle: (value) {
               if (value) {
-                ref.invalidate(marketLimitOrderTypeNotifierProvider);
+                ref.invalidate(marketLimitOrderTypeProvider);
                 return;
               }
 
               ref
-                  .read(marketLimitOrderTypeNotifierProvider.notifier)
+                  .read(marketLimitOrderTypeProvider.notifier)
                   .setState(OrderType.private());
             },
           ),
@@ -536,10 +534,8 @@ class LimitReviewTTL extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
-    final buttonThemes = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .buttonThemeData;
-    final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
+    final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
+    final limitTtlFlag = ref.watch(limitTtlFlagProvider);
 
     return ColoredContainer(
       child: Row(
@@ -572,10 +568,8 @@ class LimitReviewTTL extends HookConsumerWidget {
               );
               (switch (result) {
                 LimitTtlFlag result =>
-                  ref
-                      .read(limitTtlFlagNotifierProvider.notifier)
-                      .setState(result),
-                _ => ref.invalidate(limitTtlFlagNotifierProvider),
+                  ref.read(limitTtlFlagProvider.notifier).setState(result),
+                _ => ref.invalidate(limitTtlFlagProvider),
               });
 
               clicked.value = false;
@@ -612,14 +606,10 @@ class LimitReviewTracking extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
 
-    final trackingToggled = ref.watch(
-      marketLimitTrackIndexPriceStateNotifierProvider,
-    );
-    final trackingValue = ref.watch(
-      marketLimitTrackIndexPriceValueNotifierProvider,
-    );
+    final trackingToggled = ref.watch(marketLimitTrackIndexPriceStateProvider);
+    final trackingValue = ref.watch(marketLimitTrackIndexPriceValueProvider);
 
     final offlineSwapType = ref.watch(marketLimitOfflineSwapProvider);
 
@@ -630,14 +620,14 @@ class LimitReviewTracking extends HookConsumerWidget {
       maxPercent: 5,
       onTrackingChanged: (value) {
         ref
-            .read(marketLimitTrackIndexPriceValueNotifierProvider.notifier)
+            .read(marketLimitTrackIndexPriceValueProvider.notifier)
             .setState(TrackingValue(trackingValue: value));
       },
       onTrackingToggle: switch (offlineSwapType) {
         OfflineSwapTypeTwoStep() => null,
         _ => (value) {
           ref
-              .read(marketLimitTrackIndexPriceStateNotifierProvider.notifier)
+              .read(marketLimitTrackIndexPriceStateProvider.notifier)
               .setState(value);
         },
       },
@@ -652,7 +642,7 @@ class LimitReviewSubmit extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final color = tradeDirState == TradeDir.SELL
         ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
         : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
@@ -660,20 +650,14 @@ class LimitReviewSubmit extends HookConsumerWidget {
     final submitButtonEnabled = ref.watch(
       limitReviewOrderSubmitButtonEnabledProvider,
     );
-    final optionAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
-    );
+    final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
     final orderAmount = ref.watch(limitOrderAmountProvider);
     final orderPrice = ref.watch(limitReviewOrderPriceProvider);
-    final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
-    final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
+    final limitTtlFlag = ref.watch(limitTtlFlagProvider);
+    final orderType = ref.watch(marketLimitOrderTypeProvider);
     final offlineSwapType = ref.watch(marketLimitOfflineSwapProvider);
-    final trackingToggled = ref.watch(
-      marketLimitTrackIndexPriceStateNotifierProvider,
-    );
-    final trackingValue = ref.watch(
-      marketLimitTrackIndexPriceValueNotifierProvider,
-    );
+    final trackingToggled = ref.watch(marketLimitTrackIndexPriceStateProvider);
+    final trackingValue = ref.watch(marketLimitTrackIndexPriceValueProvider);
 
     final submitCallback = useCallback(
       () async {

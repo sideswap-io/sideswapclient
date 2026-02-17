@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
@@ -48,7 +47,7 @@ bool paymentIsAssetDisabled(Ref ref, String assetId) {
 @riverpod
 Iterable<String> paymentAvailableAssetsWithInputsFiltered(Ref ref) {
   final allAssets = ref.watch(paymentAvailableAssetsProvider);
-  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+  final selectedInputs = ref.watch(selectedInputsProvider);
   if (selectedInputs.isEmpty) {
     return allAssets;
   }

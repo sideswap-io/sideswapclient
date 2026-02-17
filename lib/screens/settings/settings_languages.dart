@@ -21,7 +21,7 @@ class Languages extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final languages = supportedLanguages();
-    final selectedLang = ref.watch(localesNotifierProvider);
+    final selectedLang = ref.watch(localesProvider);
 
     return SideSwapScaffold(
       canPop: true,
@@ -47,15 +47,15 @@ class Languages extends ConsumerWidget {
                           borderRadius: const BorderRadius.all(
                             Radius.circular(8),
                           ),
-                          color:
-                              isSelected ? SideSwapColors.chathamsBlue : null,
-                          border:
-                              isSelected
-                                  ? null
-                                  : Border.all(
-                                    color: const Color(0xFF327FA9),
-                                    width: 1,
-                                  ),
+                          color: isSelected
+                              ? SideSwapColors.chathamsBlue
+                              : null,
+                          border: isSelected
+                              ? null
+                              : Border.all(
+                                  color: const Color(0xFF327FA9),
+                                  width: 1,
+                                ),
                         ),
                         child: Material(
                           color: Colors.transparent,
@@ -65,7 +65,7 @@ class Languages extends ConsumerWidget {
                             ),
                             onTap: () {
                               ref
-                                  .read(localesNotifierProvider.notifier)
+                                  .read(localesProvider.notifier)
                                   .setSelectedLang(lang);
                               Navigator.of(context).pop();
                             },

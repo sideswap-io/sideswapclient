@@ -53,7 +53,7 @@ class Settings extends ConsumerWidget {
                     ),
                     Consumer(
                       builder: (context, ref, child) {
-                        final ampId = ref.watch(ampIdNotifierProvider);
+                        final ampId = ref.watch(ampIdProvider);
 
                         return AmpIdPanel(
                           width: double.infinity,
@@ -62,7 +62,7 @@ class Settings extends ConsumerWidget {
                           backgroundColor: SideSwapColors.chathamsBlue,
                           onTap: () {
                             ref
-                                .read(pageStatusNotifierProvider.notifier)
+                                .read(pageStatusProvider.notifier)
                                 .setStatus(Status.ampRegister);
                           },
                         );
@@ -194,7 +194,7 @@ class Settings extends ConsumerWidget {
                               text: 'Network access'.tr(),
                               onPressed: () {
                                 ref
-                                    .read(pageStatusNotifierProvider.notifier)
+                                    .read(pageStatusProvider.notifier)
                                     .setStatus(Status.settingsNetwork);
                               },
                             );
@@ -239,7 +239,7 @@ class Settings extends ConsumerWidget {
                         text: 'Currency'.tr(),
                         onPressed: () {
                           ref
-                              .read(pageStatusNotifierProvider.notifier)
+                              .read(pageStatusProvider.notifier)
                               .setStatus(Status.settingsCurrency);
                         },
                       ),

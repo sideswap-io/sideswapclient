@@ -5,19 +5,22 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common/utils/enum_as_string.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'universal_link_provider.freezed.dart';
 part 'universal_link_provider.g.dart';
@@ -28,6 +31,8 @@ typedef SwapLinkResultCallback = void Function(Int64 orderId, String privateId);
 sealed class LinkResultDetails with _$LinkResultDetails {
   const factory LinkResultDetails.swap({String? orderId, String? privateId}) =
       LinkResultDetailsSwap;
+  const factory LinkResultDetails.swaption({Uri? uri}) =
+      LinkResultDetailsSwaption;
 }
 
 @freezed
@@ -58,7 +63,7 @@ class UniversalLinkResultStateNotifier
 
 @Riverpod(keepAlive: true)
 UniversalLink universalLink(Ref ref) {
-  final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+  final walletMainArguments = ref.watch(uiStateArgsProvider);
   return UniversalLink(walletMainArguments, ref);
 }
 
@@ -80,6 +85,8 @@ class UniversalLink {
   Uri? latestUri;
 
   void handleIncomingLinks() {
+    logger.d('UniversalLink::handleIncomingLinks() called');
+
     if (!universalLinksAvailable()) {
       return;
     }
@@ -89,17 +96,31 @@ class UniversalLink {
       uriLinkSubscription?.cancel();
       uriLinkSubscription = _appLinks.uriLinkStream.listen(
         (Uri? uri) {
-          logger.d('got uri: $uri');
+          logger.d('UniversalLink::handleIncomingLinks: new incoming uri $uri');
           latestUri = uri;
           if (uri != null) {
+            // uri incoming too early, we need to store it for later use
+            final serverState = ref.read(serverLoginProvider);
+            if (serverState is! ServerLoginStateLogin) {
+              initialUri = uri;
+              logger.d(
+                'UniversalLink::handleIncomingLinks: storing initial uri for later use $uri',
+              );
+              return;
+            }
+
             final linkResultState = handleAppUri(uri);
+            logger.d(
+              'UniversalLink::handleIncomingLinks: link result state $linkResultState',
+            );
             ref
-                .read(universalLinkResultStateNotifierProvider.notifier)
+                .read(universalLinkResultStateProvider.notifier)
                 .setState(linkResultState);
           }
+          logger.d('UniversalLink::handleIncomingLinks: empty uri');
         },
         onError: (Object err) {
-          logger.e('got err: $err');
+          logger.e('UniversalLink::handleIncomingLinks: error $err');
           latestUri = null;
         },
       );
@@ -107,6 +128,8 @@ class UniversalLink {
   }
 
   Future<void> handleInitialUri() async {
+    logger.d('UniversalLink::handleInitialUri() called');
+
     if (!universalLinksAvailable()) {
       return;
     }
@@ -116,17 +139,21 @@ class UniversalLink {
       try {
         final uri = await _appLinks.getInitialLink();
         if (uri == null) {
-          logger.d('no initial uri');
+          logger.d('UniversalLink::handleInitialUri: empty initial uri');
           return;
-        } else {
-          logger.d('got initial uri: $uri');
         }
+
         initialUri = uri;
+        logger.d(
+          'UniversalLink::handleInitialUri: storing initial uri for later use $uri',
+        );
       } on PlatformException catch (err) {
         // Platform messages may fail but we ignore the exception
-        logger.e('failed to get initial uri: $err');
+        logger.e(
+          'UniversalLink::handleInitialUri: failed to get initial uri $err',
+        );
       } on FormatException catch (err) {
-        logger.e('malformed initial uri: $err');
+        logger.e('UniversalLink::handleInitialUri: malformed initial uri $err');
       }
     }
   }
@@ -135,31 +162,55 @@ class UniversalLink {
     return double.tryParse(uri.queryParameters[name] ?? '');
   }
 
-  LinkResultState handleAppUrlStr(String uri) {
+  // handleAppUrlStr is used to handle pasted app links from clipboard or from qr code
+  // pasted links shouldn't handle swaption urls
+  LinkResultState handleAppUrlStr(String uri, {bool handleSwaption = true}) {
     final parsedUri = Uri.tryParse(uri);
     if (parsedUri == null) {
       return const LinkResultState.unknownUri();
     }
 
-    if (parsedUri.scheme != 'https') {
-      return const LinkResultState.unknownScheme();
-    }
-
-    return handleAppUri(parsedUri);
+    return handleAppUri(parsedUri, handleSwaption: handleSwaption);
   }
 
-  LinkResultState handleAppUri(Uri uri) {
-    if (uri.host != 'app.sideswap.io') {
-      return const LinkResultState.unknownHost();
+  LinkResultState handleAppUri(Uri uri, {bool handleSwaption = true}) {
+    logger.d('UniversalLink::handleAppUri: uri $uri');
+
+    return switch (uri.scheme) {
+      'https' => () {
+        if (uri.host != 'app.sideswap.io') {
+          return const LinkResultState.unknownHost();
+        }
+
+        return switch (uri.path) {
+          '/login/' ||
+          '/sign/' => handleSigner(uri, handleSwaption: handleSwaption),
+          '/submit/' => handleSubmitOrder(uri),
+          '/app2app/' => handleApp2App(uri),
+          '/swap/' => handleSwapPrompt(uri),
+          '/send/' => handleSendLink(uri),
+          _ => const LinkResultState.failedUriPath(),
+        };
+      },
+      'liquidconnect' => () {
+        return handleSigner(uri, handleSwaption: handleSwaption);
+      },
+      _ => () {
+        return const LinkResultState.unknownScheme();
+      },
+    }();
+  }
+
+  LinkResultState handleSigner(Uri uri, {bool handleSwaption = true}) {
+    if (handleSwaption) {
+      final msg = To();
+      msg.appLink = To_AppLink(url: uri.toString());
+      ref.read(walletProvider).sendMsg(msg);
     }
 
-    return switch (uri.path) {
-      '/submit/' => handleSubmitOrder(uri),
-      '/app2app/' => handleApp2App(uri),
-      '/swap/' => handleSwapPrompt(uri),
-      '/send/' => handleSendLink(uri),
-      _ => const LinkResultState.failedUriPath(),
-    };
+    return LinkResultState.success(
+      details: LinkResultDetails.swaption(uri: uri),
+    );
   }
 
   LinkResultState handleSubmitOrder(Uri uri) {
@@ -183,13 +234,11 @@ class UniversalLink {
     final address = uri.queryParameters['address'];
     if (address != null) {
       ref
-          .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+          .read(paymentAmountPageArgumentsProvider.notifier)
           .setPaymentAmountPageArguments(
             PaymentAmountPageArguments(result: QrCodeResult(address: address)),
           );
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.paymentAmountPage);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.paymentAmountPage);
 
       return const LinkResultState.success();
     }
@@ -237,7 +286,7 @@ class UniversalLink {
 
     return result.match((l) => const LinkResultState.unknownScheme(), (r) {
       ref
-          .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+          .read(paymentAmountPageArgumentsProvider.notifier)
           .setPaymentAmountPageArguments(
             PaymentAmountPageArguments(
               result: QrCodeResult(
@@ -251,9 +300,7 @@ class UniversalLink {
               ),
             ),
           );
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.paymentAmountPage);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.paymentAmountPage);
 
       return const LinkResultState.success();
     });
@@ -269,19 +316,24 @@ class UniversalLink {
 
     final details = linkResultState.details;
 
-    if (details == null ||
-        details.orderId == null ||
-        details.privateId == null) {
-      return false;
-    }
+    return switch (details) {
+      LinkResultDetailsSwap(:final orderId, :final privateId)
+          when orderId != null && privateId != null =>
+        () {
+          final parsedOrderId = Int64.tryParseInt(orderId);
+          if (parsedOrderId == null) {
+            logger.e(
+              'UniversalLink::handleSwapLinkResult: invalid order id $orderId',
+            );
+            return false;
+          }
 
-    final orderId = Int64.tryParseInt(details.orderId!);
-
-    if (orderId == null) {
-      return false;
-    }
-
-    callback.call(orderId, details.privateId!);
-    return true;
+          callback.call(parsedOrderId, privateId);
+          return true;
+        },
+      _ => () {
+        return false;
+      },
+    }();
   }
 }

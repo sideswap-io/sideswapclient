@@ -6,22 +6,59 @@ part of 'selected_account_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(SelectedAccountTypeNotifier)
+const selectedAccountTypeProvider = SelectedAccountTypeNotifierProvider._();
+
+final class SelectedAccountTypeNotifierProvider
+    extends $NotifierProvider<SelectedAccountTypeNotifier, Account> {
+  const SelectedAccountTypeNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedAccountTypeProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedAccountTypeNotifierHash();
+
+  @$internal
+  @override
+  SelectedAccountTypeNotifier create() => SelectedAccountTypeNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Account value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Account>(value),
+    );
+  }
+}
+
 String _$selectedAccountTypeNotifierHash() =>
     r'5feefea6032e02c469c6da239befaadcdd911b86';
 
-/// See also [SelectedAccountTypeNotifier].
-@ProviderFor(SelectedAccountTypeNotifier)
-final selectedAccountTypeNotifierProvider =
-    NotifierProvider<SelectedAccountTypeNotifier, Account>.internal(
-      SelectedAccountTypeNotifier.new,
-      name: r'selectedAccountTypeNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$selectedAccountTypeNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$SelectedAccountTypeNotifier = Notifier<Account>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$SelectedAccountTypeNotifier extends $Notifier<Account> {
+  Account build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Account, Account>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Account, Account>,
+              Account,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

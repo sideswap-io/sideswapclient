@@ -56,8 +56,9 @@ class DSettingsButton extends ConsumerWidget {
 
     final settingsButtonStyle = DButtonStyle(
       backgroundColor: ButtonState.resolveWith((states) {
-        final background =
-            forward ? SideSwapColors.chathamsBlue : SideSwapColors.blumine;
+        final background = forward
+            ? SideSwapColors.chathamsBlue
+            : SideSwapColors.blumine;
         if (states.isPressing) {
           return background.lerpWith(Colors.black, 0.2);
         }
@@ -75,18 +76,17 @@ class DSettingsButton extends ConsumerWidget {
       }),
     );
 
-    final buttonStyle =
-        forward
-            ? ref
-                .watch(desktopAppThemeNotifierProvider)
-                .buttonThemeData
-                .filledButtonStyle
-                ?.merge(settingsButtonStyle)
-            : ref
-                .watch(desktopAppThemeNotifierProvider)
-                .buttonThemeData
-                .defaultButtonStyle
-                ?.merge(settingsButtonStyle);
+    final buttonStyle = forward
+        ? ref
+              .watch(desktopAppThemeProvider)
+              .buttonThemeData
+              .filledButtonStyle
+              ?.merge(settingsButtonStyle)
+        : ref
+              .watch(desktopAppThemeProvider)
+              .buttonThemeData
+              .defaultButtonStyle
+              ?.merge(settingsButtonStyle);
 
     return DCustomFilledBigButton(
       width: 344,

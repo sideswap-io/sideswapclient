@@ -6,22 +6,46 @@ part of 'amount_to_string_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$amountToStringHash() => r'5b50e9d110ce6599c0b63aa9fb00ce154bc8c9ca';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [amountToString].
 @ProviderFor(amountToString)
-final amountToStringProvider = AutoDisposeProvider<AmountToString>.internal(
-  amountToString,
-  name: r'amountToStringProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$amountToStringHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const amountToStringProvider = AmountToStringProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AmountToStringRef = AutoDisposeProviderRef<AmountToString>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class AmountToStringProvider
+    extends $FunctionalProvider<AmountToString, AmountToString, AmountToString>
+    with $Provider<AmountToString> {
+  const AmountToStringProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'amountToStringProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$amountToStringHash();
+
+  @$internal
+  @override
+  $ProviderElement<AmountToString> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AmountToString create(Ref ref) {
+    return amountToString(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AmountToString value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AmountToString>(value),
+    );
+  }
+}
+
+String _$amountToStringHash() => r'088b96feab823cfc3c392a7cc80303d7e4d6fc2b';

@@ -16,7 +16,7 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final skipForNow = ref.watch(skipForNowNotifierProvider);
+    final skipForNow = ref.watch(skipForNowProvider);
 
     return SideSwapScaffold(
       body: SafeArea(

@@ -16,7 +16,7 @@ class DViewTxPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createTxState = ref.watch(createTxStateProvider);
     final createdTx = switch (createTxState) {
       CreateTxStateCreated(createdTx: final createdTx) => createdTx,
       _ => null,
@@ -84,10 +84,9 @@ class DViewTxPopup extends ConsumerWidget {
                   isFilled: true,
                   onPressed: () async {
                     final navigator = Navigator.of(context);
-                    final result =
-                        await ref
-                            .read(outputsCreatorProvider.notifier)
-                            .saveToFile();
+                    final result = await ref
+                        .read(outputsCreatorProvider.notifier)
+                        .saveToFile();
                     if (result) {
                       navigator.pop(const DialogReturnValueAccepted());
                     }

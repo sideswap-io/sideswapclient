@@ -1,13 +1,18 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/peg_out_edit_fee_rate_dialog.dart';
+import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
@@ -22,8 +27,8 @@ class TxDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionCurrentTxid = ref.watch(currentTxPopupItemNotifierProvider);
-    final allTxs = ref.watch(allTxsNotifierProvider);
+    final optionCurrentTxid = ref.watch(currentTxPopupItemProvider);
+    final allTxs = ref.watch(allTxsProvider);
 
     return optionCurrentTxid.match(() => const SizedBox(), (txid) {
       final transItem = allTxs[txid];
@@ -37,7 +42,7 @@ class TxDetails extends ConsumerWidget {
       final price = transItemHelper.txTargetPrice();
       final balances = transItemHelper.txBalances();
       final optionConfs = transItemHelper.txConfs();
-      final status = transItemHelper.txStatus();
+      final status = transItemHelper.txStatus().status;
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,7 +596,7 @@ class TxDetailsAssetListItem extends StatelessWidget {
   }
 }
 
-class DTxDetailsPegOut extends ConsumerWidget {
+class DTxDetailsPegOut extends HookConsumerWidget {
   final TransItem transItem;
 
   const DTxDetailsPegOut({super.key, required this.transItem});
@@ -599,6 +604,16 @@ class DTxDetailsPegOut extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+    final pegOutNextBlockFeeRate = ref.watch(pegOutNextBlockFeeRateProvider);
+    final repository = ref.watch(pegRepositoryProvider);
+
+    useEffect(() {
+      repository.setActivePage(activePage: ActivePage.PEG_OUT);
+
+      return () {
+        repository.setActivePage();
+      };
+    }, const []);
 
     return Column(
       children: [
@@ -618,10 +633,116 @@ class DTxDetailsPegOut extends ConsumerWidget {
           description: 'Conversion rate'.tr(),
           details: transItemHelper.txPegInConversionRate(),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         TxDetailsRow(
           description: 'Status'.tr(),
-          details: transItemHelper.txStatus(),
+          details: transItemHelper.txStatus().status,
+        ),
+        const SizedBox(height: 8),
+        TxDetailsPegOutSelectedFeeRate(transItem: transItem),
+        const SizedBox(height: 8),
+        TxDetailsRow(
+          description: 'Next block fee rate'.tr(),
+          details: pegOutNextBlockFeeRate,
+        ),
+        const SizedBox(height: 8),
+        TxDetailsPegOutBitcoinNetworkFee(transItem: transItem),
+      ],
+    );
+  }
+}
+
+class TxDetailsPegOutSelectedFeeRate extends HookConsumerWidget {
+  const TxDetailsPegOutSelectedFeeRate({super.key, required this.transItem});
+
+  final TransItem transItem;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+
+    final optionSelectedFeeRate = transItemHelper.selectedFeeRate();
+    final availableForEdit = ref.watch(
+      availablePegOrderFeeChangeProvider(transItem),
+    );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Selected fee rate'.tr(),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: SideSwapColors.brightTurquoise,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          optionSelectedFeeRate.match(
+            () => 'N/A',
+            (value) => '$value sat/vbyte',
+          ),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: Colors.white,
+          ),
+        ),
+        ...switch (availableForEdit) {
+          true => [
+            SizedBox(width: 8),
+            DIconButton(
+              icon: SvgPicture.asset('assets/edit2.svg', width: 16, height: 16),
+              onPressed: () async {
+                ref
+                    .read(pegOutEditFeeRateDialogTransItemProvider.notifier)
+                    .setState(transItem);
+
+                await Navigator.of(context).push(
+                  RawDialogRoute<Widget>(
+                    pageBuilder: (_, _, _) => PegOutEditFeeRateDialog(),
+                  ),
+                );
+              },
+            ),
+          ],
+          false => [const SizedBox.shrink()],
+        },
+      ],
+    );
+  }
+}
+
+class TxDetailsPegOutBitcoinNetworkFee extends ConsumerWidget {
+  const TxDetailsPegOutBitcoinNetworkFee({super.key, required this.transItem});
+
+  final TransItem transItem;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+
+    final optionBitcoinNetworkFee = transItemHelper.bitcoinNetworkFee();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Bitcoin network fee'.tr(),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: SideSwapColors.brightTurquoise,
+          ),
+        ),
+        Text(
+          optionBitcoinNetworkFee.match(() => 'N/A', (value) => '$value sats'),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: Colors.white,
+          ),
         ),
       ],
     );

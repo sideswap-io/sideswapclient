@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -63,10 +62,14 @@ sealed class OutputsData with _$OutputsData {
 
 @Freezed(fromJson: true, equal: true)
 sealed class OutputsReceiver with _$OutputsReceiver {
-  @JsonSerializable(explicitToJson: true, includeIfNull: false)
+  @JsonSerializable(
+    explicitToJson: true,
+    includeIfNull: false,
+    fieldRename: FieldRename.snake,
+  )
   const factory OutputsReceiver({
     String? address,
-    @JsonKey(name: 'asset_id') String? assetId,
+    String? assetId,
     int? satoshi,
     String? comment,
     @IntToAccountConverter() Account? account,
@@ -210,10 +213,10 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
 class OutputsCreator extends _$OutputsCreator {
   @override
   Either<OutputsError, OutputsData> build() {
-    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdNotifierProvider);
-    final sendPopupAmount = ref.watch(sendPopupAmountNotifierProvider);
-    final address = ref.watch(sendPopupAddressNotifierProvider);
-    final outputsData = ref.watch(outputsReaderNotifierProvider);
+    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdProvider);
+    final sendPopupAmount = ref.watch(sendPopupAmountProvider);
+    final address = ref.watch(sendPopupAddressProvider);
+    final outputsData = ref.watch(outputsReaderProvider);
     final satoshiRepository = ref.watch(satoshiRepositoryProvider);
     final satoshi = satoshiRepository.satoshiForAmount(
       amount: sendPopupAmount,

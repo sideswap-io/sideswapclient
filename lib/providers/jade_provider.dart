@@ -4,7 +4,6 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/connection_models.dart';
@@ -85,7 +84,7 @@ class JadeStatusNotifier extends _$JadeStatusNotifier {
   @override
   JadeStatus build() {
     listenSelf((_, next) {
-      logger.d('${jadeStatusNotifierProvider.name}: $next');
+      logger.d('${jadeStatusProvider.name}: $next');
     });
 
     return const JadeStatusIdle();
@@ -113,9 +112,9 @@ class JadeOnboardingRegistrationNotifier
 
 @riverpod
 bool jadeRegistrationButtonEnabled(Ref ref) {
-  final serverLoginState = ref.watch(serverLoginNotifierProvider);
+  final serverLoginState = ref.watch(serverLoginProvider);
   final jadeOnboardingRegistrationState = ref.watch(
-    jadeOnboardingRegistrationNotifierProvider,
+    jadeOnboardingRegistrationProvider,
   );
   return (jadeOnboardingRegistrationState ==
           JadeOnboardingRegistrationStateIdle() &&
@@ -195,7 +194,7 @@ class JadeLockStateNotifier extends _$JadeLockStateNotifier {
       return JadeLockState.unlocked();
     }
 
-    ref.listen(jadeLockStateTimerNotifierProvider, (_, _) {
+    ref.listen(jadeLockStateTimerProvider, (_, _) {
       ref.invalidateSelf();
     });
 
@@ -259,14 +258,14 @@ class JadeLockRepository implements AbstractJadeLockRepository {
       msg.jadeUnlock = Empty();
       ref.read(walletProvider).sendMsg(msg);
 
-      ref.read(jadeLockStateTimerNotifierProvider.notifier).extendTimer();
+      ref.read(jadeLockStateTimerProvider.notifier).extendTimer();
     });
   }
 }
 
 @riverpod
 AbstractJadeLockRepository jadeLockRepository(Ref ref) {
-  final lockState = ref.watch(jadeLockStateNotifierProvider);
+  final lockState = ref.watch(jadeLockStateProvider);
   final isJadeWallet = ref.watch(isJadeWalletProvider);
 
   return JadeLockRepository(
@@ -292,9 +291,9 @@ class JadeOneTimeAuthorization extends _$JadeOneTimeAuthorization {
       return true;
     }
 
-    ref.read(jadeAuthInProgressStateNotifierProvider.notifier).setState(true);
+    ref.read(jadeAuthInProgressStateProvider.notifier).setState(true);
     final authSucceed = await ref.read(walletProvider).isAuthenticated();
-    ref.invalidate(jadeAuthInProgressStateNotifierProvider);
+    ref.invalidate(jadeAuthInProgressStateProvider);
     state = authSucceed;
 
     return state;

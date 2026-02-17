@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
 
@@ -9,7 +10,7 @@ import 'package:ffi/ffi.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/subjects.dart';
@@ -41,6 +42,7 @@ import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/new_block_providers.dart';
 import 'package:sideswap/providers/new_tx_providers.dart';
+import 'package:sideswap/providers/notifications_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
@@ -48,6 +50,7 @@ import 'package:sideswap/providers/proxy_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/server_status_providers.dart';
+import 'package:sideswap/providers/swaption_session_providers.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
@@ -203,7 +206,7 @@ class SideswapWallet {
 
   void sendMsg(To to) {
     if (kDebugMode) {
-      logger.d('send: ${to.toDebugString()}');
+      logger.d('SideswapWallet::sendMsg: ${to.toDebugString()}');
     }
     final clientId = ref.read(libClientIdProvider);
 
@@ -225,15 +228,13 @@ class SideswapWallet {
   StreamSubscription<dynamic>? _receivePortSubscription;
 
   Future<void> startClient() async {
-    logger.d('startClient');
+    logger.d('SideswapWallet::startClient() called');
 
     ref.invalidate(defaultAccountsStateProvider);
     ref.invalidate(assetsStateProvider);
-    ref.invalidate(serverConnectionNotifierProvider);
+    ref.invalidate(serverConnectionProvider);
 
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.walletLoading);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.walletLoading);
 
     await _recvSubscription?.cancel();
     await _receivePortSubscription?.cancel();
@@ -296,9 +297,7 @@ class SideswapWallet {
     } else if (ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty) {
       if (await _encryption.canAuthenticate() &&
           ref.read(configurationProvider).useBiometricProtection) {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.lockedWalet);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.lockedWalet);
       } else {
         await unlockWallet();
       }
@@ -306,15 +305,13 @@ class SideswapWallet {
       if (ref.read(configurationProvider).usePinProtection) {
         await unlockWallet();
       } else {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.noWallet);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
         notifyListeners();
       }
     }
 
     // Initiate wallet unlock after startup
-    final status = ref.read(pageStatusNotifierProvider);
+    final status = ref.read(pageStatusProvider);
     if (status == Status.lockedWalet) {
       await unlockWallet();
     }
@@ -332,26 +329,27 @@ class SideswapWallet {
   }
 
   void notifyListeners() {
-    logger.d('wallet notifyListeners()');
+    logger.d('SideswapWallet::notifyListeners() called');
     ref.notifyListeners();
   }
 
   void updateTxs(From_UpdatedTxs txs) {
-    ref.read(updatedTxsNotifierProvider.notifier).update(txs);
+    ref.read(updatedTxsProvider.notifier).update(txs);
   }
 
   void removedTxs(From_RemovedTxs txs) {
-    ref.read(updatedTxsNotifierProvider.notifier).remove(txs);
-    ref.read(allTxsNotifierProvider.notifier).remove(txs);
+    ref.read(updatedTxsProvider.notifier).remove(txs);
+    ref.read(allTxsProvider.notifier).remove(txs);
   }
 
   void updatePegs(From_UpdatedPegs pegs) {
-    ref.read(allPegsNotifierProvider.notifier).update(pegs: pegs);
+    ref.read(allPegsProvider.notifier).update(pegs: pegs);
+    ref.read(pegOrderFeesProvider.notifier).setState(pegs);
   }
 
   Future<void> _recvMsg(From from) async {
     if (kDebugMode) {
-      logger.d('recv: ${from.whichMsg()}');
+      logger.d('SideswapWallet::_recvMsg: ${from.whichMsg()}');
     }
     // Process message here
     switch (from.whichMsg()) {
@@ -390,21 +388,17 @@ class SideswapWallet {
         break;
       case From_Msg.ampAssets:
         ref
-            .read(ampAssetIdsNotifierProvider.notifier)
+            .read(ampAssetIdsProvider.notifier)
             .insertAmpAssets(ampAssetIds: from.ampAssets.assets);
         break;
       case From_Msg.balanceUpdate:
-        ref
-            .read(balancesNotifierProvider.notifier)
-            .updateBalances(from.balanceUpdate);
+        ref.read(balancesProvider.notifier).updateBalances(from.balanceUpdate);
         notifyListeners();
         break;
 
       case From_Msg.swapFailed:
         logger.w('Swap failed: ${from.swapFailed}');
-        ref
-            .read(swapNetworkErrorNotifierProvider.notifier)
-            .setState(from.swapFailed);
+        ref.read(swapNetworkErrorProvider.notifier).setState(from.swapFailed);
         notifyListeners();
         await ref.read(utilsProvider).showErrorDialog(from.swapFailed);
         break;
@@ -422,18 +416,14 @@ class SideswapWallet {
 
       case From_Msg.peginWaitTx:
         ref
-            .read(swapPegAddressServerNotifierProvider.notifier)
+            .read(swapPegAddressServerProvider.notifier)
             .setState(from.peginWaitTx.pegAddr);
         ref
-            .read(swapRecvAddressExternalNotifierProvider.notifier)
+            .read(swapRecvAddressExternalProvider.notifier)
             .setState(from.peginWaitTx.recvAddr);
-        ref.invalidate(swapStateNotifierProvider);
+        ref.invalidate(swapStateProvider);
         if (!FlavorConfig.isDesktop) {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.swapWaitPegTx);
-        } else {
-          ref.read(desktopDialogProvider).waitPegin();
+          ref.read(pageStatusProvider.notifier).setStatus(Status.swapWaitPegTx);
         }
         break;
 
@@ -450,16 +440,18 @@ class SideswapWallet {
       case From_Msg.createTxResult:
         (switch (from.createTxResult.whichResult()) {
           From_CreateTxResult_Result.errorMsg => () {
-            logger.e(from.createTxResult.errorMsg);
+            logger.e(
+              'From_CreateTxResult_Result.errorMsg: ${from.createTxResult.errorMsg}',
+            );
             ref
-                .read(createTxStateNotifierProvider.notifier)
+                .read(createTxStateProvider.notifier)
                 .setCreateTxState(
                   CreateTxStateError(errorMsg: from.createTxResult.errorMsg),
                 );
           }(),
           From_CreateTxResult_Result.createdTx =>
             ref
-                .read(createTxStateNotifierProvider.notifier)
+                .read(createTxStateProvider.notifier)
                 .setCreateTxState(
                   CreateTxStateCreated(from.createTxResult.createdTx),
                 ),
@@ -471,13 +463,11 @@ class SideswapWallet {
 
       case From_Msg.sendResult:
         ref
-            .read(sendTxStateNotifierProvider.notifier)
+            .read(sendTxStateProvider.notifier)
             .setSendTxState(const SendTxStateEmpty());
 
         if (!FlavorConfig.isDesktop) {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.assetDetails);
+          ref.read(pageStatusProvider.notifier).setStatus(Status.assetDetails);
         }
         switch (from.sendResult.whichResult()) {
           case From_SendResult_Result.errorMsg:
@@ -603,26 +593,27 @@ class SideswapWallet {
             .showAmpOnboarding;
         if (showAmpOnboarding) {
           // wallet is loaded but we need to display onboarding amp setup
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.ampRegister);
+          ref.read(pageStatusProvider.notifier).setStatus(Status.ampRegister);
           return;
         }
 
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.registered);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
 
         // check initial deep link
         // process links before login request for loading screen to work properly
         final initialUri = ref.read(universalLinkProvider).initialUri;
         if (initialUri != null) {
-          logger.d('Initial uri found: $initialUri');
+          logger.d(
+            'SideswapWallet::walletLoaded: initial uri found: $initialUri',
+          );
           final linkResultState = ref
               .read(universalLinkProvider)
               .handleAppUri(initialUri);
+          logger.d(
+            'SideswapWallet::walletLoaded: link result state $linkResultState',
+          );
           ref
-              .read(universalLinkResultStateNotifierProvider.notifier)
+              .read(universalLinkResultStateProvider.notifier)
               .setState(linkResultState);
         }
         break;
@@ -633,12 +624,12 @@ class SideswapWallet {
 
       case From_Msg.serverConnected:
         ref
-            .read(serverConnectionNotifierProvider.notifier)
+            .read(serverConnectionProvider.notifier)
             .setServerConnectionState(true);
         ref.read(sideswapNotificationProvider).requestTxFromBackend();
         break;
       case From_Msg.serverDisconnected:
-        ref.invalidate(serverConnectionNotifierProvider);
+        ref.invalidate(serverConnectionProvider);
         break;
 
       case From_Msg.assetDetails:
@@ -660,7 +651,7 @@ class SideswapWallet {
           chartStats: null,
         );
         ref
-            .read(tokenMarketNotifierProvider.notifier)
+            .read(tokenMarketProvider.notifier)
             .insertAssetDetails(assetDetailsData);
         break;
       case From_Msg.registerAmp:
@@ -680,25 +671,23 @@ class SideswapWallet {
         final jadePorts = from.jadePorts.ports.toList();
         if (jadePorts.isNotEmpty) {
           ref
-              .read(jadeDeviceNotifierProvider.notifier)
+              .read(jadeDeviceProvider.notifier)
               .setState(JadeDevicesStateAvailable(devices: jadePorts));
           return;
         }
 
         ref
-            .read(jadeDeviceNotifierProvider.notifier)
+            .read(jadeDeviceProvider.notifier)
             .setState(const JadeDevicesStateUnavailable());
 
         break;
       case From_Msg.logout:
         cleanupConnectionStates();
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.noWallet);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
         break;
       case From_Msg.jadeStatus:
         final status = JadeStatus.fromStatus(from.jadeStatus.status);
-        ref.read(jadeStatusNotifierProvider.notifier).setJadeStatus(status);
+        ref.read(jadeStatusProvider.notifier).setJadeStatus(status);
         break;
       case From_Msg.gaidStatus:
         final gaidStatus = from.gaidStatus;
@@ -712,13 +701,13 @@ class SideswapWallet {
         if (gaidStatus.error.isEmpty) {
           if (stokrDetected) {
             ref
-                .read(stokrGaidNotifierProvider.notifier)
+                .read(stokrGaidProvider.notifier)
                 .setStokrGaidState(const StokrGaidStateRegistered());
             return;
           }
           if (pegxDetected) {
             ref
-                .read(pegxGaidNotifierProvider.notifier)
+                .read(pegxGaidProvider.notifier)
                 .setState(const PegxGaidStateRegistered());
             return;
           }
@@ -726,14 +715,14 @@ class SideswapWallet {
 
         if (stokrDetected) {
           ref
-              .read(stokrGaidNotifierProvider.notifier)
+              .read(stokrGaidProvider.notifier)
               .setStokrGaidState(const StokrGaidStateUnregistered());
           return;
         }
 
         if (pegxDetected) {
           ref
-              .read(pegxGaidNotifierProvider.notifier)
+              .read(pegxGaidProvider.notifier)
               .setState(const PegxGaidStateUnregistered());
           return;
         }
@@ -744,12 +733,12 @@ class SideswapWallet {
         break;
       case From_Msg.portfolioPrices:
         ref
-            .read(portfolioPricesNotifierProvider.notifier)
+            .read(portfolioPricesProvider.notifier)
             .setPortfolioPrices(from.portfolioPrices.pricesUsd);
         break;
       case From_Msg.conversionRates:
         ref
-            .read(conversionRatesNotifierProvider.notifier)
+            .read(conversionRatesProvider.notifier)
             .setConversionRates(from.conversionRates);
         break;
       case From_Msg.loadAddresses:
@@ -843,6 +832,27 @@ class SideswapWallet {
       case From_Msg.orderCancel:
         logger.w('OrderCancel: ${from.orderCancel}');
         break;
+      case From_Msg.pegEdit:
+        _handlePegEdit(from.pegEdit);
+        break;
+      case From_Msg.signerRequest:
+        _handleSignerRequest(from.signerRequest);
+        break;
+      case From_Msg.sessionList:
+        _handleSessionList(from.sessionList);
+        break;
+      case From_Msg.sessionAdded:
+        _handleSessionAdded(from.sessionAdded);
+        break;
+      case From_Msg.sessionRemoved:
+        _handleSessionRemoved(from.sessionRemoved);
+        break;
+      case From_Msg.signerReturn:
+        _handleSignerReturn();
+        break;
+      case From_Msg.signerCancel:
+        _handleSignerCancel(from.signerCancel);
+        break;
       case From_Msg.notSet:
         throw UnimplementedError('invalid message: $from');
     }
@@ -934,9 +944,7 @@ class SideswapWallet {
 
       setNewWalletPinWelcome();
     } else {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.reviewLicense);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.reviewLicense);
     }
     notifyListeners();
   }
@@ -945,9 +953,7 @@ class SideswapWallet {
     if (ref.read(configurationProvider).licenseAccepted) {
       startMnemonicImport();
     } else {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.reviewLicense);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.reviewLicense);
     }
     notifyListeners();
   }
@@ -962,7 +968,7 @@ class SideswapWallet {
     mnemonicRepository.setMnemonic(getNewMnemonic());
     if (await _encryption.canAuthenticate()) {
       ref
-          .read(pageStatusNotifierProvider.notifier)
+          .read(pageStatusProvider.notifier)
           .setStatus(Status.newWalletBiometricPrompt);
       notifyListeners();
       return;
@@ -975,25 +981,23 @@ class SideswapWallet {
 
   void newWalletBackupPrompt() {
     ref
-        .read(pageStatusNotifierProvider.notifier)
+        .read(pageStatusProvider.notifier)
         .setStatus(Status.newWalletBackupPrompt);
   }
 
   void startMnemonicImport() {
-    final status = ref.read(pageStatusNotifierProvider);
+    final status = ref.read(pageStatusProvider);
     assert(
       status == Status.noWallet ||
           status == Status.importWallet ||
           status == Status.importWalletError ||
           status == Status.reviewLicense,
     );
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.importWallet);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.importWallet);
   }
 
   void importMnemonic(String mnemonic) {
-    final status = ref.read(pageStatusNotifierProvider);
+    final status = ref.read(pageStatusProvider);
     assert(
       status == Status.importWallet ||
           status == Status.importWalletSuccess ||
@@ -1004,7 +1008,7 @@ class SideswapWallet {
 
     if (FlavorConfig.isDesktop) {
       ref
-          .read(pageStatusNotifierProvider.notifier)
+          .read(pageStatusProvider.notifier)
           .setStatus(Status.newWalletPinWelcome);
       return;
     }
@@ -1013,9 +1017,7 @@ class SideswapWallet {
   }
 
   void backupNewWalletEnable() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.newWalletBackupView);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.newWalletBackupView);
   }
 
   Future<bool> walletBiometricEnable() async {
@@ -1081,7 +1083,7 @@ class SideswapWallet {
 
   void acceptLicense() {
     ref.read(configurationProvider.notifier).setLicenseAccepted(true);
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
   }
 
   void backupNewWalletCheck() {
@@ -1108,7 +1110,7 @@ class SideswapWallet {
       backupCheckAllWords[selectedIndex] = otherWords;
     }
     ref
-        .read(pageStatusNotifierProvider.notifier)
+        .read(pageStatusProvider.notifier)
         .setStatus(Status.newWalletBackupCheck);
     notifyListeners();
   }
@@ -1143,32 +1145,30 @@ class SideswapWallet {
   void backupNewWalletVerify() {
     if (_validSelectedWords()) {
       ref
-          .read(pageStatusNotifierProvider.notifier)
+          .read(pageStatusProvider.notifier)
           .setStatus(Status.newWalletBackupCheckSucceed);
       return;
     }
     ref
-        .read(pageStatusNotifierProvider.notifier)
+        .read(pageStatusProvider.notifier)
         .setStatus(Status.newWalletBackupCheckFailed);
     notifyListeners();
   }
 
   bool goBack() {
-    var status = ref.read(pageStatusNotifierProvider);
+    var status = ref.read(pageStatusProvider);
 
     return switch (status) {
       Status.newWalletBackupCheck ||
       Status.newWalletBackupCheckFailed ||
       Status.newWalletBackupCheckSucceed => () {
         ref
-            .read(pageStatusNotifierProvider.notifier)
+            .read(pageStatusProvider.notifier)
             .setStatus(Status.newWalletBackupView);
         return false;
       }(),
       Status.importWalletError => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.importWallet);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.importWallet);
         return false;
       }(),
       Status.importWalletSuccess ||
@@ -1180,9 +1180,7 @@ class SideswapWallet {
       Status.networkAccessOnboarding ||
       Status.newWalletBiometricPrompt ||
       Status.importWalletBiometricPrompt => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.noWallet);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
         return false;
       }(),
       Status.assetsSelect ||
@@ -1192,67 +1190,53 @@ class SideswapWallet {
       Status.generateWalletAddress ||
       Status.stokrRestrictionsInfo ||
       Status.stokrNeedRegister => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.registered);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
         return false;
       }(),
       Status.paymentSend => () {
         ref
-            .read(pageStatusNotifierProvider.notifier)
+            .read(pageStatusProvider.notifier)
             .setStatus(Status.paymentAmountPage);
         return false;
       }(),
       Status.paymentAmountPage => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.paymentPage);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.paymentPage);
         return false;
       }(),
       Status.paymentPage => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.assetDetails);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.assetDetails);
         return false;
       }(),
       Status.swapTxDetails ||
       Status.assetReceiveFromWalletMain ||
       Status.assetDetails => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.registered);
-        ref.invalidate(uiStateArgsNotifierProvider);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
+        ref.invalidate(uiStateArgsProvider);
         return false;
       }(),
       Status.txDetails => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.transactions);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.transactions);
         return false;
       }(),
       Status.txEditMemo => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.txDetails);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.txDetails);
         return false;
       }(),
       Status.assetReceive => () {
         ref
-            .read(uiStateArgsNotifierProvider.notifier)
+            .read(uiStateArgsProvider.notifier)
             .setWalletMainArguments(
               WalletMainArguments(
                 currentIndex: 1,
                 navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
               ),
             );
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.assetDetails);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.assetDetails);
         return false;
       }(),
       Status.swapWaitPegTx => () {
         ref
-            .read(uiStateArgsNotifierProvider.notifier)
+            .read(uiStateArgsProvider.notifier)
             .setWalletMainArguments(
               WalletMainArguments(
                 currentIndex: 4,
@@ -1260,9 +1244,7 @@ class SideswapWallet {
               ),
             );
         ref.read(swapHelperProvider).pegStop();
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.registered);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
         return false;
       }(),
       Status.settingsBackup ||
@@ -1271,14 +1253,12 @@ class SideswapWallet {
       Status.settingsNetwork ||
       Status.settingsLogs ||
       Status.settingsCurrency => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.settingsPage);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.settingsPage);
         return false;
       }(),
       Status.newWalletBackupView => () {
         ref
-            .read(pageStatusNotifierProvider.notifier)
+            .read(pageStatusProvider.notifier)
             .setStatus(Status.newWalletBackupPrompt);
         return false;
       }(),
@@ -1287,21 +1267,19 @@ class SideswapWallet {
       Status.pegxRegister ||
       Status.pegxSubmitAmp ||
       Status.pegxSubmitFinish => () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.ampRegister);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.ampRegister);
         return false;
       }(),
       Status.walletAddressDetail => () {
         ref
-            .read(pageStatusNotifierProvider.notifier)
+            .read(pageStatusProvider.notifier)
             .setStatus(Status.generateWalletAddress);
         return false;
       }(),
       Status.jadeDevices => () {
-        ref.invalidate(jadeDeviceNotifierProvider);
+        ref.invalidate(jadeDeviceProvider);
         ref
-            .read(pageStatusNotifierProvider.notifier)
+            .read(pageStatusProvider.notifier)
             .setStatus(Status.jadeBluetoothPermission);
         return false;
       }(),
@@ -1315,7 +1293,7 @@ class SideswapWallet {
 
   void _login({String mnemonic = '', String jadeId = ''}) {
     ref
-        .read(serverLoginNotifierProvider.notifier)
+        .read(serverLoginProvider.notifier)
         .setServerLoginState(ServerLoginStateLoginProcessing());
 
     final msg = To();
@@ -1326,13 +1304,11 @@ class SideswapWallet {
     if (jadeId.isNotEmpty) {
       msg.login.jadeId = jadeId;
       ref
-          .read(jadeOnboardingRegistrationNotifierProvider.notifier)
+          .read(jadeOnboardingRegistrationProvider.notifier)
           .setState(const JadeOnboardingRegistrationStateProcessing());
     }
 
-    final proxySettingsRepository = ref.read(
-      proxySettingsRepositoryNotifierProvider,
-    );
+    final proxySettingsRepository = ref.read(proxySettingsRepositoryProvider);
     sendProxySettings(proxySettingsRepository.getProxySettings());
     sendNetworkSettings();
 
@@ -1343,7 +1319,7 @@ class SideswapWallet {
     sendMsg(msg);
 
     ref
-        .read(loginStateNotifierProvider.notifier)
+        .read(loginStateProvider.notifier)
         .setState(
           LoginState.login(
             mnemonic: mnemonic.isEmpty ? null : mnemonic,
@@ -1363,9 +1339,7 @@ class SideswapWallet {
   void selectAssetReceive(Account account) {
     toggleRecvAddrType(account);
 
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.assetReceive);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.assetReceive);
     notifyListeners();
   }
 
@@ -1380,12 +1354,12 @@ class SideswapWallet {
   }
 
   void selectPaymentPage() {
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.paymentPage);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.paymentPage);
   }
 
   void showTxDetails(TransItem transItem) {
     ref
-        .read(currentTxPopupItemNotifierProvider.notifier)
+        .read(currentTxPopupItemProvider.notifier)
         .setCurrentTxId(
           transItem.hasPeg()
               ? transItem.peg.isPegIn
@@ -1393,12 +1367,12 @@ class SideswapWallet {
                     : transItem.peg.txidSend
               : transItem.tx.txid,
         );
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txDetails);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.txDetails);
   }
 
   void showSwapTxDetails(TransItem transItem) {
     ref
-        .read(currentTxPopupItemNotifierProvider.notifier)
+        .read(currentTxPopupItemProvider.notifier)
         .setCurrentTxId(
           transItem.hasPeg()
               ? transItem.peg.isPegIn
@@ -1408,9 +1382,7 @@ class SideswapWallet {
         );
 
     if (!FlavorConfig.isDesktop) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.swapTxDetails);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.swapTxDetails);
       return;
     }
 
@@ -1452,7 +1424,7 @@ class SideswapWallet {
     msg.createTx = createTx;
     sendMsg(msg);
     ref
-        .read(createTxStateNotifierProvider.notifier)
+        .read(createTxStateProvider.notifier)
         .setCreateTxState(const CreateTxStateCreating());
     notifyListeners();
   }
@@ -1463,16 +1435,14 @@ class SideswapWallet {
     msg.sendTx.id = createdTx.id;
     sendMsg(msg);
     ref
-        .read(sendTxStateNotifierProvider.notifier)
+        .read(sendTxStateProvider.notifier)
         .setSendTxState(const SendTxStateSending());
     notifyListeners();
   }
 
   void selectAvailableAssets() {
     setToggleAssetFilter('');
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.assetsSelect);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.assetsSelect);
   }
 
   bool _showAsset(Asset asset, String filterLowerCase) {
@@ -1506,15 +1476,13 @@ class SideswapWallet {
   }
 
   void editTxMemo(Object arguments) {
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txEditMemo);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.txEditMemo);
   }
 
   Future<void> settingsViewBackup() async {
     if (ref.read(configurationProvider).usePinProtection) {
       if (await ref.read(pinProtectionHelperProvider).pinBlockadeUnlocked()) {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.settingsBackup);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.settingsBackup);
         return;
       }
 
@@ -1530,29 +1498,21 @@ class SideswapWallet {
           );
     if (mnemonic == mnemonicRepository.mnemonic() &&
         validateMnemonic(mnemonic)) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.settingsBackup);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.settingsBackup);
     }
   }
 
   void settingsViewPage() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.settingsPage);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.settingsPage);
   }
 
   void settingsViewAboutUs() {
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.settingsAboutUs);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.settingsAboutUs);
   }
 
   Future<void> settingsViewSecurity() async {
     await _encryption.canAuthenticate();
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.settingsSecurity);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.settingsSecurity);
     notifyListeners();
   }
 
@@ -1569,28 +1529,29 @@ class SideswapWallet {
       ).popUntil((route) => route.isFirst);
     }
 
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
 
     await deleteWalletAndCleanup();
   }
 
   void cleanupConnectionStates() {
     logger.w('Clean connection states');
-    ref.invalidate(serverLoginNotifierProvider);
-    ref.invalidate(serverConnectionNotifierProvider);
+    ref.invalidate(serverLoginProvider);
+    ref.invalidate(serverConnectionProvider);
     cleanAppStates();
   }
 
   void cleanAppStates() {
     logger.w('Clean app states');
-    ref.invalidate(balancesNotifierProvider);
-    ref.invalidate(uiStateArgsNotifierProvider);
+    ref.invalidate(balancesProvider);
+    ref.invalidate(uiStateArgsProvider);
     ref.read(pinProtectionHelperProvider).resetCounter();
-    ref.invalidate(allTxsNotifierProvider);
-    ref.invalidate(allPegsNotifierProvider);
-    ref.invalidate(ampIdNotifierProvider);
-    ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
-    ref.invalidate(firstLaunchStateNotifierProvider);
+    ref.invalidate(allTxsProvider);
+    ref.invalidate(allPegsProvider);
+    ref.invalidate(pegOrderFeesProvider);
+    ref.invalidate(ampIdProvider);
+    ref.invalidate(jadeOnboardingRegistrationProvider);
+    ref.invalidate(firstLaunchStateProvider);
     mnemonicRepository.clear();
     notifyListeners();
   }
@@ -1611,9 +1572,7 @@ class SideswapWallet {
         return;
       }
 
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.lockedWalet);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.lockedWalet);
       return;
     }
 
@@ -1713,12 +1672,10 @@ class SideswapWallet {
   void setImportWalletResult(bool success) {
     if (success) {
       ref
-          .read(pageStatusNotifierProvider.notifier)
+          .read(pageStatusProvider.notifier)
           .setStatus(Status.importWalletSuccess);
     } else {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.importWalletError);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.importWalletError);
     }
 
     notifyListeners();
@@ -1728,7 +1685,7 @@ class SideswapWallet {
     final canAuthenticate = await _encryption.canAuthenticate();
     if (canAuthenticate) {
       ref
-          .read(pageStatusNotifierProvider.notifier)
+          .read(pageStatusProvider.notifier)
           .setStatus(Status.importWalletBiometricPrompt);
       return;
     }
@@ -1757,16 +1714,9 @@ class SideswapWallet {
     sendMsg(msg);
   }
 
-  // TODO (malcolmpl): new wallets - remove this, use paymentPageSendAssetsWithBalanceProvider
-  List<AccountAsset> sendAssets() {
-    return sendAssetsWithBalance();
-  }
-
   void setNewWalletPinWelcome() {
     mnemonicRepository.setMnemonic(getNewMnemonic());
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.newWalletPinWelcome);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.newWalletPinWelcome);
   }
 
   Future<void> setPinWelcome() async {
@@ -1774,7 +1724,7 @@ class SideswapWallet {
       await setImportWalletBiometricPrompt();
       return;
     }
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinWelcome);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.pinWelcome);
   }
 
   bool sendEncryptPin(String pin) {
@@ -1799,9 +1749,7 @@ class SideswapWallet {
       return;
     }
 
-    final proxySettingsRepository = ref.read(
-      proxySettingsRepositoryNotifierProvider,
-    );
+    final proxySettingsRepository = ref.read(proxySettingsRepositoryProvider);
     sendProxySettings(proxySettingsRepository.getProxySettings());
 
     final msg = To();
@@ -1828,7 +1776,7 @@ class SideswapWallet {
         );
 
     if (ret) {
-      final pinDecryptedData = ref.read(pinDecryptedDataNotifierProvider);
+      final pinDecryptedData = ref.read(pinDecryptedDataProvider);
       if (pinDecryptedData.success) {
         // turn off pin and save encrypted mnemonic
         ref.read(configurationProvider.notifier).setUsePinProtection(false);
@@ -1866,20 +1814,6 @@ class SideswapWallet {
     processPendingPushMessages();
   }
 
-  // TODO (malcolmpl): new wallets - remove this, use paymentPageSendAssetsWithBalanceProvider
-  List<AccountAsset> sendAssetsWithBalance() {
-    final allAssets = ref
-        .read(balancesNotifierProvider)
-        .entries
-        .where((e) => e.value > 0)
-        .map((e) => e.key)
-        .toList();
-    if (allAssets.isEmpty) {
-      return [AccountAsset(Account.REG, ref.read(liquidAssetIdStateProvider))];
-    }
-    return allAssets;
-  }
-
   void getPegOutAmount(int? sendAmount, int? recvAmount, double feeRate) {
     assert((sendAmount == null) != (recvAmount == null));
     final msg = To();
@@ -1895,7 +1829,7 @@ class SideswapWallet {
   Future<void> _processRegisterAmpResult(From_RegisterAmp msg) async {
     switch (msg.whichResult()) {
       case From_RegisterAmp_Result.ampId:
-        ref.read(ampIdNotifierProvider.notifier).setAmpId(msg.ampId);
+        ref.read(ampIdProvider.notifier).setAmpId(msg.ampId);
         break;
       case From_RegisterAmp_Result.errorMsg:
         await ref.read(utilsProvider).showErrorDialog(msg.errorMsg);
@@ -1907,6 +1841,11 @@ class SideswapWallet {
   }
 
   void handleAppStateChange(AppLifecycleState state) {
+    final initializedState = ref.read(libClientStateProvider);
+    if (initializedState != const LibClientState.initialized()) {
+      return;
+    }
+
     bool active = state == AppLifecycleState.resumed;
     bool paused = state == AppLifecycleState.paused;
     if (active || paused) {
@@ -1973,7 +1912,7 @@ class SideswapWallet {
   void loadAddresses(Account account) {
     Future.microtask(
       () => ref
-          .read(loadAddressesStateNotifierProvider.notifier)
+          .read(loadAddressesStateProvider.notifier)
           .setLoadAddressesState(const LoadAddressesState.loading()),
     );
 
@@ -1985,7 +1924,7 @@ class SideswapWallet {
   void _handleLoadAddresses(From_LoadAddresses loadAddresses) {
     if (loadAddresses.errorMsg.isNotEmpty) {
       ref
-          .read(loadAddressesStateNotifierProvider.notifier)
+          .read(loadAddressesStateProvider.notifier)
           .setLoadAddressesState(
             LoadAddressesState.error(loadAddresses.errorMsg),
           );
@@ -1993,7 +1932,7 @@ class SideswapWallet {
     }
 
     ref
-        .read(loadAddressesStateNotifierProvider.notifier)
+        .read(loadAddressesStateProvider.notifier)
         .setLoadAddressesState(LoadAddressesState.data(loadAddresses));
   }
 
@@ -2006,13 +1945,13 @@ class SideswapWallet {
   void _handleLoadUtxos(From_LoadUtxos loadUtxos) {
     if (loadUtxos.hasErrorMsg()) {
       ref
-          .read(loadUtxosStateNotifierProvider.notifier)
+          .read(loadUtxosStateProvider.notifier)
           .setLoadUtxosState(LoadUtxosState.error(loadUtxos.errorMsg));
       return;
     }
 
     ref
-        .read(loadUtxosStateNotifierProvider.notifier)
+        .read(loadUtxosStateProvider.notifier)
         .setLoadUtxosState(LoadUtxosState.data(loadUtxos));
   }
 
@@ -2029,21 +1968,21 @@ class SideswapWallet {
         () {
           ref.read(configurationProvider.notifier).setJadeId('');
           ref
-              .read(serverLoginNotifierProvider.notifier)
+              .read(serverLoginProvider.notifier)
               .setServerLoginState(
                 ServerLoginStateError(message: login.errorMsg),
               );
         }(),
       From_Login_Result.errorMsg => () {
         ref
-            .read(serverLoginNotifierProvider.notifier)
+            .read(serverLoginProvider.notifier)
             .setServerLoginState(
               ServerLoginStateError(message: login.errorMsg),
             );
       }(),
       From_Login_Result.success => () {
         // save jadeId once, when logged in
-        final loginState = ref.read(loginStateNotifierProvider);
+        final loginState = ref.read(loginStateProvider);
         (switch (loginState) {
           LoginStateLogin(:final jadeId)
               when jadeId != null &&
@@ -2054,96 +1993,92 @@ class SideswapWallet {
         });
 
         ref
-            .read(serverLoginNotifierProvider.notifier)
+            .read(serverLoginProvider.notifier)
             .setServerLoginState(const ServerLoginStateLogin());
         ref
-            .read(firstLaunchStateNotifierProvider.notifier)
-            .setFirstLaunchState(const FirstLaunchStateEmpty());
+            .read(firstLaunchStateProvider.notifier)
+            .setFirstLaunchState(const FirstLaunchStateTypeEmpty());
       }(),
       From_Login_Result.notSet => () {
         ref
-            .read(serverLoginNotifierProvider.notifier)
+            .read(serverLoginProvider.notifier)
             .setServerLoginState(const ServerLoginStateError());
       }(),
     });
   }
 
   void _handleMarketList(From_MarketList marketList) {
-    ref.read(marketsNotifierProvider.notifier).setState(marketList.markets);
+    ref.read(marketsProvider.notifier).setState(marketList.markets);
   }
 
   void _handleMarketAdded(MarketInfo marketInfo) {
-    ref.read(marketsNotifierProvider.notifier).addMarketInfo(marketInfo);
+    ref.read(marketsProvider.notifier).addMarketInfo(marketInfo);
   }
 
   void _handleMarketRemoved(AssetPair assetPair) {
-    ref.read(marketsNotifierProvider.notifier).removeAssetPair(assetPair);
+    ref.read(marketsProvider.notifier).removeAssetPair(assetPair);
   }
 
   void _handlePublicOrders(From_PublicOrders publicOrders) {
     ref
-        .read(marketPublicOrdersNotifierProvider.notifier)
+        .read(marketPublicOrdersProvider.notifier)
         .setOrders(publicOrders.assetPair, publicOrders.list);
   }
 
   void _handlePublicOrderCreated(PublicOrder publicOrder) {
-    ref
-        .read(marketPublicOrdersNotifierProvider.notifier)
-        .orderCreated(publicOrder);
+    ref.read(marketPublicOrdersProvider.notifier).orderCreated(publicOrder);
   }
 
   void _handlePublicOrderRemoved(OrderId orderId) {
-    ref.read(marketPublicOrdersNotifierProvider.notifier).removeOrder(orderId);
+    ref.read(marketPublicOrdersProvider.notifier).removeOrder(orderId);
   }
 
   void _handleMarketPrice(From_MarketPrice marketPrice) {
     logger.d(marketPrice);
-    ref.read(marketPriceNotifierProvider.notifier).setState(marketPrice);
+    ref.read(marketPriceProvider.notifier).setState(marketPrice);
   }
 
   void _handleOwnOrders(From_OwnOrders ownOrders) {
-    ref.read(marketOwnOrdersNotifierProvider.notifier).setState(ownOrders.list);
+    ref.read(marketOwnOrdersProvider.notifier).setState(ownOrders.list);
   }
 
   void _handleOwnOrderCreated(OwnOrder ownOrder) {
-    ref.read(marketOwnOrdersNotifierProvider.notifier).orderCreated(ownOrder);
+    ref.read(marketOwnOrdersProvider.notifier).orderCreated(ownOrder);
   }
 
   void _handleOwnOrderRemoved(OrderId orderId) {
-    ref.read(marketOwnOrdersNotifierProvider.notifier).removeOrder(orderId);
+    ref.read(marketOwnOrdersProvider.notifier).removeOrder(orderId);
   }
 
   void _handleQuote(From_Quote quote) {
     logger.d('From_Quote: $quote');
-    ref.read(quoteEventNotifierProvider.notifier).setQuote(quote);
+    ref.read(quoteEventProvider.notifier).setQuote(quote);
   }
 
   void _handleAcceptQuote(From_AcceptQuote acceptQuote) {
-    ref.read(acceptQuoteNotifierProvider.notifier).setState(acceptQuote);
+    ref.read(acceptQuoteProvider.notifier).setState(acceptQuote);
   }
 
   void _handleOrderSubmit(From_OrderSubmit orderSubmit) {
-    ref.read(orderSubmitNotifierProvider.notifier).setState(orderSubmit);
+    ref.read(orderSubmitProvider.notifier).setState(orderSubmit);
   }
 
   void _handleChartsSubscribe(From_ChartsSubscribe chartsSubscribe) {
-    ref.read(chartsNotifierProvider.notifier).setChartsData(chartsSubscribe);
+    ref.read(chartsProvider.notifier).setChartsData(chartsSubscribe);
   }
 
   void _handleChartsUpdate(From_ChartsUpdate chartsUpdate) {
-    ref.read(chartsNotifierProvider.notifier).updateChartsData(chartsUpdate);
+    ref.read(chartsProvider.notifier).updateChartsData(chartsUpdate);
   }
 
   void _handleLoadHistory(From_LoadHistory loadHistory) {
     ref.read(marketHistoryTotalProvider.notifier).setState(loadHistory.total);
-    ref
-        .read(marketHistoryOrderNotifierProvider.notifier)
-        .loadHistory(loadHistory);
+    ref.read(marketHistoryOrderProvider.notifier).loadHistory(loadHistory);
   }
 
   void _handleHistoryUpdated(From_HistoryUpdated historyUpdated) {
     ref
-        .read(marketHistoryOrderNotifierProvider.notifier)
+        .read(marketHistoryOrderProvider.notifier)
         .historyUpdated(historyUpdated);
   }
 
@@ -2153,15 +2088,15 @@ class SideswapWallet {
     }
 
     ref
-        .read(marketEditOrderErrorNotifierProvider.notifier)
+        .read(marketEditOrderErrorProvider.notifier)
         .setState(orderEdit.errorMsg);
   }
 
   void _handleStartOrder(From_StartOrder startOrder) {
     logger.d('Start order: $startOrder');
-    ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
-    ref.invalidate(marketStartOrderNotifierProvider);
-    ref.read(marketStartOrderNotifierProvider.notifier).setState(startOrder);
+    ref.invalidate(previewOrderQuoteSuccessProvider);
+    ref.invalidate(marketStartOrderProvider);
+    ref.read(marketStartOrderProvider.notifier).setState(startOrder);
 
     if (startOrder.hasSuccess()) {
       return;
@@ -2173,7 +2108,7 @@ class SideswapWallet {
 
     logger.w('Start order error: $startOrder');
     ref
-        .read(marketStartOrderErrorNotifierProvider.notifier)
+        .read(marketStartOrderErrorProvider.notifier)
         .setState(
           StartOrderError(
             error: startOrder.error,
@@ -2190,21 +2125,19 @@ class SideswapWallet {
 
   void _handleSubscribedValue(From_SubscribedValue subscribedValue) {
     logger.d('Subscribed value: $subscribedValue');
-    ref
-        .read(pegSubscribedValueNotifierProvider.notifier)
-        .setState(subscribedValue);
+    ref.read(pegSubscribedValueProvider.notifier).setState(subscribedValue);
   }
 
   void _handleJadeUnlock(GenericResponse value) {
     if (value.hasErrorMsg()) {
       ref
-          .read(jadeLockStateNotifierProvider.notifier)
+          .read(jadeLockStateProvider.notifier)
           .setState(JadeLockState.error(message: value.errorMsg));
       return;
     }
 
     ref
-        .read(jadeLockStateNotifierProvider.notifier)
+        .read(jadeLockStateProvider.notifier)
         .setState(
           value.success ? JadeLockState.unlocked() : JadeLockState.locked(),
         );
@@ -2248,30 +2181,28 @@ class SideswapWallet {
   void _handleLoadTransactions(From_LoadTransactions loadTransactions) {
     if (loadTransactions.hasErrorMsg()) {
       ref
-          .read(loadTransactionsStateNotifierProvider.notifier)
+          .read(loadTransactionsStateProvider.notifier)
           .setState(
             LoadTransactionsState.error(errorMsg: loadTransactions.errorMsg),
           );
       return;
     }
-    ref
-        .read(allTxsNotifierProvider.notifier)
-        .updateList(txs: loadTransactions.txs);
-    ref.invalidate(loadTransactionsStateNotifierProvider);
+    ref.read(allTxsProvider.notifier).updateList(txs: loadTransactions.txs);
+    ref.invalidate(loadTransactionsStateProvider);
   }
 
   void _handleNewBlock(Empty newBlock) {
-    ref.read(newBlockNotifierProvider.notifier).update();
+    ref.read(newBlockProvider.notifier).update();
   }
 
   void _handleNewTx(Empty newTx) {
-    ref.read(newTxNotifierProvider.notifier).update();
+    ref.read(newTxProvider.notifier).update();
   }
 
   void _handleJadeVerifyAddress(GenericResponse jadeVerifyAddress) {
     if (jadeVerifyAddress.hasErrorMsg()) {
       ref
-          .read(jadeVerifyAddressStateNotifierProvider.notifier)
+          .read(jadeVerifyAddressStateProvider.notifier)
           .setState(
             JadeVerifyAddressState.error(message: jadeVerifyAddress.errorMsg),
           );
@@ -2279,13 +2210,55 @@ class SideswapWallet {
     }
 
     ref
-        .read(jadeVerifyAddressStateNotifierProvider.notifier)
+        .read(jadeVerifyAddressStateProvider.notifier)
         .setState(JadeVerifyAddressState.success());
   }
 
   void _handleShowTransaction(From_ShowTransaction showTransaction) {
+    ref.read(showTransactionProvider.notifier).setState(showTransaction.tx);
+  }
+
+  void _handlePegEdit(GenericResponse pegEdit) {
+    pegEdit.success
+        ? ref
+              .read(pegOutEditFeeRateResultStreamProvider.notifier)
+              .setResult(PegOutEditFeeRateResult.success())
+        : ref
+              .read(pegOutEditFeeRateResultStreamProvider.notifier)
+              .setResult(PegOutEditFeeRateResult.failure(pegEdit.errorMsg));
+  }
+
+  void _handleSignerRequest(From_SignerRequest signerRequest) {
+    ref.read(notificationsProvider.notifier).addNotification(signerRequest);
+  }
+
+  void _handleSignerReturn() async {
+    if (Platform.isAndroid) {
+      final platform = MethodChannel('app.sideswap.io/minimize');
+      await platform.invokeMethod<void>('minimizeApp');
+    }
+    // There is nothing we can do on iOS
+  }
+
+  void _handleSessionList(From_SessionList sessionList) {
     ref
-        .read(showTransactionNotifierProvider.notifier)
-        .setState(showTransaction.tx);
+        .read(swaptionSessionProvider.notifier)
+        .replaceSessions(sessionList.sessions);
+  }
+
+  void _handleSessionAdded(From_SessionAdded sessionAdded) {
+    ref.read(swaptionSessionProvider.notifier).addSession(sessionAdded.session);
+  }
+
+  void _handleSessionRemoved(From_SessionRemoved sessionRemoved) {
+    ref
+        .read(swaptionSessionProvider.notifier)
+        .removeSessions(sessionRemoved.sessionId);
+  }
+
+  void _handleSignerCancel(From_SignerCancel signerCancel) {
+    ref
+        .read(notificationsProvider.notifier)
+        .cancelNotification(signerCancel.reqId);
   }
 }

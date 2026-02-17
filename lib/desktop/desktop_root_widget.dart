@@ -9,6 +9,7 @@ import 'package:sideswap/desktop/pin/d_pin_protection.dart';
 import 'package:sideswap/listeners/desktop_route_listener.dart';
 import 'package:sideswap/listeners/endpoint_listener.dart';
 import 'package:sideswap/listeners/jade_status_listener.dart';
+import 'package:sideswap/listeners/notifications_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/proxy_settings_listener.dart';
 import 'package:sideswap/listeners/send_asset_listener.dart';
@@ -64,14 +65,12 @@ class DesktopRootWidget extends HookConsumerWidget {
       return;
     }, const []);
 
-    ref.listen(serverLoginNotifierProvider, (_, next) async {
+    ref.listen(serverLoginProvider, (_, next) async {
       if (next is ServerLoginStateError) {
         await ref.read(utilsProvider).showErrorDialog(next.message ?? '');
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.noWallet);
-        ref.invalidate(serverLoginNotifierProvider);
-        ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
+        ref.invalidate(serverLoginProvider);
+        ref.invalidate(jadeOnboardingRegistrationProvider);
       }
     });
 
@@ -88,6 +87,7 @@ class DesktopRootWidget extends HookConsumerWidget {
         const EndpointListener(),
         const JadeStatusListener(),
         const WarmupAppListener(),
+        const NotificationsListener(),
         PopScope(
           canPop: false,
           child: Consumer(

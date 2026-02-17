@@ -17,10 +17,10 @@ class NewWalletPinWelcome extends ConsumerWidget {
 
   Future<void> onNoPressedCallback(
     WidgetRef ref,
-    FirstLaunchState firstLaunchState,
+    FirstLaunchStateType firstLaunchStateType,
   ) async {
-    return await switch (firstLaunchState) {
-      FirstLaunchStateImportWallet() => () async {
+    return await switch (firstLaunchStateType) {
+      FirstLaunchStateTypeImportWallet() => () async {
         await ref.read(walletProvider).setImportWalletBiometricPrompt();
       }(),
       _ => () async {
@@ -31,7 +31,7 @@ class NewWalletPinWelcome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
+    final firstLaunchState = ref.watch(firstLaunchStateProvider);
 
     return FlavorConfig.isDesktop
         ? DPinWelcome(

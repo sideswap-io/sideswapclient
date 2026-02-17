@@ -19,12 +19,12 @@ class DesktopMainBottomNavigationBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(localesNotifierProvider);
+    final locale = ref.watch(localesProvider);
 
     return Container(
       key: ValueKey(locale),
       height: 56,
-      color: const Color(0xFF021C36),
+      color: SideSwapColors.maastrichtBlue,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,
@@ -109,10 +109,9 @@ class ToolbarButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSelected = selectedIndex == index;
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .mainBottomNavigationBarButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeProvider)
+        .mainBottomNavigationBarButtonStyle;
 
     return DButton(
       style: buttonStyle,
@@ -137,10 +136,9 @@ class ToolbarButton extends ConsumerWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             style: TextStyle(
-              color:
-                  isSelected
-                      ? SideSwapColors.brightTurquoise
-                      : const Color(0xFF68839E),
+              color: isSelected
+                  ? SideSwapColors.brightTurquoise
+                  : const Color(0xFF68839E),
               fontSize: 10,
             ),
           ),

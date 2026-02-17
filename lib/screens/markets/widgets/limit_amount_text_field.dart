@@ -24,7 +24,7 @@ class LimitAmountTextField extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
-    final amountString = ref.watch(limitOrderAmountControllerNotifierProvider);
+    final amountString = ref.watch(limitOrderAmountControllerProvider);
     final insufficientAmount = ref.watch(limitInsufficientAmountProvider);
     final minimumFeeAmount = ref.watch(limitMinimumFeeAmountProvider);
 
@@ -36,7 +36,7 @@ class LimitAmountTextField extends HookConsumerWidget {
       limitAmountController.addListener(() {
         Future.microtask(() {
           ref
-              .read(limitOrderAmountControllerNotifierProvider.notifier)
+              .read(limitOrderAmountControllerProvider.notifier)
               .setState(limitAmountController.text);
         });
       });
@@ -77,7 +77,7 @@ class LimitAmountTextField extends HookConsumerWidget {
           );
 
           ref
-              .read(limitOrderAmountControllerNotifierProvider.notifier)
+              .read(limitOrderAmountControllerProvider.notifier)
               .setState(totalBalance);
         },
       ),

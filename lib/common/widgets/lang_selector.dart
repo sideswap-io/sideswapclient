@@ -8,7 +8,7 @@ class LangSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(localesNotifierProvider);
+    final locale = ref.watch(localesProvider);
     return Directionality(
       textDirection: TextDirection.ltr,
       child: SizedBox(
@@ -34,32 +34,29 @@ class LangSelector extends ConsumerWidget {
             ),
             dropdownColor: const Color(0xFF2B6F95),
             onChanged: (value) {
-              ref
-                  .read(localesNotifierProvider.notifier)
-                  .setSelectedLang(value!);
+              ref.read(localesProvider.notifier).setSelectedLang(value!);
             },
             value: locale,
-            items:
-                supportedLanguages()
-                    .map(
-                      (e) => DropdownMenuItem<String>(
-                        value: e,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Row(
-                            children: [
-                              localeIconFile(e),
-                              const SizedBox(width: 8),
-                              Text(
-                                localeName(e),
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
+            items: supportedLanguages()
+                .map(
+                  (e) => DropdownMenuItem<String>(
+                    value: e,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Row(
+                        children: [
+                          localeIconFile(e),
+                          const SizedBox(width: 8),
+                          Text(
+                            localeName(e),
+                            style: const TextStyle(fontSize: 16),
                           ),
-                        ),
+                        ],
                       ),
-                    )
-                    .toList(),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),

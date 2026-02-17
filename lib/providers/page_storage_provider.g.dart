@@ -6,22 +6,59 @@ part of 'page_storage_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(PageStorageKeyData)
+const pageStorageKeyDataProvider = PageStorageKeyDataProvider._();
+
+final class PageStorageKeyDataProvider
+    extends $NotifierProvider<PageStorageKeyData, String> {
+  const PageStorageKeyDataProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pageStorageKeyDataProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pageStorageKeyDataHash();
+
+  @$internal
+  @override
+  PageStorageKeyData create() => PageStorageKeyData();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
 String _$pageStorageKeyDataHash() =>
     r'c76d10c2b5eaba09c73cf66acbd1a520df9bf148';
 
-/// See also [PageStorageKeyData].
-@ProviderFor(PageStorageKeyData)
-final pageStorageKeyDataProvider =
-    NotifierProvider<PageStorageKeyData, String>.internal(
-      PageStorageKeyData.new,
-      name: r'pageStorageKeyDataProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$pageStorageKeyDataHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$PageStorageKeyData = Notifier<String>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$PageStorageKeyData extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

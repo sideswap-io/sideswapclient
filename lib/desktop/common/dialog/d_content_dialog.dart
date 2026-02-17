@@ -26,7 +26,7 @@ class DContentDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dialogTheme = ref.watch(desktopAppThemeNotifierProvider).dialogTheme;
+    final dialogTheme = ref.watch(desktopAppThemeProvider).dialogTheme;
     final style = DContentDialogThemeData.standard().merge(
       dialogTheme.merge(this.style),
     );
@@ -78,21 +78,19 @@ class DContentDialog extends ConsumerWidget {
                     }
                     return Row(
                       mainAxisSize: MainAxisSize.min,
-                      children:
-                          actions!.map((e) {
-                            final index = actions!.indexOf(e);
-                            return Expanded(
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.only(
-                                  end:
-                                      index != (actions!.length - 1)
-                                          ? style.actionsSpacing ?? 3
-                                          : 0,
-                                ),
-                                child: e,
-                              ),
-                            );
-                          }).toList(),
+                      children: actions!.map((e) {
+                        final index = actions!.indexOf(e);
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.only(
+                              end: index != (actions!.length - 1)
+                                  ? style.actionsSpacing ?? 3
+                                  : 0,
+                            ),
+                            child: e,
+                          ),
+                        );
+                      }).toList(),
                     );
                   }(),
                 ),
@@ -126,45 +124,42 @@ class DContentDialogTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleHeight =
-        height == null
-            ? content == null
-                ? 36.0
-                : 44.0
-            : height! < 28
-            ? 28.0
-            : height!;
+    final titleHeight = height == null
+        ? content == null
+              ? 36.0
+              : 44.0
+        : height! < 28
+        ? 28.0
+        : height!;
     return SizedBox(
       height: titleHeight,
       child: Stack(
         children: [
           Align(
             alignment: Alignment.topLeft,
-            child:
-                hideBack
-                    ? const SizedBox()
-                    : DIconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: SideSwapColors.freshAir,
-                        size: 18,
-                      ),
-                      onPressed: onBack,
+            child: hideBack
+                ? const SizedBox()
+                : DIconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: SideSwapColors.freshAir,
+                      size: 18,
                     ),
+                    onPressed: onBack,
+                  ),
           ),
           Align(
             alignment: Alignment.topRight,
-            child:
-                hideClose
-                    ? const SizedBox()
-                    : DIconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: SideSwapColors.freshAir,
-                        size: 18,
-                      ),
-                      onPressed: onClose,
+            child: hideClose
+                ? const SizedBox()
+                : DIconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: SideSwapColors.freshAir,
+                      size: 18,
                     ),
+                    onPressed: onClose,
+                  ),
           ),
           Align(
             alignment: contentAlignment ?? Alignment.bottomCenter,

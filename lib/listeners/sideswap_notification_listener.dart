@@ -1,12 +1,16 @@
+import 'dart:convert';
+
 import 'package:ffi/ffi.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
+import 'package:sideswap/providers/notifications_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
@@ -16,6 +20,8 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
 import 'package:sideswap_notifications_platform_interface/sideswap_notifications_platform_interface.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
+
+part 'sideswap_notification_listener.g.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(
   FCMRemoteMessage message,
@@ -27,20 +33,21 @@ Future<void> _firebaseMessagingBackgroundHandler(
   }
 }
 
-final sideswapNotificationProvider = AutoDisposeProvider((ref) {
+@riverpod
+SideswapNotificationHelper sideswapNotification(Ref ref) {
   final plugin = SideswapNotificationsPlugin(
     androidPlatform: FlavorConfig.isFdroid
         ? AndroidPlatformEnum.fdroid
         : AndroidPlatformEnum.android,
   );
-  return SideswapNotificationProvider(ref, plugin);
-});
+  return SideswapNotificationHelper(ref, plugin);
+}
 
-class SideswapNotificationProvider {
+class SideswapNotificationHelper {
   final Ref ref;
   final SideswapNotificationsPlugin plugin;
 
-  SideswapNotificationProvider(this.ref, this.plugin) {
+  SideswapNotificationHelper(this.ref, this.plugin) {
     logger.d('Initialize notifications');
     plugin.notificationsInitialize(
       notificationBackgroundHandler: _firebaseMessagingBackgroundHandler,
@@ -59,12 +66,12 @@ class SideswapNotificationProvider {
         .didReceiveLocalNotificationSubject
         .stream
         .listen(_oniOSNotification);
-    ref.listen(updatedTxsNotifierProvider, (_, updatedTxs) {
+    ref.listen(updatedTxsProvider, (_, updatedTxs) {
       for (final tx in updatedTxs) {
         _onNewTransItem(tx);
       }
     });
-    ref.listen(showTransactionNotifierProvider, (_, showTransaction) {
+    ref.listen(showTransactionProvider, (_, showTransaction) {
       showTransaction.match(() {}, (tx) {
         if (_onNewTransItem(tx)) {
           // stop receiving tx data
@@ -76,7 +83,7 @@ class SideswapNotificationProvider {
           ref.read(walletProvider).sendMsg(msg);
 
           // cleanup
-          ref.invalidate(showTransactionNotifierProvider);
+          ref.invalidate(showTransactionProvider);
         }
       });
     });
@@ -121,7 +128,7 @@ class SideswapNotificationProvider {
         if (payload != null) {
           _delayedNotifications.add(payload);
           // check if we already have txid on list
-          final allTxs = ref.read(allTxsNotifierProvider);
+          final allTxs = ref.read(allTxsProvider);
           var isHandled = false;
           for (var tx in allTxs.values) {
             final ret = _onNewTransItem(tx);
@@ -130,7 +137,7 @@ class SideswapNotificationProvider {
               isHandled = true;
             }
           }
-          final allPegs = ref.read(allPegsNotifierProvider);
+          final allPegs = ref.read(allPegsProvider);
           for (var pegs in allPegs.values) {
             for (var tx in pegs) {
               final ret = _onNewTransItem(tx);
@@ -143,7 +150,7 @@ class SideswapNotificationProvider {
             }
           }
 
-          final serverConnected = ref.read(serverConnectionNotifierProvider);
+          final serverConnected = ref.read(serverConnectionProvider);
           if (!isHandled && serverConnected && payload.txid != null) {
             _requestTxFromBackend(payload.txid!);
           }
@@ -291,7 +298,7 @@ class SideswapNotificationProvider {
     final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
 
     // display only recv notification when app is opened
-    final allTxs = ref.read(allTxsNotifierProvider);
+    final allTxs = ref.read(allTxsProvider);
     final knownTx = allTxs.containsKey(fcmTx.txId);
 
     if (!knownTx && fcmTx.txType == FCMTxType.recv) {
@@ -326,17 +333,34 @@ class SideswapNotificationProvider {
       return false;
     }
 
-    final allTxs = ref.read(allTxsNotifierProvider);
+    /// Swaption handling
+    final handled = switch (fcmTxType) {
+      FCMPayloadType.swaptionConnect || FCMPayloadType.swaptionSign => () {
+        _onNotificationSwaptionData(fcmTxType, fcmPayload.data ?? '');
+        return true;
+      },
+      _ => () {
+        return false;
+      },
+    }();
+
+    if (handled) {
+      return true;
+    }
+
+    /// other notifications
+
+    final allTxs = ref.read(allTxsProvider);
 
     for (final transItem in allTxs.values) {
       if (transItem.tx.txid == txid) {
         if (FlavorConfig.isDesktop) {
-          final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+          final walletMainArguments = ref.read(uiStateArgsProvider);
           final newWalletMainArguments = walletMainArguments.fromIndexDesktop(
             3,
           ); // transactions page
           ref
-              .read(uiStateArgsNotifierProvider.notifier)
+              .read(uiStateArgsProvider.notifier)
               .setWalletMainArguments(
                 newWalletMainArguments,
               ); // open transactions page
@@ -367,18 +391,18 @@ class SideswapNotificationProvider {
       }
     }
 
-    final allPegs = ref.read(allPegsNotifierProvider);
+    final allPegs = ref.read(allPegsProvider);
 
     for (final list in allPegs.values) {
       for (final peg in list) {
         if (peg.peg.txidSend == txid) {
           if (FlavorConfig.isDesktop) {
-            final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+            final walletMainArguments = ref.read(uiStateArgsProvider);
             final newWalletMainArguments = walletMainArguments.fromIndexDesktop(
               3,
             ); // transactions page
             ref
-                .read(uiStateArgsNotifierProvider.notifier)
+                .read(uiStateArgsProvider.notifier)
                 .setWalletMainArguments(
                   newWalletMainArguments,
                 ); // open transactions page
@@ -404,6 +428,23 @@ class SideswapNotificationProvider {
     }
 
     return false;
+  }
+
+  void _onNotificationSwaptionData(FCMPayloadType fcmTxType, String data) {
+    final jsonData = jsonDecode(data) as Map<String, dynamic>;
+    if (jsonData['notificationId'] != null &&
+        jsonData['notificationId'] is int) {
+      final notificationId = jsonData['notificationId'] as int;
+      final optionNotification = ref
+          .read(notificationsProvider.notifier)
+          .getNotification(notificationId);
+      optionNotification.match(() => {}, (notification) {
+        ref.read(desktopDialogProvider).closePopups();
+        ref
+            .read(showNotificationMenuProvider.notifier)
+            .setState(notificationId);
+      });
+    }
   }
 
   void _oniOSNotification(ReceivedNotification receivedNotification) async {

@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -15,70 +14,168 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$LinkResultDetails implements DiagnosticableTreeMixin {
 
- String? get orderId; String? get privateId;
-/// Create a copy of LinkResultDetails
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$LinkResultDetailsCopyWith<LinkResultDetails> get copyWith => _$LinkResultDetailsCopyWithImpl<LinkResultDetails>(this as LinkResultDetails, _$identity);
+
 
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'LinkResultDetails'))
-    ..add(DiagnosticsProperty('orderId', orderId))..add(DiagnosticsProperty('privateId', privateId));
+    ;
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LinkResultDetails&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.privateId, privateId) || other.privateId == privateId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LinkResultDetails);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,orderId,privateId);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'LinkResultDetails(orderId: $orderId, privateId: $privateId)';
+  return 'LinkResultDetails()';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $LinkResultDetailsCopyWith<$Res>  {
-  factory $LinkResultDetailsCopyWith(LinkResultDetails value, $Res Function(LinkResultDetails) _then) = _$LinkResultDetailsCopyWithImpl;
-@useResult
-$Res call({
- String? orderId, String? privateId
-});
-
-
-
-
-}
-/// @nodoc
-class _$LinkResultDetailsCopyWithImpl<$Res>
-    implements $LinkResultDetailsCopyWith<$Res> {
-  _$LinkResultDetailsCopyWithImpl(this._self, this._then);
-
-  final LinkResultDetails _self;
-  final $Res Function(LinkResultDetails) _then;
-
-/// Create a copy of LinkResultDetails
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? orderId = freezed,Object? privateId = freezed,}) {
-  return _then(_self.copyWith(
-orderId: freezed == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
-as String?,privateId: freezed == privateId ? _self.privateId : privateId // ignore: cast_nullable_to_non_nullable
-as String?,
-  ));
+class $LinkResultDetailsCopyWith<$Res>  {
+$LinkResultDetailsCopyWith(LinkResultDetails _, $Res Function(LinkResultDetails) __);
 }
 
+
+/// Adds pattern-matching-related methods to [LinkResultDetails].
+extension LinkResultDetailsPatterns on LinkResultDetails {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LinkResultDetailsSwap value)?  swap,TResult Function( LinkResultDetailsSwaption value)?  swaption,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case LinkResultDetailsSwap() when swap != null:
+return swap(_that);case LinkResultDetailsSwaption() when swaption != null:
+return swaption(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LinkResultDetailsSwap value)  swap,required TResult Function( LinkResultDetailsSwaption value)  swaption,}){
+final _that = this;
+switch (_that) {
+case LinkResultDetailsSwap():
+return swap(_that);case LinkResultDetailsSwaption():
+return swaption(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LinkResultDetailsSwap value)?  swap,TResult? Function( LinkResultDetailsSwaption value)?  swaption,}){
+final _that = this;
+switch (_that) {
+case LinkResultDetailsSwap() when swap != null:
+return swap(_that);case LinkResultDetailsSwaption() when swaption != null:
+return swaption(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String? orderId,  String? privateId)?  swap,TResult Function( Uri? uri)?  swaption,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case LinkResultDetailsSwap() when swap != null:
+return swap(_that.orderId,_that.privateId);case LinkResultDetailsSwaption() when swaption != null:
+return swaption(_that.uri);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String? orderId,  String? privateId)  swap,required TResult Function( Uri? uri)  swaption,}) {final _that = this;
+switch (_that) {
+case LinkResultDetailsSwap():
+return swap(_that.orderId,_that.privateId);case LinkResultDetailsSwaption():
+return swaption(_that.uri);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String? orderId,  String? privateId)?  swap,TResult? Function( Uri? uri)?  swaption,}) {final _that = this;
+switch (_that) {
+case LinkResultDetailsSwap() when swap != null:
+return swap(_that.orderId,_that.privateId);case LinkResultDetailsSwaption() when swaption != null:
+return swaption(_that.uri);case _:
+  return null;
+
+}
 }
 
+}
 
 /// @nodoc
 
@@ -87,12 +184,12 @@ class LinkResultDetailsSwap with DiagnosticableTreeMixin implements LinkResultDe
   const LinkResultDetailsSwap({this.orderId, this.privateId});
   
 
-@override final  String? orderId;
-@override final  String? privateId;
+ final  String? orderId;
+ final  String? privateId;
 
 /// Create a copy of LinkResultDetails
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $LinkResultDetailsSwapCopyWith<LinkResultDetailsSwap> get copyWith => _$LinkResultDetailsSwapCopyWithImpl<LinkResultDetailsSwap>(this, _$identity);
 
@@ -124,7 +221,7 @@ String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
 /// @nodoc
 abstract mixin class $LinkResultDetailsSwapCopyWith<$Res> implements $LinkResultDetailsCopyWith<$Res> {
   factory $LinkResultDetailsSwapCopyWith(LinkResultDetailsSwap value, $Res Function(LinkResultDetailsSwap) _then) = _$LinkResultDetailsSwapCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  String? orderId, String? privateId
 });
@@ -143,11 +240,83 @@ class _$LinkResultDetailsSwapCopyWithImpl<$Res>
 
 /// Create a copy of LinkResultDetails
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? orderId = freezed,Object? privateId = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? orderId = freezed,Object? privateId = freezed,}) {
   return _then(LinkResultDetailsSwap(
 orderId: freezed == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
 as String?,privateId: freezed == privateId ? _self.privateId : privateId // ignore: cast_nullable_to_non_nullable
 as String?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class LinkResultDetailsSwaption with DiagnosticableTreeMixin implements LinkResultDetails {
+  const LinkResultDetailsSwaption({this.uri});
+  
+
+ final  Uri? uri;
+
+/// Create a copy of LinkResultDetails
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LinkResultDetailsSwaptionCopyWith<LinkResultDetailsSwaption> get copyWith => _$LinkResultDetailsSwaptionCopyWithImpl<LinkResultDetailsSwaption>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'LinkResultDetails.swaption'))
+    ..add(DiagnosticsProperty('uri', uri));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LinkResultDetailsSwaption&&(identical(other.uri, uri) || other.uri == uri));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,uri);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'LinkResultDetails.swaption(uri: $uri)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LinkResultDetailsSwaptionCopyWith<$Res> implements $LinkResultDetailsCopyWith<$Res> {
+  factory $LinkResultDetailsSwaptionCopyWith(LinkResultDetailsSwaption value, $Res Function(LinkResultDetailsSwaption) _then) = _$LinkResultDetailsSwaptionCopyWithImpl;
+@useResult
+$Res call({
+ Uri? uri
+});
+
+
+
+
+}
+/// @nodoc
+class _$LinkResultDetailsSwaptionCopyWithImpl<$Res>
+    implements $LinkResultDetailsSwaptionCopyWith<$Res> {
+  _$LinkResultDetailsSwaptionCopyWithImpl(this._self, this._then);
+
+  final LinkResultDetailsSwaption _self;
+  final $Res Function(LinkResultDetailsSwaption) _then;
+
+/// Create a copy of LinkResultDetails
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? uri = freezed,}) {
+  return _then(LinkResultDetailsSwaption(
+uri: freezed == uri ? _self.uri : uri // ignore: cast_nullable_to_non_nullable
+as Uri?,
   ));
 }
 
@@ -189,6 +358,172 @@ class $LinkResultStateCopyWith<$Res>  {
 $LinkResultStateCopyWith(LinkResultState _, $Res Function(LinkResultState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [LinkResultState].
+extension LinkResultStatePatterns on LinkResultState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LinkResultStateEmpty value)?  empty,TResult Function( LinkResultStateUnknown value)?  unknown,TResult Function( LinkResultStateUnknownUri value)?  unknownUri,TResult Function( LinkResultStateUnknownScheme value)?  unknownScheme,TResult Function( LinkResultStateUnknownHost value)?  unknownHost,TResult Function( LinkResultStateFailed value)?  failed,TResult Function( LinkResultStateFailedUriPath value)?  failedUriPath,TResult Function( LinkResultStateSuccess value)?  success,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case LinkResultStateEmpty() when empty != null:
+return empty(_that);case LinkResultStateUnknown() when unknown != null:
+return unknown(_that);case LinkResultStateUnknownUri() when unknownUri != null:
+return unknownUri(_that);case LinkResultStateUnknownScheme() when unknownScheme != null:
+return unknownScheme(_that);case LinkResultStateUnknownHost() when unknownHost != null:
+return unknownHost(_that);case LinkResultStateFailed() when failed != null:
+return failed(_that);case LinkResultStateFailedUriPath() when failedUriPath != null:
+return failedUriPath(_that);case LinkResultStateSuccess() when success != null:
+return success(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LinkResultStateEmpty value)  empty,required TResult Function( LinkResultStateUnknown value)  unknown,required TResult Function( LinkResultStateUnknownUri value)  unknownUri,required TResult Function( LinkResultStateUnknownScheme value)  unknownScheme,required TResult Function( LinkResultStateUnknownHost value)  unknownHost,required TResult Function( LinkResultStateFailed value)  failed,required TResult Function( LinkResultStateFailedUriPath value)  failedUriPath,required TResult Function( LinkResultStateSuccess value)  success,}){
+final _that = this;
+switch (_that) {
+case LinkResultStateEmpty():
+return empty(_that);case LinkResultStateUnknown():
+return unknown(_that);case LinkResultStateUnknownUri():
+return unknownUri(_that);case LinkResultStateUnknownScheme():
+return unknownScheme(_that);case LinkResultStateUnknownHost():
+return unknownHost(_that);case LinkResultStateFailed():
+return failed(_that);case LinkResultStateFailedUriPath():
+return failedUriPath(_that);case LinkResultStateSuccess():
+return success(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LinkResultStateEmpty value)?  empty,TResult? Function( LinkResultStateUnknown value)?  unknown,TResult? Function( LinkResultStateUnknownUri value)?  unknownUri,TResult? Function( LinkResultStateUnknownScheme value)?  unknownScheme,TResult? Function( LinkResultStateUnknownHost value)?  unknownHost,TResult? Function( LinkResultStateFailed value)?  failed,TResult? Function( LinkResultStateFailedUriPath value)?  failedUriPath,TResult? Function( LinkResultStateSuccess value)?  success,}){
+final _that = this;
+switch (_that) {
+case LinkResultStateEmpty() when empty != null:
+return empty(_that);case LinkResultStateUnknown() when unknown != null:
+return unknown(_that);case LinkResultStateUnknownUri() when unknownUri != null:
+return unknownUri(_that);case LinkResultStateUnknownScheme() when unknownScheme != null:
+return unknownScheme(_that);case LinkResultStateUnknownHost() when unknownHost != null:
+return unknownHost(_that);case LinkResultStateFailed() when failed != null:
+return failed(_that);case LinkResultStateFailedUriPath() when failedUriPath != null:
+return failedUriPath(_that);case LinkResultStateSuccess() when success != null:
+return success(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  empty,TResult Function()?  unknown,TResult Function()?  unknownUri,TResult Function()?  unknownScheme,TResult Function()?  unknownHost,TResult Function()?  failed,TResult Function()?  failedUriPath,TResult Function( LinkResultDetails? details)?  success,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case LinkResultStateEmpty() when empty != null:
+return empty();case LinkResultStateUnknown() when unknown != null:
+return unknown();case LinkResultStateUnknownUri() when unknownUri != null:
+return unknownUri();case LinkResultStateUnknownScheme() when unknownScheme != null:
+return unknownScheme();case LinkResultStateUnknownHost() when unknownHost != null:
+return unknownHost();case LinkResultStateFailed() when failed != null:
+return failed();case LinkResultStateFailedUriPath() when failedUriPath != null:
+return failedUriPath();case LinkResultStateSuccess() when success != null:
+return success(_that.details);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  empty,required TResult Function()  unknown,required TResult Function()  unknownUri,required TResult Function()  unknownScheme,required TResult Function()  unknownHost,required TResult Function()  failed,required TResult Function()  failedUriPath,required TResult Function( LinkResultDetails? details)  success,}) {final _that = this;
+switch (_that) {
+case LinkResultStateEmpty():
+return empty();case LinkResultStateUnknown():
+return unknown();case LinkResultStateUnknownUri():
+return unknownUri();case LinkResultStateUnknownScheme():
+return unknownScheme();case LinkResultStateUnknownHost():
+return unknownHost();case LinkResultStateFailed():
+return failed();case LinkResultStateFailedUriPath():
+return failedUriPath();case LinkResultStateSuccess():
+return success(_that.details);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  empty,TResult? Function()?  unknown,TResult? Function()?  unknownUri,TResult? Function()?  unknownScheme,TResult? Function()?  unknownHost,TResult? Function()?  failed,TResult? Function()?  failedUriPath,TResult? Function( LinkResultDetails? details)?  success,}) {final _that = this;
+switch (_that) {
+case LinkResultStateEmpty() when empty != null:
+return empty();case LinkResultStateUnknown() when unknown != null:
+return unknown();case LinkResultStateUnknownUri() when unknownUri != null:
+return unknownUri();case LinkResultStateUnknownScheme() when unknownScheme != null:
+return unknownScheme();case LinkResultStateUnknownHost() when unknownHost != null:
+return unknownHost();case LinkResultStateFailed() when failed != null:
+return failed();case LinkResultStateFailedUriPath() when failedUriPath != null:
+return failedUriPath();case LinkResultStateSuccess() when success != null:
+return success(_that.details);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

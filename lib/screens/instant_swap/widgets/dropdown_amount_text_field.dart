@@ -109,7 +109,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
         ),
       };
 
-      await Navigator.of(context, rootNavigator: true).push<void>(dialogRoute);
+      await Navigator.of(context).push<void>(dialogRoute);
     }, [availableAssets]);
 
     return Column(

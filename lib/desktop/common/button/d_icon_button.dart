@@ -28,18 +28,15 @@ class DIconButton extends DBaseButton {
   @override
   DButtonStyle defaultStyleOf(BuildContext context) {
     final container = ProviderContainer();
-    final brightness =
-        container.read(desktopAppThemeNotifierProvider).brightness;
-    final disabledColor =
-        container.read(desktopAppThemeNotifierProvider).disabledColor;
+    final brightness = container.read(desktopAppThemeProvider).brightness;
+    final disabledColor = container.read(desktopAppThemeProvider).disabledColor;
 
     final isIconSmall =
         SmallIconButton.of(context) != null ||
         iconButtonMode == IconButtonMode.tiny;
-    final isSmall =
-        iconButtonMode != null
-            ? iconButtonMode != IconButtonMode.large
-            : SmallIconButton.of(context) != null;
+    final isSmall = iconButtonMode != null
+        ? iconButtonMode != IconButtonMode.large
+        : SmallIconButton.of(context) != null;
     return DButtonStyle(
       iconSize: ButtonState.all(isIconSmall ? 11.0 : null),
       padding: ButtonState.all(
@@ -51,10 +48,10 @@ class DIconButton extends DBaseButton {
         return states.isDisabled
             ? DButtonThemeData.buttonColor(brightness, states)
             : DButtonThemeData.uncheckedInputColor(
-              brightness,
-              disabledColor,
-              states,
-            );
+                brightness,
+                disabledColor,
+                states,
+              );
       }),
       foregroundColor: ButtonState.resolveWith((states) {
         if (states.isDisabled) return disabledColor;

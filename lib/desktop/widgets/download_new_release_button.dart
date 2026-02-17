@@ -14,16 +14,13 @@ class DownloadNewReleaseButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .addressDetailsItemButtonStyle();
+    final buttonStyle = ref
+        .watch(desktopAppThemeProvider)
+        .addressDetailsItemButtonStyle();
 
     return DButton(
       onPressed: () {
-        ref
-            .read(appReleasesStateNotifierProvider.notifier)
-            .ackNewDesktopRelease();
+        ref.read(appReleasesStateProvider.notifier).ackNewDesktopRelease();
         if (yes) {
           openUrl('https://sideswap.io/downloads/');
         }

@@ -7,7 +7,7 @@ class SendAssetIdListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(sendAssetIdNotifierProvider, (_, _) {});
+    ref.listen(sendAssetIdProvider, (_, _) {});
 
     return Container();
   }

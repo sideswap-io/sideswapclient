@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
@@ -41,9 +40,7 @@ sealed class PreviewOrderDialogAcceptState
 
 @riverpod
 PreviewOrderDialogAcceptState previewOrderDialogAcceptState(Ref ref) {
-  final optionQuoteSuccess = ref.watch(
-    previewOrderQuoteSuccessNotifierProvider,
-  );
+  final optionQuoteSuccess = ref.watch(previewOrderQuoteSuccessProvider);
   final optionAccepQuoteSuccess = ref.watch(marketAcceptQuoteSuccessProvider);
   final allTxSorted = ref.watch(allTxsSortedProvider);
 

@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -41,6 +40,136 @@ class $JadeBluetoothPermissionStateCopyWith<$Res>  {
 $JadeBluetoothPermissionStateCopyWith(JadeBluetoothPermissionState _, $Res Function(JadeBluetoothPermissionState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [JadeBluetoothPermissionState].
+extension JadeBluetoothPermissionStatePatterns on JadeBluetoothPermissionState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( JadeBluetoothPermissionStateEmpty value)?  empty,TResult Function( JadeBluetoothPermissionStateRequest value)?  request,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case JadeBluetoothPermissionStateEmpty() when empty != null:
+return empty(_that);case JadeBluetoothPermissionStateRequest() when request != null:
+return request(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( JadeBluetoothPermissionStateEmpty value)  empty,required TResult Function( JadeBluetoothPermissionStateRequest value)  request,}){
+final _that = this;
+switch (_that) {
+case JadeBluetoothPermissionStateEmpty():
+return empty(_that);case JadeBluetoothPermissionStateRequest():
+return request(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( JadeBluetoothPermissionStateEmpty value)?  empty,TResult? Function( JadeBluetoothPermissionStateRequest value)?  request,}){
+final _that = this;
+switch (_that) {
+case JadeBluetoothPermissionStateEmpty() when empty != null:
+return empty(_that);case JadeBluetoothPermissionStateRequest() when request != null:
+return request(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  empty,TResult Function()?  request,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case JadeBluetoothPermissionStateEmpty() when empty != null:
+return empty();case JadeBluetoothPermissionStateRequest() when request != null:
+return request();case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  empty,required TResult Function()  request,}) {final _that = this;
+switch (_that) {
+case JadeBluetoothPermissionStateEmpty():
+return empty();case JadeBluetoothPermissionStateRequest():
+return request();}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  empty,TResult? Function()?  request,}) {final _that = this;
+switch (_that) {
+case JadeBluetoothPermissionStateEmpty() when empty != null:
+return empty();case JadeBluetoothPermissionStateRequest() when request != null:
+return request();case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -135,6 +264,142 @@ class $JadeLockStateCopyWith<$Res>  {
 $JadeLockStateCopyWith(JadeLockState _, $Res Function(JadeLockState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [JadeLockState].
+extension JadeLockStatePatterns on JadeLockState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( JadeLockStateLocked value)?  locked,TResult Function( JadeLockStateUnlocked value)?  unlocked,TResult Function( JadeLockStateError value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case JadeLockStateLocked() when locked != null:
+return locked(_that);case JadeLockStateUnlocked() when unlocked != null:
+return unlocked(_that);case JadeLockStateError() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( JadeLockStateLocked value)  locked,required TResult Function( JadeLockStateUnlocked value)  unlocked,required TResult Function( JadeLockStateError value)  error,}){
+final _that = this;
+switch (_that) {
+case JadeLockStateLocked():
+return locked(_that);case JadeLockStateUnlocked():
+return unlocked(_that);case JadeLockStateError():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( JadeLockStateLocked value)?  locked,TResult? Function( JadeLockStateUnlocked value)?  unlocked,TResult? Function( JadeLockStateError value)?  error,}){
+final _that = this;
+switch (_that) {
+case JadeLockStateLocked() when locked != null:
+return locked(_that);case JadeLockStateUnlocked() when unlocked != null:
+return unlocked(_that);case JadeLockStateError() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  locked,TResult Function()?  unlocked,TResult Function( String? message)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case JadeLockStateLocked() when locked != null:
+return locked();case JadeLockStateUnlocked() when unlocked != null:
+return unlocked();case JadeLockStateError() when error != null:
+return error(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  locked,required TResult Function()  unlocked,required TResult Function( String? message)  error,}) {final _that = this;
+switch (_that) {
+case JadeLockStateLocked():
+return locked();case JadeLockStateUnlocked():
+return unlocked();case JadeLockStateError():
+return error(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  locked,TResult? Function()?  unlocked,TResult? Function( String? message)?  error,}) {final _that = this;
+switch (_that) {
+case JadeLockStateLocked() when locked != null:
+return locked();case JadeLockStateUnlocked() when unlocked != null:
+return unlocked();case JadeLockStateError() when error != null:
+return error(_that.message);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -295,6 +560,148 @@ class $JadeVerifyAddressStateCopyWith<$Res>  {
 $JadeVerifyAddressStateCopyWith(JadeVerifyAddressState _, $Res Function(JadeVerifyAddressState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [JadeVerifyAddressState].
+extension JadeVerifyAddressStatePatterns on JadeVerifyAddressState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( JadeVerifyAddressStateIdle value)?  idle,TResult Function( JadeVerifyAddressStateVerifying value)?  verifying,TResult Function( JadeVerifyAddressStateSuccess value)?  success,TResult Function( JadeVerifyAddressStateError value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case JadeVerifyAddressStateIdle() when idle != null:
+return idle(_that);case JadeVerifyAddressStateVerifying() when verifying != null:
+return verifying(_that);case JadeVerifyAddressStateSuccess() when success != null:
+return success(_that);case JadeVerifyAddressStateError() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( JadeVerifyAddressStateIdle value)  idle,required TResult Function( JadeVerifyAddressStateVerifying value)  verifying,required TResult Function( JadeVerifyAddressStateSuccess value)  success,required TResult Function( JadeVerifyAddressStateError value)  error,}){
+final _that = this;
+switch (_that) {
+case JadeVerifyAddressStateIdle():
+return idle(_that);case JadeVerifyAddressStateVerifying():
+return verifying(_that);case JadeVerifyAddressStateSuccess():
+return success(_that);case JadeVerifyAddressStateError():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( JadeVerifyAddressStateIdle value)?  idle,TResult? Function( JadeVerifyAddressStateVerifying value)?  verifying,TResult? Function( JadeVerifyAddressStateSuccess value)?  success,TResult? Function( JadeVerifyAddressStateError value)?  error,}){
+final _that = this;
+switch (_that) {
+case JadeVerifyAddressStateIdle() when idle != null:
+return idle(_that);case JadeVerifyAddressStateVerifying() when verifying != null:
+return verifying(_that);case JadeVerifyAddressStateSuccess() when success != null:
+return success(_that);case JadeVerifyAddressStateError() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  verifying,TResult Function()?  success,TResult Function( String? message)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case JadeVerifyAddressStateIdle() when idle != null:
+return idle();case JadeVerifyAddressStateVerifying() when verifying != null:
+return verifying();case JadeVerifyAddressStateSuccess() when success != null:
+return success();case JadeVerifyAddressStateError() when error != null:
+return error(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  verifying,required TResult Function()  success,required TResult Function( String? message)  error,}) {final _that = this;
+switch (_that) {
+case JadeVerifyAddressStateIdle():
+return idle();case JadeVerifyAddressStateVerifying():
+return verifying();case JadeVerifyAddressStateSuccess():
+return success();case JadeVerifyAddressStateError():
+return error(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  verifying,TResult? Function()?  success,TResult? Function( String? message)?  error,}) {final _that = this;
+switch (_that) {
+case JadeVerifyAddressStateIdle() when idle != null:
+return idle();case JadeVerifyAddressStateVerifying() when verifying != null:
+return verifying();case JadeVerifyAddressStateSuccess() when success != null:
+return success();case JadeVerifyAddressStateError() when error != null:
+return error(_that.message);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

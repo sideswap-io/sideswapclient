@@ -88,9 +88,7 @@ class WalletTransactions extends HookConsumerWidget {
       height: 32,
       backgroundColor: backgroundColor,
       onPressed: () {
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.transactions);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.transactions);
       },
       child: SizedBox(
         width: 32,

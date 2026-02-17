@@ -19,14 +19,14 @@ class DMnemonicTextBox extends HookConsumerWidget {
     FocusNode focusNode,
   ) async {
     await ref
-        .read(mnemonicWordItemsNotifierProvider.notifier)
+        .read(mnemonicWordItemsProvider.notifier)
         .validateOnSubmit(value, currentIndex);
     focusNode.requestFocus();
   }
 
   Future<void> tryJump(String value, WidgetRef ref) async {
     final suggestions = await ref
-        .read(mnemonicWordItemsNotifierProvider.notifier)
+        .read(mnemonicWordItemsProvider.notifier)
         .suggestions(value.toLowerCase());
 
     if (suggestions.length == 1) {
@@ -40,7 +40,7 @@ class DMnemonicTextBox extends HookConsumerWidget {
     final controller = useTextEditingController();
 
     final currentWord = ref
-        .watch(mnemonicWordItemsNotifierProvider.notifier)
+        .watch(mnemonicWordItemsProvider.notifier)
         .word(currentIndex);
 
     controller.text = currentWord.word;
@@ -48,10 +48,10 @@ class DMnemonicTextBox extends HookConsumerWidget {
       TextPosition(offset: controller.text.length),
     );
 
-    final words = ref.watch(mnemonicWordItemsNotifierProvider);
+    final words = ref.watch(mnemonicWordItemsProvider);
     useAsyncEffect(() async {
       if (words.isNotEmpty) {
-        ref.read(mnemonicWordItemsNotifierProvider.notifier).importMnemonic();
+        ref.read(mnemonicWordItemsProvider.notifier).importMnemonic();
       }
 
       return;
@@ -73,107 +73,108 @@ class DMnemonicTextBox extends HookConsumerWidget {
               textEditingController: controller,
               optionsBuilder: (TextEditingValue textEditingValue) {
                 return ref
-                    .read(mnemonicWordItemsNotifierProvider.notifier)
+                    .read(mnemonicWordItemsProvider.notifier)
                     .suggestions(textEditingValue.text.toLowerCase());
               },
               onSelected: (value) async {
                 await onSubmitted(value, ref, focusNode);
               },
-              fieldViewBuilder: (
-                BuildContext context,
-                TextEditingController textEditingController,
-                FocusNode focusNode,
-                VoidCallback onFieldSubmitted,
-              ) {
-                return KeyboardListener(
-                  focusNode: keyboardListenerFocusNode,
-                  onKeyEvent: (value) async {
-                    if (HardwareKeyboard.instance.isLogicalKeyPressed(
-                          LogicalKeyboardKey.tab,
-                        ) ||
-                        HardwareKeyboard.instance.isLogicalKeyPressed(
-                          LogicalKeyboardKey.enter,
-                        )) {
-                      await onSubmitted(
-                        textEditingController.text,
-                        ref,
-                        focusNode,
-                      );
-                      onFieldSubmitted();
-                      final wordItems = ref.read(
-                        mnemonicWordItemsNotifierProvider,
-                      );
-                      if (currentIndex + 1 == wordItems.length) {
-                        ref
-                            .read(mnemonicWordItemsNotifierProvider.notifier)
-                            .importMnemonic();
-                      }
-                    }
-                  },
-                  child: TextField(
-                    controller: textEditingController,
-                    focusNode: focusNode,
-                    inputFormatters: [LengthLimitingTextInputFormatter(8)],
-                    decoration: InputDecoration(
-                      isDense: true,
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Text(
-                          '${currentIndex + 1}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: SideSwapColors.brightTurquoise,
+              fieldViewBuilder:
+                  (
+                    BuildContext context,
+                    TextEditingController textEditingController,
+                    FocusNode focusNode,
+                    VoidCallback onFieldSubmitted,
+                  ) {
+                    return KeyboardListener(
+                      focusNode: keyboardListenerFocusNode,
+                      onKeyEvent: (value) async {
+                        if (HardwareKeyboard.instance.isLogicalKeyPressed(
+                              LogicalKeyboardKey.tab,
+                            ) ||
+                            HardwareKeyboard.instance.isLogicalKeyPressed(
+                              LogicalKeyboardKey.enter,
+                            )) {
+                          await onSubmitted(
+                            textEditingController.text,
+                            ref,
+                            focusNode,
+                          );
+                          onFieldSubmitted();
+                          final wordItems = ref.read(mnemonicWordItemsProvider);
+                          if (currentIndex + 1 == wordItems.length) {
+                            ref
+                                .read(mnemonicWordItemsProvider.notifier)
+                                .importMnemonic();
+                          }
+                        }
+                      },
+                      child: TextField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        inputFormatters: [LengthLimitingTextInputFormatter(8)],
+                        decoration: InputDecoration(
+                          isDense: true,
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Text(
+                              '${currentIndex + 1}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: SideSwapColors.brightTurquoise,
+                              ),
+                            ),
+                          ),
+                          prefixIconConstraints: const BoxConstraints(
+                            minWidth: 0,
+                            minHeight: 0,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
                           ),
                         ),
-                      ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 0,
-                        minHeight: 0,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    cursorColor: Colors.black,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black,
-                    ),
-                    onChanged: (value) async {
-                      final oldValue =
-                          ref
-                              .read(
-                                mnemonicWordItemsNotifierProvider,
-                              )[currentIndex]
-                              ?.word ??
-                          '';
-                      await ref
-                          .read(mnemonicWordItemsNotifierProvider.notifier)
-                          .validate(value, currentIndex);
+                        cursorColor: Colors.black,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.black,
+                        ),
+                        onChanged: (value) async {
+                          final oldValue =
+                              ref
+                                  .read(mnemonicWordItemsProvider)[currentIndex]
+                                  ?.word ??
+                              '';
+                          await ref
+                              .read(mnemonicWordItemsProvider.notifier)
+                              .validate(value, currentIndex);
 
-                      if (oldValue != value) {
-                        await tryJump(value, ref);
-                      }
-                    },
-                    onSubmitted: (value) async {
-                      await onSubmitted(value, ref, focusNode);
-                      onFieldSubmitted();
-                    },
-                  ),
-                );
-              },
-              optionsViewBuilder: (
-                BuildContext context,
-                AutocompleteOnSelected<String> onSelected,
-                Iterable<String> options,
-              ) {
-                return OptionsView(options: options, onSelected: onSelected);
-              },
+                          if (oldValue != value) {
+                            await tryJump(value, ref);
+                          }
+                        },
+                        onSubmitted: (value) async {
+                          await onSubmitted(value, ref, focusNode);
+                          onFieldSubmitted();
+                        },
+                      ),
+                    );
+                  },
+              optionsViewBuilder:
+                  (
+                    BuildContext context,
+                    AutocompleteOnSelected<String> onSelected,
+                    Iterable<String> options,
+                  ) {
+                    return OptionsView(
+                      options: options,
+                      onSelected: onSelected,
+                    );
+                  },
             ),
           ),
           const SizedBox(width: 16),
@@ -227,10 +228,9 @@ class OptionsView extends StatelessWidget {
                         return Container(
                           height: 54,
                           width: 200,
-                          color:
-                              highlight
-                                  ? SideSwapColors.navyBlue
-                                  : const Color(0xFF062d44),
+                          color: highlight
+                              ? SideSwapColors.navyBlue
+                              : const Color(0xFF062d44),
                           padding: const EdgeInsets.all(16.0),
                           child: Text(option),
                         );

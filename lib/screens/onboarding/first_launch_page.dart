@@ -30,26 +30,24 @@ class FirstLaunchPage extends HookConsumerWidget {
     ref.listen(selectEnvDialogProvider, (_, next) {
       if (next) {
         ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(false);
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.selectEnv);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.selectEnv);
       }
     });
 
-    final locale = ref.watch(localesNotifierProvider);
+    final locale = ref.watch(localesProvider);
 
     useEffect(() {
       if (locale == 'zh') {
         Future.microtask(() {
           ref
-              .read(networkSettingsNotifierProvider.notifier)
+              .read(networkSettingsProvider.notifier)
               .setModel(
                 const NetworkSettingsModelApply(
                   settingsNetworkType: SettingsNetworkType.sideswapChina,
                   env: SIDESWAP_ENV_PROD,
                 ),
               );
-          ref.read(networkSettingsNotifierProvider.notifier).save();
+          ref.read(networkSettingsProvider.notifier).save();
         });
       }
 
@@ -57,12 +55,12 @@ class FirstLaunchPage extends HookConsumerWidget {
     }, [locale]);
 
     useEffect(() {
-      Future.microtask(() => ref.invalidate(firstLaunchStateNotifierProvider));
+      Future.microtask(() => ref.invalidate(firstLaunchStateProvider));
 
       return;
     }, const []);
 
-    final serverLoginState = ref.watch(serverLoginNotifierProvider);
+    final serverLoginState = ref.watch(serverLoginProvider);
 
     return SideSwapScaffold(
       key: ValueKey(locale),
@@ -169,11 +167,10 @@ class FirstLaunchPage extends HookConsumerWidget {
                                   ? () async {
                                       ref
                                           .read(
-                                            firstLaunchStateNotifierProvider
-                                                .notifier,
+                                            firstLaunchStateProvider.notifier,
                                           )
                                           .setFirstLaunchState(
-                                            const FirstLaunchStateCreateWallet(),
+                                            const FirstLaunchStateTypeCreateWallet(),
                                           );
 
                                       await ref
@@ -203,11 +200,10 @@ class FirstLaunchPage extends HookConsumerWidget {
                                   ? () {
                                       ref
                                           .read(
-                                            firstLaunchStateNotifierProvider
-                                                .notifier,
+                                            firstLaunchStateProvider.notifier,
                                           )
                                           .setFirstLaunchState(
-                                            const FirstLaunchStateImportWallet(),
+                                            const FirstLaunchStateTypeImportWallet(),
                                           );
                                       ref
                                           .read(walletProvider)
@@ -231,10 +227,7 @@ class FirstLaunchPage extends HookConsumerWidget {
                                     serverLoginState is! ServerLoginStateError
                                     ? () {
                                         ref
-                                            .read(
-                                              pageStatusNotifierProvider
-                                                  .notifier,
-                                            )
+                                            .read(pageStatusProvider.notifier)
                                             .setStatus(
                                               Status.jadeBluetoothPermission,
                                             );
@@ -288,7 +281,7 @@ class FirstLaunchNetworkSettingsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonStyle = ref
-        .watch(mobileAppThemeNotifierProvider)
+        .watch(mobileAppThemeProvider)
         .firstLaunchNetworkSettingsButtonTheme
         .style;
 

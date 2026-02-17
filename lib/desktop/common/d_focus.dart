@@ -69,10 +69,10 @@ class DFocusBorder extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fasterAnimationDuration =
-        ref.watch(desktopAppThemeNotifierProvider).fasterAnimationDuration;
-    final animationCurve =
-        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
+    final fasterAnimationDuration = ref
+        .watch(desktopAppThemeProvider)
+        .fasterAnimationDuration;
+    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
 
     final style = DFocusTheme.of(context).merge(this.style);
     final double borderWidth =
@@ -121,8 +121,9 @@ class DFocusTheme extends InheritedWidget {
   static DFocusThemeData of(BuildContext context) {
     final theme = context.dependOnInheritedWidgetOfExactType<DFocusTheme>();
     final container = ProviderContainer();
-    final focusThemeData =
-        container.read(desktopAppThemeNotifierProvider).focusThemeData;
+    final focusThemeData = container
+        .read(desktopAppThemeProvider)
+        .focusThemeData;
     return focusThemeData.merge(theme?.data);
   }
 
@@ -148,22 +149,22 @@ class DFocusThemeData with Diagnosticable {
   }) : assert(glowFactor == null || glowFactor >= 0);
 
   static DFocusThemeData _getInheritedThemeData(BuildContext context) {
-    final DFocusTheme? theme =
-        context.dependOnInheritedWidgetOfExactType<DFocusTheme>();
+    final DFocusTheme? theme = context
+        .dependOnInheritedWidgetOfExactType<DFocusTheme>();
     final container = ProviderContainer();
-    final themeFocusTheme =
-        container.read(desktopAppThemeNotifierProvider).focusThemeData;
+    final themeFocusTheme = container
+        .read(desktopAppThemeProvider)
+        .focusThemeData;
     return theme?.data ?? themeFocusTheme;
   }
 
   static DFocusThemeData of(BuildContext context) {
     final container = ProviderContainer();
-    final accentColor =
-        container
-            .read(desktopAppThemeNotifierProvider)
-            .darkScheme
-            .primary
-            .toAccentColor();
+    final accentColor = container
+        .read(desktopAppThemeProvider)
+        .darkScheme
+        .primary
+        .toAccentColor();
     return DFocusThemeData(
       glowColor: Colors.transparent,
       glowFactor: is10footScreen() ? 2.0 : 0.0,
@@ -229,35 +230,34 @@ class DFocusThemeData with Diagnosticable {
       border: Border.fromBorderSide(
         !focused ? BorderSide.none : primaryBorder ?? BorderSide.none,
       ),
-      boxShadow:
-          focused && glowFactor != 0 && glowColor != null
-              ? [
-                BoxShadow(
-                  offset: const Offset(1, 1),
-                  color: glowColor!,
-                  spreadRadius: glowFactor!,
-                  blurRadius: glowFactor! * 2.5,
-                ),
-                BoxShadow(
-                  offset: const Offset(-1, -1),
-                  color: glowColor!,
-                  spreadRadius: glowFactor!,
-                  blurRadius: glowFactor! * 2.5,
-                ),
-                BoxShadow(
-                  offset: const Offset(-1, 1),
-                  color: glowColor!,
-                  spreadRadius: glowFactor!,
-                  blurRadius: glowFactor! * 2.5,
-                ),
-                BoxShadow(
-                  offset: const Offset(1, -1),
-                  color: glowColor!,
-                  spreadRadius: glowFactor!,
-                  blurRadius: glowFactor! * 2.5,
-                ),
-              ]
-              : null,
+      boxShadow: focused && glowFactor != 0 && glowColor != null
+          ? [
+              BoxShadow(
+                offset: const Offset(1, 1),
+                color: glowColor!,
+                spreadRadius: glowFactor!,
+                blurRadius: glowFactor! * 2.5,
+              ),
+              BoxShadow(
+                offset: const Offset(-1, -1),
+                color: glowColor!,
+                spreadRadius: glowFactor!,
+                blurRadius: glowFactor! * 2.5,
+              ),
+              BoxShadow(
+                offset: const Offset(-1, 1),
+                color: glowColor!,
+                spreadRadius: glowFactor!,
+                blurRadius: glowFactor! * 2.5,
+              ),
+              BoxShadow(
+                offset: const Offset(1, -1),
+                color: glowColor!,
+                spreadRadius: glowFactor!,
+                blurRadius: glowFactor! * 2.5,
+              ),
+            ]
+          : null,
     );
   }
 

@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/models/amount_to_string_model.dart';
@@ -19,7 +18,7 @@ extension Precision on double {
 
 @riverpod
 AmountToString amountToString(Ref ref) {
-  final locale = ref.watch(localesNotifierProvider);
+  final locale = ref.watch(localesProvider);
   return AmountToString(locale: locale);
 }
 
@@ -59,23 +58,22 @@ class AmountToString {
     }
     final resultAmount = (newAmount / power).toDecimal();
 
-    final resultAmountWithTrailingZeroes =
-        arg.trailingZeroes
-            ? resultAmount.toStringAsFixed(precision)
-            : resultAmount.toString();
+    final resultAmountWithTrailingZeroes = arg.trailingZeroes
+        ? resultAmount.toStringAsFixed(precision)
+        : resultAmount.toString();
     final decimalTrailingZeroes =
         Decimal.tryParse(resultAmountWithTrailingZeroes) ?? Decimal.zero;
 
     final newScale = scaleForAmount(decimalTrailingZeroes, precision);
-    final doubleTrailingZeroes =
-        arg.useNumberFormatter
-            ? decimalTrailingZeroes.toDouble().toPrecision(newScale)
-            : decimalTrailingZeroes.toDouble();
+    final doubleTrailingZeroes = arg.useNumberFormatter
+        ? decimalTrailingZeroes.toDouble().toPrecision(newScale)
+        : decimalTrailingZeroes.toDouble();
 
     final formatted = formatterThousandsSeparator.format(doubleTrailingZeroes);
 
-    final resultAmountWithNumberFormatter =
-        arg.useNumberFormatter ? formatted : resultAmountWithTrailingZeroes;
+    final resultAmountWithNumberFormatter = arg.useNumberFormatter
+        ? formatted
+        : resultAmountWithTrailingZeroes;
 
     return sign + resultAmountWithNumberFormatter;
   }
@@ -134,8 +132,9 @@ class AmountToString {
         if (integerPart > Decimal.zero) {
           final fraction = amountTruncated - integerPart;
           final fractionTruncated = fraction.truncate(scale: 4);
-          final newScale =
-              fractionTruncated > Decimal.zero ? amountTruncated.scale : 1;
+          final newScale = fractionTruncated > Decimal.zero
+              ? amountTruncated.scale
+              : 1;
           final amountAsString = amountTruncated.toStringAsFixed(newScale);
           return amountAsString;
         }

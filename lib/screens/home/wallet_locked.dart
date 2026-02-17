@@ -6,7 +6,6 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class WalletLocked extends ConsumerWidget {
   const WalletLocked({super.key});
@@ -62,11 +61,9 @@ class WalletLocked extends ConsumerWidget {
                     child: CustomBigButton(
                       width: double.maxFinite,
                       height: 54,
-                      text: 'CANCEL'.tr(),
+                      text: 'UNLOCK'.tr(),
                       onPressed: () {
-                        ref
-                            .read(pageStatusNotifierProvider.notifier)
-                            .setStatus(Status.noWallet);
+                        ref.read(walletProvider).unlockWallet();
                       },
                     ),
                   ),

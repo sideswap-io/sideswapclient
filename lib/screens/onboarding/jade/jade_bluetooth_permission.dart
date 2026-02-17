@@ -20,9 +20,9 @@ class JadeBluetoothPermission extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bluetoothPermissionState = ref.watch(
-      jadeBluetoothPermissionStateNotifierProvider,
+      jadeBluetoothPermissionStateProvider,
     );
-    final jadeDeviceState = ref.watch(jadeDeviceNotifierProvider);
+    final jadeDeviceState = ref.watch(jadeDeviceProvider);
 
     useEffect(() {
       (switch (jadeDeviceState) {
@@ -30,10 +30,8 @@ class JadeBluetoothPermission extends HookConsumerWidget {
         _ => () {
           // has device port, remove listener
           Future.microtask(() {
-            ref.invalidate(jadeBluetoothPermissionStateNotifierProvider);
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.jadeDevices);
+            ref.invalidate(jadeBluetoothPermissionStateProvider);
+            ref.read(pageStatusProvider.notifier).setStatus(Status.jadeDevices);
           });
         }(),
       });
@@ -67,31 +65,30 @@ class JadeBluetoothPermission extends HookConsumerWidget {
                   JadePermissionPageTwo(),
                 ],
                 startIndex: 0,
-                buildFooter: (
-                  context,
-                  dragDistance,
-                  pagesLength,
-                  currentIndex,
-                  setIndex,
-                  sd,
-                ) {
-                  return Indicator(
-                    painter: CirclePainter(
-                      netDragPercent: dragDistance,
-                      pagesLength: pagesLength,
-                      currentPageIndex: currentIndex,
-                      slideDirection: SlideDirection.left_to_right,
-                      activePainter:
-                          Paint()
+                buildFooter:
+                    (
+                      context,
+                      dragDistance,
+                      pagesLength,
+                      currentIndex,
+                      setIndex,
+                      sd,
+                    ) {
+                      return Indicator(
+                        painter: CirclePainter(
+                          netDragPercent: dragDistance,
+                          pagesLength: pagesLength,
+                          currentPageIndex: currentIndex,
+                          slideDirection: SlideDirection.left_to_right,
+                          activePainter: Paint()
                             ..color = Colors.white
                             ..style = PaintingStyle.fill,
-                      inactivePainter:
-                          Paint()
+                          inactivePainter: Paint()
                             ..color = Colors.grey
                             ..style = PaintingStyle.fill,
-                    ),
-                  );
-                },
+                        ),
+                      );
+                    },
               ),
             ),
             const Spacer(),
@@ -135,7 +132,7 @@ class JadePermissionPageTwo extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bluetoothPermissionState = ref.watch(
-      jadeBluetoothPermissionStateNotifierProvider,
+      jadeBluetoothPermissionStateProvider,
     );
 
     return DecoratedBox(
@@ -186,24 +183,24 @@ class JadePermissionPageTwo extends ConsumerWidget {
               height: 54,
               text: 'GIVE BLUETOOTH PERMISSIONS'.tr(),
               onPressed: () async {
-                ref.invalidate(jadeDeviceNotifierProvider);
+                ref.invalidate(jadeDeviceProvider);
                 final plugin = SideswapPermissionsPlugin();
-                var hasBluetoothScanPermission =
-                    await plugin.hasBluetoothScanPermission();
+                var hasBluetoothScanPermission = await plugin
+                    .hasBluetoothScanPermission();
                 if (!hasBluetoothScanPermission) {
-                  hasBluetoothScanPermission =
-                      await plugin.requestBluetoothScanPermission();
+                  hasBluetoothScanPermission = await plugin
+                      .requestBluetoothScanPermission();
                 }
 
                 if (!hasBluetoothScanPermission) {
                   return;
                 }
 
-                var hasBluetoothConnectPermission =
-                    await plugin.hasBluetoothConnectPermission();
+                var hasBluetoothConnectPermission = await plugin
+                    .hasBluetoothConnectPermission();
                 if (!hasBluetoothConnectPermission) {
-                  hasBluetoothConnectPermission =
-                      await plugin.requestBluetoothConnectPermission();
+                  hasBluetoothConnectPermission = await plugin
+                      .requestBluetoothConnectPermission();
                 }
 
                 if (!hasBluetoothConnectPermission) {
@@ -211,7 +208,7 @@ class JadePermissionPageTwo extends ConsumerWidget {
                 }
 
                 ref
-                    .read(jadeBluetoothPermissionStateNotifierProvider.notifier)
+                    .read(jadeBluetoothPermissionStateProvider.notifier)
                     .setPermissionState(
                       const JadeBluetoothPermissionState.request(),
                     );

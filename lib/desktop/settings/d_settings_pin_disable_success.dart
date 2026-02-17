@@ -13,8 +13,9 @@ class DSettingsPinDisableSuccess extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
 
     return DContentDialog(
       title: DContentDialogTitle(

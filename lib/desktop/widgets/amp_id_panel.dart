@@ -50,8 +50,9 @@ class AmpIdPanel extends StatelessWidget {
         children: [
           const SizedBox(width: 10),
           MouseRegion(
-            cursor:
-                onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+            cursor: onTap != null
+                ? SystemMouseCursors.click
+                : MouseCursor.defer,
             child: GestureDetector(
               onTap: onTap,
               child: Text(
@@ -68,8 +69,9 @@ class AmpIdPanel extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           MouseRegion(
-            cursor:
-                onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+            cursor: onTap != null
+                ? SystemMouseCursors.click
+                : MouseCursor.defer,
             child: GestureDetector(
               onTap: onTap,
               child: Text(
@@ -91,41 +93,39 @@ class AmpIdPanel extends StatelessWidget {
               SizedBox(
                 width: 32,
                 height: 32,
-                child:
-                    FlavorConfig.isDesktop
-                        ? Consumer(
-                          builder: (context, ref, _) {
-                            final buttonStyle =
-                                ref
-                                    .watch(desktopAppThemeNotifierProvider)
-                                    .mainBottomNavigationBarButtonStyle;
+                child: FlavorConfig.isDesktop
+                    ? Consumer(
+                        builder: (context, ref, _) {
+                          final buttonStyle = ref
+                              .watch(desktopAppThemeProvider)
+                              .mainBottomNavigationBarButtonStyle;
 
-                            return DButton(
-                              style: buttonStyle,
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  'assets/copy2.svg',
-                                  width: copyIconWidth,
-                                  height: copyIconHeight,
-                                ),
+                          return DButton(
+                            style: buttonStyle,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/copy2.svg',
+                                width: copyIconWidth,
+                                height: copyIconHeight,
                               ),
-                              onPressed: () async {
-                                await copyToClipboard(context, ampId);
-                              },
-                            );
-                          },
-                        )
-                        : IconButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () async {
-                            await copyToClipboard(context, ampId);
-                          },
-                          icon: SvgPicture.asset(
-                            'assets/copy2.svg',
-                            width: copyIconWidth,
-                            height: copyIconHeight,
-                          ),
+                            ),
+                            onPressed: () async {
+                              await copyToClipboard(context, ampId);
+                            },
+                          );
+                        },
+                      )
+                    : IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () async {
+                          await copyToClipboard(context, ampId);
+                        },
+                        icon: SvgPicture.asset(
+                          'assets/copy2.svg',
+                          width: copyIconWidth,
+                          height: copyIconHeight,
                         ),
+                      ),
               ),
               const SizedBox(width: 6),
             ],

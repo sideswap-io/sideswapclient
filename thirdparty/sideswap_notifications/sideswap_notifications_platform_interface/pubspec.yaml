@@ -1,28 +1,26 @@
 name: sideswap_notifications_platform_interface
 description: SideSwap notifications plugin interface
 publish_to: "none"
-version: 0.0.27
+version: 0.0.34
 
 environment:
-  sdk: ^3.8.1
-  flutter: ^3.32.5
+  sdk: ^3.10.0
+  flutter: ^3.38.1
 
 dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.1.8
-  freezed_annotation: ^3.0.0
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
   sideswap_protobuf:
     path: ../../sideswap_protobuf
-  flutter_local_notifications: ^19.2.1
+  flutter_local_notifications: ^19.5.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  freezed: ^3.0.6
-  json_serializable: ^6.9.5
-  build_runner: ^2.5.1
-  freezed_lint: ^0.0.9
-  custom_lint: ^0.7.5
+  freezed: ^3.2.3
+  json_serializable: ^6.11.1
+  build_runner: ^2.10.3

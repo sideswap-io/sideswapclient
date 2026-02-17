@@ -90,35 +90,31 @@ class CustomCheckBox extends HookConsumerWidget {
       return;
     }, [value]);
 
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .mainBottomNavigationBarButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeProvider)
+        .mainBottomNavigationBarButtonStyle;
 
     return DButton(
       style: buttonStyle,
-      onPressed:
-          enabled
-              ? () {
-                onChecked?.call(!value);
-              }
-              : null,
+      onPressed: enabled
+          ? () {
+              onChecked?.call(!value);
+            }
+          : null,
       child: Center(
         child: Container(
           width: size ?? 18,
           height: size ?? 18,
           decoration: BoxDecoration(
             border: Border.all(
-              color:
-                  enabled
-                      ? frameColorAnimation ?? Colors.transparent
-                      : SideSwapColors.cornFlower,
+              color: enabled
+                  ? frameColorAnimation ?? Colors.transparent
+                  : SideSwapColors.cornFlower,
             ),
             borderRadius: BorderRadius.all(radius ?? const Radius.circular(6)),
-            color:
-                enabled
-                    ? backgroundColorAnimation ?? Colors.transparent
-                    : Colors.transparent,
+            color: enabled
+                ? backgroundColorAnimation ?? Colors.transparent
+                : Colors.transparent,
           ),
           child: Center(
             child: Opacity(

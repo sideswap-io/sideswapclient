@@ -1,1 +1,1 @@
-../../rust/target/aarch64-apple-ios/release/libsideswap_client.a
+../../../sideswap_rust/target/aarch64-apple-ios/release/libsideswap_client.a

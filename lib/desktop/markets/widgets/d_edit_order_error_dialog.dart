@@ -18,7 +18,7 @@ class EditOrderErrorDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -74,7 +74,7 @@ class EditOrderErrorDialog extends HookConsumerWidget {
               Consumer(
                 builder: (context, ref, child) {
                   final editOrderError = ref.watch(
-                    marketEditOrderErrorNotifierProvider,
+                    marketEditOrderErrorProvider,
                   );
 
                   return editOrderError.match(

@@ -29,10 +29,10 @@ class WalletAssets extends ConsumerWidget {
                       asset: allVisibleAssets[index],
                       onSelected: (Asset asset) {
                         final walletMainArguments = ref.read(
-                          uiStateArgsNotifierProvider,
+                          uiStateArgsProvider,
                         );
                         ref
-                            .read(uiStateArgsNotifierProvider.notifier)
+                            .read(uiStateArgsProvider.notifier)
                             .setWalletMainArguments(
                               walletMainArguments.copyWith(
                                 navigationItemEnum:
@@ -40,7 +40,7 @@ class WalletAssets extends ConsumerWidget {
                               ),
                             );
                         ref
-                            .read(selectedWalletAssetNotifierProvider.notifier)
+                            .read(selectedWalletAssetProvider.notifier)
                             .setState(asset);
                       },
                     ),

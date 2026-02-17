@@ -9,21 +9,25 @@ class SwapButton extends StatelessWidget {
     this.textColor,
     this.onPressed,
     this.textStyle,
+    this.height = 36,
+    this.padding = const EdgeInsets.all(2.0),
   });
 
+  final double? height;
   final Color? color;
   final Color? textColor;
   final String? text;
   final Widget? child;
   final VoidCallback? onPressed;
   final TextStyle? textStyle;
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Container(
-        height: 36,
+        height: height,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(8.0)),
           color: color,

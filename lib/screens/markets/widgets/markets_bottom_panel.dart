@@ -43,10 +43,9 @@ class MarketTypeButton extends ConsumerWidget {
     return Expanded(
       child: CustomBigButton(
         height: 39,
-        text:
-            marketTypeSwitchState == MarketTypeSwitchState.market()
-                ? 'Market order'.tr()
-                : 'Limit order'.tr(),
+        text: marketTypeSwitchState == MarketTypeSwitchState.market()
+            ? 'Market order'.tr()
+            : 'Limit order'.tr(),
         textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.bold,
           letterSpacing: 0.32,
@@ -54,12 +53,14 @@ class MarketTypeButton extends ConsumerWidget {
         backgroundColor: SideSwapColors.turquoise,
         onPressed: () {
           (switch (marketTypeSwitchState) {
-            MarketTypeSwitchStateMarket() => ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.marketSwap),
-            MarketTypeSwitchStateLimit() => ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.marketLimit),
+            MarketTypeSwitchStateMarket() =>
+              ref
+                  .read(pageStatusProvider.notifier)
+                  .setStatus(Status.marketSwap),
+            MarketTypeSwitchStateLimit() =>
+              ref
+                  .read(pageStatusProvider.notifier)
+                  .setStatus(Status.marketLimit),
           });
         },
       ),

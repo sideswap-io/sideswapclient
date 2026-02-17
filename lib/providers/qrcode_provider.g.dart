@@ -6,42 +6,101 @@ part of 'qrcode_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$qrcodeHelperHash() => r'6765487f3eb3c6047f4592204937370d9c93d2cf';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [qrcodeHelper].
-@ProviderFor(qrcodeHelper)
-final qrcodeHelperProvider = AutoDisposeProvider<QrCodeHelper>.internal(
-  qrcodeHelper,
-  name: r'qrcodeHelperProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$qrcodeHelperHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(QrCodeResultModelNotifier)
+const qrCodeResultModelProvider = QrCodeResultModelNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef QrcodeHelperRef = AutoDisposeProviderRef<QrCodeHelper>;
+final class QrCodeResultModelNotifierProvider
+    extends $NotifierProvider<QrCodeResultModelNotifier, QrCodeResultModel> {
+  const QrCodeResultModelNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'qrCodeResultModelProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$qrCodeResultModelNotifierHash();
+
+  @$internal
+  @override
+  QrCodeResultModelNotifier create() => QrCodeResultModelNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(QrCodeResultModel value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<QrCodeResultModel>(value),
+    );
+  }
+}
+
 String _$qrCodeResultModelNotifierHash() =>
     r'756e6d3ae1b99a069c456536c28027b903da0248';
 
-/// See also [QrCodeResultModelNotifier].
-@ProviderFor(QrCodeResultModelNotifier)
-final qrCodeResultModelNotifierProvider =
-    AutoDisposeNotifierProvider<
-      QrCodeResultModelNotifier,
-      QrCodeResultModel
-    >.internal(
-      QrCodeResultModelNotifier.new,
-      name: r'qrCodeResultModelNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$qrCodeResultModelNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$QrCodeResultModelNotifier
+    extends $Notifier<QrCodeResultModel> {
+  QrCodeResultModel build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<QrCodeResultModel, QrCodeResultModel>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<QrCodeResultModel, QrCodeResultModel>,
+              QrCodeResultModel,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$QrCodeResultModelNotifier = AutoDisposeNotifier<QrCodeResultModel>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(qrcodeHelper)
+const qrcodeHelperProvider = QrcodeHelperProvider._();
+
+final class QrcodeHelperProvider
+    extends $FunctionalProvider<QrCodeHelper, QrCodeHelper, QrCodeHelper>
+    with $Provider<QrCodeHelper> {
+  const QrcodeHelperProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'qrcodeHelperProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$qrcodeHelperHash();
+
+  @$internal
+  @override
+  $ProviderElement<QrCodeHelper> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  QrCodeHelper create(Ref ref) {
+    return qrcodeHelper(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(QrCodeHelper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<QrCodeHelper>(value),
+    );
+  }
+}
+
+String _$qrcodeHelperHash() => r'6765487f3eb3c6047f4592204937370d9c93d2cf';

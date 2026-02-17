@@ -6,58 +6,145 @@ part of 'csv_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$csvRepositoryHash() => r'972bfb7cf8fa7e0cd6c52eaa32bb42746f925fd0';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [csvRepository].
 @ProviderFor(csvRepository)
-final csvRepositoryProvider = AutoDisposeProvider<CsvRepository>.internal(
-  csvRepository,
-  name: r'csvRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$csvRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const csvRepositoryProvider = CsvRepositoryProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef CsvRepositoryRef = AutoDisposeProviderRef<CsvRepository>;
+final class CsvRepositoryProvider
+    extends $FunctionalProvider<CsvRepository, CsvRepository, CsvRepository>
+    with $Provider<CsvRepository> {
+  const CsvRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'csvRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$csvRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<CsvRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  CsvRepository create(Ref ref) {
+    return csvRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CsvRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CsvRepository>(value),
+    );
+  }
+}
+
+String _$csvRepositoryHash() => r'3e04a7398ddfe17704bb4bb4d42aa99fb05609b5';
+
+@ProviderFor(CsvNotifier)
+const csvProvider = CsvNotifierProvider._();
+
+final class CsvNotifierProvider
+    extends $AsyncNotifierProvider<CsvNotifier, CvsState> {
+  const CsvNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'csvProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$csvNotifierHash();
+
+  @$internal
+  @override
+  CsvNotifier create() => CsvNotifier();
+}
+
 String _$csvNotifierHash() => r'3bbe56ecefa0b4254737ce10426c28eea7973f99';
 
-/// See also [CsvNotifier].
-@ProviderFor(CsvNotifier)
-final csvNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<CsvNotifier, CvsState>.internal(
-      CsvNotifier.new,
-      name: r'csvNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$csvNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$CsvNotifier extends $AsyncNotifier<CvsState> {
+  FutureOr<CvsState> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AsyncValue<CvsState>, CvsState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<CvsState>, CvsState>,
+              AsyncValue<CvsState>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$CsvNotifier = AutoDisposeAsyncNotifier<CvsState>;
-String _$exportCsvStateNotifierHash() =>
-    r'bd8d48b545b617b456a470d6e69a7d975765dc9c';
-
-/// See also [ExportCsvStateNotifier].
 @ProviderFor(ExportCsvStateNotifier)
-final exportCsvStateNotifierProvider =
-    AutoDisposeNotifierProvider<
-      ExportCsvStateNotifier,
-      ExportCsvState
-    >.internal(
-      ExportCsvStateNotifier.new,
-      name: r'exportCsvStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$exportCsvStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const exportCsvStateProvider = ExportCsvStateNotifierProvider._();
 
-typedef _$ExportCsvStateNotifier = AutoDisposeNotifier<ExportCsvState>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class ExportCsvStateNotifierProvider
+    extends $NotifierProvider<ExportCsvStateNotifier, ExportCsvState> {
+  const ExportCsvStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exportCsvStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exportCsvStateNotifierHash();
+
+  @$internal
+  @override
+  ExportCsvStateNotifier create() => ExportCsvStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ExportCsvState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ExportCsvState>(value),
+    );
+  }
+}
+
+String _$exportCsvStateNotifierHash() =>
+    r'4a2b88cc09ba5f3a3ee213393481fd2166a18241';
+
+abstract class _$ExportCsvStateNotifier extends $Notifier<ExportCsvState> {
+  ExportCsvState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<ExportCsvState, ExportCsvState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ExportCsvState, ExportCsvState>,
+              ExportCsvState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

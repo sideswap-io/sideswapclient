@@ -6,705 +6,1024 @@ part of 'addresses_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$regularAddressesModelAsyncHash() =>
-    r'cc5714e646bed4933ebb2b9ba867879b4198f5da';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [regularAddressesModelAsync].
-@ProviderFor(regularAddressesModelAsync)
-final regularAddressesModelAsyncProvider =
-    AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
-      regularAddressesModelAsync,
-      name: r'regularAddressesModelAsyncProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$regularAddressesModelAsyncHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+@ProviderFor(LoadAddressesStateNotifier)
+const loadAddressesStateProvider = LoadAddressesStateNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef RegularAddressesModelAsyncRef =
-    AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
-String _$ampAdressesModelAsyncHash() =>
-    r'30d6573621ebd931043cd3a9e1bc1b99eabdb1e6';
-
-/// See also [ampAdressesModelAsync].
-@ProviderFor(ampAdressesModelAsync)
-final ampAdressesModelAsyncProvider =
-    AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
-      ampAdressesModelAsync,
-      name: r'ampAdressesModelAsyncProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ampAdressesModelAsyncHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AmpAdressesModelAsyncRef =
-    AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
-String _$groupedAddressesAsyncHash() =>
-    r'661851a01af4ef5af94b33cd57170d0e6be92dce';
-
-/// See also [groupedAddressesAsync].
-@ProviderFor(groupedAddressesAsync)
-final groupedAddressesAsyncProvider =
-    AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
-      groupedAddressesAsync,
-      name: r'groupedAddressesAsyncProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$groupedAddressesAsyncHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef GroupedAddressesAsyncRef =
-    AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
-String _$filteredAddressesAsyncHash() =>
-    r'4f512aebba2a6ea1b49894bcf1589ab429c9e228';
-
-/// See also [filteredAddressesAsync].
-@ProviderFor(filteredAddressesAsync)
-final filteredAddressesAsyncProvider =
-    AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
-      filteredAddressesAsync,
-      name: r'filteredAddressesAsyncProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$filteredAddressesAsyncHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef FilteredAddressesAsyncRef =
-    AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
-String _$addressesItemHelperHash() =>
-    r'fbfe778e431413d06c76f54b681be5bb7a74f1cc';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [addressesItemHelper].
-@ProviderFor(addressesItemHelper)
-const addressesItemHelperProvider = AddressesItemHelperFamily();
-
-/// See also [addressesItemHelper].
-class AddressesItemHelperFamily extends Family<AddressesItemHelper> {
-  /// See also [addressesItemHelper].
-  const AddressesItemHelperFamily();
-
-  /// See also [addressesItemHelper].
-  AddressesItemHelperProvider call(AddressesItem addressesItem) {
-    return AddressesItemHelperProvider(addressesItem);
-  }
-
-  @override
-  AddressesItemHelperProvider getProviderOverride(
-    covariant AddressesItemHelperProvider provider,
-  ) {
-    return call(provider.addressesItem);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'addressesItemHelperProvider';
-}
-
-/// See also [addressesItemHelper].
-class AddressesItemHelperProvider
-    extends AutoDisposeProvider<AddressesItemHelper> {
-  /// See also [addressesItemHelper].
-  AddressesItemHelperProvider(AddressesItem addressesItem)
-    : this._internal(
-        (ref) =>
-            addressesItemHelper(ref as AddressesItemHelperRef, addressesItem),
-        from: addressesItemHelperProvider,
-        name: r'addressesItemHelperProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$addressesItemHelperHash,
-        dependencies: AddressesItemHelperFamily._dependencies,
-        allTransitiveDependencies:
-            AddressesItemHelperFamily._allTransitiveDependencies,
-        addressesItem: addressesItem,
+final class LoadAddressesStateNotifierProvider
+    extends $NotifierProvider<LoadAddressesStateNotifier, LoadAddressesState> {
+  const LoadAddressesStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loadAddressesStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  AddressesItemHelperProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.addressesItem,
-  }) : super.internal();
-
-  final AddressesItem addressesItem;
-
   @override
-  Override overrideWith(
-    AddressesItemHelper Function(AddressesItemHelperRef provider) create,
-  ) {
-    return ProviderOverride(
+  String debugGetCreateSourceHash() => _$loadAddressesStateNotifierHash();
+
+  @$internal
+  @override
+  LoadAddressesStateNotifier create() => LoadAddressesStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoadAddressesState value) {
+    return $ProviderOverride(
       origin: this,
-      override: AddressesItemHelperProvider._internal(
-        (ref) => create(ref as AddressesItemHelperRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        addressesItem: addressesItem,
-      ),
+      providerOverride: $SyncValueProvider<LoadAddressesState>(value),
     );
   }
-
-  @override
-  AutoDisposeProviderElement<AddressesItemHelper> createElement() {
-    return _AddressesItemHelperProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is AddressesItemHelperProvider &&
-        other.addressesItem == addressesItem;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, addressesItem.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin AddressesItemHelperRef on AutoDisposeProviderRef<AddressesItemHelper> {
-  /// The parameter `addressesItem` of this provider.
-  AddressesItem get addressesItem;
-}
-
-class _AddressesItemHelperProviderElement
-    extends AutoDisposeProviderElement<AddressesItemHelper>
-    with AddressesItemHelperRef {
-  _AddressesItemHelperProviderElement(super.provider);
-
-  @override
-  AddressesItem get addressesItem =>
-      (origin as AddressesItemHelperProvider).addressesItem;
-}
-
-String _$inputsAddressesAsyncHash() =>
-    r'bc0965f3bdd75b0d65288c0ad026c9f2c0b60148';
-
-/// See also [inputsAddressesAsync].
-@ProviderFor(inputsAddressesAsync)
-final inputsAddressesAsyncProvider =
-    AutoDisposeProvider<AsyncValue<AddressesModel>>.internal(
-      inputsAddressesAsync,
-      name: r'inputsAddressesAsyncProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$inputsAddressesAsyncHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef InputsAddressesAsyncRef =
-    AutoDisposeProviderRef<AsyncValue<AddressesModel>>;
-String _$selectedInputsHelperHash() =>
-    r'130b5c6f1cca20859c8344626ca61c4e96936cde';
-
-/// See also [selectedInputsHelper].
-@ProviderFor(selectedInputsHelper)
-final selectedInputsHelperProvider =
-    AutoDisposeProvider<SelectedInputsHelper>.internal(
-      selectedInputsHelper,
-      name: r'selectedInputsHelperProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$selectedInputsHelperHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SelectedInputsHelperRef = AutoDisposeProviderRef<SelectedInputsHelper>;
-String _$inputListItemExpandedStateHash() =>
-    r'b50cdba94e012b1ef92a557bc1afad45a59eecf5';
-
-/// See also [inputListItemExpandedState].
-@ProviderFor(inputListItemExpandedState)
-const inputListItemExpandedStateProvider = InputListItemExpandedStateFamily();
-
-/// See also [inputListItemExpandedState].
-class InputListItemExpandedStateFamily extends Family<bool> {
-  /// See also [inputListItemExpandedState].
-  const InputListItemExpandedStateFamily();
-
-  /// See also [inputListItemExpandedState].
-  InputListItemExpandedStateProvider call(int hash) {
-    return InputListItemExpandedStateProvider(hash);
-  }
-
-  @override
-  InputListItemExpandedStateProvider getProviderOverride(
-    covariant InputListItemExpandedStateProvider provider,
-  ) {
-    return call(provider.hash);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'inputListItemExpandedStateProvider';
-}
-
-/// See also [inputListItemExpandedState].
-class InputListItemExpandedStateProvider extends AutoDisposeProvider<bool> {
-  /// See also [inputListItemExpandedState].
-  InputListItemExpandedStateProvider(int hash)
-    : this._internal(
-        (ref) => inputListItemExpandedState(
-          ref as InputListItemExpandedStateRef,
-          hash,
-        ),
-        from: inputListItemExpandedStateProvider,
-        name: r'inputListItemExpandedStateProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$inputListItemExpandedStateHash,
-        dependencies: InputListItemExpandedStateFamily._dependencies,
-        allTransitiveDependencies:
-            InputListItemExpandedStateFamily._allTransitiveDependencies,
-        hash: hash,
-      );
-
-  InputListItemExpandedStateProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.hash,
-  }) : super.internal();
-
-  final int hash;
-
-  @override
-  Override overrideWith(
-    bool Function(InputListItemExpandedStateRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: InputListItemExpandedStateProvider._internal(
-        (ref) => create(ref as InputListItemExpandedStateRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        hash: hash,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<bool> createElement() {
-    return _InputListItemExpandedStateProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is InputListItemExpandedStateProvider && other.hash == hash;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, hash.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin InputListItemExpandedStateRef on AutoDisposeProviderRef<bool> {
-  /// The parameter `hash` of this provider.
-  int get hash;
-}
-
-class _InputListItemExpandedStateProviderElement
-    extends AutoDisposeProviderElement<bool>
-    with InputListItemExpandedStateRef {
-  _InputListItemExpandedStateProviderElement(super.provider);
-
-  @override
-  int get hash => (origin as InputListItemExpandedStateProvider).hash;
 }
 
 String _$loadAddressesStateNotifierHash() =>
     r'6c739084ff0a82a38dbb38dcf9f847b5c89ff116';
 
-/// See also [LoadAddressesStateNotifier].
-@ProviderFor(LoadAddressesStateNotifier)
-final loadAddressesStateNotifierProvider =
-    AutoDisposeNotifierProvider<
-      LoadAddressesStateNotifier,
-      LoadAddressesState
-    >.internal(
-      LoadAddressesStateNotifier.new,
-      name: r'loadAddressesStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$loadAddressesStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$LoadAddressesStateNotifier
+    extends $Notifier<LoadAddressesState> {
+  LoadAddressesState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<LoadAddressesState, LoadAddressesState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<LoadAddressesState, LoadAddressesState>,
+              LoadAddressesState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$LoadAddressesStateNotifier = AutoDisposeNotifier<LoadAddressesState>;
+@ProviderFor(LoadUtxosStateNotifier)
+const loadUtxosStateProvider = LoadUtxosStateNotifierProvider._();
+
+final class LoadUtxosStateNotifierProvider
+    extends $NotifierProvider<LoadUtxosStateNotifier, LoadUtxosState> {
+  const LoadUtxosStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loadUtxosStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$loadUtxosStateNotifierHash();
+
+  @$internal
+  @override
+  LoadUtxosStateNotifier create() => LoadUtxosStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoadUtxosState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LoadUtxosState>(value),
+    );
+  }
+}
+
 String _$loadUtxosStateNotifierHash() =>
     r'89a4e95d66be4159dbc39f33e29bf6c756245bec';
 
-/// See also [LoadUtxosStateNotifier].
-@ProviderFor(LoadUtxosStateNotifier)
-final loadUtxosStateNotifierProvider =
-    AutoDisposeNotifierProvider<
-      LoadUtxosStateNotifier,
-      LoadUtxosState
-    >.internal(
-      LoadUtxosStateNotifier.new,
-      name: r'loadUtxosStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$loadUtxosStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$LoadUtxosStateNotifier = AutoDisposeNotifier<LoadUtxosState>;
-String _$addressesAsyncNotifierHash() =>
-    r'f7f36c390730df058031cced46bbe919afaef343';
-
-abstract class _$AddressesAsyncNotifier
-    extends BuildlessAutoDisposeAsyncNotifier<AddressesModel> {
-  late final Account account;
-
-  FutureOr<AddressesModel> build(Account account);
+abstract class _$LoadUtxosStateNotifier extends $Notifier<LoadUtxosState> {
+  LoadUtxosState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<LoadUtxosState, LoadUtxosState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<LoadUtxosState, LoadUtxosState>,
+              LoadUtxosState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
 }
 
-/// See also [AddressesAsyncNotifier].
 @ProviderFor(AddressesAsyncNotifier)
-const addressesAsyncNotifierProvider = AddressesAsyncNotifierFamily();
+const addressesAsyncProvider = AddressesAsyncNotifierFamily._();
 
-/// See also [AddressesAsyncNotifier].
-class AddressesAsyncNotifierFamily extends Family<AsyncValue<AddressesModel>> {
-  /// See also [AddressesAsyncNotifier].
-  const AddressesAsyncNotifierFamily();
+final class AddressesAsyncNotifierProvider
+    extends $AsyncNotifierProvider<AddressesAsyncNotifier, AddressesModel> {
+  const AddressesAsyncNotifierProvider._({
+    required AddressesAsyncNotifierFamily super.from,
+    required Account super.argument,
+  }) : super(
+         retry: null,
+         name: r'addressesAsyncProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
-  /// See also [AddressesAsyncNotifier].
-  AddressesAsyncNotifierProvider call(Account account) {
-    return AddressesAsyncNotifierProvider(account);
+  @override
+  String debugGetCreateSourceHash() => _$addressesAsyncNotifierHash();
+
+  @override
+  String toString() {
+    return r'addressesAsyncProvider'
+        ''
+        '($argument)';
   }
 
+  @$internal
   @override
-  AddressesAsyncNotifierProvider getProviderOverride(
-    covariant AddressesAsyncNotifierProvider provider,
-  ) {
-    return call(provider.account);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'addressesAsyncNotifierProvider';
-}
-
-/// See also [AddressesAsyncNotifier].
-class AddressesAsyncNotifierProvider
-    extends
-        AutoDisposeAsyncNotifierProviderImpl<
-          AddressesAsyncNotifier,
-          AddressesModel
-        > {
-  /// See also [AddressesAsyncNotifier].
-  AddressesAsyncNotifierProvider(Account account)
-    : this._internal(
-        () => AddressesAsyncNotifier()..account = account,
-        from: addressesAsyncNotifierProvider,
-        name: r'addressesAsyncNotifierProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$addressesAsyncNotifierHash,
-        dependencies: AddressesAsyncNotifierFamily._dependencies,
-        allTransitiveDependencies:
-            AddressesAsyncNotifierFamily._allTransitiveDependencies,
-        account: account,
-      );
-
-  AddressesAsyncNotifierProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.account,
-  }) : super.internal();
-
-  final Account account;
-
-  @override
-  FutureOr<AddressesModel> runNotifierBuild(
-    covariant AddressesAsyncNotifier notifier,
-  ) {
-    return notifier.build(account);
-  }
-
-  @override
-  Override overrideWith(AddressesAsyncNotifier Function() create) {
-    return ProviderOverride(
-      origin: this,
-      override: AddressesAsyncNotifierProvider._internal(
-        () => create()..account = account,
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        account: account,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeAsyncNotifierProviderElement<
-    AddressesAsyncNotifier,
-    AddressesModel
-  >
-  createElement() {
-    return _AddressesAsyncNotifierProviderElement(this);
-  }
+  AddressesAsyncNotifier create() => AddressesAsyncNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is AddressesAsyncNotifierProvider && other.account == account;
+    return other is AddressesAsyncNotifierProvider &&
+        other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, account.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin AddressesAsyncNotifierRef
-    on AutoDisposeAsyncNotifierProviderRef<AddressesModel> {
-  /// The parameter `account` of this provider.
-  Account get account;
-}
+String _$addressesAsyncNotifierHash() =>
+    r'dfd57827277dd092b1fff2c2e89b6b4c493fbeee';
 
-class _AddressesAsyncNotifierProviderElement
-    extends
-        AutoDisposeAsyncNotifierProviderElement<
+final class AddressesAsyncNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
           AddressesAsyncNotifier,
-          AddressesModel
-        >
-    with AddressesAsyncNotifierRef {
-  _AddressesAsyncNotifierProviderElement(super.provider);
+          AsyncValue<AddressesModel>,
+          AddressesModel,
+          FutureOr<AddressesModel>,
+          Account
+        > {
+  const AddressesAsyncNotifierFamily._()
+    : super(
+        retry: null,
+        name: r'addressesAsyncProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AddressesAsyncNotifierProvider call(Account account) =>
+      AddressesAsyncNotifierProvider._(argument: account, from: this);
 
   @override
-  Account get account => (origin as AddressesAsyncNotifierProvider).account;
+  String toString() => r'addressesAsyncProvider';
+}
+
+abstract class _$AddressesAsyncNotifier extends $AsyncNotifier<AddressesModel> {
+  late final _$args = ref.$arg as Account;
+  Account get account => _$args;
+
+  FutureOr<AddressesModel> build(Account account);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref = this.ref as $Ref<AsyncValue<AddressesModel>, AddressesModel>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<AddressesModel>, AddressesModel>,
+              AsyncValue<AddressesModel>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(regularAddressesModelAsync)
+const regularAddressesModelAsyncProvider =
+    RegularAddressesModelAsyncProvider._();
+
+final class RegularAddressesModelAsyncProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>
+        >
+    with $Provider<AsyncValue<AddressesModel>> {
+  const RegularAddressesModelAsyncProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'regularAddressesModelAsyncProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$regularAddressesModelAsyncHash();
+
+  @$internal
+  @override
+  $ProviderElement<AsyncValue<AddressesModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AsyncValue<AddressesModel> create(Ref ref) {
+    return regularAddressesModelAsync(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<AddressesModel> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<AddressesModel>>(value),
+    );
+  }
+}
+
+String _$regularAddressesModelAsyncHash() =>
+    r'b190b52de6e870d2e8ba8b44a4542795857aa417';
+
+@ProviderFor(ampAdressesModelAsync)
+const ampAdressesModelAsyncProvider = AmpAdressesModelAsyncProvider._();
+
+final class AmpAdressesModelAsyncProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>
+        >
+    with $Provider<AsyncValue<AddressesModel>> {
+  const AmpAdressesModelAsyncProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ampAdressesModelAsyncProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ampAdressesModelAsyncHash();
+
+  @$internal
+  @override
+  $ProviderElement<AsyncValue<AddressesModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AsyncValue<AddressesModel> create(Ref ref) {
+    return ampAdressesModelAsync(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<AddressesModel> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<AddressesModel>>(value),
+    );
+  }
+}
+
+String _$ampAdressesModelAsyncHash() =>
+    r'07845243df46deb80541936ae95bc0cbb4788761';
+
+@ProviderFor(groupedAddressesAsync)
+const groupedAddressesAsyncProvider = GroupedAddressesAsyncProvider._();
+
+final class GroupedAddressesAsyncProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>
+        >
+    with $Provider<AsyncValue<AddressesModel>> {
+  const GroupedAddressesAsyncProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'groupedAddressesAsyncProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$groupedAddressesAsyncHash();
+
+  @$internal
+  @override
+  $ProviderElement<AsyncValue<AddressesModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AsyncValue<AddressesModel> create(Ref ref) {
+    return groupedAddressesAsync(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<AddressesModel> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<AddressesModel>>(value),
+    );
+  }
+}
+
+String _$groupedAddressesAsyncHash() =>
+    r'661851a01af4ef5af94b33cd57170d0e6be92dce';
+
+@ProviderFor(filteredAddressesAsync)
+const filteredAddressesAsyncProvider = FilteredAddressesAsyncProvider._();
+
+final class FilteredAddressesAsyncProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>
+        >
+    with $Provider<AsyncValue<AddressesModel>> {
+  const FilteredAddressesAsyncProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'filteredAddressesAsyncProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$filteredAddressesAsyncHash();
+
+  @$internal
+  @override
+  $ProviderElement<AsyncValue<AddressesModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AsyncValue<AddressesModel> create(Ref ref) {
+    return filteredAddressesAsync(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<AddressesModel> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<AddressesModel>>(value),
+    );
+  }
+}
+
+String _$filteredAddressesAsyncHash() =>
+    r'fe049785862654420cfafd93fc06fe21f3ad78d3';
+
+@ProviderFor(AddressDetailsDialogNotifier)
+const addressDetailsDialogProvider = AddressDetailsDialogNotifierProvider._();
+
+final class AddressDetailsDialogNotifierProvider
+    extends
+        $NotifierProvider<AddressDetailsDialogNotifier, AddressDetailsState> {
+  const AddressDetailsDialogNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'addressDetailsDialogProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$addressDetailsDialogNotifierHash();
+
+  @$internal
+  @override
+  AddressDetailsDialogNotifier create() => AddressDetailsDialogNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AddressDetailsState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AddressDetailsState>(value),
+    );
+  }
 }
 
 String _$addressDetailsDialogNotifierHash() =>
     r'f5266f4ba5a9d00592f1b5ef82e861a6cb968ad3';
 
-/// See also [AddressDetailsDialogNotifier].
-@ProviderFor(AddressDetailsDialogNotifier)
-final addressDetailsDialogNotifierProvider =
-    NotifierProvider<
-      AddressDetailsDialogNotifier,
-      AddressDetailsState
-    >.internal(
-      AddressDetailsDialogNotifier.new,
-      name: r'addressDetailsDialogNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$addressDetailsDialogNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$AddressDetailsDialogNotifier
+    extends $Notifier<AddressDetailsState> {
+  AddressDetailsState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AddressDetailsState, AddressDetailsState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AddressDetailsState, AddressDetailsState>,
+              AddressDetailsState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$AddressDetailsDialogNotifier = Notifier<AddressDetailsState>;
+@ProviderFor(addressesItemHelper)
+const addressesItemHelperProvider = AddressesItemHelperFamily._();
+
+final class AddressesItemHelperProvider
+    extends
+        $FunctionalProvider<
+          AddressesItemHelper,
+          AddressesItemHelper,
+          AddressesItemHelper
+        >
+    with $Provider<AddressesItemHelper> {
+  const AddressesItemHelperProvider._({
+    required AddressesItemHelperFamily super.from,
+    required AddressesItem super.argument,
+  }) : super(
+         retry: null,
+         name: r'addressesItemHelperProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$addressesItemHelperHash();
+
+  @override
+  String toString() {
+    return r'addressesItemHelperProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<AddressesItemHelper> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AddressesItemHelper create(Ref ref) {
+    final argument = this.argument as AddressesItem;
+    return addressesItemHelper(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AddressesItemHelper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AddressesItemHelper>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AddressesItemHelperProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$addressesItemHelperHash() =>
+    r'fbfe778e431413d06c76f54b681be5bb7a74f1cc';
+
+final class AddressesItemHelperFamily extends $Family
+    with $FunctionalFamilyOverride<AddressesItemHelper, AddressesItem> {
+  const AddressesItemHelperFamily._()
+    : super(
+        retry: null,
+        name: r'addressesItemHelperProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AddressesItemHelperProvider call(AddressesItem addressesItem) =>
+      AddressesItemHelperProvider._(argument: addressesItem, from: this);
+
+  @override
+  String toString() => r'addressesItemHelperProvider';
+}
+
+@ProviderFor(AddressesWalletTypeFlagNotifier)
+const addressesWalletTypeFlagProvider =
+    AddressesWalletTypeFlagNotifierProvider._();
+
+final class AddressesWalletTypeFlagNotifierProvider
+    extends
+        $NotifierProvider<
+          AddressesWalletTypeFlagNotifier,
+          AddressesWalletTypeFlag
+        > {
+  const AddressesWalletTypeFlagNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'addressesWalletTypeFlagProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$addressesWalletTypeFlagNotifierHash();
+
+  @$internal
+  @override
+  AddressesWalletTypeFlagNotifier create() => AddressesWalletTypeFlagNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AddressesWalletTypeFlag value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AddressesWalletTypeFlag>(value),
+    );
+  }
+}
+
 String _$addressesWalletTypeFlagNotifierHash() =>
     r'0522e0a6fe001a7803f7793e8c3dd91e4a55e0d9';
 
-/// See also [AddressesWalletTypeFlagNotifier].
-@ProviderFor(AddressesWalletTypeFlagNotifier)
-final addressesWalletTypeFlagNotifierProvider =
-    AutoDisposeNotifierProvider<
-      AddressesWalletTypeFlagNotifier,
-      AddressesWalletTypeFlag
-    >.internal(
-      AddressesWalletTypeFlagNotifier.new,
-      name: r'addressesWalletTypeFlagNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$addressesWalletTypeFlagNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$AddressesWalletTypeFlagNotifier
+    extends $Notifier<AddressesWalletTypeFlag> {
+  AddressesWalletTypeFlag build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<AddressesWalletTypeFlag, AddressesWalletTypeFlag>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AddressesWalletTypeFlag, AddressesWalletTypeFlag>,
+              AddressesWalletTypeFlag,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$AddressesWalletTypeFlagNotifier =
-    AutoDisposeNotifier<AddressesWalletTypeFlag>;
+@ProviderFor(AddressesAddressTypeFlagNotifier)
+const addressesAddressTypeFlagProvider =
+    AddressesAddressTypeFlagNotifierProvider._();
+
+final class AddressesAddressTypeFlagNotifierProvider
+    extends
+        $NotifierProvider<
+          AddressesAddressTypeFlagNotifier,
+          AddressesAddressTypeFlag
+        > {
+  const AddressesAddressTypeFlagNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'addressesAddressTypeFlagProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$addressesAddressTypeFlagNotifierHash();
+
+  @$internal
+  @override
+  AddressesAddressTypeFlagNotifier create() =>
+      AddressesAddressTypeFlagNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AddressesAddressTypeFlag value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AddressesAddressTypeFlag>(value),
+    );
+  }
+}
+
 String _$addressesAddressTypeFlagNotifierHash() =>
     r'fe77ad59f15d0e3a9de3162a0943d7b4573a81f8';
 
-/// See also [AddressesAddressTypeFlagNotifier].
-@ProviderFor(AddressesAddressTypeFlagNotifier)
-final addressesAddressTypeFlagNotifierProvider =
-    AutoDisposeNotifierProvider<
-      AddressesAddressTypeFlagNotifier,
-      AddressesAddressTypeFlag
-    >.internal(
-      AddressesAddressTypeFlagNotifier.new,
-      name: r'addressesAddressTypeFlagNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$addressesAddressTypeFlagNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$AddressesAddressTypeFlagNotifier
+    extends $Notifier<AddressesAddressTypeFlag> {
+  AddressesAddressTypeFlag build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<AddressesAddressTypeFlag, AddressesAddressTypeFlag>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AddressesAddressTypeFlag, AddressesAddressTypeFlag>,
+              AddressesAddressTypeFlag,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$AddressesAddressTypeFlagNotifier =
-    AutoDisposeNotifier<AddressesAddressTypeFlag>;
+@ProviderFor(AddressesBalanceTypeFlagNotifier)
+const addressesBalanceTypeFlagProvider =
+    AddressesBalanceTypeFlagNotifierProvider._();
+
+final class AddressesBalanceTypeFlagNotifierProvider
+    extends
+        $NotifierProvider<
+          AddressesBalanceTypeFlagNotifier,
+          AddressesBalanceFlag
+        > {
+  const AddressesBalanceTypeFlagNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'addressesBalanceTypeFlagProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$addressesBalanceTypeFlagNotifierHash();
+
+  @$internal
+  @override
+  AddressesBalanceTypeFlagNotifier create() =>
+      AddressesBalanceTypeFlagNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AddressesBalanceFlag value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AddressesBalanceFlag>(value),
+    );
+  }
+}
+
 String _$addressesBalanceTypeFlagNotifierHash() =>
     r'0e13c3bafcdca1fc1c14852d4da8ba4c91bf9aa0';
 
-/// See also [AddressesBalanceTypeFlagNotifier].
-@ProviderFor(AddressesBalanceTypeFlagNotifier)
-final addressesBalanceTypeFlagNotifierProvider =
-    AutoDisposeNotifierProvider<
-      AddressesBalanceTypeFlagNotifier,
-      AddressesBalanceFlag
-    >.internal(
-      AddressesBalanceTypeFlagNotifier.new,
-      name: r'addressesBalanceTypeFlagNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$addressesBalanceTypeFlagNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+abstract class _$AddressesBalanceTypeFlagNotifier
+    extends $Notifier<AddressesBalanceFlag> {
+  AddressesBalanceFlag build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AddressesBalanceFlag, AddressesBalanceFlag>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AddressesBalanceFlag, AddressesBalanceFlag>,
+              AddressesBalanceFlag,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(inputsAddressesAsync)
+const inputsAddressesAsyncProvider = InputsAddressesAsyncProvider._();
+
+final class InputsAddressesAsyncProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>,
+          AsyncValue<AddressesModel>
+        >
+    with $Provider<AsyncValue<AddressesModel>> {
+  const InputsAddressesAsyncProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inputsAddressesAsyncProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inputsAddressesAsyncHash();
+
+  @$internal
+  @override
+  $ProviderElement<AsyncValue<AddressesModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AsyncValue<AddressesModel> create(Ref ref) {
+    return inputsAddressesAsync(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<AddressesModel> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<AddressesModel>>(value),
     );
+  }
+}
 
-typedef _$AddressesBalanceTypeFlagNotifier =
-    AutoDisposeNotifier<AddressesBalanceFlag>;
-String _$selectedInputsNotifierHash() =>
-    r'552487d0df3dae807434e94c71b3795964ab2b47';
+String _$inputsAddressesAsyncHash() =>
+    r'b46c153f2c9554afc2caeaa77aff6fa248d520ff';
 
-/// See also [SelectedInputsNotifier].
 @ProviderFor(SelectedInputsNotifier)
-final selectedInputsNotifierProvider =
-    AutoDisposeNotifierProvider<
-      SelectedInputsNotifier,
-      List<UtxosItem>
-    >.internal(
-      SelectedInputsNotifier.new,
-      name: r'selectedInputsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$selectedInputsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const selectedInputsProvider = SelectedInputsNotifierProvider._();
 
-typedef _$SelectedInputsNotifier = AutoDisposeNotifier<List<UtxosItem>>;
+final class SelectedInputsNotifierProvider
+    extends $NotifierProvider<SelectedInputsNotifier, List<UtxosItem>> {
+  const SelectedInputsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedInputsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedInputsNotifierHash();
+
+  @$internal
+  @override
+  SelectedInputsNotifier create() => SelectedInputsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<UtxosItem> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<UtxosItem>>(value),
+    );
+  }
+}
+
+String _$selectedInputsNotifierHash() =>
+    r'264a90162e7d770a3c708f9c7c31c8781e6f4146';
+
+abstract class _$SelectedInputsNotifier extends $Notifier<List<UtxosItem>> {
+  List<UtxosItem> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<List<UtxosItem>, List<UtxosItem>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<UtxosItem>, List<UtxosItem>>,
+              List<UtxosItem>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(selectedInputsHelper)
+const selectedInputsHelperProvider = SelectedInputsHelperProvider._();
+
+final class SelectedInputsHelperProvider
+    extends
+        $FunctionalProvider<
+          SelectedInputsHelper,
+          SelectedInputsHelper,
+          SelectedInputsHelper
+        >
+    with $Provider<SelectedInputsHelper> {
+  const SelectedInputsHelperProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedInputsHelperProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedInputsHelperHash();
+
+  @$internal
+  @override
+  $ProviderElement<SelectedInputsHelper> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  SelectedInputsHelper create(Ref ref) {
+    return selectedInputsHelper(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SelectedInputsHelper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SelectedInputsHelper>(value),
+    );
+  }
+}
+
+String _$selectedInputsHelperHash() =>
+    r'00f9e6826360f87d21ef6ed4805e04f9ae79b9d4';
+
+@ProviderFor(InputListItemExpandedStatesNotifier)
+const inputListItemExpandedStatesProvider =
+    InputListItemExpandedStatesNotifierProvider._();
+
+final class InputListItemExpandedStatesNotifierProvider
+    extends
+        $NotifierProvider<
+          InputListItemExpandedStatesNotifier,
+          List<InputListItemExpandedState>
+        > {
+  const InputListItemExpandedStatesNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inputListItemExpandedStatesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$inputListItemExpandedStatesNotifierHash();
+
+  @$internal
+  @override
+  InputListItemExpandedStatesNotifier create() =>
+      InputListItemExpandedStatesNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<InputListItemExpandedState> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<InputListItemExpandedState>>(
+        value,
+      ),
+    );
+  }
+}
+
 String _$inputListItemExpandedStatesNotifierHash() =>
     r'9f2a1a47e13d00e71dcf871b9500b0249324a859';
 
-/// See also [InputListItemExpandedStatesNotifier].
-@ProviderFor(InputListItemExpandedStatesNotifier)
-final inputListItemExpandedStatesNotifierProvider =
-    AutoDisposeNotifierProvider<
-      InputListItemExpandedStatesNotifier,
-      List<InputListItemExpandedState>
-    >.internal(
-      InputListItemExpandedStatesNotifier.new,
-      name: r'inputListItemExpandedStatesNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$inputListItemExpandedStatesNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$InputListItemExpandedStatesNotifier
+    extends $Notifier<List<InputListItemExpandedState>> {
+  List<InputListItemExpandedState> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<
+              List<InputListItemExpandedState>,
+              List<InputListItemExpandedState>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                List<InputListItemExpandedState>,
+                List<InputListItemExpandedState>
+              >,
+              List<InputListItemExpandedState>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$InputListItemExpandedStatesNotifier =
-    AutoDisposeNotifier<List<InputListItemExpandedState>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(inputListItemExpandedState)
+const inputListItemExpandedStateProvider = InputListItemExpandedStateFamily._();
+
+final class InputListItemExpandedStateProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const InputListItemExpandedStateProvider._({
+    required InputListItemExpandedStateFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'inputListItemExpandedStateProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$inputListItemExpandedStateHash();
+
+  @override
+  String toString() {
+    return r'inputListItemExpandedStateProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    final argument = this.argument as int;
+    return inputListItemExpandedState(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is InputListItemExpandedStateProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$inputListItemExpandedStateHash() =>
+    r'5150a1806086c045aa3b88ebbfe503a6b6536fcd';
+
+final class InputListItemExpandedStateFamily extends $Family
+    with $FunctionalFamilyOverride<bool, int> {
+  const InputListItemExpandedStateFamily._()
+    : super(
+        retry: null,
+        name: r'inputListItemExpandedStateProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  InputListItemExpandedStateProvider call(int hash) =>
+      InputListItemExpandedStateProvider._(argument: hash, from: this);
+
+  @override
+  String toString() => r'inputListItemExpandedStateProvider';
+}

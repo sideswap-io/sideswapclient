@@ -37,56 +37,61 @@ class DPinTextField extends HookConsumerWidget {
     final controller = useTextEditingController();
     final obscureText = useState(true);
 
-    controller.text = pin;
-    controller.selection = TextSelection.fromPosition(
-      TextPosition(offset: controller.text.length),
-    );
+    useEffect(() {
+      controller.text = pin;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
+      );
+      return;
+    }, [pin]);
 
-    return SizedBox(
-      width: 344,
-      height: 69,
-      child: Opacity(
-        opacity: enabled ? 1.0 : 0.5,
-        child: AbsorbPointer(
-          absorbing: enabled ? false : true,
-          child: TextField(
-            autofocus: true,
-            controller: controller,
-            focusNode: focusNode,
-            obscureText: obscureText.value,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            enabled: enabled,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
-              color: Colors.black,
-            ),
-            decoration: DSideSwapInputDecoration(
-              isDense: true,
-              errorText: errorMessage.isEmpty ? null : errorMessage,
-              suffixIcon: DPinIconButton(
+    return Column(
+      children: [
+        SizedBox(
+          width: 344,
+          height: 49,
+          child: Opacity(
+            opacity: enabled ? 1.0 : 0.5,
+            child: AbsorbPointer(
+              absorbing: enabled ? false : true,
+              child: TextField(
+                autofocus: true,
+                controller: controller,
+                focusNode: focusNode,
                 obscureText: obscureText.value,
-                onPressed: () {
-                  obscureText.value = !obscureText.value;
-                },
-              ),
-              focusedBorder:
-                  error
+                keyboardType: keyboardType,
+                inputFormatters: inputFormatters,
+                enabled: enabled,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black,
+                ),
+                decoration: DSideSwapInputDecoration(
+                  errorText: errorMessage.isEmpty ? null : errorMessage,
+                  suffixIcon: DPinIconButton(
+                    obscureText: obscureText.value,
+                    onPressed: () {
+                      obscureText.value = !obscureText.value;
+                    },
+                  ),
+                  focusedBorder: error
                       ? OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: SideSwapColors.bitterSweet,
-                        ),
-                        gapPadding: 0,
-                      )
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: SideSwapColors.bitterSweet,
+                          ),
+                          gapPadding: 0,
+                        )
                       : null,
+                ),
+                onChanged: onChanged,
+                onSubmitted: onSubmitted,
+              ),
             ),
-            onChanged: onChanged,
-            onSubmitted: onSubmitted,
           ),
         ),
-      ),
+      ],
     );
   }
 }

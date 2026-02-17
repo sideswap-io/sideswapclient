@@ -17,7 +17,7 @@ class DNetworkAccessOnboarding extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
 
     return DContentDialog(
@@ -51,14 +51,14 @@ class DNetworkAccessOnboardingSaveOrBackButton extends ConsumerWidget {
             if (needRestart) {
               await ref.read(desktopDialogProvider).showNeedRestartDialog();
 
-              final pageStatus = ref.read(pageStatusNotifierProvider);
+              final pageStatus = ref.read(pageStatusProvider);
               if (context.mounted && pageStatus == Status.noWallet) {
                 Navigator.of(context).pop();
               }
               return;
             }
 
-            ref.read(networkSettingsNotifierProvider.notifier).applySettings();
+            ref.read(networkSettingsProvider.notifier).applySettings();
             ref.read(walletProvider).sendNetworkSettings();
             Navigator.of(context).pop();
           },

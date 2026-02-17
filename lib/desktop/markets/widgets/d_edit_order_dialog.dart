@@ -33,7 +33,7 @@ class DEditOrderDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -44,7 +44,7 @@ class DEditOrderDialog extends HookConsumerWidget {
           ),
         );
 
-    final optionOrder = ref.watch(marketEditDetailsOrderNotifierProvider);
+    final optionOrder = ref.watch(marketEditDetailsOrderProvider);
 
     final closeCallback = useCallback(() {
       Navigator.of(context, rootNavigator: false).popUntil((route) {
@@ -59,7 +59,7 @@ class DEditOrderDialog extends HookConsumerWidget {
       editAmountController.addListener(() {
         Future.microtask(() {
           ref
-              .read(marketEditOrderAmountControllerNotifierProvider.notifier)
+              .read(marketEditOrderAmountControllerProvider.notifier)
               .setState(editAmountController.text);
         });
       });
@@ -74,7 +74,7 @@ class DEditOrderDialog extends HookConsumerWidget {
       editPriceController.addListener(() {
         Future.microtask(() {
           ref
-              .read(marketEditOrderPriceControllerNotifierProvider.notifier)
+              .read(marketEditOrderPriceControllerProvider.notifier)
               .setState(editPriceController.text);
         });
       });
@@ -84,7 +84,7 @@ class DEditOrderDialog extends HookConsumerWidget {
 
     final optionOldSubscribedAssetPair = useState(Option<AssetPair>.none());
     final marketSubscribeAssetPairNotifier = ref.watch(
-      marketSubscribedAssetPairNotifierProvider.notifier,
+      marketSubscribedAssetPairProvider.notifier,
     );
 
     useEffect(() {
@@ -99,9 +99,7 @@ class DEditOrderDialog extends HookConsumerWidget {
             // set tracking value on startup
             Future.microtask(
               () => ref
-                  .read(
-                    marketLimitTrackIndexPriceValueNotifierProvider.notifier,
-                  )
+                  .read(marketLimitTrackIndexPriceValueProvider.notifier)
                   .setState(
                     TrackingValue(
                       trackingValue: order.priceTrackingPercent.toDouble(),
@@ -111,7 +109,7 @@ class DEditOrderDialog extends HookConsumerWidget {
 
             // saved old subscribed market
             final optionSubscribedAssetPair = ref.read(
-              marketSubscribedAssetPairNotifierProvider,
+              marketSubscribedAssetPairProvider,
             );
             optionSubscribedAssetPair.match(() => () {}, (assetPair) {
               optionOldSubscribedAssetPair.value = Option.of(assetPair);
@@ -120,7 +118,7 @@ class DEditOrderDialog extends HookConsumerWidget {
             // subscribe to the market from the order asset pair
             Future.microtask(
               () => ref
-                  .read(marketSubscribedAssetPairNotifierProvider.notifier)
+                  .read(marketSubscribedAssetPairProvider.notifier)
                   .setState(order.assetPair),
             );
           }
@@ -164,9 +162,7 @@ class DEditOrderDialog extends HookConsumerWidget {
           if (amount.amount != order.amountDecimal) {
             Future.microtask(() {
               order.ownOrder.origAmount = Int64(amount.asSatoshi());
-              ref
-                  .read(marketEditDetailsOrderNotifierProvider.notifier)
-                  .setState(order);
+              ref.read(marketEditDetailsOrderProvider.notifier).setState(order);
             });
           }
         }),
@@ -179,9 +175,7 @@ class DEditOrderDialog extends HookConsumerWidget {
           if (editPrice.asDouble() != order.ownOrder.price) {
             Future.microtask(() {
               order.ownOrder.price = editPrice.asDouble();
-              ref
-                  .read(marketEditDetailsOrderNotifierProvider.notifier)
-                  .setState(order);
+              ref.read(marketEditDetailsOrderProvider.notifier).setState(order);
             });
           }
         }),
@@ -282,9 +276,7 @@ class DEditOrderDialog extends HookConsumerWidget {
         : defaultTrackingStyle.circlePositiveColor!;
     final textStyle = defaultTrackingStyle.textStyle!;
 
-    final trackingValue = ref.watch(
-      marketLimitTrackIndexPriceValueNotifierProvider,
-    );
+    final trackingValue = ref.watch(marketLimitTrackIndexPriceValueProvider);
 
     const maxPercent = 5.0;
     final minPercent = -maxPercent;
@@ -531,7 +523,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                                 .toRangeWithPrecision(value);
                             ref
                                 .read(
-                                  marketLimitTrackIndexPriceValueNotifierProvider
+                                  marketLimitTrackIndexPriceValueProvider
                                       .notifier,
                                 )
                                 .setState(
@@ -575,7 +567,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                     height: 39,
                     onPressed: () {
                       closeCallback();
-                      ref.invalidate(marketEditDetailsOrderNotifierProvider);
+                      ref.invalidate(marketEditDetailsOrderProvider);
                     },
                     child: Text('Back'.tr()),
                   ),
@@ -610,9 +602,7 @@ class DEditOrderDialog extends HookConsumerWidget {
                             ref.read(walletProvider).sendMsg(msg);
 
                             closeCallback();
-                            ref.invalidate(
-                              marketEditDetailsOrderNotifierProvider,
-                            );
+                            ref.invalidate(marketEditDetailsOrderProvider);
                           }
                         : null,
                     child: Text('Accept'.tr()),

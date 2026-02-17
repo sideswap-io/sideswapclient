@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_terms_viewer/flutter_terms_viewer.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/gpl_license.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
@@ -11,13 +11,9 @@ import 'package:sideswap/providers/wallet.dart';
 class DLicense extends ConsumerWidget {
   const DLicense({super.key});
 
-  Future<String> loadLicense() async {
-    return await rootBundle.loadString('LICENSE');
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
+    final firstLaunchState = ref.watch(firstLaunchStateProvider);
 
     return SideSwapPopupPage(
       onClose: () {
@@ -38,27 +34,35 @@ class DLicense extends ConsumerWidget {
         height: 550,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: SingleChildScrollView(
-            child: Center(
-              child: FutureBuilder(
-                future: loadLicense(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(
-                      snapshot.data as String,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.white,
+          child: Material(
+            elevation: 3.0,
+            color: Colors.transparent,
+            shadowColor: const Color(0xFF1E6389),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                top: 8,
+                bottom: 8,
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TermsViewer(
+                        data: Terms.from(kMappedEnAgreements),
+                        titleStyleBuilder: (data, style, index) {
+                          return style.copyWith(fontSize: 16);
+                        },
+                        textStyleBuilder: (data, style, index) {
+                          return style.copyWith(fontSize: 14);
+                        },
                       ),
-                    );
-                  }
-
-                  return const Padding(
-                    padding: EdgeInsets.only(top: 32),
-                    child: SpinKitThreeBounce(color: Colors.white, size: 24),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -73,7 +77,7 @@ class DLicense extends ConsumerWidget {
             Navigator.pop(context);
             ref.read(walletProvider).setLicenseAccepted();
             return switch (firstLaunchState) {
-              FirstLaunchStateCreateWallet() =>
+              FirstLaunchStateTypeCreateWallet() =>
                 await ref.read(walletProvider).setReviewLicenseCreateWallet(),
               _ => ref.read(walletProvider).startMnemonicImport(),
             };

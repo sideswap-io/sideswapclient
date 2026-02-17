@@ -18,7 +18,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
 
     return PopScope(

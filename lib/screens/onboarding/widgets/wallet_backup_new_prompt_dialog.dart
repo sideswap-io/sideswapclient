@@ -105,7 +105,7 @@ void showWalletBackupDialog(BuildContext context) {
                         backgroundColor: Colors.transparent,
                         onPressed: () {
                           ref
-                              .read(skipForNowNotifierProvider.notifier)
+                              .read(skipForNowProvider.notifier)
                               .setSkipState(const SkipForNowStateSkipped());
 
                           Navigator.of(context, rootNavigator: true).pop();

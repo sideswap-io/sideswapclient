@@ -16,8 +16,9 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
 
     // TODO (malcolmpl): Old markets
     // final selectedAccountAsset =

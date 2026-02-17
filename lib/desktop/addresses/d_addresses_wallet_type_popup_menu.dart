@@ -62,10 +62,10 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             walletTypeFlag == const AddressesWalletTypeFlagAll()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -99,11 +99,11 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             walletTypeFlag ==
-                                    const AddressesWalletTypeFlagRegular()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                                const AddressesWalletTypeFlagRegular()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -137,10 +137,10 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             walletTypeFlag == const AddressesWalletTypeFlagAmp()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -161,10 +161,10 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
     final clicked = useState(false);
 
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .addressesButtonStyle(false);
 
-    final walletTypeFlag = ref.watch(addressesWalletTypeFlagNotifierProvider);
+    final walletTypeFlag = ref.watch(addressesWalletTypeFlagProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,16 +181,15 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
           height: 32,
           child: DButton(
             key: buttonKey,
-            style:
-                clicked.value
-                    ? buttonStyle?.merge(
-                      DButtonStyle(
-                        backgroundColor: ButtonState.all(
-                          SideSwapColors.prussianBlue,
-                        ),
+            style: clicked.value
+                ? buttonStyle?.merge(
+                    DButtonStyle(
+                      backgroundColor: ButtonState.all(
+                        SideSwapColors.prussianBlue,
                       ),
-                    )
-                    : buttonStyle,
+                    ),
+                  )
+                : buttonStyle,
             onPressed: () async {
               clicked.value = true;
               final result = await showSortMenu(
@@ -199,12 +198,14 @@ class DAddressesWalletTypePopupMenu extends HookConsumerWidget {
                 walletTypeFlag,
               );
               (switch (result) {
-                AddressesWalletTypeFlag result => ref
-                    .read(addressesWalletTypeFlagNotifierProvider.notifier)
-                    .setFlag(result),
-                _ => ref
-                    .read(addressesWalletTypeFlagNotifierProvider.notifier)
-                    .setFlag(const AddressesWalletTypeFlagAll()),
+                AddressesWalletTypeFlag result =>
+                  ref
+                      .read(addressesWalletTypeFlagProvider.notifier)
+                      .setFlag(result),
+                _ =>
+                  ref
+                      .read(addressesWalletTypeFlagProvider.notifier)
+                      .setFlag(const AddressesWalletTypeFlagAll()),
               });
 
               clicked.value = false;

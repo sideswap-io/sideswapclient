@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/client_ffi.dart';
@@ -114,8 +113,9 @@ class DefaultConversionRateNotifier extends _$DefaultConversionRateNotifier {
   @override
   ConversionRate? build() {
     final defaultCurrency = ref.watch(configurationProvider).defaultCurrency;
-    final conversionRates =
-        ref.watch(conversionRatesNotifierProvider).usdConversionRates;
+    final conversionRates = ref
+        .watch(conversionRatesProvider)
+        .usdConversionRates;
 
     // try to find saved assetId
     final savedCurrency = switch (defaultCurrency) {
@@ -152,7 +152,7 @@ class DefaultConversionRateNotifier extends _$DefaultConversionRateNotifier {
 
 @riverpod
 Decimal defaultConversionRateMultiplier(Ref ref) {
-  final conversionRate = ref.watch(defaultConversionRateNotifierProvider);
+  final conversionRate = ref.watch(defaultConversionRateProvider);
   return switch (conversionRate) {
     final conversionRate? => conversionRate.rate,
     _ => Decimal.one,

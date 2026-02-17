@@ -15,7 +15,7 @@ class JadeDevices extends HookConsumerWidget {
   const JadeDevices({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jadeDeviceState = ref.watch(jadeDeviceNotifierProvider);
+    final jadeDeviceState = ref.watch(jadeDeviceProvider);
 
     return SideSwapScaffold(
       onPopInvokedWithResult: (didPop, result) {
@@ -58,7 +58,7 @@ class JadeDeviceItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final jadeOnboardingRegistration = ref.watch(
-      jadeOnboardingRegistrationNotifierProvider,
+      jadeOnboardingRegistrationProvider,
     );
 
     return Column(
@@ -71,17 +71,17 @@ class JadeDeviceItem extends ConsumerWidget {
             backgroundColor: SideSwapColors.blueSapphire,
             onPressed:
                 jadeOnboardingRegistration !=
-                        const JadeOnboardingRegistrationStateIdle()
-                    ? null
-                    : () {
-                      ref
-                          .read(jadeSelectedDeviceProvider.notifier)
-                          .setJadePortsPort(jadePort);
-                      ref
-                          .read(pageStatusNotifierProvider.notifier)
-                          .setStatus(Status.jadeConnecting);
-                      ref.read(walletProvider).jadeLogin(jadePort.jadeId);
-                    },
+                    const JadeOnboardingRegistrationStateIdle()
+                ? null
+                : () {
+                    ref
+                        .read(jadeSelectedDeviceProvider.notifier)
+                        .setJadePortsPort(jadePort);
+                    ref
+                        .read(pageStatusProvider.notifier)
+                        .setStatus(Status.jadeConnecting);
+                    ref.read(walletProvider).jadeLogin(jadePort.jadeId);
+                  },
             child: SizedBox(
               height: 78,
               child: Row(

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 
@@ -231,10 +230,8 @@ class QrCodeHelper {
 
     // maybe it's a json?
     try {
-      await ref
-          .read(outputsReaderNotifierProvider.notifier)
-          .decodeJsonString(qrCode);
-      final outputsData = ref.read(outputsReaderNotifierProvider);
+      await ref.read(outputsReaderProvider.notifier).decodeJsonString(qrCode);
+      final outputsData = ref.read(outputsReaderProvider);
       return outputsData.match(
         (l) {
           return Right(_emitError(l.message ?? ''));

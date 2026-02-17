@@ -20,7 +20,7 @@ class TxItemTransaction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem));
     final txImageAssetName = transItemHelper.getTxImageAssetName();
-    final status = transItemHelper.txStatus();
+    final txStatus = transItemHelper.txStatus();
     final confsColor = transItem.hasConfs()
         ? SideSwapColors.cornFlower
         : SideSwapColors.brightTurquoise;
@@ -46,7 +46,7 @@ class TxItemTransaction extends ConsumerWidget {
                 ),
                 const Spacer(),
                 Text(
-                  status,
+                  txStatus.status,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 14,
                     color: confsColor,

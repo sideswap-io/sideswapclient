@@ -33,7 +33,7 @@ class MarketSwapPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final tradeButtonEnabled = ref.watch(marketOrderTradeButtonEnabledProvider);
     final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
@@ -77,6 +77,7 @@ class MarketSwapPage extends HookConsumerWidget {
             SizedBox(height: 14),
             MarketHeader(),
             Flexible(child: MarketSwapBody()),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: MarketOrderButton(
@@ -124,15 +125,15 @@ class MarketSwapAmount extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final marketSideState = ref.watch(marketSideStateNotifierProvider);
+    final marketSideState = ref.watch(marketSideStateProvider);
     final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
     final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
     final tradeButtonEnabled = ref.watch(marketOrderTradeButtonEnabledProvider);
     final optionSubscribedAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
+      marketSubscribedAssetPairProvider,
     );
     final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
 
@@ -144,7 +145,7 @@ class MarketSwapAmount extends HookConsumerWidget {
         amountController.clear();
         Future.microtask(
           () => ref
-              .read(marketOrderAmountControllerNotifierProvider.notifier)
+              .read(marketOrderAmountControllerProvider.notifier)
               .setState(amountController.text),
         );
       });
@@ -155,7 +156,7 @@ class MarketSwapAmount extends HookConsumerWidget {
       amountController.addListener(() {
         Future.microtask(
           () => ref
-              .read(marketOrderAmountControllerNotifierProvider.notifier)
+              .read(marketOrderAmountControllerProvider.notifier)
               .setState(amountController.text),
         );
       });
@@ -167,7 +168,7 @@ class MarketSwapAmount extends HookConsumerWidget {
       amountController.clear();
       Future.microtask(
         () => ref
-            .read(marketOrderAmountControllerNotifierProvider.notifier)
+            .read(marketOrderAmountControllerProvider.notifier)
             .setState(amountController.text),
       );
 
@@ -253,9 +254,7 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final acceptButtonClicked = useState(false);
 
-    final optionQuoteSuccess = ref.watch(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
+    final optionQuoteSuccess = ref.watch(previewOrderQuoteSuccessProvider);
     final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     final closeCallback = useCallback(() {
@@ -264,7 +263,7 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
       });
 
       Future.microtask(() {
-        ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+        ref.invalidate(previewOrderQuoteSuccessProvider);
       });
     });
 
@@ -282,9 +281,9 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
 
     useEffect(() {
       optionAccepQuoteSuccess.match(() {}, (txid) {
-        ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
-        ref.invalidate(quoteEventNotifierProvider);
-        ref.invalidate(marketQuoteNotifierProvider);
+        ref.read(quoteEventProvider.notifier).stopQuotes();
+        ref.invalidate(quoteEventProvider);
+        ref.invalidate(marketQuoteProvider);
       });
 
       return;
@@ -292,9 +291,9 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
 
     useEffect(() {
       optionAcceptQuoteError.match(() {}, (error) {
-        ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
-        ref.invalidate(quoteEventNotifierProvider);
-        ref.invalidate(marketQuoteNotifierProvider);
+        ref.read(quoteEventProvider.notifier).stopQuotes();
+        ref.invalidate(quoteEventProvider);
+        ref.invalidate(marketQuoteProvider);
         closeCallback();
       });
 
@@ -368,16 +367,13 @@ class MobileOrderPreviewDialog extends HookConsumerWidget {
                             ? () async {
                                 ref
                                     .read(
-                                      jadeAuthInProgressStateNotifierProvider
-                                          .notifier,
+                                      jadeAuthInProgressStateProvider.notifier,
                                     )
                                     .setState(true);
                                 final authSucceed = await ref
                                     .read(walletProvider)
                                     .isAuthenticated();
-                                ref.invalidate(
-                                  jadeAuthInProgressStateNotifierProvider,
-                                );
+                                ref.invalidate(jadeAuthInProgressStateProvider);
                                 if (!authSucceed) {
                                   return;
                                 }

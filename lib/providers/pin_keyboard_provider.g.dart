@@ -6,23 +6,52 @@ part of 'pin_keyboard_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pinKeyboardHelperHash() => r'bfd490d387791c7338dbd16a40af567ccd6d15d6';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [pinKeyboardHelper].
 @ProviderFor(pinKeyboardHelper)
-final pinKeyboardHelperProvider =
-    AutoDisposeProvider<PinKeyboardHelper>.internal(
-      pinKeyboardHelper,
-      name: r'pinKeyboardHelperProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$pinKeyboardHelperHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const pinKeyboardHelperProvider = PinKeyboardHelperProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PinKeyboardHelperRef = AutoDisposeProviderRef<PinKeyboardHelper>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class PinKeyboardHelperProvider
+    extends
+        $FunctionalProvider<
+          PinKeyboardHelper,
+          PinKeyboardHelper,
+          PinKeyboardHelper
+        >
+    with $Provider<PinKeyboardHelper> {
+  const PinKeyboardHelperProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pinKeyboardHelperProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pinKeyboardHelperHash();
+
+  @$internal
+  @override
+  $ProviderElement<PinKeyboardHelper> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PinKeyboardHelper create(Ref ref) {
+    return pinKeyboardHelper(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PinKeyboardHelper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PinKeyboardHelper>(value),
+    );
+  }
+}
+
+String _$pinKeyboardHelperHash() => r'bfd490d387791c7338dbd16a40af567ccd6d15d6';

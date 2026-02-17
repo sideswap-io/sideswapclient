@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -14,6 +13,8 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'addresses_providers.g.dart';
 part 'addresses_providers.freezed.dart';
+
+const int maxUtxosCount = 256;
 
 @freezed
 sealed class UtxosItem with _$UtxosItem {
@@ -93,8 +94,8 @@ class LoadUtxosStateNotifier extends _$LoadUtxosStateNotifier {
 class AddressesAsyncNotifier extends _$AddressesAsyncNotifier {
   @override
   FutureOr<AddressesModel> build(Account account) {
-    final loadAddressesState = ref.watch(loadAddressesStateNotifierProvider);
-    final loadUtxosState = ref.watch(loadUtxosStateNotifierProvider);
+    final loadAddressesState = ref.watch(loadAddressesStateProvider);
+    final loadUtxosState = ref.watch(loadUtxosStateProvider);
 
     if (loadAddressesState is LoadAddressesStateData &&
         loadAddressesState.loadAddresses.account != account) {
@@ -155,7 +156,7 @@ class AddressesAsyncNotifier extends _$AddressesAsyncNotifier {
 
 @riverpod
 AsyncValue<AddressesModel> regularAddressesModelAsync(Ref ref) {
-  final regularModel = ref.watch(addressesAsyncNotifierProvider(Account.REG));
+  final regularModel = ref.watch(addressesAsyncProvider(Account.REG));
 
   return switch (regularModel) {
     AsyncValue(hasValue: true, value: AddressesModel addressesModel) =>
@@ -166,7 +167,7 @@ AsyncValue<AddressesModel> regularAddressesModelAsync(Ref ref) {
 
 @riverpod
 AsyncValue<AddressesModel> ampAdressesModelAsync(Ref ref) {
-  final ampModel = ref.watch(addressesAsyncNotifierProvider(Account.AMP_));
+  final ampModel = ref.watch(addressesAsyncProvider(Account.AMP_));
 
   return switch (ampModel) {
     AsyncValue(hasValue: true, value: AddressesModel addressesModel) =>
@@ -216,42 +217,39 @@ AsyncValue<AddressesModel> filteredAddressesAsync(Ref ref) {
     return const AsyncValue.loading();
   }
 
-  final walletTypeFlag = ref.watch(addressesWalletTypeFlagNotifierProvider);
+  final walletTypeFlag = ref.watch(addressesWalletTypeFlagProvider);
 
   var addresses = addressesModel.addresses ?? [];
-  addresses =
-      switch (walletTypeFlag) {
-        AddressesWalletTypeFlagRegular() => addresses.where(
-          (element) => element.account == Account.REG,
-        ),
-        AddressesWalletTypeFlagAmp() => addresses.where(
-          (element) => element.account == Account.AMP_,
-        ),
-        _ => addresses,
-      }.toList();
+  addresses = switch (walletTypeFlag) {
+    AddressesWalletTypeFlagRegular() => addresses.where(
+      (element) => element.account == Account.REG,
+    ),
+    AddressesWalletTypeFlagAmp() => addresses.where(
+      (element) => element.account == Account.AMP_,
+    ),
+    _ => addresses,
+  }.toList();
 
-  final addressTypeFlag = ref.watch(addressesAddressTypeFlagNotifierProvider);
+  final addressTypeFlag = ref.watch(addressesAddressTypeFlagProvider);
 
-  addresses =
-      switch (addressTypeFlag) {
-        AddressesAddressTypeFlagInternal() => addresses.where(
-          (element) => element.isInternal == true,
-        ),
-        AddressesAddressTypeFlagExternal() => addresses.where(
-          (element) => element.isInternal == false,
-        ),
-        _ => addresses,
-      }.toList();
+  addresses = switch (addressTypeFlag) {
+    AddressesAddressTypeFlagInternal() => addresses.where(
+      (element) => element.isInternal == true,
+    ),
+    AddressesAddressTypeFlagExternal() => addresses.where(
+      (element) => element.isInternal == false,
+    ),
+    _ => addresses,
+  }.toList();
 
-  final balanceTypeFlag = ref.watch(addressesBalanceTypeFlagNotifierProvider);
+  final balanceTypeFlag = ref.watch(addressesBalanceTypeFlagProvider);
 
-  addresses =
-      switch (balanceTypeFlag) {
-        AddressesBalanceFlagHideEmpty() => addresses.where(
-          (element) => element.utxos?.isNotEmpty == true,
-        ),
-        _ => addresses,
-      }.toList();
+  addresses = switch (balanceTypeFlag) {
+    AddressesBalanceFlagHideEmpty() => addresses.where(
+      (element) => element.utxos?.isNotEmpty == true,
+    ),
+    _ => addresses,
+  }.toList();
 
   return AsyncValue.data(AddressesModel(addresses: addresses));
 }
@@ -308,13 +306,14 @@ class AddressesItemHelper {
 
   Widget asset() {
     return switch (utxoCount()) {
-      1 => ref
-          .read(assetImageRepositoryProvider)
-          .getCustomImage(
-            addressesItem.utxos!.first.assetId,
-            width: 24,
-            height: 24,
-          ),
+      1 =>
+        ref
+            .read(assetImageRepositoryProvider)
+            .getCustomImage(
+              addressesItem.utxos!.first.assetId,
+              width: 24,
+              height: 24,
+            ),
       _ when utxoCount() > 1 => Text(
         'Multiple'.tr(),
         textAlign: TextAlign.left,
@@ -325,23 +324,25 @@ class AddressesItemHelper {
 
   Widget amount() {
     final precision = switch (utxoCount()) {
-      1 => ref
-          .read(assetUtilsProvider)
-          .getPrecisionForAssetId(
-            assetId: addressesItem.utxos!.first.assetId ?? '',
-          ),
+      1 =>
+        ref
+            .read(assetUtilsProvider)
+            .getPrecisionForAssetId(
+              assetId: addressesItem.utxos!.first.assetId ?? '',
+            ),
       _ => 0,
     };
 
     final amountStr = switch (utxoCount()) {
-      1 => ref
-          .read(amountToStringProvider)
-          .amountToString(
-            AmountToStringParameters(
-              amount: addressesItem.utxos?.first.amount ?? 0,
-              precision: precision,
+      1 =>
+        ref
+            .read(amountToStringProvider)
+            .amountToString(
+              AmountToStringParameters(
+                amount: addressesItem.utxos?.first.amount ?? 0,
+                precision: precision,
+              ),
             ),
-          ),
       _ => '',
     };
 
@@ -447,21 +448,19 @@ AsyncValue<AddressesModel> inputsAddressesAsync(Ref ref) {
     return const AsyncValue.loading();
   }
 
-  final walletTypeFlag = ref.watch(inputsWalletTypeFlagNotifierProvider);
+  final walletTypeFlag = ref.watch(inputsWalletFlagProvider);
 
   final accountId = switch (walletTypeFlag) {
-    InputsWalletTypeFlagRegular() => Account.REG,
+    InputsWalletFlagTypeRegular() => Account.REG,
     _ => Account.AMP_,
   };
 
-  final newAddresses =
-      addressesModel.addresses
-          ?.where(
-            (element) =>
-                element.utxos?.isNotEmpty == true &&
-                element.account == accountId,
-          )
-          .toList();
+  final newAddresses = addressesModel.addresses
+      ?.where(
+        (element) =>
+            element.utxos?.isNotEmpty == true && element.account == accountId,
+      )
+      .toList();
 
   return AsyncValue.data(AddressesModel(addresses: newAddresses));
 }
@@ -470,7 +469,7 @@ AsyncValue<AddressesModel> inputsAddressesAsync(Ref ref) {
 class SelectedInputsNotifier extends _$SelectedInputsNotifier {
   @override
   List<UtxosItem> build() {
-    ref.watch(inputsWalletTypeFlagNotifierProvider);
+    ref.watch(inputsWalletFlagProvider);
     return [];
   }
 
@@ -499,16 +498,6 @@ class SelectedInputsNotifier extends _$SelectedInputsNotifier {
       }
 
       addItem(utxo);
-    }
-  }
-
-  void addAllItemsFromModel(AddressesModel addressesModel) {
-    if (addressesModel.addresses == null) {
-      return;
-    }
-
-    for (final addressesItem in addressesModel.addresses!) {
-      addAllItems(addressesItem.utxos);
     }
   }
 
@@ -548,7 +537,7 @@ class SelectedInputsNotifier extends _$SelectedInputsNotifier {
 
 @riverpod
 SelectedInputsHelper selectedInputsHelper(Ref ref) {
-  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+  final selectedInputs = ref.watch(selectedInputsProvider);
   return SelectedInputsHelper(ref: ref, utxos: selectedInputs);
 }
 
@@ -598,6 +587,10 @@ class SelectedInputsHelper {
     return utxos.length;
   }
 
+  int maxUtxos() {
+    return maxUtxosCount;
+  }
+
   String lbtcTotalAmount() {
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
 
@@ -644,18 +637,18 @@ class SelectedInputsHelper {
 
   Widget utxoAsset({required UtxosItem? utxo}) {
     return switch (utxo) {
-      UtxosItem() => ref
-          .read(assetImageRepositoryProvider)
-          .getCustomImage(utxo.assetId, width: 24, height: 24),
+      UtxosItem() =>
+        ref
+            .read(assetImageRepositoryProvider)
+            .getCustomImage(utxo.assetId, width: 24, height: 24),
       _ => const SizedBox(),
     };
   }
 
   String utxoTicker({required UtxosItem? utxo}) {
     return switch (utxo) {
-      UtxosItem() => ref
-          .read(assetUtilsProvider)
-          .tickerForAssetId(utxo.assetId),
+      UtxosItem() =>
+        ref.read(assetUtilsProvider).tickerForAssetId(utxo.assetId),
       _ => '',
     };
   }
@@ -746,9 +739,7 @@ class InputListItemExpandedStatesNotifier
 
 @riverpod
 bool inputListItemExpandedState(Ref ref, int hash) {
-  final expandedStateList = ref.watch(
-    inputListItemExpandedStatesNotifierProvider,
-  );
+  final expandedStateList = ref.watch(inputListItemExpandedStatesProvider);
   final index = expandedStateList.indexWhere((element) => element.hash == hash);
   if (index == -1) {
     return true; //default expanded state

@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -41,6 +40,136 @@ class $CvsStateCopyWith<$Res>  {
 $CvsStateCopyWith(CvsState _, $Res Function(CvsState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [CvsState].
+extension CvsStatePatterns on CvsState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CvsStateEmpty value)?  empty,TResult Function( CvsStateSuccess value)?  success,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case CvsStateEmpty() when empty != null:
+return empty(_that);case CvsStateSuccess() when success != null:
+return success(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CvsStateEmpty value)  empty,required TResult Function( CvsStateSuccess value)  success,}){
+final _that = this;
+switch (_that) {
+case CvsStateEmpty():
+return empty(_that);case CvsStateSuccess():
+return success(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CvsStateEmpty value)?  empty,TResult? Function( CvsStateSuccess value)?  success,}){
+final _that = this;
+switch (_that) {
+case CvsStateEmpty() when empty != null:
+return empty(_that);case CvsStateSuccess() when success != null:
+return success(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  empty,TResult Function()?  success,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case CvsStateEmpty() when empty != null:
+return empty();case CvsStateSuccess() when success != null:
+return success();case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  empty,required TResult Function()  success,}) {final _that = this;
+switch (_that) {
+case CvsStateEmpty():
+return empty();case CvsStateSuccess():
+return success();}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  empty,TResult? Function()?  success,}) {final _that = this;
+switch (_that) {
+case CvsStateEmpty() when empty != null:
+return empty();case CvsStateSuccess() when success != null:
+return success();case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -135,6 +264,148 @@ class $ExportCsvStateCopyWith<$Res>  {
 $ExportCsvStateCopyWith(ExportCsvState _, $Res Function(ExportCsvState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [ExportCsvState].
+extension ExportCsvStatePatterns on ExportCsvState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ExportCsvStateEmpty value)?  empty,TResult Function( ExportCsvStateLoading value)?  loading,TResult Function( ExportCsvStateError value)?  error,TResult Function( ExportCsvStateLoaded value)?  loaded,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case ExportCsvStateEmpty() when empty != null:
+return empty(_that);case ExportCsvStateLoading() when loading != null:
+return loading(_that);case ExportCsvStateError() when error != null:
+return error(_that);case ExportCsvStateLoaded() when loaded != null:
+return loaded(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ExportCsvStateEmpty value)  empty,required TResult Function( ExportCsvStateLoading value)  loading,required TResult Function( ExportCsvStateError value)  error,required TResult Function( ExportCsvStateLoaded value)  loaded,}){
+final _that = this;
+switch (_that) {
+case ExportCsvStateEmpty():
+return empty(_that);case ExportCsvStateLoading():
+return loading(_that);case ExportCsvStateError():
+return error(_that);case ExportCsvStateLoaded():
+return loaded(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ExportCsvStateEmpty value)?  empty,TResult? Function( ExportCsvStateLoading value)?  loading,TResult? Function( ExportCsvStateError value)?  error,TResult? Function( ExportCsvStateLoaded value)?  loaded,}){
+final _that = this;
+switch (_that) {
+case ExportCsvStateEmpty() when empty != null:
+return empty(_that);case ExportCsvStateLoading() when loading != null:
+return loading(_that);case ExportCsvStateError() when error != null:
+return error(_that);case ExportCsvStateLoaded() when loaded != null:
+return loaded(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  empty,TResult Function()?  loading,TResult Function( String? errorMsg)?  error,TResult Function( List<TransItem>? txs)?  loaded,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case ExportCsvStateEmpty() when empty != null:
+return empty();case ExportCsvStateLoading() when loading != null:
+return loading();case ExportCsvStateError() when error != null:
+return error(_that.errorMsg);case ExportCsvStateLoaded() when loaded != null:
+return loaded(_that.txs);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  empty,required TResult Function()  loading,required TResult Function( String? errorMsg)  error,required TResult Function( List<TransItem>? txs)  loaded,}) {final _that = this;
+switch (_that) {
+case ExportCsvStateEmpty():
+return empty();case ExportCsvStateLoading():
+return loading();case ExportCsvStateError():
+return error(_that.errorMsg);case ExportCsvStateLoaded():
+return loaded(_that.txs);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  empty,TResult? Function()?  loading,TResult? Function( String? errorMsg)?  error,TResult? Function( List<TransItem>? txs)?  loaded,}) {final _that = this;
+switch (_that) {
+case ExportCsvStateEmpty() when empty != null:
+return empty();case ExportCsvStateLoading() when loading != null:
+return loading();case ExportCsvStateError() when error != null:
+return error(_that.errorMsg);case ExportCsvStateLoaded() when loaded != null:
+return loaded(_that.txs);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

@@ -22,11 +22,11 @@ class AmpRegister extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdNotifierProvider);
+    final ampId = ref.watch(ampIdProvider);
     final stokrItems = ref.watch(stokrSecuritiesProvider);
     final pegxItems = ref.watch(pegxSecuritiesProvider);
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
-    final registerFailedReason = ref.watch(pegxRegisterFailedNotifierProvider);
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
+    final registerFailedReason = ref.watch(pegxRegisterFailedProvider);
     final checkAmpStatus = ref.watch(checkAmpStatusProvider);
 
     useEffect(() {
@@ -41,7 +41,7 @@ class AmpRegister extends HookConsumerWidget {
         () => switch (pegxLoginState) {
           PegxLoginStateLoginDialog() => () {
             ref
-                .read(pageStatusNotifierProvider.notifier)
+                .read(pageStatusProvider.notifier)
                 .setStatus(Status.pegxRegister);
           },
           PegxLoginStateLoading() => () {
@@ -72,7 +72,7 @@ class AmpRegister extends HookConsumerWidget {
             backgroundColor: SideSwapColors.chathamsBlue,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          ref.read(pegxRegisterFailedNotifierProvider.notifier).setState('');
+          ref.read(pegxRegisterFailedProvider.notifier).setState('');
         }
       });
 
@@ -126,7 +126,7 @@ class AmpRegister extends HookConsumerWidget {
                                 Consumer(
                                   builder: (context, ref, child) {
                                     final stokrGaidState = ref.watch(
-                                      stokrGaidNotifierProvider,
+                                      stokrGaidProvider,
                                     );
 
                                     return AmpServiceRegisterBox(
@@ -146,8 +146,7 @@ class AmpRegister extends HookConsumerWidget {
                                           ? () {
                                               ref
                                                   .read(
-                                                    pageStatusNotifierProvider
-                                                        .notifier,
+                                                    pageStatusProvider.notifier,
                                                   )
                                                   .setStatus(Status.stokrLogin);
                                             }
@@ -158,7 +157,7 @@ class AmpRegister extends HookConsumerWidget {
                                 Consumer(
                                   builder: (context, ref, child) {
                                     final pegxGaidState = ref.watch(
-                                      pegxGaidNotifierProvider,
+                                      pegxGaidProvider,
                                     );
                                     final env = ref.watch(envProvider);
 
@@ -182,7 +181,7 @@ class AmpRegister extends HookConsumerWidget {
                                           ? () {
                                               ref
                                                   .read(
-                                                    pegxLoginStateNotifierProvider
+                                                    pegxLoginStateProvider
                                                         .notifier,
                                                   )
                                                   .setState(
@@ -205,11 +204,11 @@ class AmpRegister extends HookConsumerWidget {
                                   .read(configurationProvider)
                                   .showAmpOnboarding) {
                                 ref
-                                    .read(pageStatusNotifierProvider.notifier)
+                                    .read(pageStatusProvider.notifier)
                                     .setStatus(Status.registered);
                               } else {
                                 ref
-                                    .read(pageStatusNotifierProvider.notifier)
+                                    .read(pageStatusProvider.notifier)
                                     .setStatus(Status.settingsPage);
                               }
 

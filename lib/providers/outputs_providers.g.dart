@@ -19,11 +19,10 @@ _OutputsData _$OutputsDataFromJson(Map json) => _OutputsData(
 
 Map<String, dynamic> _$OutputsDataToJson(_OutputsData instance) =>
     <String, dynamic>{
-      if (instance.type case final value?) 'type': value,
-      if (instance.version case final value?) 'version': value,
-      if (instance.timestamp case final value?) 'timestamp': value,
-      if (instance.receivers?.map((e) => e.toJson()).toList() case final value?)
-        'receivers': value,
+      'type': ?instance.type,
+      'version': ?instance.version,
+      'timestamp': ?instance.timestamp,
+      'receivers': ?instance.receivers?.map((e) => e.toJson()).toList(),
     };
 
 _OutputsReceiver _$OutputsReceiverFromJson(Map json) => _OutputsReceiver(
@@ -36,76 +35,192 @@ _OutputsReceiver _$OutputsReceiverFromJson(Map json) => _OutputsReceiver(
   ),
 );
 
-Map<String, dynamic> _$OutputsReceiverToJson(
-  _OutputsReceiver instance,
-) => <String, dynamic>{
-  if (instance.address case final value?) 'address': value,
-  if (instance.assetId case final value?) 'asset_id': value,
-  if (instance.satoshi case final value?) 'satoshi': value,
-  if (instance.comment case final value?) 'comment': value,
-  if (const IntToAccountConverter().toJson(instance.account) case final value?)
-    'account': value,
-};
+Map<String, dynamic> _$OutputsReceiverToJson(_OutputsReceiver instance) =>
+    <String, dynamic>{
+      'address': ?instance.address,
+      'asset_id': ?instance.assetId,
+      'satoshi': ?instance.satoshi,
+      'comment': ?instance.comment,
+      'account': ?const IntToAccountConverter().toJson(instance.account),
+    };
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$outputsDataLengthHash() => r'21e115eeb2198d6e20188fae4218b6832c39b714';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [outputsDataLength].
-@ProviderFor(outputsDataLength)
-final outputsDataLengthProvider = AutoDisposeProvider<int>.internal(
-  outputsDataLength,
-  name: r'outputsDataLengthProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$outputsDataLengthHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(OutputsReaderNotifier)
+const outputsReaderProvider = OutputsReaderNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OutputsDataLengthRef = AutoDisposeProviderRef<int>;
+final class OutputsReaderNotifierProvider
+    extends
+        $NotifierProvider<
+          OutputsReaderNotifier,
+          Either<OutputsError, OutputsData>
+        > {
+  const OutputsReaderNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'outputsReaderProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$outputsReaderNotifierHash();
+
+  @$internal
+  @override
+  OutputsReaderNotifier create() => OutputsReaderNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Either<OutputsError, OutputsData> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Either<OutputsError, OutputsData>>(
+        value,
+      ),
+    );
+  }
+}
+
 String _$outputsReaderNotifierHash() =>
     r'3ae7a8456be8e212e7d881c5fce69956682d4759';
 
-/// See also [OutputsReaderNotifier].
-@ProviderFor(OutputsReaderNotifier)
-final outputsReaderNotifierProvider =
-    NotifierProvider<
-      OutputsReaderNotifier,
-      Either<OutputsError, OutputsData>
-    >.internal(
-      OutputsReaderNotifier.new,
-      name: r'outputsReaderNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$outputsReaderNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$OutputsReaderNotifier
+    extends $Notifier<Either<OutputsError, OutputsData>> {
+  Either<OutputsError, OutputsData> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<
+              Either<OutputsError, OutputsData>,
+              Either<OutputsError, OutputsData>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                Either<OutputsError, OutputsData>,
+                Either<OutputsError, OutputsData>
+              >,
+              Either<OutputsError, OutputsData>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$OutputsReaderNotifier = Notifier<Either<OutputsError, OutputsData>>;
-String _$outputsCreatorHash() => r'660f6714019866830af3af3e4d49963269320d62';
-
-/// See also [OutputsCreator].
 @ProviderFor(OutputsCreator)
-final outputsCreatorProvider =
-    NotifierProvider<
-      OutputsCreator,
-      Either<OutputsError, OutputsData>
-    >.internal(
-      OutputsCreator.new,
-      name: r'outputsCreatorProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$outputsCreatorHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const outputsCreatorProvider = OutputsCreatorProvider._();
 
-typedef _$OutputsCreator = Notifier<Either<OutputsError, OutputsData>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class OutputsCreatorProvider
+    extends
+        $NotifierProvider<OutputsCreator, Either<OutputsError, OutputsData>> {
+  const OutputsCreatorProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'outputsCreatorProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$outputsCreatorHash();
+
+  @$internal
+  @override
+  OutputsCreator create() => OutputsCreator();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Either<OutputsError, OutputsData> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Either<OutputsError, OutputsData>>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$outputsCreatorHash() => r'ca25f35d383b0d9c8a132a666c34f25edf7fd819';
+
+abstract class _$OutputsCreator
+    extends $Notifier<Either<OutputsError, OutputsData>> {
+  Either<OutputsError, OutputsData> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<
+              Either<OutputsError, OutputsData>,
+              Either<OutputsError, OutputsData>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                Either<OutputsError, OutputsData>,
+                Either<OutputsError, OutputsData>
+              >,
+              Either<OutputsError, OutputsData>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(outputsDataLength)
+const outputsDataLengthProvider = OutputsDataLengthProvider._();
+
+final class OutputsDataLengthProvider extends $FunctionalProvider<int, int, int>
+    with $Provider<int> {
+  const OutputsDataLengthProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'outputsDataLengthProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$outputsDataLengthHash();
+
+  @$internal
+  @override
+  $ProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  int create(Ref ref) {
+    return outputsDataLength(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$outputsDataLengthHash() => r'21e115eeb2198d6e20188fae4218b6832c39b714';

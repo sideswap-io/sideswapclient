@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -475,6 +474,10 @@ class Configuration extends _$Configuration {
               encryptedData.isNotEmpty &&
               pinIdentifier.isNotEmpty =>
         () async {
+          final previousData = _pinData(prefs);
+          if (previousData is! PinDataStateEmpty) {
+            return;
+          }
           await prefs.setString(SideswapSettings.pinSaltField, salt);
           await prefs.setString(
             SideswapSettings.pinEncryptedDataField,
@@ -519,7 +522,7 @@ class Configuration extends _$Configuration {
     };
 
     final context = ref.read(navigatorKeyProvider).currentContext;
-    final lang = ref.read(localesNotifierProvider);
+    final lang = ref.read(localesProvider);
     if (settingsNetworkType == null && context != null && lang == 'zh') {
       return SettingsNetworkType.sideswapChina;
     }

@@ -77,7 +77,7 @@ class PageStatusNotifier extends _$PageStatusNotifier {
   @override
   Status build() {
     listenSelf((_, next) {
-      logger.d('${pageStatusNotifierProvider.toString()}: $next');
+      logger.d('${pageStatusProvider.toString()}: $next');
     });
     return Status.walletLoading;
   }

@@ -14,10 +14,10 @@ class DExportCsvButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .mainBottomNavigationBarButtonStyle;
 
-    final csvNotifier = ref.watch(csvNotifierProvider);
+    final csvNotifier = ref.watch(csvProvider);
     final disabled = switch (csvNotifier) {
       AsyncData(hasValue: true) => false,
       AsyncError() => false,

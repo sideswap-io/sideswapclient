@@ -6,37 +6,98 @@ part of 'client_ffi.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$libClientStateHash() => r'68046036a8364c09d0529d00d60bca1f86d089b4';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [libClientState].
-@ProviderFor(libClientState)
-final libClientStateProvider = Provider<LibClientState>.internal(
-  libClientState,
-  name: r'libClientStateProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$libClientStateHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(LibClientId)
+const libClientIdProvider = LibClientIdProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LibClientStateRef = ProviderRef<LibClientState>;
+final class LibClientIdProvider extends $NotifierProvider<LibClientId, int> {
+  const LibClientIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'libClientIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$libClientIdHash();
+
+  @$internal
+  @override
+  LibClientId create() => LibClientId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
 String _$libClientIdHash() => r'848a6c2450dd03273452115f644e9b17a604fda8';
 
-/// See also [LibClientId].
-@ProviderFor(LibClientId)
-final libClientIdProvider = NotifierProvider<LibClientId, int>.internal(
-  LibClientId.new,
-  name: r'libClientIdProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$libClientIdHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+abstract class _$LibClientId extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$LibClientId = Notifier<int>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(libClientState)
+const libClientStateProvider = LibClientStateProvider._();
+
+final class LibClientStateProvider
+    extends $FunctionalProvider<LibClientState, LibClientState, LibClientState>
+    with $Provider<LibClientState> {
+  const LibClientStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'libClientStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$libClientStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<LibClientState> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LibClientState create(Ref ref) {
+    return libClientState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LibClientState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LibClientState>(value),
+    );
+  }
+}
+
+String _$libClientStateHash() => r'68046036a8364c09d0529d00d60bca1f86d089b4';

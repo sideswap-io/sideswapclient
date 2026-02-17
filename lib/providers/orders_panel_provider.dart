@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -145,9 +144,9 @@ class InternalUiOrder {
 
 @riverpod
 Iterable<InternalUiOrder> internalUiOrders(Ref ref) {
-  final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
+  final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
   final publicOrderMap = ref.watch(debouncedMarketPublicOrdersProvider);
-  final uiOwnOrders = ref.watch(marketOwnOrdersNotifierProvider);
+  final uiOwnOrders = ref.watch(marketOwnOrdersProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return optionAssetPair.match(() => [], (assetPair) {
@@ -235,10 +234,9 @@ Iterable<InternalUiOrder> ordersPanelBids(Ref ref) {
 
   return bids.map((e) {
     final amount = Decimal.fromInt(e.amount);
-    var percent =
-        ((amount * Decimal.fromInt(100)) / maxAmount)
-            .toDecimal(scaleOnInfinitePrecision: 4)
-            .toDouble();
+    var percent = ((amount * Decimal.fromInt(100)) / maxAmount)
+        .toDecimal(scaleOnInfinitePrecision: 4)
+        .toDouble();
     percent = mathHelper.mapRange(percent, 0, 100, 0, 1).toDouble();
     return e.copyWith(amountPercent: percent);
   }).toList();
@@ -252,10 +250,9 @@ Iterable<InternalUiOrder> ordersPanelAsks(Ref ref) {
 
   return asks.map((e) {
     final amount = Decimal.fromInt(e.amount);
-    var percent =
-        ((amount * Decimal.fromInt(100)) / maxAmount)
-            .toDecimal(scaleOnInfinitePrecision: 4)
-            .toDouble();
+    var percent = ((amount * Decimal.fromInt(100)) / maxAmount)
+        .toDecimal(scaleOnInfinitePrecision: 4)
+        .toDouble();
     percent = mathHelper.mapRange(percent, 0, 100, 0, 1).toDouble();
     return e.copyWith(amountPercent: percent);
   }).toList();

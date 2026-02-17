@@ -52,15 +52,13 @@ class AddressQrScanner extends HookConsumerWidget {
             linkResultState,
             (orderId, privateId) {
               Future.microtask(() {
-                final walletMainArguments = ref.read(
-                  uiStateArgsNotifierProvider,
-                );
+                final walletMainArguments = ref.read(uiStateArgsProvider);
                 ref
-                    .read(uiStateArgsNotifierProvider.notifier)
+                    .read(uiStateArgsProvider.notifier)
                     .setWalletMainArguments(walletMainArguments.fromIndex(2));
 
                 // stop market quotes if any
-                ref.invalidate(marketQuoteNotifierProvider);
+                ref.invalidate(marketQuoteProvider);
 
                 final msg = To();
                 msg.startOrder = To_StartOrder(
@@ -68,7 +66,7 @@ class AddressQrScanner extends HookConsumerWidget {
                   privateId: privateId.isNotEmpty ? privateId : null,
                 );
                 ref.read(walletProvider).sendMsg(msg);
-                ref.invalidate(universalLinkResultStateNotifierProvider);
+                ref.invalidate(universalLinkResultStateProvider);
               });
             },
           );
@@ -80,9 +78,6 @@ class AddressQrScanner extends HookConsumerWidget {
         return;
       }(),
       _ => () async {
-        final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-        logger.d(liquidAssetId);
-
         final result = await ref
             .read(qrcodeHelperProvider)
             .parseDynamicQrCode(code);
@@ -95,7 +90,7 @@ class AddressQrScanner extends HookConsumerWidget {
 
           if (r.outputsData != null) {
             ref
-                .read(qrCodeResultModelNotifierProvider.notifier)
+                .read(qrCodeResultModelProvider.notifier)
                 .setModel(QrCodeResultModelData(result: r));
             return;
           }
@@ -112,7 +107,7 @@ class AddressQrScanner extends HookConsumerWidget {
           }
 
           ref
-              .read(qrCodeResultModelNotifierProvider.notifier)
+              .read(qrCodeResultModelProvider.notifier)
               .setModel(QrCodeResultModelData(result: r));
         });
 

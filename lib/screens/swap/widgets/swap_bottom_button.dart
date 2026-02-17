@@ -18,8 +18,9 @@ class SwapBottomButton extends HookConsumerWidget {
         width: double.infinity,
         height: 54,
         backgroundColor: SideSwapColors.brightTurquoise,
-        onPressed:
-            enabled ? () => ref.read(swapHelperProvider).swapAccept() : null,
+        onPressed: enabled
+            ? () => ref.read(swapHelperProvider).swapAccept()
+            : null,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -39,7 +40,7 @@ class SwapBottomButton extends HookConsumerWidget {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final swapState = ref.watch(swapStateNotifierProvider);
+                final swapState = ref.watch(swapStateProvider);
                 if (swapState == const SwapState.sent()) {
                   return const Padding(
                     padding: EdgeInsets.only(left: 84),

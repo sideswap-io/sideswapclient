@@ -18,6 +18,7 @@ class PinSetup extends HookConsumerWidget {
   const PinSetup({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(pinHelperProvider, (_, _) {});
     final firstPinFocusNode = useFocusNode();
     final secondPinFocusNode = useFocusNode();
 
@@ -86,11 +87,9 @@ class PinSetup extends HookConsumerWidget {
                           ),
                           child: Consumer(
                             builder: (context, ref, child) {
-                              final firstPin = ref.watch(
-                                firstPinNotifierProvider,
-                              );
+                              final firstPin = ref.watch(firstPinProvider);
                               final pinFieldState = ref.watch(
-                                pinFieldStateNotifierProvider,
+                                pinFieldStateProvider,
                               );
                               if (pinFieldState == const PinFieldStateFirst()) {
                                 firstPinFocusNode.requestFocus();
@@ -127,11 +126,9 @@ class PinSetup extends HookConsumerWidget {
                           ),
                           child: Consumer(
                             builder: (context, ref, child) {
-                              final secondPin = ref.watch(
-                                secondPinNotifierProvider,
-                              );
+                              final secondPin = ref.watch(secondPinProvider);
                               final pinFieldState = ref.watch(
-                                pinFieldStateNotifierProvider,
+                                pinFieldStateProvider,
                               );
                               if (pinFieldState ==
                                   const PinFieldState.second()) {
@@ -141,12 +138,12 @@ class PinSetup extends HookConsumerWidget {
                                 secondPinEnabledProvider,
                               );
                               final pinSetupState = ref.watch(
-                                pinSetupStateNotifierProvider,
+                                pinSetupStateProvider,
                               );
                               final errorMessage =
                                   (pinSetupState is PinSetupStateError)
-                                      ? pinSetupState.message
-                                      : '';
+                                  ? pinSetupState.message
+                                  : '';
 
                               return PinTextField(
                                 enabled: secondPinEnabled,
@@ -165,25 +162,25 @@ class PinSetup extends HookConsumerWidget {
                           child: Consumer(
                             builder: (context, ref, child) {
                               final firstLaunchState = ref.watch(
-                                firstLaunchStateNotifierProvider,
+                                firstLaunchStateProvider,
                               );
                               final isPinEnabled = ref.watch(
                                 pinAvailableProvider,
                               );
                               final pinFieldState = ref.watch(
-                                pinFieldStateNotifierProvider,
+                                pinFieldStateProvider,
                               );
                               return PinKeyboard(
                                 acceptType:
                                     firstLaunchState !=
-                                            const FirstLaunchStateEmpty()
-                                        ? pinFieldState ==
-                                                const PinFieldState.second()
-                                            ? PinKeyboardAcceptType.save
-                                            : PinKeyboardAcceptType.icon
-                                        : isPinEnabled
-                                        ? PinKeyboardAcceptType.disable
-                                        : PinKeyboardAcceptType.enable,
+                                        const FirstLaunchStateTypeEmpty()
+                                    ? pinFieldState ==
+                                              const PinFieldState.second()
+                                          ? PinKeyboardAcceptType.save
+                                          : PinKeyboardAcceptType.icon
+                                    : isPinEnabled
+                                    ? PinKeyboardAcceptType.disable
+                                    : PinKeyboardAcceptType.enable,
                               );
                             },
                           ),

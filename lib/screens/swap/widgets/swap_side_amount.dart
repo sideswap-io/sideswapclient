@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:marquee_plus/marquee.dart';
 import 'package:sideswap/common/enums.dart';
@@ -13,6 +14,7 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
+import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -122,16 +124,30 @@ class SwapSideAmount extends HookConsumerWidget {
       color: SideSwapColors.airSuperiorityBlue,
     );
 
-    final result = ref.watch(qrCodeResultModelNotifierProvider);
+    final optionAsset = useState(Option<Asset>.none());
+    final dropdownAsset = ref.watch(assetFromAssetIdProvider(dropdownValue));
+
+    useEffect(() {
+      optionAsset.value = dropdownAsset;
+      return;
+    }, [dropdownAsset]);
+
+    final result = ref.watch(qrCodeResultModelProvider);
 
     useEffect(() {
       (switch (result) {
         QrCodeResultModelData() => () {
           addressController?.text = result.result?.address ?? '';
+          if (result.result?.assetId != null &&
+              availableAssets.contains(result.result!.assetId!)) {
+            optionAsset.value = ref.watch(
+              assetFromAssetIdProvider(result.result!.assetId!),
+            );
+          }
           Future.microtask(() {
             onAddressChanged?.call(addressController?.text ?? '');
             ref
-                .read(qrCodeResultModelNotifierProvider.notifier)
+                .read(qrCodeResultModelProvider.notifier)
                 .setModel(const QrCodeResultModel.empty());
           });
         },
@@ -141,9 +157,7 @@ class SwapSideAmount extends HookConsumerWidget {
       return;
     }, [result]);
 
-    final optionAsset = ref.watch(assetFromAssetIdProvider(dropdownValue));
-
-    return optionAsset.match(
+    return optionAsset.value.match(
       () => const SizedBox(),
       (asset) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +278,10 @@ class SwapSideAmount extends HookConsumerWidget {
                       showInsufficientFunds || errorDescription.isNotEmpty,
                   controller: controller,
                   focusNode: focusNode ?? FocusNode(),
-                  dropdownValue: dropdownValue,
+                  dropdownValue: optionAsset.value.match(
+                    () => '',
+                    (asset) => asset.assetId,
+                  ),
                   availableAssets: availableAssets,
                   disabledAssets: disabledAssets,
                   onDropdownChanged: onDropdownChanged,
@@ -333,10 +350,7 @@ class SwapSideAmount extends HookConsumerWidget {
                             ? null
                             : () async {
                                 FocusManager.instance.primaryFocus?.unfocus();
-                                await Navigator.of(
-                                  context,
-                                  rootNavigator: true,
-                                ).push<void>(
+                                await Navigator.of(context).push<void>(
                                   MaterialPageRoute(
                                     builder: (context) => getAddressQrScanner(
                                       bitcoinAddress: true,
@@ -474,6 +488,7 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
   }
 }
 
+// TODO (malcolmpl): remove
 class SwapSideAmountLocalPegInDescription extends StatelessWidget {
   const SwapSideAmountLocalPegInDescription({super.key});
 
@@ -494,6 +509,7 @@ class SwapSideAmountLocalPegInDescription extends StatelessWidget {
   }
 }
 
+// TODO (malcolmpl): remove
 class SwapSideAmountExternPegInDescription extends StatelessWidget {
   const SwapSideAmountExternPegInDescription({super.key});
 
@@ -514,7 +530,7 @@ class SwapSideAmountExternPegInDescription extends StatelessWidget {
   }
 }
 
-class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
+class SwapSideAmountFeeSuggestionsDropdown extends HookConsumerWidget {
   const SwapSideAmountFeeSuggestionsDropdown({
     super.key,
     required this.padding,
@@ -523,7 +539,22 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pegOutEditFeeRateHelper = ref.watch(
+      pegOutEditFeeRateHelperProvider(Option.none()),
+    );
+    final defaultFeeRate = pegOutEditFeeRateHelper.defaultFeeRate();
+
+    useEffect(() {
+      Future.microtask(
+        () => ref
+            .read(bitcoinCurrentFeeRateProvider.notifier)
+            .setFeeRate(defaultFeeRate),
+      );
+
+      return;
+    }, const []);
+
     const labelStyle = TextStyle(
       fontSize: 15,
       fontWeight: FontWeight.w500,
@@ -548,7 +579,7 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionCurrentFeeRate = ref.watch(
-                  bitcoinCurrentFeeRateNotifierProvider,
+                  bitcoinCurrentFeeRateProvider,
                 );
 
                 return optionCurrentFeeRate.match(
@@ -556,29 +587,23 @@ class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
                     return const SizedBox();
                   },
                   (currentFeeRate) {
-                    if (currentFeeRate.blocks != 2) {
-                      return Row(
-                        children: [
-                          Icon(
-                            Icons.warning_amber_rounded,
-                            color: Colors.amber,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              'Your peg-out transaction will only be broadcast to the Bitcoin network once the network fee you have selected is sufficient to be processed by miners and included in a block.',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
+                    return Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded, color: Colors.amber),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'Your peg-out transaction will only be broadcast to the Bitcoin network once the network fee you have selected is sufficient to be processed by miners and included in a block.'
+                                .tr(),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
                             ),
                           ),
-                        ],
-                      );
-                    }
-
-                    return const SizedBox();
+                        ),
+                      ],
+                    );
                   },
                 );
               },

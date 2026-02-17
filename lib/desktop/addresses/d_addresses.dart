@@ -149,7 +149,7 @@ class DAddressesListItem extends ConsumerWidget {
       addressesItemHelperProvider(addressesItem),
     );
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .addressDetailsItemButtonStyle();
 
     return Padding(
@@ -157,7 +157,7 @@ class DAddressesListItem extends ConsumerWidget {
       child: DButton(
         onPressed: () async {
           ref
-              .read(addressDetailsDialogNotifierProvider.notifier)
+              .read(addressDetailsDialogProvider.notifier)
               .setAddressDetailsItem(addressesItemHelper.addressesItem);
           await Navigator.of(context).push(
             RawDialogRoute<Widget>(
@@ -198,9 +198,18 @@ class DAddressesListItem extends ConsumerWidget {
                     '${addressesItemHelper.addressIndex()}',
                     textAlign: TextAlign.left,
                   ),
-                  MiddleEllipsisText(
-                    text: addressesItemHelper.address(),
-                    textAlign: TextAlign.left,
+                  Flexible(
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: MiddleEllipsisText(
+                            text: addressesItemHelper.address(),
+                            textAlign: TextAlign.left,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                    ),
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -262,7 +271,7 @@ class DAddressesDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -300,7 +309,7 @@ class DAddressesDetails extends ConsumerWidget {
           ),
           content: Center(
             child: SizedBox(
-              height: 450,
+              height: 470,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
@@ -316,7 +325,7 @@ class DAddressesDetails extends ConsumerWidget {
             ),
           ),
           style: const DContentDialogThemeData().merge(defaultDialogTheme),
-          constraints: const BoxConstraints(maxWidth: 984, maxHeight: 560),
+          constraints: const BoxConstraints(maxWidth: 984, maxHeight: 600),
         ),
       ),
     );
@@ -328,9 +337,9 @@ class DAddressDetailsHeader extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
+    final addressDetailsState = ref.watch(addressDetailsDialogProvider);
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .mainBottomNavigationBarButtonStyle;
 
     return Column(
@@ -345,20 +354,22 @@ class DAddressDetailsHeader extends HookConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            SelectableText(
-              switch (addressDetailsState) {
-                AddressDetailsStateData(
-                  addressesItem: AddressesItem addressesItem,
-                )
-                    when addressesItem.address != null =>
-                  '${addressesItem.address}',
-                _ => '',
-              },
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontSize: 14),
+            Flexible(
+              child: SelectableText(
+                switch (addressDetailsState) {
+                  AddressDetailsStateData(
+                    addressesItem: AddressesItem addressesItem,
+                  )
+                      when addressesItem.address != null =>
+                    '${addressesItem.address}',
+                  _ => '',
+                },
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontSize: 14),
+              ),
             ),
-            const Spacer(),
+            // const Spacer(),
             ...switch (addressDetailsState) {
               AddressDetailsStateData(
                 addressesItem: AddressesItem addressesItem,
@@ -531,10 +542,10 @@ class DAddressDetailsAssets extends HookConsumerWidget {
   const DAddressDetailsAssets({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const flexes = [100, 850, 50];
-    final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
+    const flexes = [100, 830, 80];
+    final addressDetailsState = ref.watch(addressDetailsDialogProvider);
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .mainBottomNavigationBarButtonStyle;
 
     final scrollController = useScrollController();
@@ -679,9 +690,9 @@ class DAddressDetailsColumn extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const flexes = [560, 90, 110, 80, 55, 65];
 
-    final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
+    final addressDetailsState = ref.watch(addressDetailsDialogProvider);
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .mainBottomNavigationBarButtonStyle;
 
     final scrollController = useScrollController();

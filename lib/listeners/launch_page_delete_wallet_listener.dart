@@ -13,7 +13,7 @@ class LaunchPageDeleteWalletListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(launchPageDeleteWalletNotifierProvider, (_, next) async {
+    ref.listen(launchPageDeleteWalletProvider, (_, next) async {
       if (next is LaunchPageDeleteWalletStateDelete) {
         final ret = await showDialog<bool>(
           useRootNavigator: false,
@@ -22,7 +22,7 @@ class LaunchPageDeleteWalletListener extends ConsumerWidget {
           builder: (_) => const DeleteWalletConfirmationDialog(),
         );
 
-        ref.invalidate(launchPageDeleteWalletNotifierProvider);
+        ref.invalidate(launchPageDeleteWalletProvider);
 
         if (ret == true) {
           await ref.read(walletProvider).deleteWalletAndCleanup();
@@ -49,7 +49,7 @@ class DeleteWalletConfirmationDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
 
     return DContentDialog(

@@ -67,61 +67,145 @@ Map<String, dynamic> _$NetworkSettingsModelApplyToJson(
 // RiverpodGenerator
 // **************************************************************************
 
-String _$networkSettingsNeedSaveHash() =>
-    r'992800528da6917f5e25d00ace8b518cdb9af455';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [networkSettingsNeedSave].
-@ProviderFor(networkSettingsNeedSave)
-final networkSettingsNeedSaveProvider = AutoDisposeProvider<bool>.internal(
-  networkSettingsNeedSave,
-  name: r'networkSettingsNeedSaveProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$networkSettingsNeedSaveHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(NetworkSettingsNotifier)
+const networkSettingsProvider = NetworkSettingsNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef NetworkSettingsNeedSaveRef = AutoDisposeProviderRef<bool>;
-String _$networkSettingsNeedRestartHash() =>
-    r'be4b264d751aca880ae416a40220ca9563a0b097';
+final class NetworkSettingsNotifierProvider
+    extends $NotifierProvider<NetworkSettingsNotifier, NetworkSettingsModel> {
+  const NetworkSettingsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'networkSettingsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// See also [networkSettingsNeedRestart].
-@ProviderFor(networkSettingsNeedRestart)
-final networkSettingsNeedRestartProvider = AutoDisposeProvider<bool>.internal(
-  networkSettingsNeedRestart,
-  name: r'networkSettingsNeedRestartProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$networkSettingsNeedRestartHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+  @override
+  String debugGetCreateSourceHash() => _$networkSettingsNotifierHash();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef NetworkSettingsNeedRestartRef = AutoDisposeProviderRef<bool>;
+  @$internal
+  @override
+  NetworkSettingsNotifier create() => NetworkSettingsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NetworkSettingsModel value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NetworkSettingsModel>(value),
+    );
+  }
+}
+
 String _$networkSettingsNotifierHash() =>
     r'bb968b4af2a3f8480940d3d41bf5c742e12f0076';
 
-/// See also [NetworkSettingsNotifier].
-@ProviderFor(NetworkSettingsNotifier)
-final networkSettingsNotifierProvider =
-    AutoDisposeNotifierProvider<
-      NetworkSettingsNotifier,
-      NetworkSettingsModel
-    >.internal(
-      NetworkSettingsNotifier.new,
-      name: r'networkSettingsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$networkSettingsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$NetworkSettingsNotifier
+    extends $Notifier<NetworkSettingsModel> {
+  NetworkSettingsModel build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<NetworkSettingsModel, NetworkSettingsModel>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<NetworkSettingsModel, NetworkSettingsModel>,
+              NetworkSettingsModel,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$NetworkSettingsNotifier = AutoDisposeNotifier<NetworkSettingsModel>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(networkSettingsNeedSave)
+const networkSettingsNeedSaveProvider = NetworkSettingsNeedSaveProvider._();
+
+final class NetworkSettingsNeedSaveProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const NetworkSettingsNeedSaveProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'networkSettingsNeedSaveProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$networkSettingsNeedSaveHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return networkSettingsNeedSave(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$networkSettingsNeedSaveHash() =>
+    r'775d14d5cf9195bd4f044266090f058e20b4284b';
+
+@ProviderFor(networkSettingsNeedRestart)
+const networkSettingsNeedRestartProvider =
+    NetworkSettingsNeedRestartProvider._();
+
+final class NetworkSettingsNeedRestartProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const NetworkSettingsNeedRestartProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'networkSettingsNeedRestartProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$networkSettingsNeedRestartHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return networkSettingsNeedRestart(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$networkSettingsNeedRestartHash() =>
+    r'd46ec64fc16b5f80f8f78ccedb22bc791276f291';

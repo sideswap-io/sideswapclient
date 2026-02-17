@@ -25,14 +25,12 @@ class MarketLimitPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tradeButtonEnabled = ref.watch(limitOrderTradeButtonEnabledProvider);
-    final optionAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
-    );
+    final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
     final orderAmount = ref.watch(limitOrderAmountProvider);
     final orderPrice = ref.watch(limitOrderPriceProvider);
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
-    final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
-    final orderType = ref.watch(marketLimitOrderTypeNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
+    final limitTtlFlag = ref.watch(limitTtlFlagProvider);
+    final orderType = ref.watch(marketLimitOrderTypeProvider);
     final offlineSwapType = ref.watch(marketLimitOfflineSwapProvider);
     final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
     final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
@@ -45,11 +43,9 @@ class MarketLimitPage extends HookConsumerWidget {
 
         FocusManager.instance.primaryFocus?.unfocus();
 
-        ref
-            .read(jadeAuthInProgressStateNotifierProvider.notifier)
-            .setState(true);
+        ref.read(jadeAuthInProgressStateProvider.notifier).setState(true);
         final authSucceed = await ref.read(walletProvider).isAuthenticated();
-        ref.invalidate(jadeAuthInProgressStateNotifierProvider);
+        ref.invalidate(jadeAuthInProgressStateProvider);
         if (!authSucceed) {
           return;
         }
@@ -106,6 +102,7 @@ class MarketLimitPage extends HookConsumerWidget {
             SizedBox(height: 14),
             MarketHeader(),
             Flexible(child: MarketLimitBody()),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: MarketOrderButton(
@@ -127,7 +124,7 @@ class MarketLimitBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -246,7 +243,7 @@ class LimitTtlPopupMenu extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final limitTtlFlag = ref.watch(limitTtlFlagNotifierProvider);
+    final limitTtlFlag = ref.watch(limitTtlFlagProvider);
 
     final clicked = useState(false);
 
@@ -259,7 +256,7 @@ class LimitTtlPopupMenu extends HookConsumerWidget {
             onOpened: () => clicked.value = !clicked.value,
             onSelected: (value) {
               clicked.value = !clicked.value;
-              ref.read(limitTtlFlagNotifierProvider.notifier).setState(value);
+              ref.read(limitTtlFlagProvider.notifier).setState(value);
             },
             onCanceled: () {
               clicked.value = false;

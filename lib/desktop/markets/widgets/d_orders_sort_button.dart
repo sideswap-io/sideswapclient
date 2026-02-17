@@ -77,11 +77,11 @@ class DOrdersSortButton extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             requestOrderSortFlag ==
-                                    const RequestOrderSortFlagAll()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                                const RequestOrderSortFlagAll()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -115,11 +115,11 @@ class DOrdersSortButton extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             requestOrderSortFlag ==
-                                    const RequestOrderSortFlagOnline()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                                const RequestOrderSortFlagOnline()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -153,11 +153,11 @@ class DOrdersSortButton extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             requestOrderSortFlag ==
-                                    const RequestOrderSortFlagOffline()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                                const RequestOrderSortFlagOffline()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -177,22 +177,18 @@ class DOrdersSortButton extends HookConsumerWidget {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
 
-    final buttonThemes =
-        ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
-    final requestOrderSortFlag = ref.watch(
-      requestOrderSortFlagNotifierProvider,
-    );
+    final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
+    final requestOrderSortFlag = ref.watch(requestOrderSortFlagProvider);
 
     return DButton(
       key: buttonKey,
-      style:
-          clicked.value
-              ? buttonThemes.filledButtonStyle?.merge(
-                DButtonStyle(
-                  backgroundColor: ButtonState.all(SideSwapColors.prussianBlue),
-                ),
-              )
-              : buttonThemes.defaultButtonStyle,
+      style: clicked.value
+          ? buttonThemes.filledButtonStyle?.merge(
+              DButtonStyle(
+                backgroundColor: ButtonState.all(SideSwapColors.prussianBlue),
+              ),
+            )
+          : buttonThemes.defaultButtonStyle,
       onPressed: () async {
         clicked.value = true;
         final result = await showSortMenu(
@@ -201,12 +197,12 @@ class DOrdersSortButton extends HookConsumerWidget {
           requestOrderSortFlag,
         );
         (switch (result) {
-          RequestOrderSortFlag result => ref
-              .read(requestOrderSortFlagNotifierProvider.notifier)
-              .setSortFlag(result),
-          _ => ref
-              .read(requestOrderSortFlagNotifierProvider.notifier)
-              .setSortFlag(const RequestOrderSortFlagAll()),
+          RequestOrderSortFlag result =>
+            ref.read(requestOrderSortFlagProvider.notifier).setSortFlag(result),
+          _ =>
+            ref
+                .read(requestOrderSortFlagProvider.notifier)
+                .setSortFlag(const RequestOrderSortFlagAll()),
         });
 
         clicked.value = false;

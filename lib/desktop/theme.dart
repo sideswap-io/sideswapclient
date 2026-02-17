@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/styles/button_styles.dart';
@@ -18,6 +17,7 @@ import 'package:sideswap/desktop/instant_swap/widgets/d_instant_swap_divider_but
 import 'package:sideswap/desktop/instant_swap/widgets/d_max_button.dart';
 import 'package:sideswap/desktop/markets/widgets/d_tracking_price.dart';
 import 'package:sideswap/desktop/markets/widgets/order_row_element.dart';
+import 'package:sideswap/desktop/widgets/d_notifications_style.dart';
 
 part 'theme.g.dart';
 
@@ -702,7 +702,76 @@ class DesktopAppTheme {
       dCustomBigButtonStyle(),
       dTrackingPriceStyle(),
       coloredContainerStyle(),
+      notificationMenuStyle(),
+      notificationItemConnectRequestStyle(),
+      notificationItemSignRequestStyle(),
     ];
+  }
+
+  NotificationItemSignRequestStyle notificationItemSignRequestStyle() {
+    return NotificationItemSignRequestStyle(
+      height: 189,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: SideSwapColors.indigo,
+      ),
+      titleTextStyle: textTheme.bodyMedium,
+      dividerColor: SideSwapColors.blumine,
+      cancelledTextStyle: textTheme.labelMedium?.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: SideSwapColors.bitterSweet,
+      ),
+    );
+  }
+
+  NotificationItemConnectRequestStyle notificationItemConnectRequestStyle() {
+    return NotificationItemConnectRequestStyle(
+      height: 286,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: SideSwapColors.indigo,
+      ),
+      titleTextStyle: textTheme.bodyMedium,
+      dividerColor: SideSwapColors.blumine,
+      subtitleHeaderTextStyle: textTheme.labelLarge?.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: SideSwapColors.cerulean,
+      ),
+      subtitleTextStyle: textTheme.labelLarge?.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      descriptionTextStyle: textTheme.titleSmall,
+      privacyHeaderTextStyle: textTheme.labelMedium?.copyWith(
+        color: SideSwapColors.halfBaked,
+        fontWeight: FontWeight.bold,
+      ),
+      privacyTextStyle: textTheme.labelMedium?.copyWith(
+        color: SideSwapColors.halfBaked,
+      ),
+      cancelledTextStyle: textTheme.labelMedium?.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: SideSwapColors.bitterSweet,
+      ),
+    );
+  }
+
+  NotificationMenuStyle notificationMenuStyle() {
+    return NotificationMenuStyle(
+      decoration: BoxDecoration(
+        color: SideSwapColors.maastrichtBlue,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(8),
+        ),
+      ),
+      padding: const EdgeInsets.all(10.0),
+    );
   }
 
   ColoredContainerStyle coloredContainerStyle() {

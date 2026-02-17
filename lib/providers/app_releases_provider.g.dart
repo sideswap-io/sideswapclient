@@ -6,44 +6,95 @@ part of 'app_releases_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$showNewReleaseFutureHash() =>
-    r'9f5f5c328bb3e59e319286f3e5489b6c8464df77';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [showNewReleaseFuture].
-@ProviderFor(showNewReleaseFuture)
-final showNewReleaseFutureProvider = AutoDisposeFutureProvider<bool>.internal(
-  showNewReleaseFuture,
-  name: r'showNewReleaseFutureProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$showNewReleaseFutureHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(AppReleasesStateNotifier)
+const appReleasesStateProvider = AppReleasesStateNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ShowNewReleaseFutureRef = AutoDisposeFutureProviderRef<bool>;
+final class AppReleasesStateNotifierProvider
+    extends
+        $AsyncNotifierProvider<
+          AppReleasesStateNotifier,
+          AppReleasesModelState
+        > {
+  const AppReleasesStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appReleasesStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appReleasesStateNotifierHash();
+
+  @$internal
+  @override
+  AppReleasesStateNotifier create() => AppReleasesStateNotifier();
+}
+
 String _$appReleasesStateNotifierHash() =>
     r'82854753122e9d0eaf400aa5b949fcb744fb8eb8';
 
-/// See also [AppReleasesStateNotifier].
-@ProviderFor(AppReleasesStateNotifier)
-final appReleasesStateNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<
-      AppReleasesStateNotifier,
-      AppReleasesModelState
-    >.internal(
-      AppReleasesStateNotifier.new,
-      name: r'appReleasesStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$appReleasesStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$AppReleasesStateNotifier
+    extends $AsyncNotifier<AppReleasesModelState> {
+  FutureOr<AppReleasesModelState> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<AppReleasesModelState>, AppReleasesModelState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<AppReleasesModelState>,
+                AppReleasesModelState
+              >,
+              AsyncValue<AppReleasesModelState>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$AppReleasesStateNotifier =
-    AutoDisposeAsyncNotifier<AppReleasesModelState>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(showNewReleaseFuture)
+const showNewReleaseFutureProvider = ShowNewReleaseFutureProvider._();
+
+final class ShowNewReleaseFutureProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  const ShowNewReleaseFutureProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'showNewReleaseFutureProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$showNewReleaseFutureHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return showNewReleaseFuture(ref);
+  }
+}
+
+String _$showNewReleaseFutureHash() =>
+    r'd36ecaf4161943bf8d3752e0546d90d087ec85b4';

@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -53,15 +52,8 @@ class BIP21Result {
   }
 
   (double, String, String, String, String, String, BIP21AddressTypeEnum)
-  _equality() => (
-    amount,
-    label,
-    message,
-    assetId,
-    ticker,
-    address,
-    addressType,
-  );
+  _equality() =>
+      (amount, label, message, assetId, ticker, address, addressType);
 
   @override
   bool operator ==(covariant BIP21Result other) {

@@ -5,11 +5,13 @@ import 'package:easy_logger/easy_logger.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sideswap/app_main.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/desktop/common/windows_registry.dart';
 import 'package:sideswap/desktop/desktop_app_main.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -17,6 +19,25 @@ import 'package:args/args.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart' as window_size;
+
+final class MyObserver extends ProviderObserver {
+  @override
+  void providerDidFail(
+    ProviderObserverContext context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    if (error is ProviderException) {
+      // The provider didn't fail directly, but instead depends on a failed provider.
+      // The error was therefore already logged.
+      return;
+    }
+
+    // Log the error
+    logger.e('Provider failed: $error');
+    logger.d(stackTrace);
+  }
+}
 
 bool _isMobile() {
   return Platform.isAndroid || Platform.isIOS;
@@ -33,6 +54,7 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
 
   if (_isDesktop()) {
     await windowManager.ensureInitialized();
+    await registerProtocol('liquidconnect');
   }
 
   // arguments are used only in desktop version!
@@ -141,6 +163,7 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
 
     runApp(
       ProviderScope(
+        observers: [MyObserver()],
         overrides: [sharedPreferencesProvider.overrideWithValue(sharedPrefs)],
         child: const AppMain(),
       ),
@@ -161,6 +184,7 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
 
   runApp(
     ProviderScope(
+      observers: [MyObserver()],
       overrides: [sharedPreferencesProvider.overrideWithValue(sharedPrefs)],
       child: const DesktopAppMain(),
     ),

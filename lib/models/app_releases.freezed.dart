@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -77,6 +76,130 @@ as String?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [AppReleasesDesktop].
+extension AppReleasesDesktopPatterns on AppReleasesDesktop {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AppReleasesDesktop value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AppReleasesDesktop() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AppReleasesDesktop value)  $default,){
+final _that = this;
+switch (_that) {
+case _AppReleasesDesktop():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AppReleasesDesktop value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AppReleasesDesktop() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? version,  int? build,  String? changes)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AppReleasesDesktop() when $default != null:
+return $default(_that.version,_that.build,_that.changes);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? version,  int? build,  String? changes)  $default,) {final _that = this;
+switch (_that) {
+case _AppReleasesDesktop():
+return $default(_that.version,_that.build,_that.changes);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? version,  int? build,  String? changes)?  $default,) {final _that = this;
+switch (_that) {
+case _AppReleasesDesktop() when $default != null:
+return $default(_that.version,_that.build,_that.changes);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
@@ -227,6 +350,130 @@ $AppReleasesDesktopCopyWith<$Res>? get desktop {
 }
 
 
+/// Adds pattern-matching-related methods to [AppReleasesModel].
+extension AppReleasesModelPatterns on AppReleasesModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AppReleasesModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AppReleasesModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AppReleasesModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _AppReleasesModel():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AppReleasesModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AppReleasesModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AppReleasesDesktop? desktop)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AppReleasesModel() when $default != null:
+return $default(_that.desktop);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AppReleasesDesktop? desktop)  $default,) {final _that = this;
+switch (_that) {
+case _AppReleasesModel():
+return $default(_that.desktop);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AppReleasesDesktop? desktop)?  $default,) {final _that = this;
+switch (_that) {
+case _AppReleasesModel() when $default != null:
+return $default(_that.desktop);case _:
+  return null;
+
+}
+}
+
+}
+
 /// @nodoc
 @JsonSerializable()
 
@@ -337,6 +584,136 @@ class $AppReleasesModelStateCopyWith<$Res>  {
 $AppReleasesModelStateCopyWith(AppReleasesModelState _, $Res Function(AppReleasesModelState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [AppReleasesModelState].
+extension AppReleasesModelStatePatterns on AppReleasesModelState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AppReleasesModelStateData value)?  data,TResult Function( AppReleasesModelStateEmpty value)?  empty,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case AppReleasesModelStateData() when data != null:
+return data(_that);case AppReleasesModelStateEmpty() when empty != null:
+return empty(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AppReleasesModelStateData value)  data,required TResult Function( AppReleasesModelStateEmpty value)  empty,}){
+final _that = this;
+switch (_that) {
+case AppReleasesModelStateData():
+return data(_that);case AppReleasesModelStateEmpty():
+return empty(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AppReleasesModelStateData value)?  data,TResult? Function( AppReleasesModelStateEmpty value)?  empty,}){
+final _that = this;
+switch (_that) {
+case AppReleasesModelStateData() when data != null:
+return data(_that);case AppReleasesModelStateEmpty() when empty != null:
+return empty(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( AppReleasesModel model)?  data,TResult Function()?  empty,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case AppReleasesModelStateData() when data != null:
+return data(_that.model);case AppReleasesModelStateEmpty() when empty != null:
+return empty();case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( AppReleasesModel model)  data,required TResult Function()  empty,}) {final _that = this;
+switch (_that) {
+case AppReleasesModelStateData():
+return data(_that.model);case AppReleasesModelStateEmpty():
+return empty();}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( AppReleasesModel model)?  data,TResult? Function()?  empty,}) {final _that = this;
+switch (_that) {
+case AppReleasesModelStateData() when data != null:
+return data(_that.model);case AppReleasesModelStateEmpty() when empty != null:
+return empty();case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

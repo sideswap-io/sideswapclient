@@ -22,10 +22,6 @@ class QuoteEventNotifier extends _$QuoteEventNotifier {
 
   @override
   Option<From_Quote> build() {
-    ref.onCancel(() {
-      stopQuotes();
-    });
-
     _currentQuoteId = randomId();
 
     return Option.none();
@@ -443,9 +439,7 @@ sealed class OrderTtlState with _$OrderTtlState {
 class OrderTtlNotifier extends _$OrderTtlNotifier {
   @override
   OrderTtlState build() {
-    final optionQuoteSuccess = ref.watch(
-      previewOrderQuoteSuccessNotifierProvider,
-    );
+    final optionQuoteSuccess = ref.watch(previewOrderQuoteSuccessProvider);
 
     return optionQuoteSuccess.match(() => OrderTtlState.empty(), (
       quoteSuccess,
@@ -465,7 +459,7 @@ class OrderTtlNotifier extends _$OrderTtlNotifier {
 class OrderSignTtl extends _$OrderSignTtl {
   @override
   int build() {
-    ref.watch(orderTtlNotifierProvider);
+    ref.watch(orderTtlProvider);
 
     final timer = Timer.periodic(Duration(seconds: 1), (_) => updateState());
     ref.onDispose(() => timer.cancel());
@@ -474,7 +468,7 @@ class OrderSignTtl extends _$OrderSignTtl {
   }
 
   int updateState() {
-    final orderTtlState = ref.read(orderTtlNotifierProvider);
+    final orderTtlState = ref.read(orderTtlProvider);
 
     state = switch (orderTtlState) {
       OrderTtlStateData() => () {

@@ -6,24 +6,53 @@ part of 'asset_image_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(assetImageRepository)
+const assetImageRepositoryProvider = AssetImageRepositoryProvider._();
+
+final class AssetImageRepositoryProvider
+    extends
+        $FunctionalProvider<
+          AbstractAssetImageRepository,
+          AbstractAssetImageRepository,
+          AbstractAssetImageRepository
+        >
+    with $Provider<AbstractAssetImageRepository> {
+  const AssetImageRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'assetImageRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$assetImageRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<AbstractAssetImageRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AbstractAssetImageRepository create(Ref ref) {
+    return assetImageRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AbstractAssetImageRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AbstractAssetImageRepository>(value),
+    );
+  }
+}
+
 String _$assetImageRepositoryHash() =>
     r'555cb2e83b0bb608162da58e31215b79f5cd9c45';
-
-/// See also [assetImageRepository].
-@ProviderFor(assetImageRepository)
-final assetImageRepositoryProvider =
-    Provider<AbstractAssetImageRepository>.internal(
-      assetImageRepository,
-      name: r'assetImageRepositoryProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$assetImageRepositoryHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AssetImageRepositoryRef = ProviderRef<AbstractAssetImageRepository>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -14,7 +14,6 @@ import 'package:sideswap/desktop/widgets/d_tx_blinded_url_icon_button.dart';
 import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
-import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -53,7 +52,7 @@ class DUnconfirmedTx extends StatelessWidget {
         const Divider(height: 1, thickness: 0, color: SideSwapColors.jellyBean),
         Consumer(
           builder: (context, ref, _) {
-            final updatedTxs = ref.watch(updatedTxsNotifierProvider);
+            final updatedTxs = ref.watch(unconfirmedTxsProvider);
 
             return switch (updatedTxs.isEmpty) {
               true => Padding(
@@ -75,7 +74,7 @@ class DUnconfirmedTx extends StatelessWidget {
                         return Consumer(
                           builder: (context, ref, child) {
                             final buttonStyle = ref
-                                .watch(desktopAppThemeNotifierProvider)
+                                .watch(desktopAppThemeProvider)
                                 .buttonWithoutBorderStyle;
 
                             return DButton(
@@ -91,20 +90,11 @@ class DUnconfirmedTx extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
-                                final allPegsById = ref.read(
-                                  allPegsByIdProvider,
-                                );
                                 ref
                                     .read(desktopDialogProvider)
                                     .showTx(
                                       transItem,
-                                      isPeg: transItem.hasPeg()
-                                          ? allPegsById.containsKey(
-                                              transItem.peg.isPegIn
-                                                  ? transItem.peg.txidRecv
-                                                  : transItem.peg.txidSend,
-                                            )
-                                          : false,
+                                      isPeg: transItem.hasPeg(),
                                     );
                               },
                               child: DUnconfirmedTxItem(
@@ -180,7 +170,7 @@ class DUnconfirmedTxItem extends ConsumerWidget {
           textStyle: Theme.of(context).textTheme.titleSmall,
         ),
         DTxHistoryConfs(
-          tx: transItem!,
+          transItem: transItem!,
           textStyle: Theme.of(context).textTheme.titleSmall,
         ),
         DTxBlindedUrlIconButton(txid: transItem!.tx.txid),

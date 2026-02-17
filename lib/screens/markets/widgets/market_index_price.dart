@@ -66,7 +66,7 @@ class MarketIndexPrice extends ConsumerWidget {
         ),
         onPressed: () {
           ref
-              .read(indexPriceButtonAsyncNotifierProvider.notifier)
+              .read(indexPriceButtonAsyncProvider.notifier)
               .setIndexPrice(valueText);
         },
         child: Row(

@@ -16,9 +16,9 @@ class UniversalLinkListener extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(universalLinkProvider);
 
-    final isConnected = ref.watch(serverConnectionNotifierProvider);
-    final linkResultState = ref.watch(universalLinkResultStateNotifierProvider);
-    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+    final isConnected = ref.watch(serverConnectionProvider);
+    final linkResultState = ref.watch(universalLinkResultStateProvider);
+    final walletMainArguments = ref.watch(uiStateArgsProvider);
 
     useEffect(() {
       if (!isConnected) {
@@ -32,11 +32,11 @@ class UniversalLinkListener extends HookConsumerWidget {
             (orderId, privateId) {
               Future.microtask(() {
                 ref
-                    .read(uiStateArgsNotifierProvider.notifier)
+                    .read(uiStateArgsProvider.notifier)
                     .setWalletMainArguments(walletMainArguments.fromIndex(2));
 
                 // stop market quotes if any
-                ref.invalidate(marketQuoteNotifierProvider);
+                ref.invalidate(marketQuoteProvider);
 
                 final msg = To();
                 msg.startOrder = To_StartOrder(
@@ -44,7 +44,7 @@ class UniversalLinkListener extends HookConsumerWidget {
                   privateId: privateId,
                 );
                 ref.read(walletProvider).sendMsg(msg);
-                ref.invalidate(universalLinkResultStateNotifierProvider);
+                ref.invalidate(universalLinkResultStateProvider);
               });
             },
           );

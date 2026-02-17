@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -16,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FCMPayload {
 
- FCMPayloadType? get type; String? get txid;
+ FCMPayloadType? get type; String? get txid; String? get data;
 /// Create a copy of FCMPayload
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +28,16 @@ $FCMPayloadCopyWith<FCMPayload> get copyWith => _$FCMPayloadCopyWithImpl<FCMPayl
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FCMPayload&&(identical(other.type, type) || other.type == type)&&(identical(other.txid, txid) || other.txid == txid));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FCMPayload&&(identical(other.type, type) || other.type == type)&&(identical(other.txid, txid) || other.txid == txid)&&(identical(other.data, data) || other.data == data));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,txid);
+int get hashCode => Object.hash(runtimeType,type,txid,data);
 
 @override
 String toString() {
-  return 'FCMPayload(type: $type, txid: $txid)';
+  return 'FCMPayload(type: $type, txid: $txid, data: $data)';
 }
 
 
@@ -49,7 +48,7 @@ abstract mixin class $FCMPayloadCopyWith<$Res>  {
   factory $FCMPayloadCopyWith(FCMPayload value, $Res Function(FCMPayload) _then) = _$FCMPayloadCopyWithImpl;
 @useResult
 $Res call({
- FCMPayloadType? type, String? txid
+ FCMPayloadType? type, String? txid, String? data
 });
 
 
@@ -66,10 +65,11 @@ class _$FCMPayloadCopyWithImpl<$Res>
 
 /// Create a copy of FCMPayload
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? type = freezed,Object? txid = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? type = freezed,Object? txid = freezed,Object? data = freezed,}) {
   return _then(_self.copyWith(
 type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as FCMPayloadType?,txid: freezed == txid ? _self.txid : txid // ignore: cast_nullable_to_non_nullable
+as String?,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -77,15 +77,140 @@ as String?,
 }
 
 
+/// Adds pattern-matching-related methods to [FCMPayload].
+extension FCMPayloadPatterns on FCMPayload {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMPayload value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMPayload() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMPayload value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMPayload():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMPayload value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMPayload() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMPayloadType? type,  String? txid,  String? data)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMPayload() when $default != null:
+return $default(_that.type,_that.txid,_that.data);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMPayloadType? type,  String? txid,  String? data)  $default,) {final _that = this;
+switch (_that) {
+case _FCMPayload():
+return $default(_that.type,_that.txid,_that.data);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMPayloadType? type,  String? txid,  String? data)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMPayload() when $default != null:
+return $default(_that.type,_that.txid,_that.data);case _:
+  return null;
+
+}
+}
+
+}
+
 /// @nodoc
 @JsonSerializable()
 
 class _FCMPayload extends FCMPayload {
-   _FCMPayload({this.type, this.txid}): super._();
+   _FCMPayload({this.type, this.txid, this.data}): super._();
   factory _FCMPayload.fromJson(Map<String, dynamic> json) => _$FCMPayloadFromJson(json);
 
 @override final  FCMPayloadType? type;
 @override final  String? txid;
+@override final  String? data;
 
 /// Create a copy of FCMPayload
 /// with the given fields replaced by the non-null parameter values.
@@ -100,16 +225,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FCMPayload&&(identical(other.type, type) || other.type == type)&&(identical(other.txid, txid) || other.txid == txid));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FCMPayload&&(identical(other.type, type) || other.type == type)&&(identical(other.txid, txid) || other.txid == txid)&&(identical(other.data, data) || other.data == data));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,txid);
+int get hashCode => Object.hash(runtimeType,type,txid,data);
 
 @override
 String toString() {
-  return 'FCMPayload(type: $type, txid: $txid)';
+  return 'FCMPayload(type: $type, txid: $txid, data: $data)';
 }
 
 
@@ -120,7 +245,7 @@ abstract mixin class _$FCMPayloadCopyWith<$Res> implements $FCMPayloadCopyWith<$
   factory _$FCMPayloadCopyWith(_FCMPayload value, $Res Function(_FCMPayload) _then) = __$FCMPayloadCopyWithImpl;
 @override @useResult
 $Res call({
- FCMPayloadType? type, String? txid
+ FCMPayloadType? type, String? txid, String? data
 });
 
 
@@ -137,10 +262,11 @@ class __$FCMPayloadCopyWithImpl<$Res>
 
 /// Create a copy of FCMPayload
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? type = freezed,Object? txid = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? type = freezed,Object? txid = freezed,Object? data = freezed,}) {
   return _then(_FCMPayload(
 type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as FCMPayloadType?,txid: freezed == txid ? _self.txid : txid // ignore: cast_nullable_to_non_nullable
+as String?,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -212,6 +338,130 @@ as String?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [FCMNotification].
+extension FCMNotificationPatterns on FCMNotification {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMNotification value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMNotification() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMNotification value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMNotification():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMNotification value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMNotification() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? title,  String? body)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMNotification() when $default != null:
+return $default(_that.title,_that.body);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? title,  String? body)  $default,) {final _that = this;
+switch (_that) {
+case _FCMNotification():
+return $default(_that.title,_that.body);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? title,  String? body)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMNotification() when $default != null:
+return $default(_that.title,_that.body);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
@@ -359,6 +609,130 @@ $FCMDetailsCopyWith<$Res>? get details {
 }
 }
 
+
+/// Adds pattern-matching-related methods to [FCMData].
+extension FCMDataPatterns on FCMData {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMData value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMData() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMData value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMData():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMData value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMData() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMDetails? details)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMData() when $default != null:
+return $default(_that.details);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMDetails? details)  $default,) {final _that = this;
+switch (_that) {
+case _FCMData():
+return $default(_that.details);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMDetails? details)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMData() when $default != null:
+return $default(_that.details);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
@@ -556,6 +930,130 @@ $FCMOrderCancelledCopyWith<$Res>? get orderCancelled {
 }
 
 
+/// Adds pattern-matching-related methods to [FCMDetails].
+extension FCMDetailsPatterns on FCMDetails {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMDetails value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMDetails() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMDetails value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMDetails():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMDetails value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMDetails() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMTx? tx, @JsonKey(name: 'peg_payout')  FCMPeg? pegPayout, @JsonKey(name: 'peg_detected')  FCMPeg? pegDetected, @JsonKey(name: 'order_cancelled')  FCMOrderCancelled? orderCancelled)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMDetails() when $default != null:
+return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMTx? tx, @JsonKey(name: 'peg_payout')  FCMPeg? pegPayout, @JsonKey(name: 'peg_detected')  FCMPeg? pegDetected, @JsonKey(name: 'order_cancelled')  FCMOrderCancelled? orderCancelled)  $default,) {final _that = this;
+switch (_that) {
+case _FCMDetails():
+return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMTx? tx, @JsonKey(name: 'peg_payout')  FCMPeg? pegPayout, @JsonKey(name: 'peg_detected')  FCMPeg? pegDetected, @JsonKey(name: 'order_cancelled')  FCMOrderCancelled? orderCancelled)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMDetails() when $default != null:
+return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled);case _:
+  return null;
+
+}
+}
+
+}
+
 /// @nodoc
 @JsonSerializable()
 
@@ -744,6 +1242,130 @@ as String?,
 }
 
 
+/// Adds pattern-matching-related methods to [FCMTx].
+extension FCMTxPatterns on FCMTx {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMTx value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMTx() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMTx value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMTx():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMTx value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMTx() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'tx_type')  FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMTx() when $default != null:
+return $default(_that.txType,_that.txId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'tx_type')  FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)  $default,) {final _that = this;
+switch (_that) {
+case _FCMTx():
+return $default(_that.txType,_that.txId);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'tx_type')  FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMTx() when $default != null:
+return $default(_that.txType,_that.txId);case _:
+  return null;
+
+}
+}
+
+}
+
 /// @nodoc
 @JsonSerializable()
 
@@ -884,6 +1506,130 @@ as int?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [FCMPeg].
+extension FCMPegPatterns on FCMPeg {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMPeg value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMPeg() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMPeg value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMPeg():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMPeg value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMPeg() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId, @JsonKey(name: 'peg_in')  bool? pegIn, @JsonKey(name: 'tx_hash')  String? txHash,  int? vout, @JsonKey(name: 'created_at')  int? createdAt, @JsonKey(name: 'payout_txid')  String? payoutTxId,  int? payout)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMPeg() when $default != null:
+return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdAt,_that.payoutTxId,_that.payout);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId, @JsonKey(name: 'peg_in')  bool? pegIn, @JsonKey(name: 'tx_hash')  String? txHash,  int? vout, @JsonKey(name: 'created_at')  int? createdAt, @JsonKey(name: 'payout_txid')  String? payoutTxId,  int? payout)  $default,) {final _that = this;
+switch (_that) {
+case _FCMPeg():
+return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdAt,_that.payoutTxId,_that.payout);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'order_id')  String? orderId, @JsonKey(name: 'peg_in')  bool? pegIn, @JsonKey(name: 'tx_hash')  String? txHash,  int? vout, @JsonKey(name: 'created_at')  int? createdAt, @JsonKey(name: 'payout_txid')  String? payoutTxId,  int? payout)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMPeg() when $default != null:
+return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdAt,_that.payoutTxId,_that.payout);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
@@ -1029,6 +1775,130 @@ as String?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [FCMOrderCancelled].
+extension FCMOrderCancelledPatterns on FCMOrderCancelled {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMOrderCancelled value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMOrderCancelled() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMOrderCancelled value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMOrderCancelled():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMOrderCancelled value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMOrderCancelled() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMOrderCancelled() when $default != null:
+return $default(_that.orderId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId)  $default,) {final _that = this;
+switch (_that) {
+case _FCMOrderCancelled():
+return $default(_that.orderId);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'order_id')  String? orderId)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMOrderCancelled() when $default != null:
+return $default(_that.orderId);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
@@ -1187,6 +2057,130 @@ $FCMDataCopyWith<$Res>? get data {
 }
 }
 
+
+/// Adds pattern-matching-related methods to [FCMMessage].
+extension FCMMessagePatterns on FCMMessage {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMMessage value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMMessage() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMMessage value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMMessage():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMMessage value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMMessage() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMNotification? notification,  FCMData? data)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMMessage() when $default != null:
+return $default(_that.notification,_that.data);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMNotification? notification,  FCMData? data)  $default,) {final _that = this;
+switch (_that) {
+case _FCMMessage():
+return $default(_that.notification,_that.data);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMNotification? notification,  FCMData? data)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMMessage() when $default != null:
+return $default(_that.notification,_that.data);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
@@ -1349,6 +2343,130 @@ as Map<String, dynamic>?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [FCMRemoteMessage].
+extension FCMRemoteMessagePatterns on FCMRemoteMessage {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FCMRemoteMessage value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FCMRemoteMessage() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FCMRemoteMessage value)  $default,){
+final _that = this;
+switch (_that) {
+case _FCMRemoteMessage():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FCMRemoteMessage value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FCMRemoteMessage() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( dynamic details,  String? body,  String? title,  Map<String, dynamic>? data)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FCMRemoteMessage() when $default != null:
+return $default(_that.details,_that.body,_that.title,_that.data);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( dynamic details,  String? body,  String? title,  Map<String, dynamic>? data)  $default,) {final _that = this;
+switch (_that) {
+case _FCMRemoteMessage():
+return $default(_that.details,_that.body,_that.title,_that.data);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( dynamic details,  String? body,  String? title,  Map<String, dynamic>? data)?  $default,) {final _that = this;
+switch (_that) {
+case _FCMRemoteMessage() when $default != null:
+return $default(_that.details,_that.body,_that.title,_that.data);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()

@@ -26,12 +26,10 @@ class OrderSubmitSuccessDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionOrderSubmitSuccess = ref.watch(
-      orderSubmitSuccessNotifierProvider,
-    );
+    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
 
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -83,268 +81,239 @@ class OrderSubmitSuccessDialog extends HookConsumerWidget {
       content: SizedBox(
         width: 580,
         height: 485,
-        child:
-            optionOrderSubmitSuccess.match(
-              () => () {
-                return SizedBox();
-              },
-              (order) => () {
-                final isSell = order.tradeDir == TradeDir.SELL;
-                final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
-                final dirColor =
-                    isSell
-                        ? Theme.of(
-                          context,
-                        ).extension<MarketColorsStyle>()!.sellColor
-                        : Theme.of(
-                          context,
-                        ).extension<MarketColorsStyle>()!.buyColor;
+        child: optionOrderSubmitSuccess.match(
+          () => () {
+            return SizedBox();
+          },
+          (order) => () {
+            final isSell = order.tradeDir == TradeDir.SELL;
+            final dirStr = isSell ? 'Sell'.tr() : 'Buy'.tr();
+            final dirColor = isSell
+                ? Theme.of(context).extension<MarketColorsStyle>()!.sellColor
+                : Theme.of(context).extension<MarketColorsStyle>()!.buyColor;
 
-                return Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  SizedBox(height: 40),
+                  Row(
                     children: [
-                      SizedBox(height: 40),
-                      Row(
-                        children: [
-                          Text(
-                            'Product'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            order.productName,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                        ],
+                      Text(
+                        'Product'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
                       ),
-                      SizedBox(height: 8),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Amount'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            order.amountString,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          SizedBox(
-                            width: 80,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                SizedBox(width: 8),
-                                order.amountIcon,
-                                Spacer(),
-                                Text(
-                                  order.baseAsset.toNullable()?.ticker ?? '',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Price per unit'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            order.priceString,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          SizedBox(
-                            width: 80,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                SizedBox(width: 8),
-                                order.priceIcon,
-                                Spacer(),
-                                Text(
-                                  order.quoteAsset.toNullable()?.ticker ?? '',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Total'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            order.total,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          SizedBox(
-                            width: 80,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                SizedBox(width: 8),
-                                order.priceIcon,
-                                Spacer(),
-                                Text(
-                                  order.quoteAsset.toNullable()?.ticker ?? '',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Side'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            dirStr,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(color: dirColor),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Order type'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(order.orderTypeDescription),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Two step'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(order.offlineSwapTypeDescription),
-                        ],
-                      ),
-                      ...switch (order.isPriceTracking) {
-                        true => [
-                          SizedBox(height: 8),
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: SideSwapColors.glacier.withValues(
-                              alpha: 0.4,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Text(
-                                'Price tracking'.tr(),
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleSmall?.copyWith(
-                                  color: SideSwapColors.brightTurquoise,
-                                ),
-                              ),
-                              Spacer(),
-                              Text('${order.priceTrackingPercent.toString()}%'),
-                            ],
-                          ),
-                        ],
-                        false => [],
-                      },
                       Spacer(),
-                      DCustomFilledBigButton(
-                        focusNode: okFocusNode,
-                        onPressed: () {
-                          onClose();
-                        },
-                        child: Text('OK'.tr()),
+                      Text(
+                        order.productName,
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
                   ),
-                );
-              },
-            )(),
+                  SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Amount'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        order.amountString,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      SizedBox(
+                        width: 80,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(width: 8),
+                            order.amountIcon,
+                            Spacer(),
+                            Text(order.baseAsset.toNullable()?.ticker ?? ''),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Price per unit'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        order.priceString,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      SizedBox(
+                        width: 80,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(width: 8),
+                            order.priceIcon,
+                            Spacer(),
+                            Text(order.quoteAsset.toNullable()?.ticker ?? ''),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Total'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        order.total,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      SizedBox(
+                        width: 80,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(width: 8),
+                            order.priceIcon,
+                            Spacer(),
+                            Text(order.quoteAsset.toNullable()?.ticker ?? ''),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Side'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        dirStr,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleSmall?.copyWith(color: dirColor),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Order type'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(order.orderTypeDescription),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Two step'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(order.offlineSwapTypeDescription),
+                    ],
+                  ),
+                  ...switch (order.isPriceTracking) {
+                    true => [
+                      SizedBox(height: 8),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: SideSwapColors.glacier.withValues(alpha: 0.4),
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text(
+                            'Price tracking'.tr(),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: SideSwapColors.brightTurquoise,
+                                ),
+                          ),
+                          Spacer(),
+                          Text('${order.priceTrackingPercent.toString()}%'),
+                        ],
+                      ),
+                    ],
+                    false => [],
+                  },
+                  Spacer(),
+                  DCustomFilledBigButton(
+                    focusNode: okFocusNode,
+                    onPressed: () {
+                      onClose();
+                    },
+                    child: Text('OK'.tr()),
+                  ),
+                ],
+              ),
+            );
+          },
+        )(),
       ),
     );
   }
@@ -363,7 +332,7 @@ class OrderSubmitErrorDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -415,7 +384,7 @@ class OrderSubmitErrorDialog extends ConsumerWidget {
               Consumer(
                 builder: (context, ref, child) {
                   final optionOrderSubmitError = ref.watch(
-                    orderSubmitErrorNotifierProvider,
+                    orderSubmitErrorProvider,
                   );
 
                   return optionOrderSubmitError.match(
@@ -452,7 +421,7 @@ class OrderSubmitUnregisteredGaid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -482,7 +451,7 @@ class OrderSubmitUnregisteredGaid extends ConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionUnregisteredGaid = ref.watch(
-                  orderSubmitUnregisteredGaidNotifierProvider,
+                  orderSubmitUnregisteredGaidProvider,
                 );
                 return optionUnregisteredGaid.match(
                   () => SizedBox(),

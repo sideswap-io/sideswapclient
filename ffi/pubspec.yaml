@@ -1,7 +1,7 @@
 name: side_swap_ffi
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.9.0
 
 dependencies:
   protobuf: ^4.1.0

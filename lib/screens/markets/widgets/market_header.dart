@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/markets/market_select_popup.dart';
@@ -45,8 +46,6 @@ class MarketHeaderTickerDropdown extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productName = ref.watch(subscribedMarketProductNameProvider);
-
     return TextButton(
       style: const ButtonStyle(
         padding: WidgetStatePropertyAll(EdgeInsets.zero),
@@ -62,11 +61,56 @@ class MarketHeaderTickerDropdown extends ConsumerWidget {
       },
       child: Row(
         children: [
-          Text(
-            productName,
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(height: 0.05),
+          Consumer(
+            builder: (context, ref, child) {
+              final marketInfo = ref.watch(subscribedMarketInfoProvider);
+
+              return marketInfo.match(() => SizedBox(), (marketInfo) {
+                final optionBaseAsset = ref.watch(
+                  baseAssetByMarketInfoProvider(marketInfo),
+                );
+                final optionQuoteAsset = ref.watch(
+                  quoteAssetByMarketInfoProvider(marketInfo),
+                );
+
+                return optionBaseAsset.match(
+                  () => const SizedBox.shrink(),
+                  (baseAsset) => optionQuoteAsset.match(
+                    () => const SizedBox.shrink(),
+                    (quoteAsset) => SizedBox(
+                      width: 140,
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 80),
+                              child: MiddleEllipsisText(
+                                text: baseAsset.ticker,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleLarge?.copyWith(height: 0.05),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            ' / ',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.copyWith(height: 0.05),
+                          ),
+                          Text(
+                            quoteAsset.ticker,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.copyWith(height: 0.05),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              });
+            },
           ),
           const SizedBox(width: 8),
           const Icon(Icons.expand_more, color: Colors.white, size: 20),
@@ -81,7 +125,7 @@ class MarketHeaderBuySellButtons extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
 
     return Material(
       color: Colors.transparent,
@@ -94,22 +138,17 @@ class MarketHeaderBuySellButtons extends HookConsumerWidget {
         activeText: 'Sell'.tr(),
         inactiveText: 'Buy'.tr(),
         value: tradeDirState == TradeDir.SELL,
-        activeToggleBackground:
-            tradeDirState == TradeDir.SELL
-                ? SideSwapColors.bitterSweet
-                : SideSwapColors.turquoise,
+        activeToggleBackground: tradeDirState == TradeDir.SELL
+            ? SideSwapColors.bitterSweet
+            : SideSwapColors.turquoise,
         inactiveToggleBackground: SideSwapColors.darkCerulean,
         backgroundColor: SideSwapColors.darkCerulean,
         borderColor: SideSwapColors.darkCerulean,
         onToggle: (value) {
           if (value) {
-            ref
-                .read(tradeDirStateNotifierProvider.notifier)
-                .setSide(TradeDir.SELL);
+            ref.read(tradeDirStateProvider.notifier).setSide(TradeDir.SELL);
           } else {
-            ref
-                .read(tradeDirStateNotifierProvider.notifier)
-                .setSide(TradeDir.BUY);
+            ref.read(tradeDirStateProvider.notifier).setSide(TradeDir.BUY);
           }
         },
       ),
@@ -130,9 +169,7 @@ class MarketHeaderCloseButton extends ConsumerWidget {
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
         ),
         onPressed: () {
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.registered);
+          ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
         },
         child: const Icon(Icons.close, color: SideSwapColors.pewterBlue),
       ),

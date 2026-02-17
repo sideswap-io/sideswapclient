@@ -72,7 +72,7 @@ class PinProtectionBody extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pinFocusNode = useFocusNode();
 
-    final pinUnlockState = ref.watch(pinUnlockStateNotifierProvider);
+    final pinUnlockState = ref.watch(pinUnlockStateProvider);
 
     useAsyncEffect(() async {
       return switch (pinUnlockState) {
@@ -93,6 +93,9 @@ class PinProtectionBody extends HookConsumerWidget {
     }, const []);
 
     final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
+    final attempt = (pinUnlockState is PinUnlockStateWrong)
+        ? pinUnlockState.attempt
+        : 0;
 
     useEffect(() {
       pinKeyStream.listen((pinKey) {
@@ -124,17 +127,18 @@ class PinProtectionBody extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 10, left: 16, right: 16),
             child: Consumer(
               builder: (context, ref, _) {
-                final pinCode = ref.watch(pinCodeProtectionNotifierProvider);
+                final pinCode = ref.watch(pinCodeProtectionProvider);
                 final pinProtectionState = ref.watch(
-                  pinProtectionStateNotifierProvider,
+                  pinProtectionStateProvider,
                 );
                 final errorMessage =
                     (pinProtectionState is PinProtectionStateError)
-                        ? pinProtectionState.message ?? ''
-                        : '';
+                    ? pinProtectionState.message ?? ''
+                    : '';
 
                 return PinTextField(
                   pin: pinCode,
+                  attempt: attempt,
                   enabled:
                       pinProtectionState != const PinProtectionState.waiting(),
                   error: pinProtectionState is PinProtectionStateError,
@@ -150,17 +154,17 @@ class PinProtectionBody extends HookConsumerWidget {
             padding: const EdgeInsets.only(bottom: 32),
             child: Consumer(
               builder: ((context, ref, _) {
-                final firstLaunchState = ref.watch(
-                  firstLaunchStateNotifierProvider,
+                final firstLaunchStateType = ref.watch(
+                  firstLaunchStateProvider,
                 );
-                final pinFieldState = ref.watch(pinFieldStateNotifierProvider);
+                final pinFieldState = ref.watch(pinFieldStateProvider);
                 return PinKeyboard(
                   acceptType:
-                      firstLaunchState != const FirstLaunchState.empty()
-                          ? pinFieldState == const PinFieldState.second()
-                              ? PinKeyboardAcceptType.save
-                              : PinKeyboardAcceptType.icon
-                          : iconType,
+                      firstLaunchStateType != const FirstLaunchStateType.empty()
+                      ? pinFieldState == const PinFieldState.second()
+                            ? PinKeyboardAcceptType.save
+                            : PinKeyboardAcceptType.icon
+                      : iconType,
                 );
               }),
             ),

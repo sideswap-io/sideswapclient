@@ -1,4 +1,3 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
@@ -15,8 +14,8 @@ import 'package:sideswap_websocket/sideswap_endpoint.dart';
 part 'endpoint_provider.g.dart';
 
 @riverpod
-EndpointServerProvider endpointServer(Ref ref) {
-  final endpointServerProvider = EndpointServerProvider(ref);
+EndpointServerImpl endpointServer(Ref ref) {
+  final endpointServerProvider = EndpointServerImpl(ref);
   ref.onDispose(() {
     endpointServerProvider.stop(force: true);
   });
@@ -24,11 +23,11 @@ EndpointServerProvider endpointServer(Ref ref) {
   return endpointServerProvider;
 }
 
-class EndpointServerProvider {
+class EndpointServerImpl {
   final Ref ref;
   EndpointServer? endpointServer;
 
-  EndpointServerProvider(this.ref);
+  EndpointServerImpl(this.ref);
 
   void _init() {
     endpointServer = EndpointServer(onRequest: onRequest);
@@ -49,7 +48,7 @@ class EndpointServerProvider {
   void onRequest(EndpointRequest request, String channelId, String id) {
     logger.d('$channelId $request');
 
-    final isBackendConnected = ref.read(serverConnectionNotifierProvider);
+    final isBackendConnected = ref.read(serverConnectionProvider);
     if (!isBackendConnected) {
       logger.w(
         'Client requested: $request but SideSwap isn\'t connected to backend yet.',
@@ -117,10 +116,10 @@ class EndpointServerProvider {
                   },
                   (asset) {
                     ref
-                        .read(eiCreateTransactionNotifierProvider.notifier)
+                        .read(eiCreateTransactionProvider.notifier)
                         .setState(createTransactionData);
 
-                    ref.invalidate(createTxStateNotifierProvider);
+                    ref.invalidate(createTxStateProvider);
                     ref
                         .read(paymentHelperProvider)
                         .selectPaymentSend(amount, asset, address: address);

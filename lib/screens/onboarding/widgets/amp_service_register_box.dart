@@ -59,24 +59,23 @@ class AmpServiceRegisterBox extends HookConsumerWidget {
             const Spacer(),
             Padding(
               padding: const EdgeInsets.only(top: 17),
-              child:
-                  FlavorConfig.isDesktop
-                      ? AmpDesktopRegisterButton(
+              child: FlavorConfig.isDesktop
+                  ? AmpDesktopRegisterButton(
+                      registered: registered,
+                      onPressed: loading ? null : onPressed,
+                      child: AmpRegisterButtonBody(
                         registered: registered,
-                        onPressed: loading ? null : onPressed,
-                        child: AmpRegisterButtonBody(
-                          registered: registered,
-                          loading: loading,
-                        ),
-                      )
-                      : AmpMobileRegisterButton(
-                        registered: registered,
-                        onPressed: loading ? null : onPressed,
-                        child: AmpRegisterButtonBody(
-                          registered: registered,
-                          loading: loading,
-                        ),
+                        loading: loading,
                       ),
+                    )
+                  : AmpMobileRegisterButton(
+                      registered: registered,
+                      onPressed: loading ? null : onPressed,
+                      child: AmpRegisterButtonBody(
+                        registered: registered,
+                        loading: loading,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -99,43 +98,43 @@ class AmpRegisterButtonBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return loading
         ? Text(
-          'CHECKING...'.tr(),
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-        )
+            'CHECKING...'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          )
         : registered
         ? Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (FlavorConfig.isDesktop) ...[
-              const Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: SuccessIcon(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: SideSwapColors.turquoise,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (FlavorConfig.isDesktop) ...[
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: SuccessIcon(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: SideSwapColors.turquoise,
+                    ),
+                    icon: Icon(Icons.done, color: Colors.white, size: 12),
                   ),
-                  icon: Icon(Icons.done, color: Colors.white, size: 12),
                 ),
+              ],
+              Text(
+                'REGISTERED'.tr(),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
-            Text(
-              'REGISTERED'.tr(),
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ],
-        )
+          )
         : Text(
-          'REGISTER'.tr(),
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-        );
+            'REGISTER'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          );
   }
 }
 
@@ -153,26 +152,24 @@ class AmpDesktopRegisterButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonThemes =
-        ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
+    final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
 
     return DCustomFilledBigButton(
       width: 253,
       height: 44,
       onPressed: onPressed,
-      style:
-          registered
-              ? buttonThemes.filledButtonStyle?.merge(
-                DButtonStyle(
-                  backgroundColor: ButtonState.all<Color>(
-                    SideSwapColors.tarawera,
-                  ),
-                  border: ButtonState.all<BorderSide>(
-                    const BorderSide(color: SideSwapColors.turquoise),
-                  ),
+      style: registered
+          ? buttonThemes.filledButtonStyle?.merge(
+              DButtonStyle(
+                backgroundColor: ButtonState.all<Color>(
+                  SideSwapColors.tarawera,
                 ),
-              )
-              : buttonThemes.filledButtonStyle,
+                border: ButtonState.all<BorderSide>(
+                  const BorderSide(color: SideSwapColors.turquoise),
+                ),
+              ),
+            )
+          : buttonThemes.filledButtonStyle,
       child: child,
     );
   }
@@ -196,8 +193,9 @@ class AmpMobileRegisterButton extends StatelessWidget {
       width: 146,
       height: 44,
       onPressed: onPressed,
-      backgroundColor:
-          registered ? SideSwapColors.tarawera : SideSwapColors.brightTurquoise,
+      backgroundColor: registered
+          ? SideSwapColors.tarawera
+          : SideSwapColors.brightTurquoise,
       side: const BorderSide(color: SideSwapColors.turquoise, width: 1),
       child: child,
     );

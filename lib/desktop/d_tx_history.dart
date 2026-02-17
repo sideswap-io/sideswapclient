@@ -16,7 +16,6 @@ import 'package:sideswap/desktop/widgets/d_tx_blinded_url_icon_button.dart';
 import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
-import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
@@ -33,7 +32,7 @@ class DTxHistory extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
-      ref.read(txHistoryStateNotifierProvider.notifier).setVisible();
+      ref.read(txHistoryStateProvider.notifier).setVisible();
 
       return;
     }, const []);
@@ -59,7 +58,7 @@ class DTxHistory extends HookConsumerWidget {
         HookConsumer(
           builder: (context, ref, child) {
             final loadTransactionsState = ref.watch(
-              loadTransactionsStateNotifierProvider,
+              loadTransactionsStateProvider,
             );
 
             useEffect(() {
@@ -117,9 +116,7 @@ class DTxHistoryTransaction extends HookConsumerWidget {
     final allNewTxSorted = ref.watch(allNewTxsSortedProvider);
     final allTxSorted = ref.watch(allTxsSortedProvider);
     final txList = newTxsOnly ? allNewTxSorted : allTxSorted;
-    final loadTransactionsState = ref.watch(
-      loadTransactionsStateNotifierProvider,
-    );
+    final loadTransactionsState = ref.watch(loadTransactionsStateProvider);
 
     useAsyncEffect(() async {
       await (switch (loadTransactionsState) {
@@ -222,7 +219,7 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                       ).textTheme.bodyMedium?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryConfs(
-                      tx: transItem,
+                      transItem: transItem,
                       textStyle: Theme.of(
                         context,
                       ).textTheme.bodyMedium?.copyWith(fontSize: 14),
@@ -235,18 +232,19 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                   ],
                 ),
                 onPressed: () {
-                  final allPegsById = ref.read(allPegsByIdProvider);
+                  // final allPegsById = ref.read(allPegsByIdProvider);
                   ref
                       .read(desktopDialogProvider)
                       .showTx(
                         transItem,
-                        isPeg: transItem.hasPeg()
-                            ? allPegsById.containsKey(
-                                transItem.peg.isPegIn
-                                    ? transItem.peg.txidRecv
-                                    : transItem.peg.txidSend,
-                              )
-                            : false,
+                        isPeg: transItem.hasPeg(),
+                        // transItem.hasPeg()
+                        //     ? allPegsByTxid.containsKey(
+                        //         transItem.peg.isPegIn
+                        //             ? transItem.peg.txidRecv
+                        //             : transItem.peg.txidSend,
+                        //       )
+                        //     : false,
                       );
                 },
               ),

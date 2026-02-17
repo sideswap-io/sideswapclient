@@ -26,7 +26,7 @@ class DTopOverviewToolbar extends HookConsumerWidget {
         const Spacer(),
         Consumer(
           builder: (context, ref, child) {
-            final ampId = ref.watch(ampIdNotifierProvider);
+            final ampId = ref.watch(ampIdProvider);
 
             if (ampId.isNotEmpty) {
               return AmpIdPanel(
@@ -39,7 +39,7 @@ class DTopOverviewToolbar extends HookConsumerWidget {
                     ),
                 onTap: () {
                   ref
-                      .read(pageStatusNotifierProvider.notifier)
+                      .read(pageStatusProvider.notifier)
                       .setStatus(Status.ampRegister);
                 },
               );

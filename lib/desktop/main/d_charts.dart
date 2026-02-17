@@ -24,10 +24,8 @@ class DCharts extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chartsData = ref.watch(chartsNotifierProvider);
-    final optionAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
-    );
+    final chartsData = ref.watch(chartsProvider);
+    final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
     final detailsExpanded = useState(false);
 
     return optionAssetPair.match(
@@ -46,10 +44,7 @@ class DCharts extends HookConsumerWidget {
                           onBackPressed ??
                           () {
                             ref
-                                .read(
-                                  chartsSubscriptionFlagNotifierProvider
-                                      .notifier,
-                                )
+                                .read(chartsSubscriptionFlagProvider.notifier)
                                 .unsubscribe();
                           },
                     ),
@@ -113,7 +108,7 @@ class DChartsAssetDetails extends HookConsumerWidget {
 
         useEffect(() {
           ref
-              .read(tokenMarketNotifierProvider.notifier)
+              .read(tokenMarketProvider.notifier)
               .requestAssetDetails(assetId: asset.assetId);
           return;
         }, [asset]);
@@ -163,12 +158,11 @@ class DChartsAssetDetails extends HookConsumerWidget {
                   DChartsAssetDetailsField(
                     name: '30d Change'.tr(),
                     value: chartStatsRepository.statsChangePercentString(),
-                    color:
-                        chartStatsRepository.statsChangePercent() == 0
-                            ? null
-                            : (chartStatsRepository.statsChangePercent() > 0
-                                ? SideSwapColors.turquoise
-                                : SideSwapColors.bitterSweet),
+                    color: chartStatsRepository.statsChangePercent() == 0
+                        ? null
+                        : (chartStatsRepository.statsChangePercent() > 0
+                              ? SideSwapColors.turquoise
+                              : SideSwapColors.bitterSweet),
                   ),
                   DChartsAssetDetailsField(
                     name: '30d Vol'.tr(),
@@ -272,16 +266,16 @@ class DChartsAssetPairDetails extends ConsumerWidget {
                 SizedBox(height: 6),
                 baseAsset.domain.isNotEmpty
                     ? assetDetailsUrl(
-                      'Issuer'.tr(),
-                      'https://${baseAsset.domain}',
-                    )
+                        'Issuer'.tr(),
+                        'https://${baseAsset.domain}',
+                      )
                     : SizedBox(),
                 assetDetailsUrl('Asset'.tr(), baseAssetUrl),
                 baseAsset.hasDomainAgentLink()
                     ? assetDetailsUrl(
-                      'Registration Agent'.tr(),
-                      baseAsset.domainAgentLink,
-                    )
+                        'Registration Agent'.tr(),
+                        baseAsset.domainAgentLink,
+                      )
                     : SizedBox(),
                 SizedBox(height: 16),
                 Row(
@@ -305,16 +299,16 @@ class DChartsAssetPairDetails extends ConsumerWidget {
                 SizedBox(height: 6),
                 quoteAsset.domain.isNotEmpty
                     ? assetDetailsUrl(
-                      'Issuer'.tr(),
-                      'https://${quoteAsset.domain}',
-                    )
+                        'Issuer'.tr(),
+                        'https://${quoteAsset.domain}',
+                      )
                     : SizedBox(),
                 assetDetailsUrl('Asset'.tr(), quoteAssetUrl),
                 quoteAsset.hasDomainAgentLink()
                     ? assetDetailsUrl(
-                      'Registration Agent'.tr(),
-                      quoteAsset.domainAgentLink,
-                    )
+                        'Registration Agent'.tr(),
+                        quoteAsset.domainAgentLink,
+                      )
                     : SizedBox(),
               ],
             );
@@ -415,12 +409,9 @@ class DChartsAssetDetailsField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultCurrencyPrice =
-        (assetAmount != null && assetId != null)
-            ? ref.watch(
-              amountUsdInDefaultCurrencyProvider(assetId, assetAmount!),
-            )
-            : null;
+    final defaultCurrencyPrice = (assetAmount != null && assetId != null)
+        ? ref.watch(amountUsdInDefaultCurrencyProvider(assetId, assetAmount!))
+        : null;
     final defaultCurrencyTicker = ref.read(defaultCurrencyTickerProvider);
 
     return Column(

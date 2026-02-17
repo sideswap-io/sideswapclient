@@ -96,7 +96,7 @@ class ProductSliverGroup extends ConsumerWidget {
                   .watch(quoteAssetByMarketInfoProvider(marketInfoList[index]))
                   .toNullable();
               final subscribedAssetPair = ref
-                  .watch(marketSubscribedAssetPairNotifierProvider)
+                  .watch(marketSubscribedAssetPairProvider)
                   .toNullable();
               final baseIcon = ref
                   .read(assetImageRepositoryProvider)
@@ -138,7 +138,7 @@ class ProductSliverGroup extends ConsumerWidget {
                 ),
                 onPressed: () {
                   ref
-                      .read(marketSubscribedAssetPairNotifierProvider.notifier)
+                      .read(marketSubscribedAssetPairProvider.notifier)
                       .setState(marketInfoList[index].assetPair);
                   onMarketSelected?.call();
                 },

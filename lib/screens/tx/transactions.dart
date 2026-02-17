@@ -18,14 +18,12 @@ class Transactions extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allTransactions = ref.watch(distinctTransactionsForAccountProvider);
-    final loadTransactionsState = ref.watch(
-      loadTransactionsStateNotifierProvider,
-    );
+    final loadTransactionsState = ref.watch(loadTransactionsStateProvider);
     final pageStorageKeyData = ref.watch(pageStorageKeyDataProvider);
     final storageKey = useMemoized(() => PageStorageKey(pageStorageKeyData));
 
     useEffect(() {
-      ref.read(txHistoryStateNotifierProvider.notifier).setVisible();
+      ref.read(txHistoryStateProvider.notifier).setVisible();
 
       return;
     }, const []);

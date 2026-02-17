@@ -6,208 +6,241 @@ part of 'payment_select_asset.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$paymentIsAssetDisabledHash() =>
-    r'a54ec2e37766189b78c6b39cb6bc01f652806716';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
+@ProviderFor(PaymentAvailableAssets)
+const paymentAvailableAssetsProvider = PaymentAvailableAssetsProvider._();
 
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [paymentIsAssetDisabled].
-@ProviderFor(paymentIsAssetDisabled)
-const paymentIsAssetDisabledProvider = PaymentIsAssetDisabledFamily();
-
-/// See also [paymentIsAssetDisabled].
-class PaymentIsAssetDisabledFamily extends Family<bool> {
-  /// See also [paymentIsAssetDisabled].
-  const PaymentIsAssetDisabledFamily();
-
-  /// See also [paymentIsAssetDisabled].
-  PaymentIsAssetDisabledProvider call(String assetId) {
-    return PaymentIsAssetDisabledProvider(assetId);
-  }
-
-  @override
-  PaymentIsAssetDisabledProvider getProviderOverride(
-    covariant PaymentIsAssetDisabledProvider provider,
-  ) {
-    return call(provider.assetId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'paymentIsAssetDisabledProvider';
-}
-
-/// See also [paymentIsAssetDisabled].
-class PaymentIsAssetDisabledProvider extends AutoDisposeProvider<bool> {
-  /// See also [paymentIsAssetDisabled].
-  PaymentIsAssetDisabledProvider(String assetId)
-    : this._internal(
-        (ref) =>
-            paymentIsAssetDisabled(ref as PaymentIsAssetDisabledRef, assetId),
-        from: paymentIsAssetDisabledProvider,
-        name: r'paymentIsAssetDisabledProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$paymentIsAssetDisabledHash,
-        dependencies: PaymentIsAssetDisabledFamily._dependencies,
-        allTransitiveDependencies:
-            PaymentIsAssetDisabledFamily._allTransitiveDependencies,
-        assetId: assetId,
+final class PaymentAvailableAssetsProvider
+    extends $NotifierProvider<PaymentAvailableAssets, Iterable<String>> {
+  const PaymentAvailableAssetsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentAvailableAssetsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  PaymentIsAssetDisabledProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.assetId,
-  }) : super.internal();
-
-  final String assetId;
-
   @override
-  Override overrideWith(
-    bool Function(PaymentIsAssetDisabledRef provider) create,
-  ) {
-    return ProviderOverride(
+  String debugGetCreateSourceHash() => _$paymentAvailableAssetsHash();
+
+  @$internal
+  @override
+  PaymentAvailableAssets create() => PaymentAvailableAssets();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<String> value) {
+    return $ProviderOverride(
       origin: this,
-      override: PaymentIsAssetDisabledProvider._internal(
-        (ref) => create(ref as PaymentIsAssetDisabledRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        assetId: assetId,
-      ),
+      providerOverride: $SyncValueProvider<Iterable<String>>(value),
     );
   }
+}
+
+String _$paymentAvailableAssetsHash() =>
+    r'd9d253df7ef5df89b3da94edb3df7903dfd22bc2';
+
+abstract class _$PaymentAvailableAssets extends $Notifier<Iterable<String>> {
+  Iterable<String> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Iterable<String>, Iterable<String>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Iterable<String>, Iterable<String>>,
+              Iterable<String>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(PaymentDisabledAssets)
+const paymentDisabledAssetsProvider = PaymentDisabledAssetsProvider._();
+
+final class PaymentDisabledAssetsProvider
+    extends $NotifierProvider<PaymentDisabledAssets, Iterable<String>> {
+  const PaymentDisabledAssetsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentDisabledAssetsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
-  AutoDisposeProviderElement<bool> createElement() {
-    return _PaymentIsAssetDisabledProviderElement(this);
+  String debugGetCreateSourceHash() => _$paymentDisabledAssetsHash();
+
+  @$internal
+  @override
+  PaymentDisabledAssets create() => PaymentDisabledAssets();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<String> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<String>>(value),
+    );
+  }
+}
+
+String _$paymentDisabledAssetsHash() =>
+    r'd5388d815547aad761bec274afe933a027297b53';
+
+abstract class _$PaymentDisabledAssets extends $Notifier<Iterable<String>> {
+  Iterable<String> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Iterable<String>, Iterable<String>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Iterable<String>, Iterable<String>>,
+              Iterable<String>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(paymentIsAssetDisabled)
+const paymentIsAssetDisabledProvider = PaymentIsAssetDisabledFamily._();
+
+final class PaymentIsAssetDisabledProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const PaymentIsAssetDisabledProvider._({
+    required PaymentIsAssetDisabledFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'paymentIsAssetDisabledProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$paymentIsAssetDisabledHash();
+
+  @override
+  String toString() {
+    return r'paymentIsAssetDisabledProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    final argument = this.argument as String;
+    return paymentIsAssetDisabled(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
   }
 
   @override
   bool operator ==(Object other) {
-    return other is PaymentIsAssetDisabledProvider && other.assetId == assetId;
+    return other is PaymentIsAssetDisabledProvider &&
+        other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, assetId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin PaymentIsAssetDisabledRef on AutoDisposeProviderRef<bool> {
-  /// The parameter `assetId` of this provider.
-  String get assetId;
-}
+String _$paymentIsAssetDisabledHash() =>
+    r'a54ec2e37766189b78c6b39cb6bc01f652806716';
 
-class _PaymentIsAssetDisabledProviderElement
-    extends AutoDisposeProviderElement<bool>
-    with PaymentIsAssetDisabledRef {
-  _PaymentIsAssetDisabledProviderElement(super.provider);
+final class PaymentIsAssetDisabledFamily extends $Family
+    with $FunctionalFamilyOverride<bool, String> {
+  const PaymentIsAssetDisabledFamily._()
+    : super(
+        retry: null,
+        name: r'paymentIsAssetDisabledProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  PaymentIsAssetDisabledProvider call(String assetId) =>
+      PaymentIsAssetDisabledProvider._(argument: assetId, from: this);
 
   @override
-  String get assetId => (origin as PaymentIsAssetDisabledProvider).assetId;
+  String toString() => r'paymentIsAssetDisabledProvider';
+}
+
+@ProviderFor(paymentAvailableAssetsWithInputsFiltered)
+const paymentAvailableAssetsWithInputsFilteredProvider =
+    PaymentAvailableAssetsWithInputsFilteredProvider._();
+
+final class PaymentAvailableAssetsWithInputsFilteredProvider
+    extends
+        $FunctionalProvider<
+          Iterable<String>,
+          Iterable<String>,
+          Iterable<String>
+        >
+    with $Provider<Iterable<String>> {
+  const PaymentAvailableAssetsWithInputsFilteredProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentAvailableAssetsWithInputsFilteredProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$paymentAvailableAssetsWithInputsFilteredHash();
+
+  @$internal
+  @override
+  $ProviderElement<Iterable<String>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Iterable<String> create(Ref ref) {
+    return paymentAvailableAssetsWithInputsFiltered(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<String> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<String>>(value),
+    );
+  }
 }
 
 String _$paymentAvailableAssetsWithInputsFilteredHash() =>
-    r'c9fa54b1d3db046adf103a1985dcc291768cc4f8';
-
-/// See also [paymentAvailableAssetsWithInputsFiltered].
-@ProviderFor(paymentAvailableAssetsWithInputsFiltered)
-final paymentAvailableAssetsWithInputsFilteredProvider =
-    AutoDisposeProvider<Iterable<String>>.internal(
-      paymentAvailableAssetsWithInputsFiltered,
-      name: r'paymentAvailableAssetsWithInputsFilteredProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentAvailableAssetsWithInputsFilteredHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PaymentAvailableAssetsWithInputsFilteredRef =
-    AutoDisposeProviderRef<Iterable<String>>;
-String _$paymentAvailableAssetsHash() =>
-    r'd9d253df7ef5df89b3da94edb3df7903dfd22bc2';
-
-/// See also [PaymentAvailableAssets].
-@ProviderFor(PaymentAvailableAssets)
-final paymentAvailableAssetsProvider =
-    AutoDisposeNotifierProvider<
-      PaymentAvailableAssets,
-      Iterable<String>
-    >.internal(
-      PaymentAvailableAssets.new,
-      name: r'paymentAvailableAssetsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentAvailableAssetsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$PaymentAvailableAssets = AutoDisposeNotifier<Iterable<String>>;
-String _$paymentDisabledAssetsHash() =>
-    r'd5388d815547aad761bec274afe933a027297b53';
-
-/// See also [PaymentDisabledAssets].
-@ProviderFor(PaymentDisabledAssets)
-final paymentDisabledAssetsProvider =
-    AutoDisposeNotifierProvider<
-      PaymentDisabledAssets,
-      Iterable<String>
-    >.internal(
-      PaymentDisabledAssets.new,
-      name: r'paymentDisabledAssetsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentDisabledAssetsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$PaymentDisabledAssets = AutoDisposeNotifier<Iterable<String>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+    r'f6570e02f75f8763f2a1b9811deaf3d8b6fa76fa';

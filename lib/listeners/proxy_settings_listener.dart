@@ -8,7 +8,7 @@ class ProxySettingsListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(proxySettingsRepositoryNotifierProvider, (_, next) {
+    ref.listen(proxySettingsRepositoryProvider, (_, next) {
       final toProxySettings = next.getProxySettings();
       ref.read(walletProvider).sendProxySettings(toProxySettings);
     });

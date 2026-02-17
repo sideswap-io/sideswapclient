@@ -7,7 +7,7 @@ class DWorkingOrdersRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const flexes = [115, 190, 150, 200, 60, 70, 70, 125];
+    const flexes = [115, 180, 150, 180, 60, 105, 80, 110];
     return Row(
       children: List.generate(
         flexes.length,

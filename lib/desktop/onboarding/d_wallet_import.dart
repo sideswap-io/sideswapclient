@@ -45,19 +45,15 @@ class PasteMnemonicAction extends Action<PasteMnemonicIntent> {
             MapEntry(index, WordItem(word: words[index], isCorrect: false)),
       ),
     );
-    ref.read(mnemonicWordItemsNotifierProvider.notifier).setItems(wordItems);
-    await ref
-        .read(mnemonicWordItemsNotifierProvider.notifier)
-        .validateAllItems();
-    final index = ref
-        .read(mnemonicWordItemsNotifierProvider.notifier)
-        .maxIndex();
-    ref.read(currentMnemonicIndexNotifierProvider.notifier).setIndex(index);
+    ref.read(mnemonicWordItemsProvider.notifier).setItems(wordItems);
+    await ref.read(mnemonicWordItemsProvider.notifier).validateAllItems();
+    final index = ref.read(mnemonicWordItemsProvider.notifier).maxIndex();
+    ref.read(currentMnemonicIndexProvider.notifier).setIndex(index);
     final mnemonicIsValid = ref
-        .watch(mnemonicWordItemsNotifierProvider.notifier)
+        .watch(mnemonicWordItemsProvider.notifier)
         .mnemonicIsValid();
     if (mnemonicIsValid) {
-      ref.read(mnemonicWordItemsNotifierProvider.notifier).importMnemonic();
+      ref.read(mnemonicWordItemsProvider.notifier).importMnemonic();
     }
   }
 }
@@ -69,10 +65,10 @@ class DWalletImport extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final focusNode = useFocusNode(skipTraversal: true);
 
-    ref.listen(mnemonicWordsCounterNotifierProvider, (_, _) {
+    ref.listen(mnemonicWordsCounterProvider, (_, _) {
       focusNode.requestFocus();
     });
-    final mnemonicCounter = ref.watch(mnemonicWordsCounterNotifierProvider);
+    final mnemonicCounter = ref.watch(mnemonicWordsCounterProvider);
 
     useEffect(() {
       focusNode.requestFocus();
@@ -121,9 +117,7 @@ class DWalletImport extends HookConsumerWidget {
               height: mnemonicCounter == 12 ? 350 : 540,
               child: Consumer(
                 builder: (context, ref, _) {
-                  final currentItem = ref.watch(
-                    currentMnemonicIndexNotifierProvider,
-                  );
+                  final currentItem = ref.watch(currentMnemonicIndexProvider);
                   return Column(
                     children: [
                       Container(
@@ -143,15 +137,13 @@ class DWalletImport extends HookConsumerWidget {
                                 if (value) {
                                   ref
                                       .read(
-                                        mnemonicWordsCounterNotifierProvider
-                                            .notifier,
+                                        mnemonicWordsCounterProvider.notifier,
                                       )
                                       .set12Words();
                                 } else {
                                   ref
                                       .read(
-                                        mnemonicWordsCounterNotifierProvider
-                                            .notifier,
+                                        mnemonicWordsCounterProvider.notifier,
                                       )
                                       .set24Words();
                                 }
@@ -171,19 +163,15 @@ class DWalletImport extends HookConsumerWidget {
                         padding: const EdgeInsets.only(top: 19),
                         child: DMnemonicTable(
                           itemsCount: ref
-                              .read(mnemonicWordItemsNotifierProvider.notifier)
+                              .read(mnemonicWordItemsProvider.notifier)
                               .length(),
                           itemSelected: currentItem,
                           onPressed: (index) async {
                             await ref
-                                .read(
-                                  mnemonicWordItemsNotifierProvider.notifier,
-                                )
+                                .read(mnemonicWordItemsProvider.notifier)
                                 .validateAllItems();
                             ref
-                                .read(
-                                  currentMnemonicIndexNotifierProvider.notifier,
-                                )
+                                .read(currentMnemonicIndexProvider.notifier)
                                 .setIndex(index);
                             focusNode.requestFocus();
                           },
@@ -240,15 +228,13 @@ class DWalletImport extends HookConsumerWidget {
               child: Consumer(
                 builder: ((context, ref, child) {
                   final mnemonicIsValid = ref
-                      .watch(mnemonicWordItemsNotifierProvider.notifier)
+                      .watch(mnemonicWordItemsProvider.notifier)
                       .mnemonicIsValid();
                   return DCustomFilledBigButton(
                     onPressed: mnemonicIsValid
                         ? () {
                             ref
-                                .read(
-                                  mnemonicWordItemsNotifierProvider.notifier,
-                                )
+                                .read(mnemonicWordItemsProvider.notifier)
                                 .importMnemonic();
                           }
                         : null,

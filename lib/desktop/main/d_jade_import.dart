@@ -20,9 +20,9 @@ class DJadeImport extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jadeDevicesState = ref.watch(jadeDeviceNotifierProvider);
+    final jadeDevicesState = ref.watch(jadeDeviceProvider);
 
-    final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
+    final desktopAppTheme = ref.watch(desktopAppThemeProvider);
 
     return SideSwapScaffoldPage(
       content: Padding(
@@ -116,7 +116,7 @@ class DJadeImport extends ConsumerWidget {
             const SizedBox(height: 32),
             Consumer(
               builder: (context, ref, child) {
-                final jadeDevicesState = ref.watch(jadeDeviceNotifierProvider);
+                final jadeDevicesState = ref.watch(jadeDeviceProvider);
 
                 return Column(
                   children: [
@@ -145,17 +145,14 @@ class DJadeImport extends ConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 24),
                           child: Column(
-                            children:
-                                devices
-                                    .map(
-                                      (port) => JadeDevice(
-                                        key: ValueKey(port.port),
-                                        jadePort: JadePort(
-                                          fromJadePortsPort: port,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
+                            children: devices
+                                .map(
+                                  (port) => JadeDevice(
+                                    key: ValueKey(port.port),
+                                    jadePort: JadePort(fromJadePortsPort: port),
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ),
                       _ => const Padding(
@@ -220,12 +217,11 @@ class JadeDevice extends StatelessWidget {
                 jadeRegistrationButtonEnabledProvider,
               );
               return DCustomFilledBigButton(
-                onPressed:
-                    registrationButtonEnabled
-                        ? () {
-                          ref.read(walletProvider).jadeLogin(jadePort.jadeId);
-                        }
-                        : null,
+                onPressed: registrationButtonEnabled
+                    ? () {
+                        ref.read(walletProvider).jadeLogin(jadePort.jadeId);
+                      }
+                    : null,
                 child: Text('REGISTER'.tr()),
               );
             },

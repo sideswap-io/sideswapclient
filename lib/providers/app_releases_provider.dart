@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/app_version.dart';
@@ -81,7 +80,7 @@ FutureOr<bool> showNewReleaseFuture(Ref ref) {
       .watch(configurationProvider)
       .knownNewReleaseBuild;
 
-  final appReleasesState = ref.watch(appReleasesStateNotifierProvider);
+  final appReleasesState = ref.watch(appReleasesStateProvider);
 
   return switch (appReleasesState) {
     AsyncValue(hasValue: true, value: AppReleasesModelState modelState)

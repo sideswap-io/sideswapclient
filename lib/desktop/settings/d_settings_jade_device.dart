@@ -16,7 +16,7 @@ class DSettingsJadeDevice extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
+    final desktopAppTheme = ref.watch(desktopAppThemeProvider);
     ref.listen(jadeRescanProvider, (_, _) {});
 
     return PopScope(
@@ -51,9 +51,7 @@ class DSettingsJadeDevice extends HookConsumerWidget {
                 const SizedBox(height: 32),
                 Consumer(
                   builder: (context, ref, child) {
-                    final jadeDevicesState = ref.watch(
-                      jadeDeviceNotifierProvider,
-                    );
+                    final jadeDevicesState = ref.watch(jadeDeviceProvider);
 
                     return Column(
                       children: [

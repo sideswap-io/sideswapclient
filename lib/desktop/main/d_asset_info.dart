@@ -31,7 +31,7 @@ class DAssetInfo extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
       ref
-          .read(tokenMarketNotifierProvider.notifier)
+          .read(tokenMarketProvider.notifier)
           .requestAssetDetails(assetId: asset.assetId);
 
       return;
@@ -40,7 +40,7 @@ class DAssetInfo extends HookConsumerWidget {
     final assetPrecision = ref
         .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: asset.assetId);
-    final details = ref.watch(tokenMarketNotifierProvider)[asset.assetId];
+    final details = ref.watch(tokenMarketProvider)[asset.assetId];
     final issuedAmount = details?.stats?.issuedAmount ?? 0;
     final burnedAmount = details?.stats?.burnedAmount ?? 0;
     final circulatingAmount = issuedAmount - burnedAmount;
@@ -259,10 +259,10 @@ class DAssetInfo extends HookConsumerWidget {
                         Navigator.pop(context);
                         ref.read(swapHelperProvider).swapReset();
                         final walletMainArguments = ref.watch(
-                          uiStateArgsNotifierProvider,
+                          uiStateArgsProvider,
                         );
                         ref
-                            .read(uiStateArgsNotifierProvider.notifier)
+                            .read(uiStateArgsProvider.notifier)
                             .setWalletMainArguments(
                               walletMainArguments.fromIndexDesktop(1),
                             );
@@ -274,10 +274,10 @@ class DAssetInfo extends HookConsumerWidget {
                     CustomIconButton(
                       label: 'Send'.tr(),
                       onTap: () {
-                        ref.invalidate(createTxStateNotifierProvider);
+                        ref.invalidate(createTxStateProvider);
                         Navigator.pop(context);
                         ref
-                            .read(sendAssetIdNotifierProvider.notifier)
+                            .read(sendAssetIdProvider.notifier)
                             .setSendAsset(asset.assetId);
 
                         ref.read(desktopDialogProvider).showSendTx();
@@ -383,7 +383,7 @@ class DAssetInfoField extends StatelessWidget {
                 fontWeight: FontWeight.normal,
               ),
             ),
-          if (valueWidget != null) valueWidget!,
+          ?valueWidget,
         ],
       ),
     );

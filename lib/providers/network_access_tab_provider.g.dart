@@ -6,41 +6,113 @@ part of 'network_access_tab_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(NetworkAccessTabNotifier)
+const networkAccessTabProvider = NetworkAccessTabNotifierProvider._();
+
+final class NetworkAccessTabNotifierProvider
+    extends $NotifierProvider<NetworkAccessTabNotifier, NetworkAccessTabState> {
+  const NetworkAccessTabNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'networkAccessTabProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$networkAccessTabNotifierHash();
+
+  @$internal
+  @override
+  NetworkAccessTabNotifier create() => NetworkAccessTabNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NetworkAccessTabState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NetworkAccessTabState>(value),
+    );
+  }
+}
+
 String _$networkAccessTabNotifierHash() =>
     r'b9ea4510f6a8489974ef9833324ac591464dbffd';
 
-/// See also [NetworkAccessTabNotifier].
-@ProviderFor(NetworkAccessTabNotifier)
-final networkAccessTabNotifierProvider =
-    AutoDisposeNotifierProvider<
-      NetworkAccessTabNotifier,
-      NetworkAccessTabState
-    >.internal(
-      NetworkAccessTabNotifier.new,
-      name: r'networkAccessTabNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$networkAccessTabNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$NetworkAccessTabNotifier
+    extends $Notifier<NetworkAccessTabState> {
+  NetworkAccessTabState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<NetworkAccessTabState, NetworkAccessTabState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<NetworkAccessTabState, NetworkAccessTabState>,
+              NetworkAccessTabState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$NetworkAccessTabNotifier = AutoDisposeNotifier<NetworkAccessTabState>;
+@ProviderFor(UseProxyNotifier)
+const useProxyProvider = UseProxyNotifierProvider._();
+
+final class UseProxyNotifierProvider
+    extends $NotifierProvider<UseProxyNotifier, bool> {
+  const UseProxyNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'useProxyProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$useProxyNotifierHash();
+
+  @$internal
+  @override
+  UseProxyNotifier create() => UseProxyNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
 String _$useProxyNotifierHash() => r'5e53759b98a7bdf4efbf5fa95f29e981af896339';
 
-/// See also [UseProxyNotifier].
-@ProviderFor(UseProxyNotifier)
-final useProxyNotifierProvider =
-    AutoDisposeNotifierProvider<UseProxyNotifier, bool>.internal(
-      UseProxyNotifier.new,
-      name: r'useProxyNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$useProxyNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$UseProxyNotifier = AutoDisposeNotifier<bool>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$UseProxyNotifier extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

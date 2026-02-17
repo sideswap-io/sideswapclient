@@ -14,14 +14,15 @@ class DSettingsDeleteWallet extends ConsumerWidget {
   const DSettingsDeleteWallet({super.key});
 
   void goBack(WidgetRef ref) {
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
     ref.read(walletProvider).settingsViewPage();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
 
     return PopScope(
       canPop: false,

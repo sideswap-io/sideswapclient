@@ -20,6 +20,10 @@ enum FCMPayloadType {
   pegin,
   @JsonValue('Peg-out')
   pegout,
+  @JsonValue('SwaptionConnect')
+  swaptionConnect,
+  @JsonValue('SwaptionSign')
+  swaptionSign,
 }
 
 enum FCMTxType {
@@ -38,7 +42,8 @@ enum FCMTxType {
 @freezed
 sealed class FCMPayload with _$FCMPayload {
   FCMPayload._();
-  factory FCMPayload({FCMPayloadType? type, String? txid}) = _FCMPayload;
+  factory FCMPayload({FCMPayloadType? type, String? txid, String? data}) =
+      _FCMPayload;
 
   factory FCMPayload.fromJson(Map<String, dynamic> json) =>
       _$FCMPayloadFromJson(json);
@@ -79,11 +84,12 @@ sealed class FCMData with _$FCMData {
 
 @freezed
 sealed class FCMDetails with _$FCMDetails {
+  @JsonSerializable(fieldRename: FieldRename.snake)
   const factory FCMDetails({
     FCMTx? tx,
-    @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
-    @JsonKey(name: 'peg_detected') FCMPeg? pegDetected,
-    @JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled,
+    FCMPeg? pegPayout,
+    FCMPeg? pegDetected,
+    FCMOrderCancelled? orderCancelled,
   }) = _FCMDetails;
 
   factory FCMDetails.fromJson(Map<String, dynamic> json) =>
@@ -92,23 +98,22 @@ sealed class FCMDetails with _$FCMDetails {
 
 @freezed
 sealed class FCMTx with _$FCMTx {
-  const factory FCMTx({
-    @JsonKey(name: 'tx_type') FCMTxType? txType,
-    @JsonKey(name: 'txid') String? txId,
-  }) = _FCMTx;
+  @JsonSerializable(fieldRename: FieldRename.snake)
+  const factory FCMTx({FCMTxType? txType, String? txId}) = _FCMTx;
 
   factory FCMTx.fromJson(Map<String, dynamic> json) => _$FCMTxFromJson(json);
 }
 
 @freezed
 sealed class FCMPeg with _$FCMPeg {
+  @JsonSerializable(fieldRename: FieldRename.snake)
   const factory FCMPeg({
-    @JsonKey(name: 'order_id') String? orderId,
-    @JsonKey(name: 'peg_in') bool? pegIn,
-    @JsonKey(name: 'tx_hash') String? txHash,
+    String? orderId,
+    bool? pegIn,
+    String? txHash,
     int? vout,
-    @JsonKey(name: 'created_at') int? createdAt,
-    @JsonKey(name: 'payout_txid') String? payoutTxId,
+    int? createdAt,
+    String? payoutTxId,
     int? payout,
   }) = _FCMPeg;
 
@@ -117,9 +122,8 @@ sealed class FCMPeg with _$FCMPeg {
 
 @freezed
 sealed class FCMOrderCancelled with _$FCMOrderCancelled {
-  const factory FCMOrderCancelled({
-    @JsonKey(name: 'order_id') String? orderId,
-  }) = _FCMOrderCancelled;
+  @JsonSerializable(fieldRename: FieldRename.snake)
+  const factory FCMOrderCancelled({String? orderId}) = _FCMOrderCancelled;
 
   factory FCMOrderCancelled.fromJson(Map<String, dynamic> json) =>
       _$FCMOrderCancelledFromJson(json);

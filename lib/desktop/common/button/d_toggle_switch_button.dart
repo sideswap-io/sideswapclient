@@ -45,10 +45,9 @@ class DToggleSwitchButton extends StatelessWidget {
           child: DFocusBorder(
             focused: states.isFocused,
             child: Container(
-              decoration:
-                  checked
-                      ? toggleSwitchStyle.checkedDecoration?.resolve(states)
-                      : toggleSwitchStyle.uncheckedDecoration?.resolve(states),
+              decoration: checked
+                  ? toggleSwitchStyle.checkedDecoration?.resolve(states)
+                  : toggleSwitchStyle.uncheckedDecoration?.resolve(states),
               child: Stack(
                 children: [
                   AnimatedContainer(
@@ -56,18 +55,18 @@ class DToggleSwitchButton extends StatelessWidget {
                     height: height - 2,
                     duration: toggleSwitchStyle.animationDuration!,
                     curve: toggleSwitchStyle.animationCurve!,
-                    alignment:
-                        (checked
-                            ? Alignment.centerLeft
-                            : Alignment.centerRight),
+                    alignment: (checked
+                        ? Alignment.centerLeft
+                        : Alignment.centerRight),
                     child: Container(
                       width: (width - 4) / 2,
-                      decoration:
-                          checked
-                              ? toggleSwitchStyle.checkedThumbDecoration
-                                  ?.resolve(states)
-                              : toggleSwitchStyle.uncheckedThumbDecoration
-                                  ?.resolve(states),
+                      decoration: checked
+                          ? toggleSwitchStyle.checkedThumbDecoration?.resolve(
+                              states,
+                            )
+                          : toggleSwitchStyle.uncheckedThumbDecoration?.resolve(
+                              states,
+                            ),
                     ),
                   ),
                   SizedBox(
@@ -81,12 +80,12 @@ class DToggleSwitchButton extends StatelessWidget {
                           child: Text(
                             checkedName,
                             textAlign: TextAlign.center,
-                            style:
-                                checked
-                                    ? toggleSwitchStyle.checkedTextStyle1
-                                        ?.resolve(states)
-                                    : toggleSwitchStyle.uncheckedTextStyle1
-                                        ?.resolve(states),
+                            style: checked
+                                ? toggleSwitchStyle.checkedTextStyle1?.resolve(
+                                    states,
+                                  )
+                                : toggleSwitchStyle.uncheckedTextStyle1
+                                      ?.resolve(states),
                           ),
                         ),
                         SizedBox(
@@ -94,12 +93,12 @@ class DToggleSwitchButton extends StatelessWidget {
                           child: Text(
                             uncheckedName,
                             textAlign: TextAlign.center,
-                            style:
-                                checked
-                                    ? toggleSwitchStyle.checkedTextStyle2
-                                        ?.resolve(states)
-                                    : toggleSwitchStyle.uncheckedTextStyle2
-                                        ?.resolve(states),
+                            style: checked
+                                ? toggleSwitchStyle.checkedTextStyle2?.resolve(
+                                    states,
+                                  )
+                                : toggleSwitchStyle.uncheckedTextStyle2
+                                      ?.resolve(states),
                           ),
                         ),
                       ],
@@ -143,7 +142,7 @@ class DToggleSwitchTheme extends InheritedTheme {
   static DToggleSwitchThemeData of(BuildContext context) {
     final container = ProviderContainer();
     return DToggleSwitchThemeData.standard().merge(
-      container.read(desktopAppThemeNotifierProvider).toggleSwitchTheme,
+      container.read(desktopAppThemeProvider).toggleSwitchTheme,
     );
   }
 
@@ -193,35 +192,35 @@ class DToggleSwitchThemeData with Diagnosticable {
       borderRadius: BorderRadius.all(Radius.circular(10)),
     );
     final container = ProviderContainer();
-    final fastAnimationDuration =
-        container.read(desktopAppThemeNotifierProvider).fastAnimationDuration;
-    final animationCurve =
-        container.read(desktopAppThemeNotifierProvider).animationCurve;
+    final fastAnimationDuration = container
+        .read(desktopAppThemeProvider)
+        .fastAnimationDuration;
+    final animationCurve = container
+        .read(desktopAppThemeProvider)
+        .animationCurve;
 
     return DToggleSwitchThemeData(
       checkedDecoration: ButtonState.resolveWith((states) {
         return defaultDecoration.copyWith(
-          color:
-              !states.isDisabled
-                  ? states.isHovering
-                      ? states.isPressing
+          color: !states.isDisabled
+              ? states.isHovering
+                    ? states.isPressing
                           ? const Color(0xFF062D44).lerpWith(Colors.black, 0.2)
                           : const Color(0xFF062D44).lerpWith(Colors.black, 0.1)
-                      : const Color(0xFF062D44)
-                  : Colors.white.withValues(alpha: 0.1),
+                    : const Color(0xFF062D44)
+              : Colors.white.withValues(alpha: 0.1),
           border: Border.all(width: 2, color: Colors.transparent),
         );
       }),
       uncheckedDecoration: ButtonState.resolveWith((states) {
         return defaultDecoration.copyWith(
-          color:
-              !states.isDisabled
-                  ? states.isHovering
-                      ? states.isPressing
+          color: !states.isDisabled
+              ? states.isHovering
+                    ? states.isPressing
                           ? const Color(0xFF062D44).lerpWith(Colors.black, 0.2)
                           : const Color(0xFF062D44).lerpWith(Colors.black, 0.1)
-                      : const Color(0xFF062D44)
-                  : Colors.white.withValues(alpha: 0.1),
+                    : const Color(0xFF062D44)
+              : Colors.white.withValues(alpha: 0.1),
           border: Border.all(width: 2, color: Colors.transparent),
         );
       }),
@@ -230,27 +229,25 @@ class DToggleSwitchThemeData with Diagnosticable {
       checkedThumbDecoration: ButtonState.resolveWith((states) {
         return BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(8)),
-          color:
-              !states.isDisabled
-                  ? states.isHovering
-                      ? states.isPressing
+          color: !states.isDisabled
+              ? states.isHovering
+                    ? states.isPressing
                           ? SideSwapColors.navyBlue.lerpWith(Colors.black, 0.2)
                           : SideSwapColors.navyBlue.lerpWith(Colors.black, 0.1)
-                      : SideSwapColors.navyBlue
-                  : SideSwapColors.navyBlue.lerpWith(Colors.white, 0.1),
+                    : SideSwapColors.navyBlue
+              : SideSwapColors.navyBlue.lerpWith(Colors.white, 0.1),
         );
       }),
       uncheckedThumbDecoration: ButtonState.resolveWith((states) {
         return BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(8)),
-          color:
-              !states.isDisabled
-                  ? states.isHovering
-                      ? states.isPressing
+          color: !states.isDisabled
+              ? states.isHovering
+                    ? states.isPressing
                           ? SideSwapColors.navyBlue.lerpWith(Colors.black, 0.2)
                           : SideSwapColors.navyBlue.lerpWith(Colors.black, 0.1)
-                      : SideSwapColors.navyBlue
-                  : SideSwapColors.navyBlue.lerpWith(Colors.white, 0.1),
+                    : SideSwapColors.navyBlue
+              : SideSwapColors.navyBlue.lerpWith(Colors.white, 0.1),
         );
       }),
       checkedTextStyle1: ButtonState.resolveWith((states) {

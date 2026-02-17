@@ -1,5 +1,4 @@
 import 'package:decimal/decimal.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/limit_review_order_providers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
@@ -10,11 +9,9 @@ part 'limit_edit_order_providers.g.dart';
 
 @riverpod
 OrderAmount limitEditOrderPrice(Ref ref) {
-  final optionOrder = ref.watch(marketEditDetailsOrderNotifierProvider);
+  final optionOrder = ref.watch(marketEditDetailsOrderProvider);
 
-  final trackingValue = ref.watch(
-    marketLimitTrackIndexPriceValueNotifierProvider,
-  );
+  final trackingValue = ref.watch(marketLimitTrackIndexPriceValueProvider);
 
   final optionDecimalIndexPrice = ref.watch(marketDecimalIndexPriceProvider);
   final optionDecimalLastPrice = ref.watch(marketDecimalLastPriceProvider);

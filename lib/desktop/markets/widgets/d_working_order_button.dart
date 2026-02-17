@@ -17,8 +17,9 @@ class DWorkingOrderButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeProvider)
+        .buttonWithoutBorderStyle;
 
     return DButton(
       style: buttonStyle?.merge(

@@ -9,7 +9,7 @@ class EditOrderErrorListener extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final editOrderError = ref.watch(marketEditOrderErrorNotifierProvider);
+    final editOrderError = ref.watch(marketEditOrderErrorProvider);
 
     useEffect(() {
       editOrderError.match(
@@ -29,7 +29,7 @@ class EditOrderErrorListener extends HookConsumerWidget {
             );
 
             // clear order submit state
-            ref.invalidate(marketEditOrderErrorNotifierProvider);
+            ref.invalidate(marketEditOrderErrorProvider);
           });
         },
       )();

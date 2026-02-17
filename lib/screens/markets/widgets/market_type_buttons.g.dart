@@ -6,26 +6,71 @@ part of 'market_type_buttons.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(SelectedMarketTypeButtonNotifier)
+const selectedMarketTypeButtonProvider =
+    SelectedMarketTypeButtonNotifierProvider._();
+
+final class SelectedMarketTypeButtonNotifierProvider
+    extends
+        $NotifierProvider<
+          SelectedMarketTypeButtonNotifier,
+          SelectedMarketTypeButtonEnum
+        > {
+  const SelectedMarketTypeButtonNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedMarketTypeButtonProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedMarketTypeButtonNotifierHash();
+
+  @$internal
+  @override
+  SelectedMarketTypeButtonNotifier create() =>
+      SelectedMarketTypeButtonNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SelectedMarketTypeButtonEnum value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SelectedMarketTypeButtonEnum>(value),
+    );
+  }
+}
+
 String _$selectedMarketTypeButtonNotifierHash() =>
     r'5c352d34f0d7c1186060215e3bcd969e8e606f74';
 
-/// See also [SelectedMarketTypeButtonNotifier].
-@ProviderFor(SelectedMarketTypeButtonNotifier)
-final selectedMarketTypeButtonNotifierProvider =
-    NotifierProvider<
-      SelectedMarketTypeButtonNotifier,
-      SelectedMarketTypeButtonEnum
-    >.internal(
-      SelectedMarketTypeButtonNotifier.new,
-      name: r'selectedMarketTypeButtonNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$selectedMarketTypeButtonNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$SelectedMarketTypeButtonNotifier =
-    Notifier<SelectedMarketTypeButtonEnum>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$SelectedMarketTypeButtonNotifier
+    extends $Notifier<SelectedMarketTypeButtonEnum> {
+  SelectedMarketTypeButtonEnum build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<SelectedMarketTypeButtonEnum, SelectedMarketTypeButtonEnum>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                SelectedMarketTypeButtonEnum,
+                SelectedMarketTypeButtonEnum
+              >,
+              SelectedMarketTypeButtonEnum,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

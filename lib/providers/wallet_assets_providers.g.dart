@@ -6,584 +6,882 @@ part of 'wallet_assets_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$bitcoinAssetIdHash() => r'ab5ab5393629fbc1cd35fa94391e71a8d0847f81';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [bitcoinAssetId].
 @ProviderFor(bitcoinAssetId)
-final bitcoinAssetIdProvider = Provider<String>.internal(
-  bitcoinAssetId,
-  name: r'bitcoinAssetIdProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$bitcoinAssetIdHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const bitcoinAssetIdProvider = BitcoinAssetIdProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BitcoinAssetIdRef = ProviderRef<String>;
-String _$assetsHash() => r'8c124724af564e592ba0632abcef778f8aab2bea';
-
-/// See also [assets].
-@ProviderFor(assets)
-final assetsProvider = AutoDisposeProvider<Iterable<Asset>>.internal(
-  assets,
-  name: r'assetsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$assetsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AssetsRef = AutoDisposeProviderRef<Iterable<Asset>>;
-String _$assetFromAssetIdHash() => r'b72841dbd1056e3de308d8a84b47822c12263170';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [assetFromAssetId].
-@ProviderFor(assetFromAssetId)
-const assetFromAssetIdProvider = AssetFromAssetIdFamily();
-
-/// See also [assetFromAssetId].
-class AssetFromAssetIdFamily extends Family<Option<Asset>> {
-  /// See also [assetFromAssetId].
-  const AssetFromAssetIdFamily();
-
-  /// See also [assetFromAssetId].
-  AssetFromAssetIdProvider call(String? assetId) {
-    return AssetFromAssetIdProvider(assetId);
-  }
-
-  @override
-  AssetFromAssetIdProvider getProviderOverride(
-    covariant AssetFromAssetIdProvider provider,
-  ) {
-    return call(provider.assetId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'assetFromAssetIdProvider';
-}
-
-/// See also [assetFromAssetId].
-class AssetFromAssetIdProvider extends AutoDisposeProvider<Option<Asset>> {
-  /// See also [assetFromAssetId].
-  AssetFromAssetIdProvider(String? assetId)
-    : this._internal(
-        (ref) => assetFromAssetId(ref as AssetFromAssetIdRef, assetId),
-        from: assetFromAssetIdProvider,
-        name: r'assetFromAssetIdProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$assetFromAssetIdHash,
-        dependencies: AssetFromAssetIdFamily._dependencies,
-        allTransitiveDependencies:
-            AssetFromAssetIdFamily._allTransitiveDependencies,
-        assetId: assetId,
+final class BitcoinAssetIdProvider
+    extends $FunctionalProvider<String, String, String>
+    with $Provider<String> {
+  const BitcoinAssetIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'bitcoinAssetIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  AssetFromAssetIdProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.assetId,
-  }) : super.internal();
+  @override
+  String debugGetCreateSourceHash() => _$bitcoinAssetIdHash();
 
-  final String? assetId;
+  @$internal
+  @override
+  $ProviderElement<String> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
-  Override overrideWith(
-    Option<Asset> Function(AssetFromAssetIdRef provider) create,
-  ) {
-    return ProviderOverride(
+  String create(Ref ref) {
+    return bitcoinAssetId(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
       origin: this,
-      override: AssetFromAssetIdProvider._internal(
-        (ref) => create(ref as AssetFromAssetIdRef),
-        from: from,
-        name: null,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$bitcoinAssetIdHash() => r'ab5ab5393629fbc1cd35fa94391e71a8d0847f81';
+
+@ProviderFor(LiquidAssetIdState)
+const liquidAssetIdStateProvider = LiquidAssetIdStateProvider._();
+
+final class LiquidAssetIdStateProvider
+    extends $NotifierProvider<LiquidAssetIdState, String> {
+  const LiquidAssetIdStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'liquidAssetIdStateProvider',
+        isAutoDispose: false,
         dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        assetId: assetId,
-      ),
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$liquidAssetIdStateHash();
+
+  @$internal
+  @override
+  LiquidAssetIdState create() => LiquidAssetIdState();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$liquidAssetIdStateHash() =>
+    r'0993e2408473de0a738dd0d0b42e264cac3165df';
+
+abstract class _$LiquidAssetIdState extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(TetherAssetIdState)
+const tetherAssetIdStateProvider = TetherAssetIdStateProvider._();
+
+final class TetherAssetIdStateProvider
+    extends $NotifierProvider<TetherAssetIdState, String> {
+  const TetherAssetIdStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tetherAssetIdStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tetherAssetIdStateHash();
+
+  @$internal
+  @override
+  TetherAssetIdState create() => TetherAssetIdState();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$tetherAssetIdStateHash() =>
+    r'e4920c1b459cbd9addf44bfebe876536c0457b16';
+
+abstract class _$TetherAssetIdState extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(EurxAssetIdState)
+const eurxAssetIdStateProvider = EurxAssetIdStateProvider._();
+
+final class EurxAssetIdStateProvider
+    extends $NotifierProvider<EurxAssetIdState, String> {
+  const EurxAssetIdStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'eurxAssetIdStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$eurxAssetIdStateHash();
+
+  @$internal
+  @override
+  EurxAssetIdState create() => EurxAssetIdState();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$eurxAssetIdStateHash() => r'cea1a4f1317dc16e9e42c2543172f534892091d6';
+
+abstract class _$EurxAssetIdState extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(AmpAssetIdsNotifier)
+const ampAssetIdsProvider = AmpAssetIdsNotifierProvider._();
+
+final class AmpAssetIdsNotifierProvider
+    extends $NotifierProvider<AmpAssetIdsNotifier, List<String>> {
+  const AmpAssetIdsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ampAssetIdsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ampAssetIdsNotifierHash();
+
+  @$internal
+  @override
+  AmpAssetIdsNotifier create() => AmpAssetIdsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<String> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<String>>(value),
+    );
+  }
+}
+
+String _$ampAssetIdsNotifierHash() =>
+    r'973d5b8e615d5b47cc72b9780cb2e5430b323c75';
+
+abstract class _$AmpAssetIdsNotifier extends $Notifier<List<String>> {
+  List<String> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<List<String>, List<String>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<String>, List<String>>,
+              List<String>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(AssetsState)
+const assetsStateProvider = AssetsStateProvider._();
+
+final class AssetsStateProvider
+    extends $NotifierProvider<AssetsState, Map<String, Asset>> {
+  const AssetsStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'assetsStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$assetsStateHash();
+
+  @$internal
+  @override
+  AssetsState create() => AssetsState();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, Asset> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, Asset>>(value),
+    );
+  }
+}
+
+String _$assetsStateHash() => r'dc3b5abcf0d3131d19106f41aec18f3f81421f97';
+
+abstract class _$AssetsState extends $Notifier<Map<String, Asset>> {
+  Map<String, Asset> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Map<String, Asset>, Map<String, Asset>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<String, Asset>, Map<String, Asset>>,
+              Map<String, Asset>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(assets)
+const assetsProvider = AssetsProvider._();
+
+final class AssetsProvider
+    extends
+        $FunctionalProvider<Iterable<Asset>, Iterable<Asset>, Iterable<Asset>>
+    with $Provider<Iterable<Asset>> {
+  const AssetsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'assetsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$assetsHash();
+
+  @$internal
+  @override
+  $ProviderElement<Iterable<Asset>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Iterable<Asset> create(Ref ref) {
+    return assets(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<Asset> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<Asset>>(value),
+    );
+  }
+}
+
+String _$assetsHash() => r'8c124724af564e592ba0632abcef778f8aab2bea';
+
+@ProviderFor(assetFromAssetId)
+const assetFromAssetIdProvider = AssetFromAssetIdFamily._();
+
+final class AssetFromAssetIdProvider
+    extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
+    with $Provider<Option<Asset>> {
+  const AssetFromAssetIdProvider._({
+    required AssetFromAssetIdFamily super.from,
+    required String? super.argument,
+  }) : super(
+         retry: null,
+         name: r'assetFromAssetIdProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$assetFromAssetIdHash();
+
+  @override
+  String toString() {
+    return r'assetFromAssetIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<Option<Asset>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Option<Asset> create(Ref ref) {
+    final argument = this.argument as String?;
+    return assetFromAssetId(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Option<Asset> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Option<Asset>>(value),
     );
   }
 
   @override
-  AutoDisposeProviderElement<Option<Asset>> createElement() {
-    return _AssetFromAssetIdProviderElement(this);
-  }
-
-  @override
   bool operator ==(Object other) {
-    return other is AssetFromAssetIdProvider && other.assetId == assetId;
+    return other is AssetFromAssetIdProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, assetId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin AssetFromAssetIdRef on AutoDisposeProviderRef<Option<Asset>> {
-  /// The parameter `assetId` of this provider.
-  String? get assetId;
-}
+String _$assetFromAssetIdHash() => r'b72841dbd1056e3de308d8a84b47822c12263170';
 
-class _AssetFromAssetIdProviderElement
-    extends AutoDisposeProviderElement<Option<Asset>>
-    with AssetFromAssetIdRef {
-  _AssetFromAssetIdProviderElement(super.provider);
+final class AssetFromAssetIdFamily extends $Family
+    with $FunctionalFamilyOverride<Option<Asset>, String?> {
+  const AssetFromAssetIdFamily._()
+    : super(
+        retry: null,
+        name: r'assetFromAssetIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AssetFromAssetIdProvider call(String? assetId) =>
+      AssetFromAssetIdProvider._(argument: assetId, from: this);
 
   @override
-  String? get assetId => (origin as AssetFromAssetIdProvider).assetId;
+  String toString() => r'assetFromAssetIdProvider';
+}
+
+@ProviderFor(assetUtils)
+const assetUtilsProvider = AssetUtilsProvider._();
+
+final class AssetUtilsProvider
+    extends $FunctionalProvider<AssetUtils, AssetUtils, AssetUtils>
+    with $Provider<AssetUtils> {
+  const AssetUtilsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'assetUtilsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$assetUtilsHash();
+
+  @$internal
+  @override
+  $ProviderElement<AssetUtils> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AssetUtils create(Ref ref) {
+    return assetUtils(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AssetUtils value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AssetUtils>(value),
+    );
+  }
 }
 
 String _$assetUtilsHash() => r'3ab23b14fed091938634c0c8d49080f197bcc2d5';
 
-/// See also [assetUtils].
-@ProviderFor(assetUtils)
-final assetUtilsProvider = AutoDisposeProvider<AssetUtils>.internal(
-  assetUtils,
-  name: r'assetUtilsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$assetUtilsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(cacheManager)
+const cacheManagerProvider = CacheManagerProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AssetUtilsRef = AutoDisposeProviderRef<AssetUtils>;
+final class CacheManagerProvider
+    extends $FunctionalProvider<CacheManager, CacheManager, CacheManager>
+    with $Provider<CacheManager> {
+  const CacheManagerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'cacheManagerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$cacheManagerHash();
+
+  @$internal
+  @override
+  $ProviderElement<CacheManager> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  CacheManager create(Ref ref) {
+    return cacheManager(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CacheManager value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CacheManager>(value),
+    );
+  }
+}
+
 String _$cacheManagerHash() => r'e1b08ebd0a33e4e5a44d8fda304e3a88d3f25da7';
 
-/// See also [cacheManager].
-@ProviderFor(cacheManager)
-final cacheManagerProvider = Provider<CacheManager>.internal(
-  cacheManager,
-  name: r'cacheManagerProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$cacheManagerHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(cachedImageManager)
+const cachedImageManagerProvider = CachedImageManagerProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef CacheManagerRef = ProviderRef<CacheManager>;
+final class CachedImageManagerProvider
+    extends
+        $FunctionalProvider<
+          CachedImageBase64Manager,
+          CachedImageBase64Manager,
+          CachedImageBase64Manager
+        >
+    with $Provider<CachedImageBase64Manager> {
+  const CachedImageManagerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'cachedImageManagerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$cachedImageManagerHash();
+
+  @$internal
+  @override
+  $ProviderElement<CachedImageBase64Manager> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  CachedImageBase64Manager create(Ref ref) {
+    return cachedImageManager(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CachedImageBase64Manager value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CachedImageBase64Manager>(value),
+    );
+  }
+}
+
 String _$cachedImageManagerHash() =>
     r'0eb7658243703a883423f52915e0ec0fc998af9e';
 
-/// See also [cachedImageManager].
-@ProviderFor(cachedImageManager)
-final cachedImageManagerProvider = Provider<CachedImageBase64Manager>.internal(
-  cachedImageManager,
-  name: r'cachedImageManagerProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$cachedImageManagerHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(clearImageCacheFuture)
+const clearImageCacheFutureProvider = ClearImageCacheFutureProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef CachedImageManagerRef = ProviderRef<CachedImageBase64Manager>;
+final class ClearImageCacheFutureProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  const ClearImageCacheFutureProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'clearImageCacheFutureProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$clearImageCacheFutureHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return clearImageCacheFuture(ref);
+  }
+}
+
 String _$clearImageCacheFutureHash() =>
     r'ec01d17910dbfa5b87607209ccf50243b9873f85';
 
-/// See also [clearImageCacheFuture].
-@ProviderFor(clearImageCacheFuture)
-final clearImageCacheFutureProvider = FutureProvider<bool>.internal(
-  clearImageCacheFuture,
-  name: r'clearImageCacheFutureProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$clearImageCacheFutureHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(builtinAssets)
+const builtinAssetsProvider = BuiltinAssetsProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ClearImageCacheFutureRef = FutureProviderRef<bool>;
+final class BuiltinAssetsProvider
+    extends
+        $FunctionalProvider<
+          Map<String, Asset>,
+          Map<String, Asset>,
+          Map<String, Asset>
+        >
+    with $Provider<Map<String, Asset>> {
+  const BuiltinAssetsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'builtinAssetsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$builtinAssetsHash();
+
+  @$internal
+  @override
+  $ProviderElement<Map<String, Asset>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Map<String, Asset> create(Ref ref) {
+    return builtinAssets(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, Asset> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, Asset>>(value),
+    );
+  }
+}
+
 String _$builtinAssetsHash() => r'747435613ca20555dcac7dde1b8cb10fe604d7c2';
 
-/// See also [builtinAssets].
-@ProviderFor(builtinAssets)
-final builtinAssetsProvider = AutoDisposeProvider<Map<String, Asset>>.internal(
-  builtinAssets,
-  name: r'builtinAssetsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$builtinAssetsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(imageBytesResizedFuture)
+const imageBytesResizedFutureProvider = ImageBytesResizedFutureFamily._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef BuiltinAssetsRef = AutoDisposeProviderRef<Map<String, Asset>>;
+final class ImageBytesResizedFutureProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Uint8List?>,
+          Uint8List?,
+          FutureOr<Uint8List?>
+        >
+    with $FutureModifier<Uint8List?>, $FutureProvider<Uint8List?> {
+  const ImageBytesResizedFutureProvider._({
+    required ImageBytesResizedFutureFamily super.from,
+    required ({
+      String uniqueKey,
+      String? assetSvg,
+      String? base64,
+      double width,
+      double height,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'imageBytesResizedFutureProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$imageBytesResizedFutureHash();
+
+  @override
+  String toString() {
+    return r'imageBytesResizedFutureProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Uint8List?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Uint8List?> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              String uniqueKey,
+              String? assetSvg,
+              String? base64,
+              double width,
+              double height,
+            });
+    return imageBytesResizedFuture(
+      ref,
+      uniqueKey: argument.uniqueKey,
+      assetSvg: argument.assetSvg,
+      base64: argument.base64,
+      width: argument.width,
+      height: argument.height,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ImageBytesResizedFutureProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
 String _$imageBytesResizedFutureHash() =>
     r'd9569c8a2a20bbc9174da5ea71dd74afc3710b39';
 
-/// See also [imageBytesResizedFuture].
-@ProviderFor(imageBytesResizedFuture)
-const imageBytesResizedFutureProvider = ImageBytesResizedFutureFamily();
+final class ImageBytesResizedFutureFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<Uint8List?>,
+          ({
+            String uniqueKey,
+            String? assetSvg,
+            String? base64,
+            double width,
+            double height,
+          })
+        > {
+  const ImageBytesResizedFutureFamily._()
+    : super(
+        retry: null,
+        name: r'imageBytesResizedFutureProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-/// See also [imageBytesResizedFuture].
-class ImageBytesResizedFutureFamily extends Family<AsyncValue<Uint8List?>> {
-  /// See also [imageBytesResizedFuture].
-  const ImageBytesResizedFutureFamily();
-
-  /// See also [imageBytesResizedFuture].
   ImageBytesResizedFutureProvider call({
     required String uniqueKey,
     String? assetSvg,
     String? base64,
     required double width,
     required double height,
-  }) {
-    return ImageBytesResizedFutureProvider(
+  }) => ImageBytesResizedFutureProvider._(
+    argument: (
       uniqueKey: uniqueKey,
       assetSvg: assetSvg,
       base64: base64,
       width: width,
       height: height,
-    );
-  }
+    ),
+    from: this,
+  );
 
   @override
-  ImageBytesResizedFutureProvider getProviderOverride(
-    covariant ImageBytesResizedFutureProvider provider,
-  ) {
-    return call(
-      uniqueKey: provider.uniqueKey,
-      assetSvg: provider.assetSvg,
-      base64: provider.base64,
-      width: provider.width,
-      height: provider.height,
-    );
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'imageBytesResizedFutureProvider';
+  String toString() => r'imageBytesResizedFutureProvider';
 }
 
-/// See also [imageBytesResizedFuture].
-class ImageBytesResizedFutureProvider
-    extends AutoDisposeFutureProvider<Uint8List?> {
-  /// See also [imageBytesResizedFuture].
-  ImageBytesResizedFutureProvider({
-    required String uniqueKey,
-    String? assetSvg,
-    String? base64,
-    required double width,
-    required double height,
-  }) : this._internal(
-         (ref) => imageBytesResizedFuture(
-           ref as ImageBytesResizedFutureRef,
-           uniqueKey: uniqueKey,
-           assetSvg: assetSvg,
-           base64: base64,
-           width: width,
-           height: height,
-         ),
-         from: imageBytesResizedFutureProvider,
-         name: r'imageBytesResizedFutureProvider',
-         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-             ? null
-             : _$imageBytesResizedFutureHash,
-         dependencies: ImageBytesResizedFutureFamily._dependencies,
-         allTransitiveDependencies:
-             ImageBytesResizedFutureFamily._allTransitiveDependencies,
-         uniqueKey: uniqueKey,
-         assetSvg: assetSvg,
-         base64: base64,
-         width: width,
-         height: height,
-       );
+@ProviderFor(SelectedWalletAccountAssetNotifier)
+@Deprecated('Only for mobile app version, should not be used now')
+const selectedWalletAccountAssetProvider =
+    SelectedWalletAccountAssetNotifierProvider._();
 
-  ImageBytesResizedFutureProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.uniqueKey,
-    required this.assetSvg,
-    required this.base64,
-    required this.width,
-    required this.height,
-  }) : super.internal();
-
-  final String uniqueKey;
-  final String? assetSvg;
-  final String? base64;
-  final double width;
-  final double height;
-
-  @override
-  Override overrideWith(
-    FutureOr<Uint8List?> Function(ImageBytesResizedFutureRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ImageBytesResizedFutureProvider._internal(
-        (ref) => create(ref as ImageBytesResizedFutureRef),
-        from: from,
-        name: null,
+@Deprecated('Only for mobile app version, should not be used now')
+final class SelectedWalletAccountAssetNotifierProvider
+    extends
+        $NotifierProvider<SelectedWalletAccountAssetNotifier, AccountAsset?> {
+  const SelectedWalletAccountAssetNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedWalletAccountAssetProvider',
+        isAutoDispose: false,
         dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        uniqueKey: uniqueKey,
-        assetSvg: assetSvg,
-        base64: base64,
-        width: width,
-        height: height,
-      ),
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$selectedWalletAccountAssetNotifierHash();
+
+  @$internal
+  @override
+  SelectedWalletAccountAssetNotifier create() =>
+      SelectedWalletAccountAssetNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AccountAsset? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AccountAsset?>(value),
     );
-  }
-
-  @override
-  AutoDisposeFutureProviderElement<Uint8List?> createElement() {
-    return _ImageBytesResizedFutureProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is ImageBytesResizedFutureProvider &&
-        other.uniqueKey == uniqueKey &&
-        other.assetSvg == assetSvg &&
-        other.base64 == base64 &&
-        other.width == width &&
-        other.height == height;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, uniqueKey.hashCode);
-    hash = _SystemHash.combine(hash, assetSvg.hashCode);
-    hash = _SystemHash.combine(hash, base64.hashCode);
-    hash = _SystemHash.combine(hash, width.hashCode);
-    hash = _SystemHash.combine(hash, height.hashCode);
-
-    return _SystemHash.finish(hash);
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ImageBytesResizedFutureRef on AutoDisposeFutureProviderRef<Uint8List?> {
-  /// The parameter `uniqueKey` of this provider.
-  String get uniqueKey;
-
-  /// The parameter `assetSvg` of this provider.
-  String? get assetSvg;
-
-  /// The parameter `base64` of this provider.
-  String? get base64;
-
-  /// The parameter `width` of this provider.
-  double get width;
-
-  /// The parameter `height` of this provider.
-  double get height;
-}
-
-class _ImageBytesResizedFutureProviderElement
-    extends AutoDisposeFutureProviderElement<Uint8List?>
-    with ImageBytesResizedFutureRef {
-  _ImageBytesResizedFutureProviderElement(super.provider);
-
-  @override
-  String get uniqueKey => (origin as ImageBytesResizedFutureProvider).uniqueKey;
-  @override
-  String? get assetSvg => (origin as ImageBytesResizedFutureProvider).assetSvg;
-  @override
-  String? get base64 => (origin as ImageBytesResizedFutureProvider).base64;
-  @override
-  double get width => (origin as ImageBytesResizedFutureProvider).width;
-  @override
-  double get height => (origin as ImageBytesResizedFutureProvider).height;
-}
-
-String _$liquidAssetIdStateHash() =>
-    r'0993e2408473de0a738dd0d0b42e264cac3165df';
-
-/// See also [LiquidAssetIdState].
-@ProviderFor(LiquidAssetIdState)
-final liquidAssetIdStateProvider =
-    NotifierProvider<LiquidAssetIdState, String>.internal(
-      LiquidAssetIdState.new,
-      name: r'liquidAssetIdStateProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$liquidAssetIdStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$LiquidAssetIdState = Notifier<String>;
-String _$tetherAssetIdStateHash() =>
-    r'e4920c1b459cbd9addf44bfebe876536c0457b16';
-
-/// See also [TetherAssetIdState].
-@ProviderFor(TetherAssetIdState)
-final tetherAssetIdStateProvider =
-    NotifierProvider<TetherAssetIdState, String>.internal(
-      TetherAssetIdState.new,
-      name: r'tetherAssetIdStateProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$tetherAssetIdStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$TetherAssetIdState = Notifier<String>;
-String _$eurxAssetIdStateHash() => r'cea1a4f1317dc16e9e42c2543172f534892091d6';
-
-/// See also [EurxAssetIdState].
-@ProviderFor(EurxAssetIdState)
-final eurxAssetIdStateProvider =
-    NotifierProvider<EurxAssetIdState, String>.internal(
-      EurxAssetIdState.new,
-      name: r'eurxAssetIdStateProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$eurxAssetIdStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$EurxAssetIdState = Notifier<String>;
-String _$ampAssetIdsNotifierHash() =>
-    r'973d5b8e615d5b47cc72b9780cb2e5430b323c75';
-
-/// See also [AmpAssetIdsNotifier].
-@ProviderFor(AmpAssetIdsNotifier)
-final ampAssetIdsNotifierProvider =
-    NotifierProvider<AmpAssetIdsNotifier, List<String>>.internal(
-      AmpAssetIdsNotifier.new,
-      name: r'ampAssetIdsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ampAssetIdsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$AmpAssetIdsNotifier = Notifier<List<String>>;
-String _$assetsStateHash() => r'dc3b5abcf0d3131d19106f41aec18f3f81421f97';
-
-/// See also [AssetsState].
-@ProviderFor(AssetsState)
-final assetsStateProvider =
-    NotifierProvider<AssetsState, Map<String, Asset>>.internal(
-      AssetsState.new,
-      name: r'assetsStateProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$assetsStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$AssetsState = Notifier<Map<String, Asset>>;
 String _$selectedWalletAccountAssetNotifierHash() =>
     r'6d81f34fcfcaea2b9e20491bad87b4103fd20be5';
 
-/// See also [SelectedWalletAccountAssetNotifier].
-@ProviderFor(SelectedWalletAccountAssetNotifier)
-final selectedWalletAccountAssetNotifierProvider =
-    NotifierProvider<
-      SelectedWalletAccountAssetNotifier,
-      AccountAsset?
-    >.internal(
-      SelectedWalletAccountAssetNotifier.new,
-      name: r'selectedWalletAccountAssetNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$selectedWalletAccountAssetNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+@Deprecated('Only for mobile app version, should not be used now')
+abstract class _$SelectedWalletAccountAssetNotifier
+    extends $Notifier<AccountAsset?> {
+  AccountAsset? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AccountAsset?, AccountAsset?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AccountAsset?, AccountAsset?>,
+              AccountAsset?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$SelectedWalletAccountAssetNotifier = Notifier<AccountAsset?>;
+@ProviderFor(SelectedWalletAssetNotifier)
+const selectedWalletAssetProvider = SelectedWalletAssetNotifierProvider._();
+
+final class SelectedWalletAssetNotifierProvider
+    extends $NotifierProvider<SelectedWalletAssetNotifier, Option<Asset>> {
+  const SelectedWalletAssetNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedWalletAssetProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedWalletAssetNotifierHash();
+
+  @$internal
+  @override
+  SelectedWalletAssetNotifier create() => SelectedWalletAssetNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Option<Asset> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Option<Asset>>(value),
+    );
+  }
+}
+
 String _$selectedWalletAssetNotifierHash() =>
     r'796ffbd765bee1df2140404339b11345f8139ffd';
 
-/// See also [SelectedWalletAssetNotifier].
-@ProviderFor(SelectedWalletAssetNotifier)
-final selectedWalletAssetNotifierProvider =
-    NotifierProvider<SelectedWalletAssetNotifier, Option<Asset>>.internal(
-      SelectedWalletAssetNotifier.new,
-      name: r'selectedWalletAssetNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$selectedWalletAssetNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$SelectedWalletAssetNotifier = Notifier<Option<Asset>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$SelectedWalletAssetNotifier extends $Notifier<Option<Asset>> {
+  Option<Asset> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Option<Asset>, Option<Asset>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Option<Asset>, Option<Asset>>,
+              Option<Asset>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

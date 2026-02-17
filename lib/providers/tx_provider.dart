@@ -5,9 +5,9 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/tx_item.dart';
@@ -69,10 +69,20 @@ class UpdatedTxsNotifier extends _$UpdatedTxsNotifier {
   }
 
   void update(From_UpdatedTxs txs) {
+    // if (txs.items.isEmpty) {
+    //   return;
+    // }
+
+    logger.d('[UpdatedTxsNotifier] update: ${txs.items}');
     state = [...txs.items];
   }
 
   void remove(From_RemovedTxs txs) {
+    if (txs.txids.isEmpty) {
+      return;
+    }
+
+    logger.d('[UpdatedTxsNotifier] remove: $txs');
     final allTxs = [...state];
 
     for (var txid in txs.txids) {
@@ -81,6 +91,27 @@ class UpdatedTxsNotifier extends _$UpdatedTxsNotifier {
 
     state = allTxs;
   }
+}
+
+@riverpod
+List<TransItem> unconfirmedTxs(Ref ref) {
+  final allTxsSorted = ref.watch(allTxsSortedProvider);
+  final updatedTx = ref.watch(updatedTxsProvider);
+  final pegLackOfConfs = [...allTxsSorted];
+
+  pegLackOfConfs.removeWhere((e) {
+    if (e.hasPeg() && !e.hasConfs() && !e.peg.hasTxidRecv()) {
+      return false;
+    }
+
+    return true;
+  });
+  pegLackOfConfs.removeWhere(
+    (e) => updatedTx.any((u) => e.tx.txid == u.tx.txid),
+  );
+  final internalList = [...updatedTx, ...pegLackOfConfs];
+  internalList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  return internalList;
 }
 
 @Riverpod(keepAlive: true)
@@ -99,7 +130,7 @@ class ShowTransactionNotifier extends _$ShowTransactionNotifier {
 class AllTxsNotifier extends _$AllTxsNotifier {
   @override
   Map<String, TransItem> build() {
-    ref.listen(txHistoryStateNotifierProvider, (_, next) {
+    ref.listen(txHistoryStateProvider, (_, next) {
       if (next is TxHistoryStateInvisible) {
         return;
       }
@@ -107,11 +138,11 @@ class AllTxsNotifier extends _$AllTxsNotifier {
       loadTransactions();
     });
 
-    ref.listen(updatedTxsNotifierProvider, (_, next) {
+    ref.listen(updatedTxsProvider, (_, next) {
       updateList(txs: next);
     });
 
-    ref.listen(showTransactionNotifierProvider, (_, next) {
+    ref.listen(showTransactionProvider, (_, next) {
       if (next.isNone()) {
         return;
       }
@@ -119,9 +150,8 @@ class AllTxsNotifier extends _$AllTxsNotifier {
       final transItem = next.getOrElse(() => TransItem());
       state[transItem.tx.txid] = transItem;
     });
-
-    ref.listen(newTxNotifierProvider, (_, _) {
-      final txHistoryState = ref.read(txHistoryStateNotifierProvider);
+    ref.listen(newTxProvider, (_, _) {
+      final txHistoryState = ref.read(txHistoryStateProvider);
       if (txHistoryState is TxHistoryStateInvisible) {
         return;
       }
@@ -129,8 +159,8 @@ class AllTxsNotifier extends _$AllTxsNotifier {
       loadTransactions();
     });
 
-    ref.listen(newBlockNotifierProvider, (_, _) {
-      final txHistoryState = ref.read(txHistoryStateNotifierProvider);
+    ref.listen(newBlockProvider, (_, _) {
+      final txHistoryState = ref.read(txHistoryStateProvider);
       if (txHistoryState is TxHistoryStateInvisible) {
         return;
       }
@@ -171,12 +201,10 @@ class AllTxsNotifier extends _$AllTxsNotifier {
 
   void loadTransactions() {
     Future.microtask(() {
-      final loadTransactionsState = ref.read(
-        loadTransactionsStateNotifierProvider,
-      );
+      final loadTransactionsState = ref.read(loadTransactionsStateProvider);
       if (loadTransactionsState is LoadTransactionsStateEmpty) {
         ref
-            .read(loadTransactionsStateNotifierProvider.notifier)
+            .read(loadTransactionsStateProvider.notifier)
             .setState(LoadTransactionsState.loading());
 
         final msg = To();
@@ -189,14 +217,14 @@ class AllTxsNotifier extends _$AllTxsNotifier {
 
 @riverpod
 List<TransItem> allTxsSorted(Ref ref) {
-  final allTxs = ref.watch(allTxsNotifierProvider);
+  final allTxs = ref.watch(allTxsProvider);
   final allPegsById = ref.watch(allPegsByIdProvider);
 
   // map all peg tx id, both side, to the list
   final pegIds = [
     ...allPegsById.values.map((e) => e.peg.txidSend),
     ...allPegsById.values.map((e) => e.peg.txidRecv),
-  ];
+  ]..removeWhere((e) => e.isEmpty);
 
   // all tx's to set
   final allTxSorted = {...allTxs.values};
@@ -226,8 +254,8 @@ List<TransItem> allNewTxsSorted(Ref ref) {
 /// Each pair of AccountAsset and list of TxItem can hold duplicates of TxItem.
 @riverpod
 Map<AccountAsset, List<TxItem>> accountAssetTransactions(Ref ref) {
-  final allTxs = ref.watch(allTxsNotifierProvider);
-  final allPegs = ref.watch(allPegsNotifierProvider);
+  final allTxs = ref.watch(allTxsProvider);
+  final allPegs = ref.watch(allPegsProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
   final allAssets = <AccountAsset, List<TxItem>>{};
@@ -292,8 +320,8 @@ Map<AccountAsset, List<TxItem>> accountAssetTransactions(Ref ref) {
 // Version with map of assetid and transaction list
 @riverpod
 Map<String, List<TxItem>> assetTransactions(Ref ref) {
-  final allTxs = ref.watch(allTxsNotifierProvider);
-  final allPegs = ref.watch(allPegsNotifierProvider);
+  final allTxs = ref.watch(allTxsProvider);
+  final allPegs = ref.watch(allPegsProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
   final transactions = <TxItem>[...allTxs.values.map((e) => TxItem(item: e))];
@@ -396,12 +424,13 @@ List<TxItem> distinctTransactionsForAccount(Ref ref) {
 
 @riverpod
 TransItemHelper transItemHelper(Ref ref, TransItem transItem) {
-  final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
-  final assetsState = ref.read(assetsStateProvider);
-  final assetUtils = ref.read(assetUtilsProvider);
-  final amountToString = ref.read(amountToStringProvider);
-  final satoshiRepository = ref.read(satoshiRepositoryProvider);
+  final assetsState = ref.watch(assetsStateProvider);
+  final assetUtils = ref.watch(assetUtilsProvider);
+  final amountToString = ref.watch(amountToStringProvider);
+  final satoshiRepository = ref.watch(satoshiRepositoryProvider);
+  final optionPegOrderFeeData = ref.watch(pegOrderFeeRatesProvider(transItem));
 
   return TransItemHelper(
     liquidAssetId,
@@ -411,6 +440,7 @@ TransItemHelper transItemHelper(Ref ref, TransItem transItem) {
     amountToString,
     satoshiRepository,
     transItem,
+    optionPegOrderFeeData,
   );
 }
 
@@ -435,6 +465,7 @@ class TransItemHelper {
   final AmountToString amountToString;
   final AbstractSatoshiRepository satoshiRepository;
   final TransItem transItem;
+  final Option<PegOrderFeeData> optionPegOrderFeeData;
 
   TransItemHelper(
     this.liquidAssetId,
@@ -444,6 +475,7 @@ class TransItemHelper {
     this.amountToString,
     this.satoshiRepository,
     this.transItem,
+    this.optionPegOrderFeeData,
   );
 
   TxType txType() {
@@ -922,13 +954,18 @@ class TransItemHelper {
     const pricePrecision = 8;
     final result = switch (sentBitcoin) {
       true =>
-        (Decimal.one / decimalDelivered).toDecimal(
-              scaleOnInfinitePrecision: pricePrecision,
-            ) *
-            decimalReceived,
-      _ => (decimalDelivered / decimalReceived).toDecimal(
-        scaleOnInfinitePrecision: pricePrecision,
-      ),
+        decimalDelivered == Decimal.zero
+            ? Decimal.zero
+            : (Decimal.one / decimalDelivered).toDecimal(
+                    scaleOnInfinitePrecision: pricePrecision,
+                  ) *
+                  decimalReceived,
+      _ =>
+        decimalReceived == Decimal.zero
+            ? Decimal.zero
+            : (decimalDelivered / decimalReceived).toDecimal(
+                scaleOnInfinitePrecision: pricePrecision,
+              ),
     };
 
     final decimalKCoin = Decimal.fromInt(kCoin);
@@ -972,17 +1009,25 @@ class TransItemHelper {
     };
   }
 
-  String txStatus() {
+  ({String status, bool confirmed}) txStatus() {
     final isPeg = transItem.hasPeg();
     if (isPeg && !transItem.hasConfs()) {
-      return !transItem.peg.hasTxidRecv() ? 'Initiated'.tr() : 'Complete'.tr();
+      return (
+        status: !transItem.peg.hasTxidRecv()
+            ? 'Initiated'.tr()
+            : 'Complete'.tr(),
+        confirmed: transItem.peg.hasTxidRecv(),
+      );
     }
 
     final unconfirmed = 'Unconfirmed'.tr();
     final confirmed = 'Confirmed'.tr();
-    return transItem.hasConfs()
-        ? '$unconfirmed ${transItem.confs.count}/${transItem.confs.total}'
-        : '$confirmed 2/2';
+    return (
+      status: transItem.hasConfs()
+          ? '$unconfirmed ${transItem.confs.count}/${transItem.confs.total}'
+          : '$confirmed 2/2',
+      confirmed: !transItem.hasConfs(),
+    );
   }
 
   String txDateTimeStr() {
@@ -1006,6 +1051,18 @@ class TransItemHelper {
       ),
       _ => (txId: transItem.tx.txid, isLiquid: true, unblinded: false),
     };
+  }
+
+  Option<String> selectedFeeRate() {
+    return optionPegOrderFeeData.match(() => none(), (pegOrderFeeData) {
+      return Option.of(pegOrderFeeData.feeRate.toString());
+    });
+  }
+
+  Option<String> bitcoinNetworkFee() {
+    return optionPegOrderFeeData.match(() => none(), (pegOrderFeeData) {
+      return Option.of(pegOrderFeeData.bitcoinNetworkFee.toString());
+    });
   }
 }
 

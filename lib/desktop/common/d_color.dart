@@ -42,9 +42,7 @@ class AccentColor extends ColorSwatch<String> {
 
   Color resolveFrom(BuildContext context, [Brightness? bright]) {
     final container = ProviderContainer();
-    final themeBrightness = container
-        .read(desktopAppThemeNotifierProvider)
-        .brightness;
+    final themeBrightness = container.read(desktopAppThemeProvider).brightness;
     final brightness = bright ?? themeBrightness;
     return resolveFromBrightness(brightness);
   }

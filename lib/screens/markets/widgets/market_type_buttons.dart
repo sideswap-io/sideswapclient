@@ -29,9 +29,7 @@ class MarketTypeButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedMarketType = ref.watch(
-      selectedMarketTypeButtonNotifierProvider,
-    );
+    final selectedMarketType = ref.watch(selectedMarketTypeButtonProvider);
 
     return Container(
       width: double.maxFinite,
@@ -45,36 +43,33 @@ class MarketTypeButtons extends ConsumerWidget {
         children: [
           Flexible(
             child: SwapButton(
-              color:
-                  selectedMarketType == SelectedMarketTypeButtonEnum.swap
-                      ? SideSwapColors.cyanCornflowerBlue
-                      : SideSwapColors.prussianBlue,
+              color: selectedMarketType == SelectedMarketTypeButtonEnum.swap
+                  ? SideSwapColors.cyanCornflowerBlue
+                  : SideSwapColors.prussianBlue,
               text: 'Markets'.tr(),
-              textColor:
-                  selectedMarketType == SelectedMarketTypeButtonEnum.swap
-                      ? Colors.white
-                      : SideSwapColors.ceruleanFrost,
+              textColor: selectedMarketType == SelectedMarketTypeButtonEnum.swap
+                  ? Colors.white
+                  : SideSwapColors.ceruleanFrost,
               onPressed: () {
                 ref
-                    .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                    .read(selectedMarketTypeButtonProvider.notifier)
                     .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap);
               },
             ),
           ),
           Flexible(
             child: SwapButton(
-              color:
-                  selectedMarketType == SelectedMarketTypeButtonEnum.orders
-                      ? SideSwapColors.cyanCornflowerBlue
-                      : SideSwapColors.prussianBlue,
+              color: selectedMarketType == SelectedMarketTypeButtonEnum.orders
+                  ? SideSwapColors.cyanCornflowerBlue
+                  : SideSwapColors.prussianBlue,
               text: 'Orders'.tr(),
               textColor:
                   selectedMarketType == SelectedMarketTypeButtonEnum.orders
-                      ? Colors.white
-                      : SideSwapColors.ceruleanFrost,
+                  ? Colors.white
+                  : SideSwapColors.ceruleanFrost,
               onPressed: () {
                 ref
-                    .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                    .read(selectedMarketTypeButtonProvider.notifier)
                     .setSelectedMarketType(SelectedMarketTypeButtonEnum.orders);
               },
             ),

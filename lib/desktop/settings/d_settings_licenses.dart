@@ -27,14 +27,14 @@ class DSettingsLicenses extends HookConsumerWidget {
   const DSettingsLicenses({super.key});
 
   void goBack(WidgetRef ref) {
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
+    ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
     ref.read(walletProvider).settingsViewAboutUs();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
 
     final licenseEntries = ref.watch(licensesEntriesProvider);

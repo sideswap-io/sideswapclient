@@ -97,7 +97,7 @@ class TickerAmountTextField extends HookConsumerWidget {
     }, const []);
 
     void showAccountsPopup() {
-      Navigator.of(context, rootNavigator: true).push<void>(
+      Navigator.of(context).push<void>(
         FlavorConfig.isDesktop
             ? DialogRoute(
                 barrierColor: Colors.transparent,

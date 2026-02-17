@@ -43,10 +43,10 @@ class DSettingsRadioButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fastAnimationDuration =
-        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
-    final animationCurve =
-        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
+    final fastAnimationDuration = ref
+        .watch(desktopAppThemeProvider)
+        .fastAnimationDuration;
+    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
 
     return DHoverButton(
       autofocus: autofocus,
@@ -60,8 +60,8 @@ class DSettingsRadioButton extends HookConsumerWidget {
             (checked
                 ? settingsRadioButtonStyle.checkedDecoration?.resolve(state)
                 : settingsRadioButtonStyle.uncheckedDecoration?.resolve(
-                  state,
-                )) ??
+                    state,
+                  )) ??
             const BoxDecoration(shape: BoxShape.circle);
 
         Widget child = AnimatedContainer(
@@ -77,27 +77,25 @@ class DSettingsRadioButton extends HookConsumerWidget {
               color: decoration.color ?? Colors.transparent,
               shape: decoration.shape,
             ),
-            child:
-                checked
-                    ? Icon(Icons.done, size: state.isHovering ? 14 : 12)
-                    : null,
+            child: checked
+                ? Icon(Icons.done, size: state.isHovering ? 14 : 12)
+                : null,
           ),
         );
         if (content != null) {
           child = Container(
             decoration: BoxDecoration(
-              border:
-                  checked
-                      ? Border.all(color: Colors.transparent)
-                      : Border.all(color: const Color(0xFF327FA9)),
+              border: checked
+                  ? Border.all(color: Colors.transparent)
+                  : Border.all(color: const Color(0xFF327FA9)),
               color:
                   (checked
                       ? settingsRadioButtonStyle.checkedBackground?.resolve(
-                        state,
-                      )
+                          state,
+                        )
                       : settingsRadioButtonStyle.uncheckedBackground?.resolve(
-                        state,
-                      )) ??
+                          state,
+                        )) ??
                   Colors.transparent,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
@@ -157,12 +155,11 @@ class DSettingsRadioButtonThemeData with Diagnosticable {
           shape: BoxShape.circle,
           border: Border.all(
             color: const Color(0xFF327FA9),
-            width:
-                states.isPressing
-                    ? 4
-                    : states.isHovering
-                    ? 2
-                    : 1,
+            width: states.isPressing
+                ? 4
+                : states.isHovering
+                ? 2
+                : 1,
           ),
         );
       }),

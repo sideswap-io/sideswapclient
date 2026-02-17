@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class PinTextField extends StatefulWidget {
+class PinTextField extends HookConsumerWidget {
   const PinTextField({
     super.key,
     this.pin = '',
@@ -9,6 +11,7 @@ class PinTextField extends StatefulWidget {
     this.enabled = true,
     this.error = false,
     this.errorMessage = '',
+    this.attempt = 0,
   });
 
   final String pin;
@@ -17,47 +20,35 @@ class PinTextField extends StatefulWidget {
   final bool enabled;
   final bool error;
   final String errorMessage;
+  final int attempt;
 
   @override
-  PinTextFieldState createState() => PinTextFieldState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = useTextEditingController(text: pin);
 
-class PinTextFieldState extends State<PinTextField> {
-  late TextEditingController controller;
+    useEffect(() {
+      controller.text = pin;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
+      );
 
-  @override
-  void initState() {
-    controller = TextEditingController();
+      return;
+    }, [pin]);
 
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    controller.text = widget.pin;
-    controller.selection = TextSelection.fromPosition(
-      TextPosition(offset: controller.text.length),
-    );
     return SizedBox(
-      height: widget.error && widget.errorMessage.isNotEmpty ? 83 : 61,
+      height: error && errorMessage.isNotEmpty ? 160 : 61,
       child: Column(
         children: [
           Opacity(
-            opacity: widget.enabled ? 1.0 : 0.5,
+            opacity: enabled ? 1.0 : 0.5,
             child: AbsorbPointer(
-              absorbing: widget.enabled ? false : true,
+              absorbing: enabled ? false : true,
               child: GestureDetector(
-                onTap: widget.onTap,
+                onTap: onTap,
                 child: AbsorbPointer(
                   child: TextField(
                     controller: controller,
-                    focusNode: widget.focusNode,
+                    focusNode: focusNode,
                     readOnly: true,
                     obscureText: true,
                     showCursor: true,
@@ -78,30 +69,27 @@ class PinTextFieldState extends State<PinTextField> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,
                       ),
-                      focusedBorder:
-                          widget.error
-                              ? OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Colors.red),
-                              )
-                              : null,
+                      focusedBorder: error
+                          ? OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Colors.red),
+                            )
+                          : null,
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          if (widget.error && widget.errorMessage.isNotEmpty) ...[
+          if (error && errorMessage.isNotEmpty) ...[
             Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: EdgeInsets.only(top: attempt == 2 ? 16 : 6),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  widget.errorMessage,
-                  overflow: TextOverflow.fade,
-                  maxLines: 1,
-                  style: const TextStyle(
-                    fontSize: 12,
+                  errorMessage,
+                  style: TextStyle(
+                    fontSize: attempt == 2 ? 16 : 12,
                     fontWeight: FontWeight.normal,
                     color: Colors.red,
                   ),

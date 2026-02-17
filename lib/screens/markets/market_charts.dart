@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -23,7 +24,7 @@ class MarketCharts extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chartsData = ref.watch(chartsNotifierProvider);
+    final chartsData = ref.watch(chartsProvider);
     final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
     final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
     final optionMarketInfo = ref.watch(subscribedMarketInfoProvider);
@@ -128,7 +129,7 @@ class AssetDetails extends HookConsumerWidget {
 
     useEffect(() {
       ref
-          .read(tokenMarketNotifierProvider.notifier)
+          .read(tokenMarketProvider.notifier)
           .requestAssetDetails(assetId: asset.assetId);
       return;
     }, [asset]);
@@ -150,9 +151,11 @@ class AssetDetails extends HookConsumerWidget {
             children: [
               baseAssetIcon,
               SizedBox(width: 4),
-              Text(
-                baseAsset.ticker,
-                style: Theme.of(context).textTheme.bodyLarge,
+              Flexible(
+                child: MiddleEllipsisText(
+                  text: baseAsset.ticker,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
               ),
               Text(' / ', style: Theme.of(context).textTheme.bodyLarge),
               quoteAssetIcon,
@@ -206,12 +209,11 @@ class AssetDetails extends HookConsumerWidget {
                   DetailsField(
                     name: '30d Change'.tr(),
                     value: chartStatsRepository.statsChangePercentString(),
-                    color:
-                        chartStatsRepository.statsChangePercent() == 0
-                            ? null
-                            : (chartStatsRepository.statsChangePercent() > 0
-                                ? SideSwapColors.turquoise
-                                : SideSwapColors.bitterSweet),
+                    color: chartStatsRepository.statsChangePercent() == 0
+                        ? null
+                        : (chartStatsRepository.statsChangePercent() > 0
+                              ? SideSwapColors.turquoise
+                              : SideSwapColors.bitterSweet),
                   ),
                   Consumer(
                     builder: (context, ref, child) {
@@ -265,7 +267,7 @@ class AssetDetails extends HookConsumerWidget {
                   children: [
                     baseAssetIcon,
                     SizedBox(width: 4),
-                    Text(baseAsset.ticker),
+                    Flexible(child: MiddleEllipsisText(text: baseAsset.ticker)),
                     SizedBox(width: 4),
                     Text(' - '),
                     SizedBox(width: 4),
@@ -345,12 +347,9 @@ class DetailsField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultCurrencyPrice =
-        (assetAmount != null && assetId != null)
-            ? ref.watch(
-              amountUsdInDefaultCurrencyProvider(assetId, assetAmount!),
-            )
-            : null;
+    final defaultCurrencyPrice = (assetAmount != null && assetId != null)
+        ? ref.watch(amountUsdInDefaultCurrencyProvider(assetId, assetAmount!))
+        : null;
     final defaultCurrencyTicker = ref.read(defaultCurrencyTickerProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

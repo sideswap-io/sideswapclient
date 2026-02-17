@@ -22,12 +22,9 @@ class DButton extends DBaseButton {
   @override
   DButtonStyle defaultStyleOf(BuildContext context) {
     final container = ProviderContainer();
-    final shadowColor =
-        container.read(desktopAppThemeNotifierProvider).shadowColor;
-    final brightness =
-        container.read(desktopAppThemeNotifierProvider).brightness;
-    final disabledColor =
-        container.read(desktopAppThemeNotifierProvider).disabledColor;
+    final shadowColor = container.read(desktopAppThemeProvider).shadowColor;
+    final brightness = container.read(desktopAppThemeProvider).brightness;
+    final disabledColor = container.read(desktopAppThemeProvider).disabledColor;
 
     return DButtonStyle(
       elevation: ButtonState.resolveWith((states) {
@@ -41,10 +38,9 @@ class DButton extends DBaseButton {
       shape: ButtonState.all(
         RoundedRectangleBorder(
           side: BorderSide(
-            color:
-                brightness.isLight
-                    ? const Color.fromRGBO(0, 0, 0, 0.09)
-                    : const Color.fromRGBO(255, 255, 255, 0.05),
+            color: brightness.isLight
+                ? const Color.fromRGBO(0, 0, 0, 0.09)
+                : const Color.fromRGBO(255, 255, 255, 0.05),
             width: 1,
           ),
           borderRadius: BorderRadius.circular(4.0),
@@ -60,8 +56,8 @@ class DButton extends DBaseButton {
           states,
         ).basedOnLuminance().toAccentColor()[states.isPressing
             ? brightness.isLight
-                ? 'lighter'
-                : 'dark'
+                  ? 'lighter'
+                  : 'dark'
             : 'normal'];
       }),
     );

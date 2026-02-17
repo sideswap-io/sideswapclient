@@ -22,6 +22,7 @@ class SideSwapSliderThemeData with Diagnosticable {
   final Color? activeTrackMarkColor;
   final Color? inactiveTrackMarkColor;
   final SideSwapSliderAxisInteraction? axisInteraction;
+  final SideSwapTrackDot? trackDot;
 
   SideSwapSliderThemeData({
     this.trackShape,
@@ -35,6 +36,7 @@ class SideSwapSliderThemeData with Diagnosticable {
     this.activeTrackMarkColor,
     this.inactiveTrackMarkColor,
     this.axisInteraction,
+    this.trackDot,
   });
 
   SideSwapSliderThemeData copyWith({
@@ -51,6 +53,7 @@ class SideSwapSliderThemeData with Diagnosticable {
     Gradient? leftGradient,
     Gradient? rightGradient,
     SideSwapSliderAxisInteraction? axisInteraction,
+    SideSwapTrackDot? trackDot,
   }) {
     return SideSwapSliderThemeData(
       trackShape: trackShape ?? this.trackShape,
@@ -64,6 +67,7 @@ class SideSwapSliderThemeData with Diagnosticable {
       activeTrackMarkColor: activeTrackMarkColor ?? this.activeTrackColor,
       inactiveTrackMarkColor: inactiveTrackMarkColor ?? this.inactiveTrackColor,
       axisInteraction: axisInteraction ?? this.axisInteraction,
+      trackDot: trackDot ?? this.trackDot,
     );
   }
 
@@ -84,7 +88,8 @@ class SideSwapSliderThemeData with Diagnosticable {
         other.inactiveTrackColor == inactiveTrackColor &&
         other.activeTrackMarkColor == activeTrackMarkColor &&
         other.inactiveTrackMarkColor == inactiveTrackMarkColor &&
-        other.axisInteraction == axisInteraction;
+        other.axisInteraction == axisInteraction &&
+        other.trackDot == trackDot;
   }
 
   @override
@@ -99,7 +104,19 @@ class SideSwapSliderThemeData with Diagnosticable {
       inactiveTrackColor.hashCode ^
       activeTrackMarkColor.hashCode ^
       inactiveTrackMarkColor.hashCode ^
-      axisInteraction.hashCode;
+      axisInteraction.hashCode ^
+      trackDot.hashCode;
+}
+
+abstract class SideSwapTrackDot {
+  final double radius;
+  final double padding;
+
+  SideSwapTrackDot({this.radius = 3.5, this.padding = 4.0});
+}
+
+class SideSwapDefaultTrackDot extends SideSwapTrackDot {
+  SideSwapDefaultTrackDot({super.radius, super.padding});
 }
 
 abstract class SideSwapSliderTrackShape {
@@ -144,7 +161,7 @@ class SideSwapDefaultSliderTrackShape extends SideSwapSliderTrackShape {
     final double trackLeft = offset.dx + padding;
     final double trackTop =
         offset.dy + (maxTrackHeight - themeData.trackHeight!) / 2;
-    final double trackRight = trackLeft + parentBox.size.width - padding * 2;
+    final double trackRight = (offset.dx + parentBox.size.width) - 2 * padding;
     final double trackBottom = trackTop + themeData.trackHeight!;
 
     return Rect.fromLTRB(trackLeft, trackTop, trackRight, trackBottom);
@@ -183,8 +200,8 @@ class SideSwapDefaultSliderTrackShape extends SideSwapSliderTrackShape {
         trackRect.bottom,
       );
 
-      final leftGradientPaint =
-          Paint()..shader = leftGradient?.createShader(trackRect);
+      final leftGradientPaint = Paint()
+        ..shader = leftGradient?.createShader(trackRect);
 
       // draw active side
       canvas.drawRRect(
@@ -218,8 +235,8 @@ class SideSwapDefaultSliderTrackShape extends SideSwapSliderTrackShape {
         trackRect.bottom,
       );
 
-      final rightGradientPaint =
-          Paint()..shader = rightGradient?.createShader(trackRect);
+      final rightGradientPaint = Paint()
+        ..shader = rightGradient?.createShader(trackRect);
 
       // draw active side
       canvas.drawRRect(
@@ -247,8 +264,20 @@ class SideSwapDefaultSliderTrackShape extends SideSwapSliderTrackShape {
 
     if (themeData.axisInteraction == SideSwapSliderAxisInteraction.center) {
       // draw inactive background
+      final trackDotRadius = themeData.trackDot?.radius ?? 0;
+      final trackDotPadding = themeData.trackDot?.padding ?? 0;
+      final trackDotWidth = trackDotRadius + trackDotPadding;
+
+      final trackLineRect = themeData.trackDot == null
+          ? trackRect
+          : Rect.fromLTWH(
+              trackRect.left + trackDotWidth,
+              trackRect.top,
+              trackRect.width - (trackDotWidth * 2),
+              trackRect.height,
+            );
       canvas.drawRRect(
-        RRect.fromRectAndRadius(trackRect, trackRadius),
+        RRect.fromRectAndRadius(trackLineRect, trackRadius),
         inactivePaint,
       );
 
@@ -266,8 +295,8 @@ class SideSwapDefaultSliderTrackShape extends SideSwapSliderTrackShape {
           trackRect.bottom,
         );
 
-        final leftGradientPaint =
-            Paint()..shader = leftGradient?.createShader(leftTrackRect);
+        final leftGradientPaint = Paint()
+          ..shader = leftGradient?.createShader(leftTrackRect);
 
         canvas.drawRect(
           drawTrackRect,
@@ -287,14 +316,35 @@ class SideSwapDefaultSliderTrackShape extends SideSwapSliderTrackShape {
           trackRect.bottom,
         );
 
-        final rightGradientPaint =
-            Paint()..shader = rightGradient?.createShader(rightTrackRect);
+        final rightGradientPaint = Paint()
+          ..shader = rightGradient?.createShader(rightTrackRect);
 
         canvas.drawRect(
           drawTrackRect,
           rightGradient != null ? rightGradientPaint : activePaint,
         );
       }
+    }
+
+    // draw track dots
+    if (themeData.trackDot != null) {
+      // left dot
+      final trackDotRadius = themeData.trackDot!.radius;
+
+      final trackDotOffset = Offset(
+        trackRect.left,
+        trackRect.top + trackRect.height / 2,
+      );
+
+      canvas.drawCircle(trackDotOffset, trackDotRadius, inactivePaint);
+
+      // right dot
+      final rightTrackDotOffset = Offset(
+        trackRect.right,
+        trackRect.top + trackRect.height / 2,
+      );
+
+      canvas.drawCircle(rightTrackDotOffset, trackDotRadius, inactivePaint);
     }
   }
 }
@@ -438,11 +488,9 @@ class SideSwapDefaultSliderThumbShape extends SideSwapSliderComponentShape {
     assert(themeData.activeTrackColor != null);
     assert(themeData.trackShape != null);
 
-    final circlePaint =
-        Paint()
-          ..color =
-              thumbColor != null ? thumbColor! : themeData.activeTrackColor!
-          ..style = PaintingStyle.fill;
+    final circlePaint = Paint()
+      ..color = thumbColor != null ? thumbColor! : themeData.activeTrackColor!
+      ..style = PaintingStyle.fill;
 
     final strokeWidth = thumbRadius * strokeRatio!;
     context.canvas.drawCircle(
@@ -468,11 +516,10 @@ class SideSwapDefaultSliderThumbShape extends SideSwapSliderComponentShape {
         _ => frameColor!,
       };
 
-      final framePaint =
-          Paint()
-            ..color = internalFrameColor
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = strokeWidth;
+      final framePaint = Paint()
+        ..color = internalFrameColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth;
 
       context.canvas.drawCircle(
         thumbCenter,
@@ -550,12 +597,11 @@ class SideSwapDefaultSliderHatchMarkShape extends SideSwapSliderHatchMarkShape {
   }) {
     assert(activeColor != null);
 
-    final hatchMarkPaint =
-        Paint()
-          ..color = activeColor!
-          ..strokeCap = StrokeCap.square
-          ..strokeWidth = 1.0
-          ..style = PaintingStyle.fill;
+    final hatchMarkPaint = Paint()
+      ..color = activeColor!
+      ..strokeCap = StrokeCap.square
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.fill;
 
     final trackRect =
         themeData.trackShape?.getPrefferedRect(
@@ -570,14 +616,15 @@ class SideSwapDefaultSliderHatchMarkShape extends SideSwapSliderHatchMarkShape {
     final topPadding = math.max(trackRect.height, thumbSize.height) + padding;
     final trackMarkPadding =
         (themeData.trackHeight ?? .0) + (themeData.trackHeight ?? .0) / 2;
-    final leftPadding =
-        (trackMarkPadding - (markWidth ?? .0) / 2).roundToDouble();
+    final leftPadding = (trackMarkPadding - (markWidth ?? .0) / 2)
+        .roundToDouble();
     // width from the first to the last of the track mark point - same as in render object paint method
     final adjustedTrackWidth = trackRect.width - (themeData.trackHeight ?? .0);
 
     final hatchMarkDensity = 100 * density;
-    final hatchMarkSpacer =
-        hatchMarkDensity == 0 ? 0 : (adjustedTrackWidth / hatchMarkDensity);
+    final hatchMarkSpacer = hatchMarkDensity == 0
+        ? 0
+        : (adjustedTrackWidth / hatchMarkDensity);
 
     for (int i = 0; i <= hatchMarkDensity; i++) {
       context.canvas.drawRect(
@@ -618,12 +665,11 @@ class SideSwapDefaultSliderHatchMarkShape extends SideSwapSliderHatchMarkShape {
       );
       final yOffset = offset.dy + topPadding;
 
-      final labelHatchMarkPaint =
-          Paint()
-            ..color = label.markColor ?? Colors.transparent
-            ..strokeCap = StrokeCap.square
-            ..strokeWidth = 1.0
-            ..style = PaintingStyle.fill;
+      final labelHatchMarkPaint = Paint()
+        ..color = label.markColor ?? Colors.transparent
+        ..strokeCap = StrokeCap.square
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.fill;
 
       var xOffset = markCenter.dx - (label.markWidth! / 2);
 

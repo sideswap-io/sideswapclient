@@ -13,9 +13,7 @@ class DMarkets extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chartsSubscriptionFlag = ref.watch(
-      chartsSubscriptionFlagNotifierProvider,
-    );
+    final chartsSubscriptionFlag = ref.watch(chartsSubscriptionFlagProvider);
     final showCharts =
         chartsSubscriptionFlag == ChartsSubscriptionFlagSubscribed();
 
@@ -39,10 +37,7 @@ class DMarkets extends HookConsumerWidget {
                           child: OrdersView(
                             onChartsPressed: () {
                               ref
-                                  .read(
-                                    chartsSubscriptionFlagNotifierProvider
-                                        .notifier,
-                                  )
+                                  .read(chartsSubscriptionFlagProvider.notifier)
                                   .subscribe();
                             },
                           ),
@@ -60,7 +55,7 @@ class DMarkets extends HookConsumerWidget {
         Consumer(
           builder: (context, ref, child) {
             final optionAssetPair = ref.watch(
-              marketSubscribedAssetPairNotifierProvider,
+              marketSubscribedAssetPairProvider,
             );
 
             if (!showCharts) {
@@ -72,7 +67,7 @@ class DMarkets extends HookConsumerWidget {
               (assetPair) => DCharts(
                 onBackPressed: () {
                   ref
-                      .read(chartsSubscriptionFlagNotifierProvider.notifier)
+                      .read(chartsSubscriptionFlagProvider.notifier)
                       .unsubscribe();
                 },
               ),

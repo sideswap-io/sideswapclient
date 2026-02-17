@@ -19,7 +19,7 @@ class DTxAndOrdersPanel extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appReleasesStateAsync = ref.watch(appReleasesStateNotifierProvider);
+    final appReleasesStateAsync = ref.watch(appReleasesStateProvider);
     final showNewReleaseAsync = ref.watch(showNewReleaseFutureProvider);
     var tabsLength = onlyWorkingOrders ? 2 : 3;
 
@@ -137,10 +137,9 @@ class DTxAndOrdersPanel extends HookConsumerWidget {
                                           null) ...[
                                         Text(
                                           appReleases!.desktop!.changes!,
-                                          style:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.bodyMedium,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium,
                                         ),
                                       ],
                                     ],

@@ -1,7 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -61,19 +60,6 @@ class SendTxStateNotifier extends _$SendTxStateNotifier {
 }
 
 @Riverpod(keepAlive: true)
-class PaymentInsufficientFundsNotifier
-    extends _$PaymentInsufficientFundsNotifier {
-  @override
-  bool build() {
-    return false;
-  }
-
-  void setInsufficientFunds(bool value) {
-    state = value;
-  }
-}
-
-@Riverpod(keepAlive: true)
 class PaymentSendAddressParsedNotifier
     extends _$PaymentSendAddressParsedNotifier {
   @override
@@ -115,9 +101,9 @@ class PaymentAmountPageArgumentsNotifier
 @riverpod
 PaymentHelper paymentHelper(Ref ref) {
   final outputsData = ref.watch(outputsCreatorProvider);
-  final deductFeeFromOutput = ref.watch(deductFeeFromOutputNotifierProvider);
-  final deductIndex = ref.watch(payjoinRadioButtonIndexNotifierProvider);
-  final feeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
+  final deductFeeFromOutput = ref.watch(deductFeeFromOutputProvider);
+  final deductIndex = ref.watch(payjoinRadioButtonIndexProvider);
+  final feeAsset = ref.watch(payjoinFeeAssetProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
@@ -172,18 +158,72 @@ class PaymentHelper {
               OutPoint(txid: selectedInput.txid, vout: selectedInput.vout),
         );
 
-        // TODO (malcolmpl): new wallets
-        // final account =
-        //     ((selectedInputs?.length ?? 0) > 0
-        //         ? selectedInputs?.first.account
-        //         : accountAsset.account) ??
-        //     Account.REG;
-
         final createTx = CreateTx(
           addressees: addressAmounts,
           utxos: utxos,
           deductFeeOutput: deductFeeFromOutput ? deductIndex : null,
           feeAssetId: feeAsset?.assetId != liquidAssetId
+              ? feeAsset?.assetId
+              : null,
+        );
+
+        ref.read(walletProvider).createTx(createTx);
+      }(),
+    };
+  }
+
+  // TODO: (malcolmpl): low priority - remove this method after mobile app is updated
+  @Deprecated('Use outputsPaymentSend instead')
+  String? mobileOutputsPaymentSend({List<UtxosItem>? selectedInputs}) {
+    return switch (outputsData) {
+      Left(value: final l) => l.message,
+      Right(value: final r) => () {
+        if (r.receivers == null) {
+          return;
+        }
+
+        final addressAmounts = r.receivers!.map((e) {
+          return AddressAmount(
+            address: e.address,
+            amount: Int64(e.satoshi ?? 0),
+            assetId: e.assetId,
+          );
+        }).toList();
+
+        final utxos = selectedInputs?.map(
+          (selectedInput) =>
+              OutPoint(txid: selectedInput.txid, vout: selectedInput.vout),
+        );
+
+        // determine if we need to deduct fee from output
+        final index = ref.read(payjoinRadioButtonIndexProvider);
+        final assetId = r.receivers![index].assetId!;
+        final payjoinFeeAsset = ref.read(payjoinFeeAssetProvider);
+
+        var mobileDeductFeeFromOutput = false;
+
+        if (payjoinFeeAsset == null) {
+          logger.e('Fee asset is null');
+          return null;
+        }
+
+        final outputSatoshi = r.receivers![index].satoshi ?? 0;
+
+        final maxBalance = ref.watch(
+          availableBalanceForAssetIdProvider(assetId),
+        );
+        // substract small amount for fee
+        if (outputSatoshi > (maxBalance - 1000)) {
+          mobileDeductFeeFromOutput = true;
+        }
+
+        final createTx = CreateTx(
+          addressees: addressAmounts,
+          utxos: utxos,
+          deductFeeOutput: mobileDeductFeeFromOutput ? deductIndex : null,
+          feeAssetId: mobileDeductFeeFromOutput
+              ? assetId
+              : feeAsset?.assetId != liquidAssetId
               ? feeAsset?.assetId
               : null,
         );
@@ -206,9 +246,7 @@ class PaymentHelper {
 
     /// Used only in mobile - it should be removed if outputs are added to mobile?
     Future.microtask(
-      () => ref
-          .read(selectedWalletAssetNotifierProvider.notifier)
-          .setState(asset),
+      () => ref.read(selectedWalletAssetProvider.notifier).setState(asset),
     );
 
     if (!ref.read(isAddrTypeValidProvider(address, AddrType.elements))) {
@@ -234,10 +272,10 @@ class PaymentHelper {
 
     /// Used only in mobile - it should be removed if outputs are added to mobile?
     ref
-        .read(paymentSendAddressParsedNotifierProvider.notifier)
+        .read(paymentSendAddressParsedProvider.notifier)
         .setSendAddressParsed(address);
     ref
-        .read(paymentSendAmountParsedNotifierProvider.notifier)
+        .read(paymentSendAmountParsedProvider.notifier)
         .setSendAmountParsed(internalAmount);
 
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);

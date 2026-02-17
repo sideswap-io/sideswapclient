@@ -6,25 +6,59 @@ part of 'theme.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(MobileAppThemeNotifier)
+const mobileAppThemeProvider = MobileAppThemeNotifierProvider._();
+
+final class MobileAppThemeNotifierProvider
+    extends $NotifierProvider<MobileAppThemeNotifier, MobileThemeData> {
+  const MobileAppThemeNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mobileAppThemeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$mobileAppThemeNotifierHash();
+
+  @$internal
+  @override
+  MobileAppThemeNotifier create() => MobileAppThemeNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MobileThemeData value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MobileThemeData>(value),
+    );
+  }
+}
+
 String _$mobileAppThemeNotifierHash() =>
     r'df834772f44e98ae05c1782ff4dbfd54ca1fc7be';
 
-/// See also [MobileAppThemeNotifier].
-@ProviderFor(MobileAppThemeNotifier)
-final mobileAppThemeNotifierProvider =
-    AutoDisposeNotifierProvider<
-      MobileAppThemeNotifier,
-      MobileThemeData
-    >.internal(
-      MobileAppThemeNotifier.new,
-      name: r'mobileAppThemeNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$mobileAppThemeNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$MobileAppThemeNotifier = AutoDisposeNotifier<MobileThemeData>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$MobileAppThemeNotifier extends $Notifier<MobileThemeData> {
+  MobileThemeData build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<MobileThemeData, MobileThemeData>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<MobileThemeData, MobileThemeData>,
+              MobileThemeData,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

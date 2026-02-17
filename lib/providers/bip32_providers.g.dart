@@ -6,159 +6,94 @@ part of 'bip32_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$parseBIP21Hash() => r'8eb5447fe2b232d31e6a8f846a0c03a755d3c764';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [parseBIP21].
 @ProviderFor(parseBIP21)
-const parseBIP21Provider = ParseBIP21Family();
+const parseBIP21Provider = ParseBIP21Family._();
 
-/// See also [parseBIP21].
-class ParseBIP21Family extends Family<Either<Exception, BIP21Result>> {
-  /// See also [parseBIP21].
-  const ParseBIP21Family();
+final class ParseBIP21Provider
+    extends
+        $FunctionalProvider<
+          Either<Exception, BIP21Result>,
+          Either<Exception, BIP21Result>,
+          Either<Exception, BIP21Result>
+        >
+    with $Provider<Either<Exception, BIP21Result>> {
+  const ParseBIP21Provider._({
+    required ParseBIP21Family super.from,
+    required (String, BIP21AddressTypeEnum) super.argument,
+  }) : super(
+         retry: null,
+         name: r'parseBIP21Provider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
-  /// See also [parseBIP21].
-  ParseBIP21Provider call(String address, BIP21AddressTypeEnum addressType) {
-    return ParseBIP21Provider(address, addressType);
+  @override
+  String debugGetCreateSourceHash() => _$parseBIP21Hash();
+
+  @override
+  String toString() {
+    return r'parseBIP21Provider'
+        ''
+        '$argument';
   }
 
+  @$internal
   @override
-  ParseBIP21Provider getProviderOverride(
-    covariant ParseBIP21Provider provider,
-  ) {
-    return call(provider.address, provider.addressType);
+  $ProviderElement<Either<Exception, BIP21Result>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Either<Exception, BIP21Result> create(Ref ref) {
+    final argument = this.argument as (String, BIP21AddressTypeEnum);
+    return parseBIP21(ref, argument.$1, argument.$2);
   }
 
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'parseBIP21Provider';
-}
-
-/// See also [parseBIP21].
-class ParseBIP21Provider
-    extends AutoDisposeProvider<Either<Exception, BIP21Result>> {
-  /// See also [parseBIP21].
-  ParseBIP21Provider(String address, BIP21AddressTypeEnum addressType)
-    : this._internal(
-        (ref) => parseBIP21(ref as ParseBIP21Ref, address, addressType),
-        from: parseBIP21Provider,
-        name: r'parseBIP21Provider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$parseBIP21Hash,
-        dependencies: ParseBIP21Family._dependencies,
-        allTransitiveDependencies: ParseBIP21Family._allTransitiveDependencies,
-        address: address,
-        addressType: addressType,
-      );
-
-  ParseBIP21Provider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.address,
-    required this.addressType,
-  }) : super.internal();
-
-  final String address;
-  final BIP21AddressTypeEnum addressType;
-
-  @override
-  Override overrideWith(
-    Either<Exception, BIP21Result> Function(ParseBIP21Ref provider) create,
-  ) {
-    return ProviderOverride(
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Either<Exception, BIP21Result> value) {
+    return $ProviderOverride(
       origin: this,
-      override: ParseBIP21Provider._internal(
-        (ref) => create(ref as ParseBIP21Ref),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        address: address,
-        addressType: addressType,
+      providerOverride: $SyncValueProvider<Either<Exception, BIP21Result>>(
+        value,
       ),
     );
   }
 
   @override
-  AutoDisposeProviderElement<Either<Exception, BIP21Result>> createElement() {
-    return _ParseBIP21ProviderElement(this);
-  }
-
-  @override
   bool operator ==(Object other) {
-    return other is ParseBIP21Provider &&
-        other.address == address &&
-        other.addressType == addressType;
+    return other is ParseBIP21Provider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, address.hashCode);
-    hash = _SystemHash.combine(hash, addressType.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ParseBIP21Ref on AutoDisposeProviderRef<Either<Exception, BIP21Result>> {
-  /// The parameter `address` of this provider.
-  String get address;
+String _$parseBIP21Hash() => r'8eb5447fe2b232d31e6a8f846a0c03a755d3c764';
 
-  /// The parameter `addressType` of this provider.
-  BIP21AddressTypeEnum get addressType;
-}
+final class ParseBIP21Family extends $Family
+    with
+        $FunctionalFamilyOverride<
+          Either<Exception, BIP21Result>,
+          (String, BIP21AddressTypeEnum)
+        > {
+  const ParseBIP21Family._()
+    : super(
+        retry: null,
+        name: r'parseBIP21Provider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-class _ParseBIP21ProviderElement
-    extends AutoDisposeProviderElement<Either<Exception, BIP21Result>>
-    with ParseBIP21Ref {
-  _ParseBIP21ProviderElement(super.provider);
+  ParseBIP21Provider call(String address, BIP21AddressTypeEnum addressType) =>
+      ParseBIP21Provider._(argument: (address, addressType), from: this);
 
   @override
-  String get address => (origin as ParseBIP21Provider).address;
-  @override
-  BIP21AddressTypeEnum get addressType =>
-      (origin as ParseBIP21Provider).addressType;
+  String toString() => r'parseBIP21Provider';
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

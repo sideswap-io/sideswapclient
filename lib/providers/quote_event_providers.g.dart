@@ -6,99 +6,287 @@ part of 'quote_event_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$quoteEventNotifierHash() =>
-    r'748758f051f4741c3f3cc112815a48b1c944f358';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [QuoteEventNotifier].
 @ProviderFor(QuoteEventNotifier)
-final quoteEventNotifierProvider =
-    AutoDisposeNotifierProvider<
-      QuoteEventNotifier,
-      Option<From_Quote>
-    >.internal(
-      QuoteEventNotifier.new,
-      name: r'quoteEventNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$quoteEventNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const quoteEventProvider = QuoteEventNotifierProvider._();
 
-typedef _$QuoteEventNotifier = AutoDisposeNotifier<Option<From_Quote>>;
+final class QuoteEventNotifierProvider
+    extends $NotifierProvider<QuoteEventNotifier, Option<From_Quote>> {
+  const QuoteEventNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'quoteEventProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$quoteEventNotifierHash();
+
+  @$internal
+  @override
+  QuoteEventNotifier create() => QuoteEventNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Option<From_Quote> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Option<From_Quote>>(value),
+    );
+  }
+}
+
+String _$quoteEventNotifierHash() =>
+    r'b47d1b3b0b5421ccfaa7545144aa5f6afc0ab170';
+
+abstract class _$QuoteEventNotifier extends $Notifier<Option<From_Quote>> {
+  Option<From_Quote> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Option<From_Quote>, Option<From_Quote>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Option<From_Quote>, Option<From_Quote>>,
+              Option<From_Quote>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+/// Accept quote
+
+@ProviderFor(AcceptQuoteNotifier)
+const acceptQuoteProvider = AcceptQuoteNotifierProvider._();
+
+/// Accept quote
+final class AcceptQuoteNotifierProvider
+    extends $NotifierProvider<AcceptQuoteNotifier, Option<From_AcceptQuote>> {
+  /// Accept quote
+  const AcceptQuoteNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'acceptQuoteProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$acceptQuoteNotifierHash();
+
+  @$internal
+  @override
+  AcceptQuoteNotifier create() => AcceptQuoteNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Option<From_AcceptQuote> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Option<From_AcceptQuote>>(value),
+    );
+  }
+}
+
 String _$acceptQuoteNotifierHash() =>
     r'4b3b428eb9c8990ef76e0b5c38c1683926064f67';
 
 /// Accept quote
-///
-/// Copied from [AcceptQuoteNotifier].
-@ProviderFor(AcceptQuoteNotifier)
-final acceptQuoteNotifierProvider =
-    AutoDisposeNotifierProvider<
-      AcceptQuoteNotifier,
-      Option<From_AcceptQuote>
-    >.internal(
-      AcceptQuoteNotifier.new,
-      name: r'acceptQuoteNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$acceptQuoteNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
 
-typedef _$AcceptQuoteNotifier = AutoDisposeNotifier<Option<From_AcceptQuote>>;
+abstract class _$AcceptQuoteNotifier
+    extends $Notifier<Option<From_AcceptQuote>> {
+  Option<From_AcceptQuote> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<Option<From_AcceptQuote>, Option<From_AcceptQuote>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Option<From_AcceptQuote>, Option<From_AcceptQuote>>,
+              Option<From_AcceptQuote>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(PreviewOrderQuoteSuccessNotifier)
+const previewOrderQuoteSuccessProvider =
+    PreviewOrderQuoteSuccessNotifierProvider._();
+
+final class PreviewOrderQuoteSuccessNotifierProvider
+    extends
+        $NotifierProvider<
+          PreviewOrderQuoteSuccessNotifier,
+          Option<QuoteSuccess>
+        > {
+  const PreviewOrderQuoteSuccessNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'previewOrderQuoteSuccessProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$previewOrderQuoteSuccessNotifierHash();
+
+  @$internal
+  @override
+  PreviewOrderQuoteSuccessNotifier create() =>
+      PreviewOrderQuoteSuccessNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Option<QuoteSuccess> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Option<QuoteSuccess>>(value),
+    );
+  }
+}
+
 String _$previewOrderQuoteSuccessNotifierHash() =>
     r'0323aab63a6513ccb0c4179e13c5f021d224b972';
 
-/// See also [PreviewOrderQuoteSuccessNotifier].
-@ProviderFor(PreviewOrderQuoteSuccessNotifier)
-final previewOrderQuoteSuccessNotifierProvider =
-    NotifierProvider<
-      PreviewOrderQuoteSuccessNotifier,
-      Option<QuoteSuccess>
-    >.internal(
-      PreviewOrderQuoteSuccessNotifier.new,
-      name: r'previewOrderQuoteSuccessNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$previewOrderQuoteSuccessNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$PreviewOrderQuoteSuccessNotifier
+    extends $Notifier<Option<QuoteSuccess>> {
+  Option<QuoteSuccess> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Option<QuoteSuccess>, Option<QuoteSuccess>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Option<QuoteSuccess>, Option<QuoteSuccess>>,
+              Option<QuoteSuccess>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$PreviewOrderQuoteSuccessNotifier = Notifier<Option<QuoteSuccess>>;
-String _$orderTtlNotifierHash() => r'dcfeae005491543026ae2bad7a58197142d755fa';
-
-/// See also [OrderTtlNotifier].
 @ProviderFor(OrderTtlNotifier)
-final orderTtlNotifierProvider =
-    NotifierProvider<OrderTtlNotifier, OrderTtlState>.internal(
-      OrderTtlNotifier.new,
-      name: r'orderTtlNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$orderTtlNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+const orderTtlProvider = OrderTtlNotifierProvider._();
+
+final class OrderTtlNotifierProvider
+    extends $NotifierProvider<OrderTtlNotifier, OrderTtlState> {
+  const OrderTtlNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'orderTtlProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$orderTtlNotifierHash();
+
+  @$internal
+  @override
+  OrderTtlNotifier create() => OrderTtlNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(OrderTtlState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<OrderTtlState>(value),
     );
+  }
+}
 
-typedef _$OrderTtlNotifier = Notifier<OrderTtlState>;
-String _$orderSignTtlHash() => r'6f5d00189ce1ae2194e2187f15e5a9542786d060';
+String _$orderTtlNotifierHash() => r'afba9c7aa8e5629dfa4923e931c216921c5f1e17';
 
-/// See also [OrderSignTtl].
+abstract class _$OrderTtlNotifier extends $Notifier<OrderTtlState> {
+  OrderTtlState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<OrderTtlState, OrderTtlState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<OrderTtlState, OrderTtlState>,
+              OrderTtlState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(OrderSignTtl)
-final orderSignTtlProvider =
-    AutoDisposeNotifierProvider<OrderSignTtl, int>.internal(
-      OrderSignTtl.new,
-      name: r'orderSignTtlProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$orderSignTtlHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const orderSignTtlProvider = OrderSignTtlProvider._();
 
-typedef _$OrderSignTtl = AutoDisposeNotifier<int>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class OrderSignTtlProvider extends $NotifierProvider<OrderSignTtl, int> {
+  const OrderSignTtlProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'orderSignTtlProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$orderSignTtlHash();
+
+  @$internal
+  @override
+  OrderSignTtl create() => OrderSignTtl();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$orderSignTtlHash() => r'e146678d2d7ce8ed39cb0b402a47bbbe93e1dba0';
+
+abstract class _$OrderSignTtl extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

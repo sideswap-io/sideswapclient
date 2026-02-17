@@ -42,12 +42,12 @@ import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class DSendPopup extends ConsumerWidget {
+class DSendPopup extends HookConsumerWidget {
   const DSendPopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createTxState = ref.watch(createTxStateProvider);
     final createdTx = switch (createTxState) {
       CreateTxStateCreated(createdTx: final createdTx) => createdTx,
       CreateTxStateError(errorMsg: final errorMsg) => () {
@@ -62,6 +62,16 @@ class DSendPopup extends ConsumerWidget {
     };
     ref.listen(selectedInputsHelperProvider, (previous, next) {});
 
+    useEffect(() {
+      // cleanup on startup
+      ref.invalidate(sendAssetIdProvider);
+      ref.invalidate(sendPopupSelectedAssetIdProvider);
+      ref.invalidate(sendPopupAmountProvider);
+      ref.invalidate(sendPopupAddressProvider);
+
+      return;
+    }, const []);
+
     return switch (createdTx) {
       CreatedTx() => const DSendPopupReview(),
       _ => const DSendPopupCreate(),
@@ -75,7 +85,7 @@ class DSendPopupCreate extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(selectedInputsHelperProvider, (previous, next) {});
-    ref.watch(outputsReaderNotifierProvider);
+    ref.watch(outputsReaderProvider);
     final reviewButtonEnabled = ref.watch(sendPopupReviewButtonEnabledProvider);
     final addMoreOutputsButtonEnabled = ref.watch(
       sendPopupAddMoreOutputsButtonEnabledProvider,
@@ -83,9 +93,7 @@ class DSendPopupCreate extends HookConsumerWidget {
     final showInsufficientFunds = ref.watch(
       sendPopupShowInsufficientFundsProvider,
     );
-    final selectedAssetId = ref.watch(sendPopupSelectedAssetIdNotifierProvider);
-    final optionAsset = ref.watch(assetFromAssetIdProvider(selectedAssetId));
-    final eiCreateTransaction = ref.watch(eiCreateTransactionNotifierProvider);
+    final eiCreateTransaction = ref.watch(eiCreateTransactionProvider);
     final balances = ref.watch(assetBalanceProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final allAssets = ref.watch(allVisibleAssetsProvider);
@@ -103,9 +111,12 @@ class DSendPopupCreate extends HookConsumerWidget {
     final amountFocusNode = useFocusNode();
 
     void insertOutputs() {
+      final selectedAssetId = ref.read(sendPopupSelectedAssetIdProvider);
+      final optionAsset = ref.read(assetFromAssetIdProvider(selectedAssetId));
+
       return optionAsset.match(() {}, (asset) {
         final amount = ref.read(sendPopupDecimalAmountProvider);
-        final address = ref.read(sendPopupAddressNotifierProvider);
+        final address = ref.read(sendPopupAddressProvider);
         final satoshi = ref
             .read(satoshiRepositoryProvider)
             .satoshiForAmount(
@@ -118,7 +129,7 @@ class DSendPopupCreate extends HookConsumerWidget {
         }
 
         ref
-            .read(outputsReaderNotifierProvider.notifier)
+            .read(outputsReaderProvider.notifier)
             .insertOutput(
               assetId: selectedAssetId,
               address: address,
@@ -129,10 +140,10 @@ class DSendPopupCreate extends HookConsumerWidget {
     }
 
     void cleanupOnClose() {
-      ref.invalidate(sendAssetIdNotifierProvider);
-      ref.invalidate(sendPopupSelectedAssetIdNotifierProvider);
-      ref.invalidate(sendPopupAmountNotifierProvider);
-      ref.invalidate(sendPopupAddressNotifierProvider);
+      ref.invalidate(sendAssetIdProvider);
+      ref.invalidate(sendPopupSelectedAssetIdProvider);
+      ref.invalidate(sendPopupAmountProvider);
+      ref.invalidate(sendPopupAddressProvider);
     }
 
     // set text field related providers
@@ -140,19 +151,19 @@ class DSendPopupCreate extends HookConsumerWidget {
       addressController.addListener(() {
         Future.microtask(
           () => ref
-              .read(sendPopupAddressNotifierProvider.notifier)
+              .read(sendPopupAddressProvider.notifier)
               .setAddress(addressController.text),
         );
       });
       amountController.addListener(() {
-        final amount = ref.read(sendPopupAmountNotifierProvider);
+        final amount = ref.read(sendPopupAmountProvider);
         if (amount == amountController.text) {
           return;
         }
 
         Future.microtask(() {
           ref
-              .read(sendPopupAmountNotifierProvider.notifier)
+              .read(sendPopupAmountProvider.notifier)
               .setAmount(amountController.text);
         });
       });
@@ -171,13 +182,28 @@ class DSendPopupCreate extends HookConsumerWidget {
       return;
     }, [parsedAddressResult]);
 
+    // set address controller will call sendPopupAddressProvider which will call address parser
+    // parsedAddressResult can be updated and new address can be set
+    // (pasted liquidnetwork:address can be changed to just an address)
+    final address = parsedAddressResult.match((l) => '', (r) => r.address);
+
+    // here we set again the address to the provider
+    // which will be used for creating tx at the end of the flow
+    useEffect(() {
+      Future.microtask(() {
+        ref.read(sendPopupAddressProvider.notifier).setAddress(address);
+      });
+
+      return;
+    }, [address]);
+
     useEffect(() {
       if (eiCreateTransaction is EICreateTransactionData) {
         Future.microtask(() {
           addressController.text = eiCreateTransaction.address;
           amountController.text = eiCreateTransaction.amount;
           ref
-              .read(eiCreateTransactionNotifierProvider.notifier)
+              .read(eiCreateTransactionProvider.notifier)
               .setState(EICreateTransactionEmpty());
         });
       }
@@ -204,7 +230,7 @@ class DSendPopupCreate extends HookConsumerWidget {
       return;
     }, [parsedAddressResult]);
 
-    final outputsData = ref.watch(outputsReaderNotifierProvider);
+    final outputsData = ref.watch(outputsReaderProvider);
 
     useAsyncEffect(() async {
       await (switch (outputsData) {
@@ -224,14 +250,14 @@ class DSendPopupCreate extends HookConsumerWidget {
       return;
     }, [outputsData]);
 
-    final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+    final selectedInputs = ref.watch(selectedInputsProvider);
 
     return DPopupWithClose(
       width: 580,
       height: 710,
       onClose: () {
         ref
-            .read(eiCreateTransactionNotifierProvider.notifier)
+            .read(eiCreateTransactionProvider.notifier)
             .setState(EICreateTransactionEmpty());
         Navigator.of(context).pop();
         cleanupOnClose();
@@ -262,7 +288,7 @@ class DSendPopupCreate extends HookConsumerWidget {
               autofocus: true,
               controller: addressController,
               onPressed: () {
-                ref.invalidate(sendPopupAddressNotifierProvider);
+                ref.invalidate(sendPopupAddressProvider);
               },
             ),
             const SizedBox(height: 8),
@@ -270,6 +296,9 @@ class DSendPopupCreate extends HookConsumerWidget {
               builder: (context, ref, child) {
                 final paymentHelper = ref.watch(paymentHelperProvider);
                 final balanceStr = ref.watch(balanceStringWithInputsProvider);
+                final selectedAssetId = ref.watch(
+                  sendPopupSelectedAssetIdProvider,
+                );
 
                 return SwapSideAmount(
                   showInsufficientFunds: showInsufficientFunds,
@@ -300,7 +329,7 @@ class DSendPopupCreate extends HookConsumerWidget {
                   onDropdownChanged: (assetId) {
                     if (selectedAssetId != assetId) {
                       ref
-                          .read(sendAssetIdNotifierProvider.notifier)
+                          .read(sendAssetIdProvider.notifier)
                           .setSendAsset(assetId);
                       amountController.clear();
                     }
@@ -346,36 +375,32 @@ class DSendPopupCreate extends HookConsumerWidget {
                   },
                   child: Text('Add more outputs'.tr().toUpperCase()),
                 ),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final paymentHelper = ref.watch(paymentHelperProvider);
-                    return DCustomButton(
-                      width: 245,
-                      height: 44,
-                      isFilled: true,
-                      onPressed: switch (reviewButtonEnabled) {
-                        AsyncLoading() => null,
-                        _ => () async {
-                          insertOutputs();
-                          amountController.text = '';
-                          addressController.text = '';
+                DCustomButton(
+                  width: 245,
+                  height: 44,
+                  isFilled: true,
+                  onPressed: switch (reviewButtonEnabled) {
+                    AsyncLoading() => null,
+                    _ => () async {
+                      insertOutputs();
+                      amountController.text = '';
+                      addressController.text = '';
 
-                          final errorMessage = paymentHelper.outputsPaymentSend(
-                            selectedInputs: selectedInputs,
-                          );
-                          if (errorMessage != null) {
-                            final flushbar = Flushbar<void>(
-                              messageText: Text(errorMessage),
-                              duration: const Duration(seconds: 5),
-                              backgroundColor: SideSwapColors.chathamsBlue,
-                            );
-                            await flushbar.show(context);
-                          }
-                        },
-                      },
-                      child: Text('Review'.tr().toUpperCase()),
-                    );
+                      final errorMessage = ref
+                          .read(paymentHelperProvider)
+                          .outputsPaymentSend(selectedInputs: selectedInputs);
+
+                      if (errorMessage != null) {
+                        final flushbar = Flushbar<void>(
+                          messageText: Text(errorMessage),
+                          duration: const Duration(seconds: 5),
+                          backgroundColor: SideSwapColors.chathamsBlue,
+                        );
+                        await flushbar.show(context);
+                      }
+                    },
                   },
+                  child: Text('Review'.tr().toUpperCase()),
                 ),
               ],
             ),
@@ -391,13 +416,13 @@ class DSendPopupReview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createTxState = ref.watch(createTxStateProvider);
     final createdTx = switch (createTxState) {
       CreateTxStateCreated(createdTx: final createdTx) => createdTx,
       _ => null,
     };
     final createdTxHelper = ref.watch(createdTxHelperProvider(createdTx));
-    final sendTxState = ref.watch(sendTxStateNotifierProvider);
+    final sendTxState = ref.watch(sendTxStateProvider);
 
     const headerStyle = TextStyle(
       fontSize: 13,
@@ -406,23 +431,23 @@ class DSendPopupReview extends ConsumerWidget {
     );
 
     void cleanupOnBack() {
-      ref.invalidate(createTxStateNotifierProvider);
+      ref.invalidate(createTxStateProvider);
     }
 
     void cleanupOnClose() {
       cleanupOnBack();
-      ref.invalidate(selectedInputsNotifierProvider);
-      ref.invalidate(outputsReaderNotifierProvider);
+      ref.invalidate(selectedInputsProvider);
+      ref.invalidate(outputsReaderProvider);
       ref.invalidate(outputsCreatorProvider);
-      ref.invalidate(sendAssetIdNotifierProvider);
-      ref.invalidate(sendPopupSelectedAssetIdNotifierProvider);
-      ref.invalidate(sendPopupAmountNotifierProvider);
-      ref.invalidate(sendPopupAddressNotifierProvider);
+      ref.invalidate(sendAssetIdProvider);
+      ref.invalidate(sendPopupSelectedAssetIdProvider);
+      ref.invalidate(sendPopupAmountProvider);
+      ref.invalidate(sendPopupAddressProvider);
     }
 
     return DPopupWithClose(
       width: 580,
-      height: 605,
+      height: 675,
       onClose: () {
         cleanupOnClose();
         Navigator.of(context).pop();
@@ -451,41 +476,8 @@ class DSendPopupReview extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  switch (createdTx) {
-                    CreatedTx(addressees: final addresses) => () {
-                      final listHeight = (addresses.length * 44.0);
-                      final containerHeight = listHeight > 180
-                          ? 180.0
-                          : listHeight;
-                      return Container(
-                        height: containerHeight,
-                        constraints: const BoxConstraints(
-                          minHeight: 44,
-                          maxHeight: 180,
-                        ),
-                        decoration: const BoxDecoration(
-                          color: SideSwapColors.prussianBlue,
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                        ),
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverList.builder(
-                              itemBuilder: (context, index) {
-                                return RowTxReceiver(
-                                  address: addresses[index].address,
-                                  assetId: addresses[index].assetId,
-                                  amount: addresses[index].amount.toInt(),
-                                  index: index,
-                                );
-                              },
-                              itemCount: addresses.length,
-                            ),
-                          ],
-                        ),
-                      );
-                    }(),
-                    _ => const SizedBox(),
-                  },
+                  DSendPopupReviewOutputs(),
+                  const SizedBox(height: 14),
                 ],
               ),
             ),
@@ -644,12 +636,55 @@ class DSendPopupReview extends ConsumerWidget {
   }
 }
 
+class DSendPopupReviewOutputs extends HookConsumerWidget {
+  const DSendPopupReviewOutputs({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final outputsData = ref.watch(outputsReaderProvider);
+
+    return switch (outputsData) {
+      Right(value: final r)
+          when r.receivers != null && r.receivers!.isNotEmpty =>
+        () {
+          final listHeight = (r.receivers!.length * 44.0);
+          final containerHeight = listHeight > 180 ? 180.0 : listHeight;
+          return Container(
+            height: containerHeight,
+            constraints: const BoxConstraints(minHeight: 44, maxHeight: 180),
+            decoration: const BoxDecoration(
+              color: SideSwapColors.prussianBlue,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            child: CustomScrollView(
+              slivers: [
+                SliverList.builder(
+                  itemBuilder: (context, index) {
+                    final item = r.receivers?[index];
+
+                    return RowTxReceiver(
+                      address: item?.address ?? '',
+                      assetId: item?.assetId ?? '',
+                      amount: item?.satoshi ?? 0,
+                      index: index,
+                    );
+                  },
+                  itemCount: r.receivers!.length,
+                ),
+              ],
+            ),
+          );
+        }(),
+      _ => const SizedBox.shrink(),
+    };
+  }
+}
+
 class DSendPopupOutputs extends HookConsumerWidget {
   const DSendPopupOutputs({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final outputsData = ref.watch(outputsReaderNotifierProvider);
+    final outputsData = ref.watch(outputsReaderProvider);
     final scrollController = useScrollController();
     const maxHeight = 186.0;
 
@@ -758,14 +793,12 @@ class DSendPopupOutputItem extends ConsumerWidget {
               showRadioButton: (outputsData.receivers?.length ?? 0) > 1,
               account: item.account ?? Account.REG,
               onPressed: () {
-                ref
-                    .read(outputsReaderNotifierProvider.notifier)
-                    .removeOutput(index);
+                ref.read(outputsReaderProvider.notifier).removeOutput(index);
                 final radioButtonIndex = ref.read(
-                  payjoinRadioButtonIndexNotifierProvider,
+                  payjoinRadioButtonIndexProvider,
                 );
                 if (radioButtonIndex == index) {
-                  ref.invalidate(payjoinRadioButtonIndexNotifierProvider);
+                  ref.invalidate(payjoinRadioButtonIndexProvider);
                 }
               },
             );
@@ -802,9 +835,9 @@ class DSendPopupAddressAmountItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final radioButtonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .outputsRadioButtonTheme;
-    final radioButtonIndex = ref.watch(payjoinRadioButtonIndexNotifierProvider);
+    final radioButtonIndex = ref.watch(payjoinRadioButtonIndexProvider);
 
     return SizedBox(
       height: 44,
@@ -825,7 +858,7 @@ class DSendPopupAddressAmountItem extends ConsumerWidget {
             Row(
               children: [
                 SizedBox(
-                  width: 175,
+                  width: 185,
                   child: Row(
                     children: switch (showRadioButton) {
                       true => [
@@ -833,10 +866,7 @@ class DSendPopupAddressAmountItem extends ConsumerWidget {
                           checked: index == radioButtonIndex,
                           onChanged: (value) {
                             ref
-                                .watch(
-                                  payjoinRadioButtonIndexNotifierProvider
-                                      .notifier,
-                                )
+                                .watch(payjoinRadioButtonIndexProvider.notifier)
                                 .setState(index);
                           },
                           style: radioButtonStyle,

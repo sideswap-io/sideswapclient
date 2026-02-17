@@ -19,8 +19,8 @@ class PegxSubmitAmp extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdNotifierProvider);
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
+    final ampId = ref.watch(ampIdProvider);
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
     final gaidWaiting = useState(false);
 
     var registered = switch (pegxLoginState) {
@@ -30,21 +30,20 @@ class PegxSubmitAmp extends HookConsumerWidget {
 
     useEffect(() {
       Future.microtask(
-        () =>
-            (switch (pegxLoginState) {
-              PegxLoginStateGaidWaiting() => () {
-                gaidWaiting.value = true;
-              },
-              PegxLoginStateGaidError() => () {
-                ref
-                    .read(pegxLoginStateNotifierProvider.notifier)
-                    .setState(const PegxLoginStateLoading());
-                ref
-                    .read(pegxWebsocketClientProvider)
-                    .errorAndGoBack('Adding AMP ID failed. Try again.'.tr());
-              },
-              _ => () {},
-            }()),
+        () => (switch (pegxLoginState) {
+          PegxLoginStateGaidWaiting() => () {
+            gaidWaiting.value = true;
+          },
+          PegxLoginStateGaidError() => () {
+            ref
+                .read(pegxLoginStateProvider.notifier)
+                .setState(const PegxLoginStateLoading());
+            ref
+                .read(pegxWebsocketClientProvider)
+                .errorAndGoBack('Adding AMP ID failed. Try again.'.tr());
+          },
+          _ => () {},
+        }()),
       );
 
       return;
@@ -54,11 +53,9 @@ class PegxSubmitAmp extends HookConsumerWidget {
       enableInsideHorizontalPadding: false,
       onClose: () {
         ref
-            .read(pegxLoginStateNotifierProvider.notifier)
+            .read(pegxLoginStateProvider.notifier)
             .setState(const PegxLoginStateLoading());
-        ref
-            .read(pageStatusNotifierProvider.notifier)
-            .setStatus(Status.ampRegister);
+        ref.read(pageStatusProvider.notifier).setStatus(Status.ampRegister);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -73,7 +70,7 @@ class PegxSubmitAmp extends HookConsumerWidget {
                   registered
                       ? 'AMP ID was successfully submitted'.tr()
                       : 'Do you want to submit new AMP ID for the current wallet?'
-                          .tr(),
+                            .tr(),
                   style: Theme.of(context).textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -98,17 +95,15 @@ class PegxSubmitAmp extends HookConsumerWidget {
                     height: 20,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color:
-                          registered
-                              ? SideSwapColors.turquoise
-                              : Colors.transparent,
+                      color: registered
+                          ? SideSwapColors.turquoise
+                          : Colors.transparent,
                     ),
                     icon: Icon(
                       registered ? Icons.done : Icons.add,
-                      color:
-                          registered
-                              ? Colors.white
-                              : SideSwapColors.brightTurquoise,
+                      color: registered
+                          ? Colors.white
+                          : SideSwapColors.brightTurquoise,
                       size: 14,
                     ),
                   ),
@@ -125,10 +120,10 @@ class PegxSubmitAmp extends HookConsumerWidget {
                   backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: () {
                     ref
-                        .read(pegxLoginStateNotifierProvider.notifier)
+                        .read(pegxLoginStateProvider.notifier)
                         .setState(const PegxLoginStateLoading());
                     ref
-                        .read(pageStatusNotifierProvider.notifier)
+                        .read(pageStatusProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
                   child: Text(
@@ -144,12 +139,11 @@ class PegxSubmitAmp extends HookConsumerWidget {
                 width: double.infinity,
                 height: 54,
                 backgroundColor: SideSwapColors.brightTurquoise,
-                onPressed:
-                    gaidWaiting.value
-                        ? null
-                        : () {
-                          ref.read(pegxWebsocketClientProvider).addGaid();
-                        },
+                onPressed: gaidWaiting.value
+                    ? null
+                    : () {
+                        ref.read(pegxWebsocketClientProvider).addGaid();
+                      },
                 child: Row(
                   children: [
                     const Spacer(),
@@ -184,10 +178,10 @@ class PegxSubmitAmp extends HookConsumerWidget {
                   backgroundColor: Colors.transparent,
                   onPressed: () {
                     ref
-                        .read(pegxLoginStateNotifierProvider.notifier)
+                        .read(pegxLoginStateProvider.notifier)
                         .setState(const PegxLoginStateLoading());
                     ref
-                        .read(pageStatusNotifierProvider.notifier)
+                        .read(pageStatusProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
                   child: Text(

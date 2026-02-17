@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/desktop/home/widgets/d_export_csv_popup.dart';
 import 'package:sideswap/desktop/main/d_asset_info.dart';
@@ -11,7 +10,6 @@ import 'package:sideswap/desktop/main/d_select_inputs_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_view_tx_popup.dart';
-import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/desktop/markets/widgets/d_accept_quote_error_dialog.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
@@ -25,7 +23,7 @@ part 'desktop_dialog_providers.g.dart';
 DesktopDialog desktopDialog(Ref ref) {
   final context = ref.read(navigatorKeyProvider).currentContext!;
   final currentTxPopupItemNotifier = ref.watch(
-    currentTxPopupItemNotifierProvider.notifier,
+    currentTxPopupItemProvider.notifier,
   );
   return DesktopDialog(currentTxPopupItemNotifier, context: context);
 }
@@ -134,17 +132,6 @@ class DesktopDialog {
       },
       routeSettings: RouteSettings(name: quoteErrorRouteName),
       useRootNavigator: false,
-    );
-  }
-
-  void waitPegin() {
-    closePopups();
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DWaitPegin();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
     );
   }
 

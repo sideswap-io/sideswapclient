@@ -23,24 +23,23 @@ class DAmpLogin extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(pegxWebsocketClientProvider, (previous, next) {});
 
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
 
     useEffect(() {
       Future.microtask(
-        () =>
-            (switch (pegxLoginState) {
-              PegxLoginStateLogged() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxSubmitAmp);
-              },
-              PegxLoginStateGaidAdded() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxSubmitFinish);
-              },
-              _ => () {},
-            }()),
+        () => (switch (pegxLoginState) {
+          PegxLoginStateLogged() => () {
+            ref
+                .read(pageStatusProvider.notifier)
+                .setStatus(Status.pegxSubmitAmp);
+          },
+          PegxLoginStateGaidAdded() => () {
+            ref
+                .read(pageStatusProvider.notifier)
+                .setStatus(Status.pegxSubmitFinish);
+          },
+          _ => () {},
+        }()),
       );
 
       return;
@@ -58,8 +57,8 @@ class DAmpLogin extends HookConsumerWidget {
         if (ampLoginEnum == AmpLoginEnum.stokr) ...[
           DStokrLoginDialog(
             onClose: () {
-              ref.invalidate(stokrGaidNotifierProvider);
-              ref.invalidate(pegxGaidNotifierProvider);
+              ref.invalidate(stokrGaidProvider);
+              ref.invalidate(pegxGaidProvider);
               ref.read(walletProvider).goBack();
             },
             content: const DStokrLoginDialogBody(),
@@ -68,8 +67,8 @@ class DAmpLogin extends HookConsumerWidget {
         if (ampLoginEnum == AmpLoginEnum.pegx) ...[
           DPegxLoginDialog(
             onClose: () {
-              ref.invalidate(stokrGaidNotifierProvider);
-              ref.invalidate(pegxGaidNotifierProvider);
+              ref.invalidate(stokrGaidProvider);
+              ref.invalidate(pegxGaidProvider);
               ref.read(walletProvider).goBack();
             },
             content: const DPegxLoginDialogBody(),

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/pin_models.dart';
@@ -57,7 +56,8 @@ class PinDecryptedDataNotifier extends _$PinDecryptedDataNotifier {
 sealed class PinUnlockState with _$PinUnlockState {
   const factory PinUnlockState.empty() = PinUnlockStateEmpty;
   const factory PinUnlockState.success() = PinUnlockStateSuccess;
-  const factory PinUnlockState.wrong() = PinUnlockStateWrong;
+  const factory PinUnlockState.wrong({@Default(0) int attempt}) =
+      PinUnlockStateWrong;
   const factory PinUnlockState.failed() = PinUnlockStateFailed;
 }
 
@@ -99,23 +99,23 @@ class PinProtectionHelper {
   }
 
   void init() {
-    ref.invalidate(pinCodeProtectionNotifierProvider);
-    ref.invalidate(pinProtectionStateNotifierProvider);
+    ref.invalidate(pinCodeProtectionProvider);
+    ref.invalidate(pinProtectionStateProvider);
   }
 
   void deinit() {
-    ref.invalidate(pinCodeProtectionNotifierProvider);
-    ref.invalidate(pinProtectionStateNotifierProvider);
+    ref.invalidate(pinCodeProtectionProvider);
+    ref.invalidate(pinProtectionStateProvider);
   }
 
   void onKeyEntered(PinKeyEnum key) {
-    final pinProtectionState = ref.read(pinProtectionStateNotifierProvider);
+    final pinProtectionState = ref.read(pinProtectionStateProvider);
     if (pinProtectionState == const PinProtectionState.waiting()) {
       return;
     }
 
     ref
-        .read(pinProtectionStateNotifierProvider.notifier)
+        .read(pinProtectionStateProvider.notifier)
         .setPinProtectionState(const PinProtectionState.idle());
 
     switch (key) {
@@ -163,62 +163,62 @@ class PinProtectionHelper {
   }
 
   void _onNumber(String number) {
-    final pinCode = ref.read(pinCodeProtectionNotifierProvider);
+    final pinCode = ref.read(pinCodeProtectionProvider);
     if (pinCode.length == ref.read(pinHelperProvider).maxPinLength) {
       return;
     }
 
     final newPinCode = '$pinCode$number';
-    ref.read(pinCodeProtectionNotifierProvider.notifier).setPinCode(newPinCode);
+    ref.read(pinCodeProtectionProvider.notifier).setPinCode(newPinCode);
   }
 
   void _onBackspace() {
-    final pinCode = ref.read(pinCodeProtectionNotifierProvider);
+    final pinCode = ref.read(pinCodeProtectionProvider);
     if (pinCode.isEmpty) {
       return;
     }
 
     final newPinCode = pinCode.substring(0, pinCode.length - 1);
-    ref.read(pinCodeProtectionNotifierProvider.notifier).setPinCode(newPinCode);
+    ref.read(pinCodeProtectionProvider.notifier).setPinCode(newPinCode);
   }
 
   void _onEnter() {
-    final pinCode = ref.read(pinCodeProtectionNotifierProvider);
+    final pinCode = ref.read(pinCodeProtectionProvider);
     if (pinCode.length < ref.read(pinHelperProvider).minPinLength) {
       ref
-          .read(pinProtectionStateNotifierProvider.notifier)
+          .read(pinProtectionStateProvider.notifier)
           .setPinProtectionState(
             PinProtectionState.error(message: 'PIN code is too short'.tr()),
           );
-      ref.invalidate(pinCodeProtectionNotifierProvider);
+      ref.invalidate(pinCodeProtectionProvider);
       return;
     }
 
     ref
-        .read(pinProtectionStateNotifierProvider.notifier)
+        .read(pinProtectionStateProvider.notifier)
         .setPinProtectionState(const PinProtectionState.waiting());
 
     ref.read(walletProvider).sendDecryptPin(pinCode);
   }
 
   Future<void> onPinDecrypted(PinDecryptedData pinDecryptedData) async {
-    ref.invalidate(pinProtectionStateNotifierProvider);
+    ref.invalidate(pinProtectionStateProvider);
 
     logger.d(pinDecryptedData);
 
     ref
-        .read(pinDecryptedDataNotifierProvider.notifier)
+        .read(pinDecryptedDataProvider.notifier)
         .setPinDecryptedData(pinDecryptedData);
 
     if (pinDecryptedData.success) {
       wrongCount = 0;
       ref
-          .read(pinUnlockStateNotifierProvider.notifier)
+          .read(pinUnlockStateProvider.notifier)
           .setPinUnlockState(const PinUnlockState.success());
       return;
     }
 
-    ref.invalidate(pinCodeProtectionNotifierProvider);
+    ref.invalidate(pinCodeProtectionProvider);
 
     if (pinDecryptedData.error?.errorCode ==
         From_DecryptPin_ErrorCode.WRONG_PIN) {
@@ -227,10 +227,9 @@ class PinProtectionHelper {
 
     if (wrongCount >= 3) {
       ref
-          .read(pinUnlockStateNotifierProvider.notifier)
+          .read(pinUnlockStateProvider.notifier)
           .setPinUnlockState(const PinUnlockState.failed());
       await ref.read(walletProvider).settingsDeletePromptConfirm();
-      return;
     }
 
     final errorMessage = switch (pinDecryptedData.error?.errorCode) {
@@ -238,16 +237,17 @@ class PinProtectionHelper {
       From_DecryptPin_ErrorCode.WRONG_PIN when wrongCount == 1 =>
         'Wrong PIN code. Two attempts left.'.tr(),
       From_DecryptPin_ErrorCode.WRONG_PIN when wrongCount == 2 =>
-        'Wrong PIN code. Last attempt left.'.tr(),
+        'Wrong PIN code. Last attempt left.\nIf the last attempt fails, the wallet will be deleted and can only be recovered using the recovery phrase.'
+            .tr(),
       _ => 'Unknown error'.tr(args: [pinDecryptedData.error?.errorMsg ?? '']),
     };
 
     ref
-        .read(pinProtectionStateNotifierProvider.notifier)
+        .read(pinProtectionStateProvider.notifier)
         .setPinProtectionState(PinProtectionStateError(message: errorMessage));
 
     ref
-        .read(pinUnlockStateNotifierProvider.notifier)
-        .setPinUnlockState(const PinUnlockState.wrong());
+        .read(pinUnlockStateProvider.notifier)
+        .setPinUnlockState(PinUnlockState.wrong(attempt: wrongCount));
   }
 }

@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -143,6 +142,130 @@ $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel {
 }
 }
 
+
+/// Adds pattern-matching-related methods to [SideswapSettings].
+extension SideswapSettingsPatterns on SideswapSettings {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _SideswapSettings value)?  empty,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SideswapSettings() when empty != null:
+return empty(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _SideswapSettings value)  empty,}){
+final _that = this;
+switch (_that) {
+case _SideswapSettings():
+return empty(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _SideswapSettings value)?  empty,}){
+final _that = this;
+switch (_that) {
+case _SideswapSettings() when empty != null:
+return empty(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  bool hidePegInInfo,  bool hidePegOutInfo,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel)?  empty,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SideswapSettings() when empty != null:
+return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.hidePegInInfo,_that.hidePegOutInfo,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  bool hidePegInInfo,  bool hidePegOutInfo,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel)  empty,}) {final _that = this;
+switch (_that) {
+case _SideswapSettings():
+return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.hidePegInInfo,_that.hidePegOutInfo,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  bool hidePegInInfo,  bool hidePegOutInfo,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel)?  empty,}) {final _that = this;
+switch (_that) {
+case _SideswapSettings() when empty != null:
+return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.hidePegInInfo,_that.hidePegOutInfo,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

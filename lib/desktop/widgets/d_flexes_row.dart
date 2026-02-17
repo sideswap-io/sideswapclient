@@ -4,7 +4,7 @@ class DFlexesRow extends StatelessWidget {
   const DFlexesRow({
     super.key,
     required this.children,
-    this.flexes = const [183, 97, 210, 210, 122, 46],
+    this.flexes = const [183, 117, 210, 210, 102, 46],
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
   });
@@ -16,18 +16,25 @@ class DFlexesRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final flexSum = flexes.fold<int>(0, (p, c) => p + c);
     return Row(
       mainAxisAlignment: mainAxisAlignment,
       crossAxisAlignment: crossAxisAlignment,
-      children: List.generate(
-        flexes.length,
-        (index) => Expanded(
-          flex: flexes[index],
-          child: Row(
-            children: [children.length > index ? children[index] : Container()],
-          ),
-        ),
-      ),
+      children: List.generate(flexes.length, (index) {
+        // final flex = flexes[index];
+        // final maxFlexWidth =
+        //     (flex / flexSum * MediaQuery.of(context).size.width).toInt();
+        // final child = children.length > index
+        //     ? SizedBox(width: maxFlexWidth.toDouble(), child: children[index])
+        //     : Container();
+
+        final flex = flexes[index];
+        final child = children.length > index ? children[index] : Container();
+        return Expanded(
+          flex: flex,
+          child: Row(children: [child]),
+        );
+      }),
     );
   }
 }

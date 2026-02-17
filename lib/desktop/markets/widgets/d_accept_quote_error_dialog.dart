@@ -19,7 +19,7 @@ class DAcceptQuoteErrorDialog extends HookConsumerWidget {
     final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
 
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .dialogTheme
         .merge(
           const DContentDialogThemeData(
@@ -48,26 +48,25 @@ class DAcceptQuoteErrorDialog extends HookConsumerWidget {
       content: SizedBox(
         width: 450,
         height: 160,
-        child:
-            optionAcceptQuoteError.match(
-              () => () {
-                return SizedBox();
-              },
-              (error) => () {
-                return Column(
-                  children: [
-                    Text(error),
-                    Spacer(),
-                    DCustomFilledBigButton(
-                      onPressed: () {
-                        closeCallback();
-                      },
-                      child: Text('Close'.tr()),
-                    ),
-                  ],
-                );
-              },
-            )(),
+        child: optionAcceptQuoteError.match(
+          () => () {
+            return SizedBox();
+          },
+          (error) => () {
+            return Column(
+              children: [
+                Text(error),
+                Spacer(),
+                DCustomFilledBigButton(
+                  onPressed: () {
+                    closeCallback();
+                  },
+                  child: Text('Close'.tr()),
+                ),
+              ],
+            );
+          },
+        )(),
       ),
     );
   }

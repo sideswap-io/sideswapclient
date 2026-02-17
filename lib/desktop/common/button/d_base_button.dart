@@ -65,12 +65,13 @@ abstract class DBaseButton extends ConsumerStatefulWidget {
 class BaseButtonState extends ConsumerState<DBaseButton> {
   @override
   Widget build(BuildContext context) {
-    final fasterAnimationDuration =
-        ref.watch(desktopAppThemeNotifierProvider).fasterAnimationDuration;
-    final fastAnimationDuration =
-        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
-    final animationCurve =
-        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
+    final fasterAnimationDuration = ref
+        .watch(desktopAppThemeProvider)
+        .fasterAnimationDuration;
+    final fastAnimationDuration = ref
+        .watch(desktopAppThemeProvider)
+        .fastAnimationDuration;
+    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
 
     final ThemeData theme = Theme.of(context);
 
@@ -143,12 +144,11 @@ class BaseButtonState extends ConsumerState<DBaseButton> {
           color: Colors.transparent,
           shadowColor: resolvedShadowColor ?? Colors.black,
           elevation: resolvedElevation ?? 0.0,
-          borderRadius:
-              resolvedShape is RoundedRectangleBorder
-                  ? resolvedShape.borderRadius is BorderRadius
-                      ? resolvedShape.borderRadius as BorderRadius
-                      : BorderRadius.zero
-                  : BorderRadius.zero,
+          borderRadius: resolvedShape is RoundedRectangleBorder
+              ? resolvedShape.borderRadius is BorderRadius
+                    ? resolvedShape.borderRadius as BorderRadius
+                    : BorderRadius.zero
+              : BorderRadius.zero,
           child: AnimatedContainer(
             duration: fasterAnimationDuration,
             curve: animationCurve,

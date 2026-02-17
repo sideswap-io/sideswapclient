@@ -19,7 +19,7 @@ class DAssetListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .buttonWithoutBorderStyle;
 
     return DButton(

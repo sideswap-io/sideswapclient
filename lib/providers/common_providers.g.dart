@@ -6,155 +6,82 @@ part of 'common_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$isAddrTypeValidHash() => r'406cf7c3edbc038973a5cba2cb12b2cd9fc49335';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [isAddrTypeValid].
 @ProviderFor(isAddrTypeValid)
-const isAddrTypeValidProvider = IsAddrTypeValidFamily();
+const isAddrTypeValidProvider = IsAddrTypeValidFamily._();
 
-/// See also [isAddrTypeValid].
-class IsAddrTypeValidFamily extends Family<bool> {
-  /// See also [isAddrTypeValid].
-  const IsAddrTypeValidFamily();
+final class IsAddrTypeValidProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const IsAddrTypeValidProvider._({
+    required IsAddrTypeValidFamily super.from,
+    required (String, AddrType) super.argument,
+  }) : super(
+         retry: null,
+         name: r'isAddrTypeValidProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
-  /// See also [isAddrTypeValid].
-  IsAddrTypeValidProvider call(String addr, AddrType addrType) {
-    return IsAddrTypeValidProvider(addr, addrType);
+  @override
+  String debugGetCreateSourceHash() => _$isAddrTypeValidHash();
+
+  @override
+  String toString() {
+    return r'isAddrTypeValidProvider'
+        ''
+        '$argument';
   }
 
+  @$internal
   @override
-  IsAddrTypeValidProvider getProviderOverride(
-    covariant IsAddrTypeValidProvider provider,
-  ) {
-    return call(provider.addr, provider.addrType);
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    final argument = this.argument as (String, AddrType);
+    return isAddrTypeValid(ref, argument.$1, argument.$2);
   }
 
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'isAddrTypeValidProvider';
-}
-
-/// See also [isAddrTypeValid].
-class IsAddrTypeValidProvider extends AutoDisposeProvider<bool> {
-  /// See also [isAddrTypeValid].
-  IsAddrTypeValidProvider(String addr, AddrType addrType)
-    : this._internal(
-        (ref) => isAddrTypeValid(ref as IsAddrTypeValidRef, addr, addrType),
-        from: isAddrTypeValidProvider,
-        name: r'isAddrTypeValidProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$isAddrTypeValidHash,
-        dependencies: IsAddrTypeValidFamily._dependencies,
-        allTransitiveDependencies:
-            IsAddrTypeValidFamily._allTransitiveDependencies,
-        addr: addr,
-        addrType: addrType,
-      );
-
-  IsAddrTypeValidProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.addr,
-    required this.addrType,
-  }) : super.internal();
-
-  final String addr;
-  final AddrType addrType;
-
-  @override
-  Override overrideWith(bool Function(IsAddrTypeValidRef provider) create) {
-    return ProviderOverride(
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
       origin: this,
-      override: IsAddrTypeValidProvider._internal(
-        (ref) => create(ref as IsAddrTypeValidRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        addr: addr,
-        addrType: addrType,
-      ),
+      providerOverride: $SyncValueProvider<bool>(value),
     );
   }
 
   @override
-  AutoDisposeProviderElement<bool> createElement() {
-    return _IsAddrTypeValidProviderElement(this);
-  }
-
-  @override
   bool operator ==(Object other) {
-    return other is IsAddrTypeValidProvider &&
-        other.addr == addr &&
-        other.addrType == addrType;
+    return other is IsAddrTypeValidProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, addr.hashCode);
-    hash = _SystemHash.combine(hash, addrType.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin IsAddrTypeValidRef on AutoDisposeProviderRef<bool> {
-  /// The parameter `addr` of this provider.
-  String get addr;
+String _$isAddrTypeValidHash() => r'406cf7c3edbc038973a5cba2cb12b2cd9fc49335';
 
-  /// The parameter `addrType` of this provider.
-  AddrType get addrType;
-}
+final class IsAddrTypeValidFamily extends $Family
+    with $FunctionalFamilyOverride<bool, (String, AddrType)> {
+  const IsAddrTypeValidFamily._()
+    : super(
+        retry: null,
+        name: r'isAddrTypeValidProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-class _IsAddrTypeValidProviderElement extends AutoDisposeProviderElement<bool>
-    with IsAddrTypeValidRef {
-  _IsAddrTypeValidProviderElement(super.provider);
+  IsAddrTypeValidProvider call(String addr, AddrType addrType) =>
+      IsAddrTypeValidProvider._(argument: (addr, addrType), from: this);
 
   @override
-  String get addr => (origin as IsAddrTypeValidProvider).addr;
-  @override
-  AddrType get addrType => (origin as IsAddrTypeValidProvider).addrType;
+  String toString() => r'isAddrTypeValidProvider';
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

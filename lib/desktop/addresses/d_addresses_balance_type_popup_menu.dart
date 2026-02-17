@@ -62,11 +62,11 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             balanceTypeFlag ==
-                                    const AddressesBalanceFlagShowAll()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                                const AddressesBalanceFlagShowAll()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -100,11 +100,11 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
                         fontSize: 13,
                         color:
                             balanceTypeFlag ==
-                                    const AddressesBalanceFlagHideEmpty()
-                                ? SideSwapColors.airSuperiorityBlue
-                                : over.value
-                                ? SideSwapColors.brightTurquoise
-                                : Colors.white,
+                                const AddressesBalanceFlagHideEmpty()
+                            ? SideSwapColors.airSuperiorityBlue
+                            : over.value
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -125,10 +125,10 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
     final clicked = useState(false);
 
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .addressesButtonStyle(false);
 
-    final balanceTypeFlag = ref.watch(addressesBalanceTypeFlagNotifierProvider);
+    final balanceTypeFlag = ref.watch(addressesBalanceTypeFlagProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,16 +145,15 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
           height: 32,
           child: DButton(
             key: buttonKey,
-            style:
-                clicked.value
-                    ? buttonStyle?.merge(
-                      DButtonStyle(
-                        backgroundColor: ButtonState.all(
-                          SideSwapColors.prussianBlue,
-                        ),
+            style: clicked.value
+                ? buttonStyle?.merge(
+                    DButtonStyle(
+                      backgroundColor: ButtonState.all(
+                        SideSwapColors.prussianBlue,
                       ),
-                    )
-                    : buttonStyle,
+                    ),
+                  )
+                : buttonStyle,
             onPressed: () async {
               clicked.value = true;
               final result = await showSortMenu(
@@ -163,12 +162,14 @@ class DAddressesBalanceTypePopupMenu extends HookConsumerWidget {
                 balanceTypeFlag,
               );
               (switch (result) {
-                AddressesBalanceFlagHideEmpty result => ref
-                    .read(addressesBalanceTypeFlagNotifierProvider.notifier)
-                    .setFlag(result),
-                _ => ref
-                    .read(addressesBalanceTypeFlagNotifierProvider.notifier)
-                    .setFlag(const AddressesBalanceFlagShowAll()),
+                AddressesBalanceFlagHideEmpty result =>
+                  ref
+                      .read(addressesBalanceTypeFlagProvider.notifier)
+                      .setFlag(result),
+                _ =>
+                  ref
+                      .read(addressesBalanceTypeFlagProvider.notifier)
+                      .setFlag(const AddressesBalanceFlagShowAll()),
               });
 
               clicked.value = false;

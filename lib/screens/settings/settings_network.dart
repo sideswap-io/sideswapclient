@@ -31,10 +31,10 @@ class SettingsNetwork extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkAccessTab = ref.watch(networkAccessTabNotifierProvider);
+    final networkAccessTab = ref.watch(networkAccessTabProvider);
 
     void goBack() {
-      final serverState = ref.read(serverLoginNotifierProvider);
+      final serverState = ref.read(serverLoginProvider);
 
       if (serverState is ServerLoginStateLogin) {
         ref.read(walletProvider).goBack();
@@ -73,7 +73,7 @@ class SettingsNetwork extends ConsumerWidget {
                 inactiveText: 'Network access server'.tr(),
                 onToggle: (value) {
                   ref
-                      .read(networkAccessTabNotifierProvider.notifier)
+                      .read(networkAccessTabProvider.notifier)
                       .setNetworkAccessTab(
                         value
                             ? const NetworkAccessTabStateProxy()
@@ -108,7 +108,7 @@ class SettingsNetworkAccessProxy extends HookConsumerWidget {
     final hostController = useTextEditingController();
     final portController = useTextEditingController();
 
-    final useProxy = ref.watch(useProxyNotifierProvider);
+    final useProxy = ref.watch(useProxyProvider);
 
     final validateCallback = useCallback(() {
       final host = hostController.text;
@@ -164,9 +164,7 @@ class SettingsNetworkAccessProxy extends HookConsumerWidget {
               FlutterSwitch(
                 value: useProxy,
                 onToggle: (value) {
-                  ref
-                      .read(useProxyNotifierProvider.notifier)
-                      .setProxyState(value);
+                  ref.read(useProxyProvider.notifier).setProxyState(value);
                 },
                 width: 51,
                 height: 31,
@@ -244,7 +242,7 @@ class SettingsNetworkAccessServer extends StatelessWidget {
               Consumer(
                 builder: (context, ref, _) {
                   final networkSettingsModel = ref.watch(
-                    networkSettingsNotifierProvider,
+                    networkSettingsProvider,
                   );
 
                   return Padding(
@@ -302,7 +300,7 @@ class SettingsNetworkTestnetServers extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
     final isExpanded = useState(switch (networkSettingsModel.env) {
       SIDESWAP_ENV_TESTNET => true,
@@ -402,20 +400,18 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
                   buttonText: 'OK'.tr(),
                   onPressed: (context) {
                     Navigator.of(context).pop();
-                    ref.read(networkSettingsNotifierProvider.notifier).save();
+                    ref.read(networkSettingsProvider.notifier).save();
                   },
                 );
           } else {
-            ref.read(networkSettingsNotifierProvider.notifier).applySettings();
+            ref.read(networkSettingsProvider.notifier).applySettings();
             ref.read(walletProvider).sendNetworkSettings();
           }
 
-          final serverState = ref.read(serverLoginNotifierProvider);
+          final serverState = ref.read(serverLoginProvider);
 
           if (serverState is ServerLoginStateLogin) {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.registered);
+            ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
             return;
           }
 
@@ -446,7 +442,7 @@ class SettingsNetworkServerButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -456,7 +452,7 @@ class SettingsNetworkServerButton extends HookConsumerWidget {
             networkSettingsModel.env == buttonEnv),
         onChanged: (value) {
           ref
-              .read(networkSettingsNotifierProvider.notifier)
+              .read(networkSettingsProvider.notifier)
               .setModel(
                 NetworkSettingsModelApply(
                   settingsNetworkType: buttonNetwork,

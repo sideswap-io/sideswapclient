@@ -6,22 +6,59 @@ part of 'wallet_page_status_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$pageStatusNotifierHash() =>
-    r'50073984582451ef7045008e157d636440c85626';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [PageStatusNotifier].
 @ProviderFor(PageStatusNotifier)
-final pageStatusNotifierProvider =
-    NotifierProvider<PageStatusNotifier, Status>.internal(
-      PageStatusNotifier.new,
-      name: r'pageStatusNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$pageStatusNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const pageStatusProvider = PageStatusNotifierProvider._();
 
-typedef _$PageStatusNotifier = Notifier<Status>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class PageStatusNotifierProvider
+    extends $NotifierProvider<PageStatusNotifier, Status> {
+  const PageStatusNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pageStatusProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pageStatusNotifierHash();
+
+  @$internal
+  @override
+  PageStatusNotifier create() => PageStatusNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Status value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Status>(value),
+    );
+  }
+}
+
+String _$pageStatusNotifierHash() =>
+    r'885a08b17fbc985f57930cdf48e5b76b33b1c978';
+
+abstract class _$PageStatusNotifier extends $Notifier<Status> {
+  Status build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Status, Status>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Status, Status>,
+              Status,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

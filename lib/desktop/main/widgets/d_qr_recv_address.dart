@@ -23,9 +23,7 @@ class DQrRecvAddress extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const qrWidgetSize = 263.0;
 
-    final jadeVerifyAddressState = ref.watch(
-      jadeVerifyAddressStateNotifierProvider,
-    );
+    final jadeVerifyAddressState = ref.watch(jadeVerifyAddressStateProvider);
     final receiveAddress = ref.watch(currentReceiveAddressProvider);
     final isJadeWallet = ref.watch(isJadeWalletProvider);
 
@@ -99,6 +97,7 @@ class DQrRecvAddress extends HookConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
         ...switch (jadeVerifyAddressState) {
           JadeVerifyAddressStateVerifying() => [
             SizedBox(
@@ -123,6 +122,28 @@ class DQrRecvAddress extends HookConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text('Verified'),
+              ),
+            ),
+          ],
+          JadeVerifyAddressStateError() => [
+            DecoratedBox(
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1.0,
+                    style: BorderStyle.solid,
+                    color: SideSwapColors.brightTurquoise,
+                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  jadeVerifyAddressState.message ??
+                      'Error verifying address'.tr(),
+                  style: const TextStyle(color: SideSwapColors.bitterSweet),
+                ),
               ),
             ),
           ],
@@ -160,7 +181,7 @@ class DQrRecvAddress extends HookConsumerWidget {
                   iconWidth: 48,
                   onTap: () {
                     ref
-                        .read(jadeVerifyAddressStateNotifierProvider.notifier)
+                        .read(jadeVerifyAddressStateProvider.notifier)
                         .setState(JadeVerifyAddressState.verifying());
                     final msg = To();
                     msg.jadeVerifyAddress = Address(

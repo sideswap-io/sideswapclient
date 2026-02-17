@@ -23,7 +23,7 @@ class PegxRegister extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(pegxWebsocketClientProvider, (previous, next) {});
 
-    ref.listen(pegxLoginStateNotifierProvider, (previous, next) async {
+    ref.listen(pegxLoginStateProvider, (previous, next) async {
       await (switch (next) {
         PegxLoginStateLogin(requestId: String requestId) => () async {
           await openUrl(
@@ -35,19 +35,19 @@ class PegxRegister extends HookConsumerWidget {
       }());
     });
 
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
 
     useEffect(() {
       Future.microtask(
         () => (switch (pegxLoginState) {
           PegxLoginStateLogged() => () {
             ref
-                .read(pageStatusNotifierProvider.notifier)
+                .read(pageStatusProvider.notifier)
                 .setStatus(Status.pegxSubmitAmp);
           },
           PegxLoginStateGaidAdded() => () {
             ref
-                .read(pageStatusNotifierProvider.notifier)
+                .read(pageStatusProvider.notifier)
                 .setStatus(Status.pegxSubmitAmp);
           },
           _ => () {},
@@ -67,10 +67,10 @@ class PegxRegister extends HookConsumerWidget {
 
     return SideSwapPopup(
       onClose: () {
-        ref.invalidate(stokrGaidNotifierProvider);
-        ref.invalidate(pegxGaidNotifierProvider);
+        ref.invalidate(stokrGaidProvider);
+        ref.invalidate(pegxGaidProvider);
         ref
-            .read(pegxLoginStateNotifierProvider.notifier)
+            .read(pegxLoginStateProvider.notifier)
             .setState(const PegxLoginStateLoading());
         ref.read(walletProvider).goBack();
       },

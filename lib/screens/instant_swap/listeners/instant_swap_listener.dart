@@ -7,6 +7,7 @@ import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
 import 'package:sideswap/providers/tx_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
@@ -15,7 +16,7 @@ class InstantSwapListener extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(exchangeQuoteNotifierProvider, (_, _) {});
+    ref.listen(exchangeQuoteProvider, (_, _) {});
     ref.listen(exchangeIndexPriceProvider, (_, _) {});
     ref.listen(jadeOneTimeAuthorizationProvider, (_, _) {});
 
@@ -26,7 +27,7 @@ class InstantSwapListener extends HookConsumerWidget {
 
     ref.listen(exchangeTopSatoshiAmountProvider, (_, next) {
       if (next == 0) {
-        ref.invalidate(exchangeQuoteErrorProvider);
+        Future.microtask(() => ref.invalidate(exchangeQuoteErrorProvider));
       }
     });
 
@@ -34,7 +35,7 @@ class InstantSwapListener extends HookConsumerWidget {
       () {
         Future.microtask(() {
           ref
-              .read(exchangeQuoteNotifierProvider.notifier)
+              .read(exchangeQuoteProvider.notifier)
               .requestIndPriceQuote(optionExchangeSide, optionAssetPair);
         });
         return;
@@ -46,9 +47,7 @@ class InstantSwapListener extends HookConsumerWidget {
       exchangeAcceptQuoteSuccessProvider,
     );
     final allTxSorted = ref.watch(allTxsSortedProvider);
-    final exchangeAcceptState = ref.watch(
-      exchangeAccepQuoteStateNotifierProvider,
-    );
+    final exchangeAcceptState = ref.watch(exchangeAccepQuoteStateProvider);
 
     useEffect(() {
       optionAccepQuoteSuccess.match(
@@ -63,8 +62,8 @@ class InstantSwapListener extends HookConsumerWidget {
           final allPegsById = ref.read(allPegsByIdProvider);
 
           Future.microtask(() async {
-            ref.invalidate(exchangeQuoteNotifierProvider);
-            ref.invalidate(acceptQuoteNotifierProvider);
+            ref.invalidate(exchangeQuoteProvider);
+            ref.invalidate(acceptQuoteProvider);
 
             if (!FlavorConfig.isDesktop) {
               ref.read(walletProvider).showTxDetails(transItem);
@@ -81,10 +80,16 @@ class InstantSwapListener extends HookConsumerWidget {
                           )
                         : false,
                   );
+              final walletMainArguments = ref.read(uiStateArgsProvider);
+              ref
+                  .read(uiStateArgsProvider.notifier)
+                  .setWalletMainArguments(
+                    walletMainArguments.fromIndexDesktop(0),
+                  );
             }
-            ref.invalidate(exchangeAccepQuoteStateNotifierProvider);
+            ref.invalidate(exchangeAccepQuoteStateProvider);
             // unfreeze quote values
-            ref.invalidate(instantSwapStateNotifierProvider);
+            ref.invalidate(instantSwapStateProvider);
           });
         },
       )();
@@ -100,10 +105,10 @@ class InstantSwapListener extends HookConsumerWidget {
         (error) => () {
           Future.microtask(() async {
             await ref.read(desktopDialogProvider).showAcceptQuoteErrorDialog();
-            ref.invalidate(exchangeQuoteNotifierProvider);
-            ref.invalidate(acceptQuoteNotifierProvider);
+            ref.invalidate(exchangeQuoteProvider);
+            ref.invalidate(acceptQuoteProvider);
             // unfreeze quote values
-            ref.invalidate(instantSwapStateNotifierProvider);
+            ref.invalidate(instantSwapStateProvider);
           });
         },
       )();
@@ -117,7 +122,7 @@ class InstantSwapListener extends HookConsumerWidget {
 
       if (exchangeAcceptState is ExchangeAcceptQuoteStateEmpty &&
           topSatoshiAmount != 0) {
-        Future.microtask(() => ref.invalidate(acceptQuoteNotifierProvider));
+        Future.microtask(() => ref.invalidate(acceptQuoteProvider));
       }
 
       return;

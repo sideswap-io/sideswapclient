@@ -5,8 +5,6 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
-import '../utils.dart';
-
 void main() {
   group('AmountToString', () {
     late AmountToString amountToString;
@@ -15,12 +13,10 @@ void main() {
     setUp(() {
       TestWidgetsFlutterBinding.ensureInitialized();
 
-      ref = createContainer(
-        overrides: [
-          localesNotifierProvider.overrideWith(LocalesNotifierMock.new),
-        ],
+      ref = ProviderContainer.test(
+        overrides: [localesProvider.overrideWith(LocalesNotifierMock.new)],
       );
-      final localesNotifier = ref.read(localesNotifierProvider.notifier);
+      final localesNotifier = ref.read(localesProvider.notifier);
       localesNotifier.state = 'en_US';
 
       amountToString = ref.read(amountToStringProvider);

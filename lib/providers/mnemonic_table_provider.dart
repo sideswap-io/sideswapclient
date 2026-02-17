@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/providers/wallet.dart';
@@ -75,7 +74,7 @@ class MnemonicWordsCounterNotifier extends _$MnemonicWordsCounterNotifier {
 class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
   @override
   Map<int, WordItem> build() {
-    final mnemonicCounter = ref.watch(mnemonicWordsCounterNotifierProvider);
+    final mnemonicCounter = ref.watch(mnemonicWordsCounterProvider);
     final words = ref.watch(walletProvider).getMnemonicWords();
     if (words.isNotEmpty) {
       return Map.fromEntries(
@@ -195,11 +194,11 @@ class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
   }
 
   void nextWord(int index) {
-    final currentIndex = ref.read(currentMnemonicIndexNotifierProvider);
+    final currentIndex = ref.read(currentMnemonicIndexProvider);
 
     if (index >= 0 && index < maxIndex() && index == currentIndex) {
       ref
-          .read(currentMnemonicIndexNotifierProvider.notifier)
+          .read(currentMnemonicIndexProvider.notifier)
           .setIndex(currentIndex + 1);
     }
   }

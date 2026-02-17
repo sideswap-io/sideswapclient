@@ -6,38 +6,99 @@ part of 'wallet.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$walletHash() => r'8a8da98b44c784b81fcd08503b964e1d09247afd';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [wallet].
-@ProviderFor(wallet)
-final walletProvider = Provider<SideswapWallet>.internal(
-  wallet,
-  name: r'walletProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$walletHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(SyncCompleteState)
+const syncCompleteStateProvider = SyncCompleteStateProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef WalletRef = ProviderRef<SideswapWallet>;
+final class SyncCompleteStateProvider
+    extends $NotifierProvider<SyncCompleteState, bool> {
+  const SyncCompleteStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'syncCompleteStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$syncCompleteStateHash();
+
+  @$internal
+  @override
+  SyncCompleteState create() => SyncCompleteState();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
 String _$syncCompleteStateHash() => r'c9615959bf9e9161e12d57df2cf2e3803f9ad082';
 
-/// See also [SyncCompleteState].
-@ProviderFor(SyncCompleteState)
-final syncCompleteStateProvider =
-    NotifierProvider<SyncCompleteState, bool>.internal(
-      SyncCompleteState.new,
-      name: r'syncCompleteStateProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$syncCompleteStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$SyncCompleteState extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$SyncCompleteState = Notifier<bool>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(wallet)
+const walletProvider = WalletProvider._();
+
+final class WalletProvider
+    extends $FunctionalProvider<SideswapWallet, SideswapWallet, SideswapWallet>
+    with $Provider<SideswapWallet> {
+  const WalletProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'walletProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$walletHash();
+
+  @$internal
+  @override
+  $ProviderElement<SideswapWallet> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SideswapWallet create(Ref ref) {
+    return wallet(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SideswapWallet value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SideswapWallet>(value),
+    );
+  }
+}
+
+String _$walletHash() => r'8a8da98b44c784b81fcd08503b964e1d09247afd';

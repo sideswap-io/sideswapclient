@@ -174,6 +174,7 @@ Future<void> copyToClipboard(
     final flushbar = Flushbar<void>(
       messageText: Text(displayString),
       duration: const Duration(seconds: 3),
+      animationDuration: const Duration(milliseconds: 150),
       backgroundColor: SideSwapColors.chathamsBlue,
       icon: const Icon(Icons.check_circle, color: Colors.white),
       onTap: (flushbar) {

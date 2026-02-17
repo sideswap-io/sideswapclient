@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:candlesticks/candlesticks.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
@@ -52,26 +51,20 @@ class Stats {
 class ChartsNotifier extends _$ChartsNotifier {
   @override
   Map<AssetPair, List<Candle>> build() {
-    ref.listen(chartsSubscriptionFlagNotifierProvider, (_, next) {
+    ref.listen(chartsSubscriptionFlagProvider, (_, next) {
       if (next == ChartsSubscriptionFlagUnsubscribed()) {
-        _unsubscribe();
+        chartUnsubscribe();
         return;
       }
 
-      final optionAssetPair = ref.read(
-        marketSubscribedAssetPairNotifierProvider,
-      );
+      final optionAssetPair = ref.read(marketSubscribedAssetPairProvider);
 
       optionAssetPair.match(
         () => () {},
         (assetPair) => () {
-          _subscribe(assetPair);
+          chartSubscribe(assetPair);
         },
       )();
-    });
-
-    ref.onDispose(() {
-      _unsubscribe();
     });
 
     return {};
@@ -88,13 +81,13 @@ class ChartsNotifier extends _$ChartsNotifier {
     );
   }
 
-  void _subscribe(AssetPair assetPair) {
+  void chartSubscribe(AssetPair assetPair) {
     final msg = To();
     msg.chartsSubscribe = assetPair;
     ref.read(walletProvider).sendMsg(msg);
   }
 
-  void _unsubscribe() {
+  void chartUnsubscribe() {
     final msg = To();
     msg.chartsUnsubscribe = Empty();
     ref.read(walletProvider).sendMsg(msg);
@@ -102,8 +95,9 @@ class ChartsNotifier extends _$ChartsNotifier {
 
   void setChartsData(From_ChartsSubscribe chartsSubscribe) {
     final charts = {...state};
-    charts[chartsSubscribe.assetPair] =
-        chartsSubscribe.data.reversed.map(_convertPoint).toList();
+    charts[chartsSubscribe.assetPair] = chartsSubscribe.data.reversed
+        .map(_convertPoint)
+        .toList();
     state = charts;
   }
 
@@ -149,8 +143,8 @@ class ChartsNotifier extends _$ChartsNotifier {
 
 @riverpod
 Stats chartsStats(Ref ref) {
-  final charts = ref.watch(chartsNotifierProvider);
-  final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
+  final charts = ref.watch(chartsProvider);
+  final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
 
   return optionAssetPair.match(
     () => () {
@@ -409,7 +403,7 @@ AbstractChartStatsRepository chartStatsRepository(Ref ref, Asset asset) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final priceAssetId = pricedInLiquid ? liquidAssetId : asset.assetId;
   final priceAsset = ref.watch(assetsStateProvider)[priceAssetId];
-  final issuerDetails = ref.watch(tokenMarketNotifierProvider)[asset.assetId];
+  final issuerDetails = ref.watch(tokenMarketProvider)[asset.assetId];
 
   return ChartStatsRepository(
     asset: asset,

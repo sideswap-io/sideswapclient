@@ -174,6 +174,16 @@ class LocalNotificationService {
                 } catch (e) {
                   logger.e('Cannot parse payload: $e');
                 }
+
+                // swaption payload handling
+                try {
+                  final json =
+                      jsonDecode(response.payload!) as Map<String, dynamic>;
+                  final fcmPayload = FCMPayload.fromJson(json);
+                  selectNotificationSubject.add(fcmPayload);
+                } catch (e) {
+                  logger.e('Cannot parse payload: $e');
+                }
                 return;
               }
 

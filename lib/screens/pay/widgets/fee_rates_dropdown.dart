@@ -1,8 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/providers/swap_providers.dart';
-import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/fee_suggestions.dart';
 
 class FeeRatesDropdown extends StatelessWidget {
@@ -18,15 +18,9 @@ class FeeRatesDropdown extends StatelessWidget {
         customBorder: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        onTap: () {
-          Widget builder(BuildContext context) {
-            return const FeeRates();
-          }
-
-          Navigator.of(context, rootNavigator: true).push<void>(
-            FlavorConfig.isDesktop
-                ? DialogRoute(builder: builder, context: context)
-                : MaterialPageRoute(builder: builder),
+        onTap: () async {
+          await Navigator.of(context).push(
+            RawDialogRoute<Widget>(pageBuilder: (_, _, _) => FeeRatesDialog()),
           );
         },
         child: Padding(
@@ -39,13 +33,13 @@ class FeeRatesDropdown extends StatelessWidget {
               Consumer(
                 builder: ((context, ref, child) {
                   final optionCurrentFeeRate = ref.watch(
-                    bitcoinCurrentFeeRateNotifierProvider,
+                    bitcoinCurrentFeeRateProvider,
                   );
 
                   return optionCurrentFeeRate.match(
                     () => const SizedBox(),
                     (feeRate) => Text(
-                      ref.read(bitcoinFeeRateDescriptionProvider(feeRate)),
+                      'Fee rate: {} sat/vbyte'.tr(args: ['$feeRate']),
                       overflow: TextOverflow.clip,
                       maxLines: 1,
                       style: const TextStyle(

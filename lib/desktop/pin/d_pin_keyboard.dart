@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -10,21 +11,23 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 
-final pinKeyboardIndexProvider =
-    ChangeNotifierProvider.autoDispose<PinKeyboardIndexProvider>(
-      (ref) => PinKeyboardIndexProvider(ref),
-    );
+part 'd_pin_keyboard.g.dart';
 
-class PinKeyboardIndexProvider extends ChangeNotifier {
+@riverpod
+PinKeyboardIndexHelper pinKeyboardIndex(Ref ref) {
+  return PinKeyboardIndexHelper(ref);
+}
+
+class PinKeyboardIndexHelper {
   final Ref ref;
 
-  PinKeyboardIndexProvider(this.ref);
+  PinKeyboardIndexHelper(this.ref);
 
   int _pinIndex = 0;
   int get pinIndex => _pinIndex;
   set pinIndex(int value) {
     _pinIndex = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 }
 
@@ -54,7 +57,7 @@ class DPinKeyboard extends HookConsumerWidget {
     }
 
     final defaultButtonStyle = ref
-        .read(desktopAppThemeNotifierProvider)
+        .read(desktopAppThemeProvider)
         .buttonThemeData
         .defaultButtonStyle
         ?.merge(
@@ -74,7 +77,7 @@ class DPinKeyboard extends HookConsumerWidget {
         );
 
     final defaultEnterButtonStyle = ref
-        .read(desktopAppThemeNotifierProvider)
+        .read(desktopAppThemeProvider)
         .buttonThemeData
         .filledButtonStyle
         ?.merge(

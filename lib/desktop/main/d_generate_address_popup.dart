@@ -16,12 +16,12 @@ class DGenerateAddressPopup extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
+    final selectedAccountType = ref.watch(selectedAccountTypeProvider);
 
     useEffect(() {
       Future.microtask(() {
         ref.invalidate(currentReceiveAddressProvider);
-        ref.invalidate(selectedAccountTypeNotifierProvider);
+        ref.invalidate(selectedAccountTypeProvider);
       });
 
       return;
@@ -72,7 +72,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
                     }
 
                     ref
-                        .read(selectedAccountTypeNotifierProvider.notifier)
+                        .read(selectedAccountTypeProvider.notifier)
                         .setAccountType(Account.REG);
                   },
                 ),
@@ -93,7 +93,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
                     }
 
                     ref
-                        .read(selectedAccountTypeNotifierProvider.notifier)
+                        .read(selectedAccountTypeProvider.notifier)
                         .setAccountType(Account.AMP_);
                   },
                 ),

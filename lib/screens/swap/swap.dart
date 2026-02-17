@@ -14,25 +14,27 @@ import 'package:sideswap/screens/swap/widgets/swap_receive_amount.dart';
 import 'package:sideswap/screens/swap/widgets/top_swap_buttons.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+// TODO (malcolmpl): remove all peg in/out stuff
 class SwapMain extends HookConsumerWidget {
   const SwapMain({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(swapStateNotifierProvider, (_, _) {});
+    ref.listen(swapHelperProvider, (_, _) {});
+    ref.listen(swapStateProvider, (_, _) {});
     ref.listen<bool>(showAddressLabelProvider, (_, next) {
       final errorText = ref.read(swapAddressErrorProvider);
       if (next && errorText == null) {
         FocusManager.instance.primaryFocus?.unfocus();
       }
     });
-    ref.listen(swapSendTextAmountNotifierProvider, (_, _) {});
-    ref.listen(swapRecvTextAmountNotifierProvider, (_, _) {});
-    ref.listen(satoshiSendAmountStateNotifierProvider, (_, _) {});
-    ref.listen(satoshiRecvAmountStateNotifierProvider, (_, _) {});
-    ref.listen<String>(swapNetworkErrorNotifierProvider, (_, next) {
+    ref.listen(swapSendTextAmountProvider, (_, _) {});
+    ref.listen(swapRecvTextAmountProvider, (_, _) {});
+    ref.listen(satoshiSendAmountStateProvider, (_, _) {});
+    ref.listen(satoshiRecvAmountStateProvider, (_, _) {});
+    ref.listen<String>(swapNetworkErrorProvider, (_, next) {
       if (next.isNotEmpty) {
-        ref.invalidate(swapStateNotifierProvider);
+        ref.invalidate(swapStateProvider);
       }
     });
 
@@ -40,9 +42,7 @@ class SwapMain extends HookConsumerWidget {
       recvAmountPriceStreamWatcherProvider,
       (_, next) {
         if (next is SwapRecvAmountPriceStreamData) {
-          ref
-              .read(swapRecvTextAmountNotifierProvider.notifier)
-              .setAmount(next.value);
+          ref.read(swapRecvTextAmountProvider.notifier).setAmount(next.value);
         }
       },
     );
@@ -51,9 +51,7 @@ class SwapMain extends HookConsumerWidget {
       sendAmountPriceStreamWatcherProvider,
       (_, next) {
         if (next is SwapSendAmountPriceStreamData) {
-          ref
-              .read(swapSendTextAmountNotifierProvider.notifier)
-              .setAmount(next.value);
+          ref.read(swapSendTextAmountProvider.notifier).setAmount(next.value);
         }
       },
     );

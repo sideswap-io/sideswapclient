@@ -28,11 +28,15 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires access to the camera to scan a QR code when you need it</string>
@@ -42,8 +46,6 @@
 	<string>Use biometric authentication for wallet protection</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to photos to setup user avatar</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -56,6 +58,8 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIStatusBarStyle</key>
+	<string></string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -71,5 +75,18 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>CFBundleURLName</key>
+            <string>io.sideswap.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>liquidconnect</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

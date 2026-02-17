@@ -6,10 +6,14 @@ import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/payment_continue_button.dart';
@@ -40,6 +44,22 @@ class PaymentPage extends HookConsumerWidget {
     final addressText = useValueListenable(addressController);
 
     useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // outputs cleanup
+        ref.invalidate(sendAssetIdProvider);
+        ref.invalidate(outputsReaderProvider);
+        ref.invalidate(outputsCreatorProvider);
+        ref.invalidate(selectedWalletAccountAssetProvider);
+        ref.invalidate(paymentSendAmountParsedProvider);
+        ref.invalidate(defaultCurrencyTickerProvider);
+        ref.invalidate(createTxStateProvider);
+        ref.invalidate(sendTxStateProvider);
+      });
+
+      return;
+    }, const []);
+
+    useEffect(() {
       if (addressController.text.isEmpty) {
         errorText.value = null;
         continueEnabled.value = false;
@@ -62,15 +82,13 @@ class PaymentPage extends HookConsumerWidget {
       return;
     }, [addressText]);
 
-    final paymentHelper = ref.watch(paymentHelperProvider);
-
-    ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
+    ref.listen<QrCodeResultModel>(qrCodeResultModelProvider, (_, next) {
       (switch (next) {
         QrCodeResultModelData() => () {
           if (next.result?.outputsData != null) {
             // go to the confirm transaction page directly
-            ref.invalidate(paymentAmountPageArgumentsNotifierProvider);
-            paymentHelper.outputsPaymentSend();
+            ref.invalidate(paymentAmountPageArgumentsProvider);
+            ref.read(paymentHelperProvider).outputsPaymentSend();
             return;
           }
           addressController.text = next.result?.address ?? '';
@@ -81,12 +99,12 @@ class PaymentPage extends HookConsumerWidget {
 
           if (validate(addressController.text, newErrorText)) {
             ref
-                .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+                .read(paymentAmountPageArgumentsProvider.notifier)
                 .setPaymentAmountPageArguments(
                   PaymentAmountPageArguments(result: next.result),
                 );
             ref
-                .read(pageStatusNotifierProvider.notifier)
+                .read(pageStatusProvider.notifier)
                 .setStatus(Status.paymentAmountPage);
 
             return;
@@ -101,14 +119,14 @@ class PaymentPage extends HookConsumerWidget {
       if (continueEnabled.value) {
         Future.microtask(() {
           ref
-              .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+              .read(paymentAmountPageArgumentsProvider.notifier)
               .setPaymentAmountPageArguments(
                 PaymentAmountPageArguments(
                   result: QrCodeResult(address: addressController.text),
                 ),
               );
           ref
-              .read(pageStatusNotifierProvider.notifier)
+              .read(pageStatusProvider.notifier)
               .setStatus(Status.paymentAmountPage);
         });
       }

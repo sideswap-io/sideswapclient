@@ -27,7 +27,7 @@ class DSettings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .defaultDialogTheme;
     final isPinEnabled = ref.watch(pinAvailableProvider);
     final isJade = ref.watch(isJadeWalletProvider);
@@ -86,7 +86,7 @@ class DSettings extends ConsumerWidget {
                                   .disablePinProtection();
                               if (ret) {
                                 ref
-                                    .read(pageStatusNotifierProvider.notifier)
+                                    .read(pageStatusProvider.notifier)
                                     .setStatus(Status.registered);
                                 await navigator.pushAndRemoveUntil(
                                   RawDialogRoute<Widget>(
@@ -115,7 +115,7 @@ class DSettings extends ConsumerWidget {
                     title: 'Network access'.tr(),
                     onPressed: () {
                       ref
-                          .read(pageStatusNotifierProvider.notifier)
+                          .read(pageStatusProvider.notifier)
                           .setStatus(Status.settingsNetwork);
                     },
                     icon: DSettingsButtonIcon.network,
@@ -169,7 +169,7 @@ class DSettings extends ConsumerWidget {
                     title: 'Logs'.tr(),
                     onPressed: () {
                       ref
-                          .read(pageStatusNotifierProvider.notifier)
+                          .read(pageStatusProvider.notifier)
                           .setStatus(Status.settingsLogs);
                     },
                     icon: DSettingsButtonIcon.logs,
@@ -181,7 +181,7 @@ class DSettings extends ConsumerWidget {
                     title: 'Currency'.tr(),
                     onPressed: () {
                       ref
-                          .read(pageStatusNotifierProvider.notifier)
+                          .read(pageStatusProvider.notifier)
                           .setStatus(Status.settingsCurrency);
                     },
                     icon: DSettingsButtonIcon.currency,

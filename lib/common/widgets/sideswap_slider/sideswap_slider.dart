@@ -596,9 +596,6 @@ class RenderSideSwapSlider extends RenderBox {
     assert(_themeData.trackHeight != null);
     assert(_themeData.trackShape != null);
 
-    final canvas = context.canvas;
-    canvas.save();
-
     final padding = _themeData.trackHeight!;
 
     final trackRect = _themeData.trackShape!.getPrefferedRect(
@@ -654,7 +651,5 @@ class RenderSideSwapSlider extends RenderBox {
       min: _min,
       max: _max,
     );
-
-    canvas.restore();
   }
 }

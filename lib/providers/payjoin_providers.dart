@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -32,12 +31,12 @@ class DeductFeeFromOutputEnabledNotifier
       return false;
     }
 
-    final payjoinFeeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
+    final payjoinFeeAsset = ref.watch(payjoinFeeAssetProvider);
     if (payjoinFeeAsset == null) {
       return false;
     }
 
-    final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+    final selectedInputs = ref.watch(selectedInputsProvider);
 
     if (selectedInputs.isNotEmpty) {
       final maxBalance = ref.watch(
@@ -87,15 +86,14 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
       return false;
     }
 
-    final index = ref.watch(payjoinRadioButtonIndexNotifierProvider);
+    final index = ref.watch(payjoinRadioButtonIndexProvider);
 
     final assetId = outputsData.receivers![index].assetId!;
     final outputSatoshi = outputsData.receivers![index].satoshi;
-    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-    final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+    final selectedInputs = ref.watch(selectedInputsProvider);
 
-    final payjoinFeeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
+    final payjoinFeeAsset = ref.watch(payjoinFeeAssetProvider);
     return switch (payjoinFeeAsset) {
       final payjoinFeeAsset when payjoinFeeAsset?.assetId == assetId => () {
         if (selectedInputs.isNotEmpty) {
@@ -106,15 +104,7 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
             return true;
           }
 
-          final liquidMaxBalance = ref.watch(
-            maxAvailableBalanceWithInputsForAssetProvider(liquidAssetId),
-          );
-          // have LBTC
-          if (liquidMaxBalance > 0) {
-            return false;
-          }
-
-          return true;
+          return false;
         }
 
         final maxBalance = ref.watch(
@@ -124,15 +114,7 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
           return true;
         }
 
-        final liquidMaxBalance = ref.watch(
-          availableBalanceForAssetIdProvider(liquidAssetId),
-        );
-        // have LBTC
-        if (liquidMaxBalance > 0) {
-          return false;
-        }
-
-        return true;
+        return false;
       },
       _ => () {
         return false;
@@ -147,7 +129,7 @@ class DeductFeeFromOutputNotifier extends _$DeductFeeFromOutputNotifier {
 
 @riverpod
 bool liquidHaveBalance(Ref ref) {
-  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+  final selectedInputs = ref.watch(selectedInputsProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   if (selectedInputs.isNotEmpty) {
     // balance with inputs
@@ -207,7 +189,7 @@ class PayjoinFeeAssetNotifier extends _$PayjoinFeeAssetNotifier {
       return payjoinOutputAsset;
     }
 
-    final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+    final selectedInputs = ref.watch(selectedInputsProvider);
 
     // otherwise check any payjoin asset max balance
     // if it have any balance then return it

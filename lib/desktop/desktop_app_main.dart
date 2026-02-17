@@ -1,24 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/desktop_root_widget.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/locales_provider.dart';
-
-// class DSideSwapScrollBehavior extends MaterialScrollBehavior {
-//   // Override behavior methods and getters like dragDevices
-//   @override
-//   Set<PointerDeviceKind> get dragDevices => {
-//     PointerDeviceKind.touch,
-//     PointerDeviceKind.trackpad,
-//     PointerDeviceKind.mouse,
-//   };
-
-//   // Override behavior methods and getters like multitouchDragStrategy
-//   @override
-//   MultitouchDragStrategy getMultitouchDragStrategy(BuildContext context) =>
-//       MultitouchDragStrategy.sumAllPointers;
-// }
+import 'package:sideswap/providers/universal_link_provider.dart';
 
 class DesktopAppMain extends StatelessWidget {
   const DesktopAppMain({super.key});
@@ -35,14 +22,21 @@ class DesktopAppMain extends StatelessWidget {
   }
 }
 
-class DesktopApp extends StatelessWidget {
+class DesktopApp extends HookConsumerWidget {
   const DesktopApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    useEffect(() {
+      ref.read(universalLinkProvider).handleIncomingLinks();
+      ref.read(universalLinkProvider).handleInitialUri();
+
+      return;
+    }, const []);
+
     return Consumer(
       builder: (context, ref, _) {
-        final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
+        final desktopAppTheme = ref.watch(desktopAppThemeProvider);
 
         return MaterialApp(
           title: 'SideSwap',

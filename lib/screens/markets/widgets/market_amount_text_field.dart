@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/instant_swap/widgets/d_max_button.dart';
 import 'package:sideswap/desktop/markets/widgets/enter_amount_separator.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
@@ -112,13 +113,30 @@ class MarketAmountTextField extends HookConsumerWidget {
         const SizedBox(height: 3),
         Row(
           children: [
-            icon,
-            const SizedBox(width: 8),
-            Text(asset.ticker, style: const TextStyle(fontSize: 18)),
-            switch (asset) {
-              Asset(:final ampMarket) when ampMarket == true => const AmpFlag(),
-              _ => const SizedBox(),
-            },
+            SizedBox(
+              width: 160,
+              child: Row(
+                children: [
+                  icon,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Tooltip(
+                      message: asset.ticker,
+                      waitDuration: Duration(seconds: 1),
+                      child: MiddleEllipsisText(
+                        text: asset.ticker,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                  switch (asset) {
+                    Asset(:final ampMarket) when ampMarket == true =>
+                      const AmpFlag(),
+                    _ => const SizedBox(),
+                  },
+                ],
+              ),
+            ),
             const SizedBox(width: 8),
             Flexible(
               child: TextField(
@@ -203,7 +221,7 @@ class LimitPanelAggregate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final aggregateVolume = ref.watch(marketLimitOrderAggregateVolumeProvider);
     final aggregateTooHigh = ref.watch(
       marketLimitOrderAggregateVolumeTooHighProvider,

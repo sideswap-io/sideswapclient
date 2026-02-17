@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 
+// TODO (malcolmpl): remove this widget, unused
 class DSwapMain extends StatelessWidget {
   const DSwapMain({super.key});
 

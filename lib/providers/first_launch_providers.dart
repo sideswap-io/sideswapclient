@@ -5,20 +5,22 @@ part 'first_launch_providers.g.dart';
 part 'first_launch_providers.freezed.dart';
 
 @freezed
-sealed class FirstLaunchState with _$FirstLaunchState {
-  const factory FirstLaunchState.empty() = FirstLaunchStateEmpty;
-  const factory FirstLaunchState.createWallet() = FirstLaunchStateCreateWallet;
-  const factory FirstLaunchState.importWallet() = FirstLaunchStateImportWallet;
+sealed class FirstLaunchStateType with _$FirstLaunchStateType {
+  const factory FirstLaunchStateType.empty() = FirstLaunchStateTypeEmpty;
+  const factory FirstLaunchStateType.createWallet() =
+      FirstLaunchStateTypeCreateWallet;
+  const factory FirstLaunchStateType.importWallet() =
+      FirstLaunchStateTypeImportWallet;
 }
 
 @Riverpod(keepAlive: true)
 class FirstLaunchStateNotifier extends _$FirstLaunchStateNotifier {
   @override
-  FirstLaunchState build() {
-    return const FirstLaunchStateEmpty();
+  FirstLaunchStateType build() {
+    return const FirstLaunchStateTypeEmpty();
   }
 
-  void setFirstLaunchState(FirstLaunchState value) {
+  void setFirstLaunchState(FirstLaunchStateType value) {
     state = value;
   }
 }

@@ -14,8 +14,9 @@ class DSettingsDefaultCurrency extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
 
     return PopScope(
       canPop: false,
@@ -55,10 +56,8 @@ class DSettingsDefaultCurrencyContent extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final conversionRates = ref.watch(conversionRatesNotifierProvider);
-    final defaultConverstionRate = ref.watch(
-      defaultConversionRateNotifierProvider,
-    );
+    final conversionRates = ref.watch(conversionRatesProvider);
+    final defaultConverstionRate = ref.watch(defaultConversionRateProvider);
 
     return Center(
       child: SizedBox(
@@ -76,7 +75,7 @@ class DSettingsDefaultCurrencyContent extends HookConsumerWidget {
                     checked: defaultConverstionRate == conversionRate,
                     onChanged: (value) {
                       ref
-                          .read(defaultConversionRateNotifierProvider.notifier)
+                          .read(defaultConversionRateProvider.notifier)
                           .setDefaultConversionRate(conversionRate);
                     },
                     content: Row(children: [Text(conversionRate.name)]),

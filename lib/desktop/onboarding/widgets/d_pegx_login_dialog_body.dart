@@ -18,8 +18,8 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = ref.watch(desktopAppThemeNotifierProvider).textTheme;
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
+    final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
     final env = ref.watch(envProvider);
 
     return SizedBox(
@@ -45,9 +45,9 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                     child: QrImageView(
                       data:
                           env == SIDESWAP_ENV_TESTNET ||
-                                  env == SIDESWAP_ENV_LOCAL_TESTNET
-                              ? '$pegxStagingAuthIdUrl$requestId'
-                              : '$pegxAuthIdUrl$requestId',
+                              env == SIDESWAP_ENV_LOCAL_TESTNET
+                          ? '$pegxStagingAuthIdUrl$requestId'
+                          : '$pegxAuthIdUrl$requestId',
                       size: 150,
                       padding: const EdgeInsets.all(12),
                     ),
@@ -117,9 +117,8 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                         ),
                       ),
                       mouseCursor: SystemMouseCursors.click,
-                      recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () => openUrl('https://autheid.com/'),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => openUrl('https://autheid.com/'),
                     ),
                   ],
                 ),

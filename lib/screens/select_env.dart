@@ -37,41 +37,41 @@ class SelectEnv extends HookConsumerWidget {
                   const Text('Select env', style: TextStyle(fontSize: 18)).tr(),
                   const SizedBox(height: 20),
                   Column(
-                    children:
-                        envValues()
-                            .map(
-                              (e) => Consumer(
-                                builder: (context, ref, _) {
-                                  final selectedEnv = ref.watch(
-                                    selectedEnvProvider,
-                                  );
+                    children: envValues()
+                        .map(
+                          (e) => Consumer(
+                            builder: (context, ref, _) {
+                              final selectedEnv = ref.watch(
+                                selectedEnvProvider,
+                              );
 
-                                  return RadioListTile<int>(
-                                    title: Text(envName(e)),
-                                    value: e,
-                                    groupValue: selectedEnv,
-                                    onChanged: (e) async {
-                                      if (e == null) {
-                                        return;
-                                      }
-                                      await ref
-                                          .read(selectedEnvProvider.notifier)
-                                          .setSelectedEnv(e);
-                                    },
-                                  );
+                              return RadioGroup<int>(
+                                groupValue: selectedEnv,
+                                onChanged: (e) async {
+                                  if (e == null) {
+                                    return;
+                                  }
+                                  await ref
+                                      .read(selectedEnvProvider.notifier)
+                                      .setSelectedEnv(e);
                                 },
-                              ),
-                            )
-                            .toList(),
+                                child: RadioListTile<int>(
+                                  title: Text(envName(e)),
+                                  value: e,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                        .toList(),
                   ),
                   Consumer(
                     builder: (context, ref, _) {
                       final env = ref.watch(envProvider);
                       final selectedEnv = ref.watch(selectedEnvProvider);
-                      final buttonText =
-                          env == selectedEnv
-                              ? 'CLOSE'.tr()
-                              : 'SWITCH AND EXIT'.tr();
+                      final buttonText = env == selectedEnv
+                          ? 'CLOSE'.tr()
+                          : 'SWITCH AND EXIT'.tr();
 
                       return OutlinedButton(
                         onPressed: () {
@@ -79,7 +79,7 @@ class SelectEnv extends HookConsumerWidget {
                           ref.read(envProvider.notifier).setEnv(selectedEnv);
                           // and also reset network settings model
                           ref
-                              .read(networkSettingsNotifierProvider.notifier)
+                              .read(networkSettingsProvider.notifier)
                               .setModel(const NetworkSettingsModelEmpty());
 
                           exit(0);

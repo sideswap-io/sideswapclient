@@ -6,6 +6,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_view.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/chart_providers.dart';
@@ -128,9 +129,9 @@ class SwapMarketChartButton extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final showChartsPopupCallback = useCallback(() {
       Future.microtask(() {
-        ref.read(chartsSubscriptionFlagNotifierProvider.notifier).subscribe();
+        ref.read(chartsSubscriptionFlagProvider.notifier).subscribe();
       });
-      Navigator.of(context, rootNavigator: true).push<void>(
+      Navigator.of(context).push<void>(
         MaterialPageRoute(
           builder: (context) {
             return MarketChartsPopup();
@@ -175,10 +176,9 @@ class SwapMarketAssetPairButton extends HookConsumerWidget {
     return marketInfo.match(() => SizedBox(), (marketInfo) {
       final indexPrice = ref.watch(marketIndexPriceProvider);
       final lastPrice = ref.watch(marketLastPriceProvider);
-      final productName = ref.watch(subscribedMarketProductNameProvider);
 
       final showProductPopupCallback = useCallback(() {
-        Navigator.of(context, rootNavigator: true).push<void>(
+        Navigator.of(context).push<void>(
           MaterialPageRoute(
             builder: (context) {
               return PageStorage(
@@ -205,10 +205,47 @@ class SwapMarketAssetPairButton extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    productName,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
+                  SizedBox(
+                    height: 20,
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final marketInfo = ref.watch(
+                          subscribedMarketInfoProvider,
+                        );
+
+                        return marketInfo.match(() => SizedBox(), (marketInfo) {
+                          final optionBaseAsset = ref.watch(
+                            baseAssetByMarketInfoProvider(marketInfo),
+                          );
+                          final optionQuoteAsset = ref.watch(
+                            quoteAssetByMarketInfoProvider(marketInfo),
+                          );
+
+                          return optionBaseAsset.match(
+                            () => const SizedBox.shrink(),
+                            (baseAsset) => optionQuoteAsset.match(
+                              () => const SizedBox.shrink(),
+                              (quoteAsset) => SizedBox(
+                                width: 200,
+                                child: Row(
+                                  children: [
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth: 120,
+                                      ),
+                                      child: MiddleEllipsisText(
+                                        text: baseAsset.ticker,
+                                      ),
+                                    ),
+                                    Text(' / '),
+                                    Text(quoteAsset.ticker),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        });
+                      },
                     ),
                   ),
                   indexPrice.match(

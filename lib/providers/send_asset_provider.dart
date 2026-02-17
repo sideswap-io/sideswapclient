@@ -10,7 +10,7 @@ part 'send_asset_provider.g.dart';
 class SendAssetIdNotifier extends _$SendAssetIdNotifier {
   @override
   String build() {
-    ref.listen(eiCreateTransactionNotifierProvider, (_, next) {
+    ref.listen(eiCreateTransactionProvider, (_, next) {
       if (next is EICreateTransactionData) {
         setSendAsset(next.assetId);
       }

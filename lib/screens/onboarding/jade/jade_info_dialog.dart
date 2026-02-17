@@ -12,7 +12,7 @@ class JadeInfoDialog extends HookConsumerWidget {
   const JadeInfoDialog({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jadeStatus = ref.watch(jadeStatusNotifierProvider);
+    final jadeStatus = ref.watch(jadeStatusProvider);
 
     return switch (jadeStatus) {
       JadeStatusConnecting() => JadeInfoDialogWaitingInteraction(),
@@ -167,7 +167,7 @@ class JadeInfoDialogSign extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final orderTtlState = ref.watch(orderTtlNotifierProvider);
+    final orderTtlState = ref.watch(orderTtlProvider);
     final orderSignTtl = ref.watch(orderSignTtlProvider);
 
     return Align(
@@ -205,11 +205,10 @@ class JadeInfoDialogSign extends ConsumerWidget {
                         children: [
                           Text(
                             'Time-to-live'.tr(),
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleMedium?.copyWith(
-                              color: SideSwapColors.brightTurquoise,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: SideSwapColors.brightTurquoise,
+                                ),
                           ),
                           Spacer(),
                           Text(

@@ -38,7 +38,7 @@ See the [Rust sources](https://github.com/sideswap-io/sideswap_rust/) for more d
 
 ## 🛠️ Build from Source (Linux)
 
-The client can be compiled inside a minimal Debian 11 container—no toolchain installation required on the host. Make sure you have either **Docker** or **Podman** installed.
+The client can be compiled inside a minimal Debian 11 container—no toolchain installation required on the host. Make sure you have either **Docker** or **Podman** installed. You may need up to 10 GB of free disk space.
 
 ### Using Docker
 

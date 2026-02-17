@@ -45,10 +45,10 @@ class DRadioButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = DRadioButtonTheme.of(context).merge(this.style);
-    final fastAnimationDuration =
-        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
-    final animationCurve =
-        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
+    final fastAnimationDuration = ref
+        .watch(desktopAppThemeProvider)
+        .fastAnimationDuration;
+    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
 
     return DHoverButton(
       autofocus: autofocus,
@@ -122,24 +122,23 @@ class DRadioButtonTheme extends InheritedTheme {
   }
 
   static DRadioButtonThemeData _getInheritedThemeData(BuildContext context) {
-    final DRadioButtonTheme? theme =
-        context.dependOnInheritedWidgetOfExactType<DRadioButtonTheme>();
+    final DRadioButtonTheme? theme = context
+        .dependOnInheritedWidgetOfExactType<DRadioButtonTheme>();
     final container = ProviderContainer();
-    final themeRadioButtonTheme =
-        container.read(desktopAppThemeNotifierProvider).radioButtonTheme;
+    final themeRadioButtonTheme = container
+        .read(desktopAppThemeProvider)
+        .radioButtonTheme;
     return theme?.data ?? themeRadioButtonTheme;
   }
 
   static DRadioButtonThemeData of(BuildContext context) {
     final container = ProviderContainer();
-    final accentColor =
-        container
-            .read(desktopAppThemeNotifierProvider)
-            .darkScheme
-            .primary
-            .toAccentColor();
-    final brightness =
-        container.read(desktopAppThemeNotifierProvider).brightness;
+    final accentColor = container
+        .read(desktopAppThemeProvider)
+        .darkScheme
+        .primary
+        .toAccentColor();
+    final brightness = container.read(desktopAppThemeProvider).brightness;
     return DRadioButtonThemeData.standard(
       accentColor: accentColor,
       brightness: brightness,
@@ -171,74 +170,68 @@ class DRadioButtonThemeData with Diagnosticable {
     Brightness? brightness,
   }) {
     final container = ProviderContainer();
-    final themeAccentColor =
-        container
-            .read(desktopAppThemeNotifierProvider)
-            .darkScheme
-            .primary
-            .toAccentColor();
-    final themeBrightness =
-        container.read(desktopAppThemeNotifierProvider).brightness;
+    final themeAccentColor = container
+        .read(desktopAppThemeProvider)
+        .darkScheme
+        .primary
+        .toAccentColor();
+    final themeBrightness = container.read(desktopAppThemeProvider).brightness;
 
     return DRadioButtonThemeData(
       checkedDecoration: ButtonState.resolveWith((states) {
         return BoxDecoration(
           border: Border.all(
-            color:
-                !states.isDisabled
-                    ? accentColor?.light ?? themeAccentColor.light
-                    : brightness?.isLight ?? themeBrightness.isLight
-                    ? const Color.fromRGBO(0, 0, 0, 0.2169)
-                    : const Color.fromRGBO(255, 255, 255, 0.1581),
-            width:
-                !states.isDisabled
-                    ? states.isHovering && !states.isPressing
-                        ? 3.4
-                        : 5.0
-                    : 4.0,
+            color: !states.isDisabled
+                ? accentColor?.light ?? themeAccentColor.light
+                : brightness?.isLight ?? themeBrightness.isLight
+                ? const Color.fromRGBO(0, 0, 0, 0.2169)
+                : const Color.fromRGBO(255, 255, 255, 0.1581),
+            width: !states.isDisabled
+                ? states.isHovering && !states.isPressing
+                      ? 3.4
+                      : 5.0
+                : 4.0,
           ),
           shape: BoxShape.circle,
-          color:
-              !states.isDisabled
-                  ? brightness?.isLight ?? themeBrightness.isLight
-                      ? Colors.white
-                      : Colors.black
-                  : brightness?.isLight ?? themeBrightness.isLight
-                  ? Colors.white
-                  : const Color.fromRGBO(255, 255, 255, 0.5302),
+          color: !states.isDisabled
+              ? brightness?.isLight ?? themeBrightness.isLight
+                    ? Colors.white
+                    : Colors.black
+              : brightness?.isLight ?? themeBrightness.isLight
+              ? Colors.white
+              : const Color.fromRGBO(255, 255, 255, 0.5302),
         );
       }),
       uncheckedDecoration: ButtonState.resolveWith((states) {
         final container = ProviderContainer();
-        final inactiveBackgroundColor =
-            container
-                .read(desktopAppThemeNotifierProvider)
-                .inactiveBackgroundColor;
-        final accentColor =
-            container.read(desktopAppThemeNotifierProvider).darkScheme.primary;
-        final borderInputColor =
-            container.read(desktopAppThemeNotifierProvider).borderInputColor;
-        final brightness =
-            container.read(desktopAppThemeNotifierProvider).brightness;
+        final inactiveBackgroundColor = container
+            .read(desktopAppThemeProvider)
+            .inactiveBackgroundColor;
+        final accentColor = container
+            .read(desktopAppThemeProvider)
+            .darkScheme
+            .primary;
+        final borderInputColor = container
+            .read(desktopAppThemeProvider)
+            .borderInputColor;
+        final brightness = container.read(desktopAppThemeProvider).brightness;
 
         final backgroundColor = inactiveBackgroundColor;
         return BoxDecoration(
-          color:
-              states.isPressing
-                  ? backgroundColor
-                  : states.isHovering
-                  ? backgroundColor.withValues(alpha: 0.8)
-                  : backgroundColor.withValues(alpha: 0.0),
+          color: states.isPressing
+              ? backgroundColor
+              : states.isHovering
+              ? backgroundColor.withValues(alpha: 0.8)
+              : backgroundColor.withValues(alpha: 0.0),
           border: Border.all(
             width: states.isPressing ? 4.5 : 1,
-            color:
-                !states.isDisabled
-                    ? states.isPressing
-                        ? accentColor
-                        : borderInputColor
-                    : brightness.isLight
-                    ? const Color.fromRGBO(0, 0, 0, 0.2169)
-                    : const Color.fromRGBO(255, 255, 255, 0.1581),
+            color: !states.isDisabled
+                ? states.isPressing
+                      ? accentColor
+                      : borderInputColor
+                : brightness.isLight
+                ? const Color.fromRGBO(0, 0, 0, 0.2169)
+                : const Color.fromRGBO(255, 255, 255, 0.1581),
           ),
           shape: BoxShape.circle,
         );

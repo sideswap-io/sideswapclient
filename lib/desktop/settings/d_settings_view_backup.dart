@@ -71,8 +71,9 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
 
   @override
   Widget build(BuildContext context) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
 
     final scrollController = useScrollController();
 
@@ -84,7 +85,7 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
       };
     }, const []);
 
-    final wordCount = ref.watch(mnemonicWordItemsNotifierProvider).length;
+    final wordCount = ref.watch(mnemonicWordItemsProvider).length;
     final words = ref.watch(walletProvider).getMnemonicWords();
 
     return PopScope(
@@ -98,11 +99,10 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
         shortcuts: <LogicalKeySet, Intent>{
           if (Platform.isLinux || Platform.isFuchsia) ...{
             LogicalKeySet(
-                  LogicalKeyboardKey.control,
-                  LogicalKeyboardKey.shift,
-                  LogicalKeyboardKey.keyC,
-                ):
-                const CopyMnemonicIntent(),
+              LogicalKeyboardKey.control,
+              LogicalKeyboardKey.shift,
+              LogicalKeyboardKey.keyC,
+            ): const CopyMnemonicIntent(),
           },
           if (Platform.isWindows) ...{
             LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyC):
@@ -167,17 +167,16 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                                   );
 
                                   return DButton(
-                                    onPressed:
-                                        enabled
-                                            ? () {
-                                              Actions.maybeInvoke<
-                                                CopyMnemonicIntent
-                                              >(
-                                                context,
-                                                const CopyMnemonicIntent(),
-                                              );
-                                            }
-                                            : null,
+                                    onPressed: enabled
+                                        ? () {
+                                            Actions.maybeInvoke<
+                                              CopyMnemonicIntent
+                                            >(
+                                              context,
+                                              const CopyMnemonicIntent(),
+                                            );
+                                          }
+                                        : null,
                                     child: SizedBox(
                                       height: 34,
                                       width: 200,

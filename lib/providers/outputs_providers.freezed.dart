@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -78,6 +77,130 @@ as List<OutputsReceiver>?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [OutputsData].
+extension OutputsDataPatterns on OutputsData {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _OutputsData value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _OutputsData() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _OutputsData value)  $default,){
+final _that = this;
+switch (_that) {
+case _OutputsData():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _OutputsData value)?  $default,){
+final _that = this;
+switch (_that) {
+case _OutputsData() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? type,  String? version,  int? timestamp,  List<OutputsReceiver>? receivers)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _OutputsData() when $default != null:
+return $default(_that.type,_that.version,_that.timestamp,_that.receivers);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? type,  String? version,  int? timestamp,  List<OutputsReceiver>? receivers)  $default,) {final _that = this;
+switch (_that) {
+case _OutputsData():
+return $default(_that.type,_that.version,_that.timestamp,_that.receivers);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? type,  String? version,  int? timestamp,  List<OutputsReceiver>? receivers)?  $default,) {final _that = this;
+switch (_that) {
+case _OutputsData() when $default != null:
+return $default(_that.type,_that.version,_that.timestamp,_that.receivers);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -166,7 +289,7 @@ as List<OutputsReceiver>?,
 /// @nodoc
 mixin _$OutputsReceiver {
 
- String? get address;@JsonKey(name: 'asset_id') String? get assetId; int? get satoshi; String? get comment;@IntToAccountConverter() Account? get account;
+ String? get address; String? get assetId; int? get satoshi; String? get comment;@IntToAccountConverter() Account? get account;
 /// Create a copy of OutputsReceiver
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -199,7 +322,7 @@ abstract mixin class $OutputsReceiverCopyWith<$Res>  {
   factory $OutputsReceiverCopyWith(OutputsReceiver value, $Res Function(OutputsReceiver) _then) = _$OutputsReceiverCopyWithImpl;
 @useResult
 $Res call({
- String? address,@JsonKey(name: 'asset_id') String? assetId, int? satoshi, String? comment,@IntToAccountConverter() Account? account
+ String? address, String? assetId, int? satoshi, String? comment,@IntToAccountConverter() Account? account
 });
 
 
@@ -230,15 +353,139 @@ as Account?,
 }
 
 
+/// Adds pattern-matching-related methods to [OutputsReceiver].
+extension OutputsReceiverPatterns on OutputsReceiver {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _OutputsReceiver value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _OutputsReceiver() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _OutputsReceiver value)  $default,){
+final _that = this;
+switch (_that) {
+case _OutputsReceiver():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _OutputsReceiver value)?  $default,){
+final _that = this;
+switch (_that) {
+case _OutputsReceiver() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? address,  String? assetId,  int? satoshi,  String? comment, @IntToAccountConverter()  Account? account)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _OutputsReceiver() when $default != null:
+return $default(_that.address,_that.assetId,_that.satoshi,_that.comment,_that.account);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? address,  String? assetId,  int? satoshi,  String? comment, @IntToAccountConverter()  Account? account)  $default,) {final _that = this;
+switch (_that) {
+case _OutputsReceiver():
+return $default(_that.address,_that.assetId,_that.satoshi,_that.comment,_that.account);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? address,  String? assetId,  int? satoshi,  String? comment, @IntToAccountConverter()  Account? account)?  $default,) {final _that = this;
+switch (_that) {
+case _OutputsReceiver() when $default != null:
+return $default(_that.address,_that.assetId,_that.satoshi,_that.comment,_that.account);case _:
+  return null;
+
+}
+}
+
+}
+
 /// @nodoc
 
-@JsonSerializable(explicitToJson: true, includeIfNull: false)
+@JsonSerializable(explicitToJson: true, includeIfNull: false, fieldRename: FieldRename.snake)
 class _OutputsReceiver implements OutputsReceiver {
-  const _OutputsReceiver({this.address, @JsonKey(name: 'asset_id') this.assetId, this.satoshi, this.comment, @IntToAccountConverter() this.account});
+  const _OutputsReceiver({this.address, this.assetId, this.satoshi, this.comment, @IntToAccountConverter() this.account});
   factory _OutputsReceiver.fromJson(Map<String, dynamic> json) => _$OutputsReceiverFromJson(json);
 
 @override final  String? address;
-@override@JsonKey(name: 'asset_id') final  String? assetId;
+@override final  String? assetId;
 @override final  int? satoshi;
 @override final  String? comment;
 @override@IntToAccountConverter() final  Account? account;
@@ -276,7 +523,7 @@ abstract mixin class _$OutputsReceiverCopyWith<$Res> implements $OutputsReceiver
   factory _$OutputsReceiverCopyWith(_OutputsReceiver value, $Res Function(_OutputsReceiver) _then) = __$OutputsReceiverCopyWithImpl;
 @override @useResult
 $Res call({
- String? address,@JsonKey(name: 'asset_id') String? assetId, int? satoshi, String? comment,@IntToAccountConverter() Account? account
+ String? address, String? assetId, int? satoshi, String? comment,@IntToAccountConverter() Account? account
 });
 
 
@@ -367,6 +614,172 @@ as String?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [OutputsError].
+extension OutputsErrorPatterns on OutputsError {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( OutputsErrorWrongTypeOfFile value)?  wrongTypeOfFile,TResult Function( OutputsErrorWrongVersionOfFile value)?  wrongVersionOfFile,TResult Function( OutputsErrorJsonFileSyntaxError value)?  jsonFileSyntaxError,TResult Function( OutputsErrorFileStructureError value)?  fileStructureError,TResult Function( OutputsErrorOperationCancelled value)?  operationCancelled,TResult Function( OutputsErrorRequiredDataIsEmpty value)?  requiredDataIsEmpty,TResult Function( OutputsErrorOutputsDataIsEmpty value)?  outputsDataIsEmpty,TResult Function( OutputsErrorAssetNotFound value)?  assetNotFound,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case OutputsErrorWrongTypeOfFile() when wrongTypeOfFile != null:
+return wrongTypeOfFile(_that);case OutputsErrorWrongVersionOfFile() when wrongVersionOfFile != null:
+return wrongVersionOfFile(_that);case OutputsErrorJsonFileSyntaxError() when jsonFileSyntaxError != null:
+return jsonFileSyntaxError(_that);case OutputsErrorFileStructureError() when fileStructureError != null:
+return fileStructureError(_that);case OutputsErrorOperationCancelled() when operationCancelled != null:
+return operationCancelled(_that);case OutputsErrorRequiredDataIsEmpty() when requiredDataIsEmpty != null:
+return requiredDataIsEmpty(_that);case OutputsErrorOutputsDataIsEmpty() when outputsDataIsEmpty != null:
+return outputsDataIsEmpty(_that);case OutputsErrorAssetNotFound() when assetNotFound != null:
+return assetNotFound(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( OutputsErrorWrongTypeOfFile value)  wrongTypeOfFile,required TResult Function( OutputsErrorWrongVersionOfFile value)  wrongVersionOfFile,required TResult Function( OutputsErrorJsonFileSyntaxError value)  jsonFileSyntaxError,required TResult Function( OutputsErrorFileStructureError value)  fileStructureError,required TResult Function( OutputsErrorOperationCancelled value)  operationCancelled,required TResult Function( OutputsErrorRequiredDataIsEmpty value)  requiredDataIsEmpty,required TResult Function( OutputsErrorOutputsDataIsEmpty value)  outputsDataIsEmpty,required TResult Function( OutputsErrorAssetNotFound value)  assetNotFound,}){
+final _that = this;
+switch (_that) {
+case OutputsErrorWrongTypeOfFile():
+return wrongTypeOfFile(_that);case OutputsErrorWrongVersionOfFile():
+return wrongVersionOfFile(_that);case OutputsErrorJsonFileSyntaxError():
+return jsonFileSyntaxError(_that);case OutputsErrorFileStructureError():
+return fileStructureError(_that);case OutputsErrorOperationCancelled():
+return operationCancelled(_that);case OutputsErrorRequiredDataIsEmpty():
+return requiredDataIsEmpty(_that);case OutputsErrorOutputsDataIsEmpty():
+return outputsDataIsEmpty(_that);case OutputsErrorAssetNotFound():
+return assetNotFound(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( OutputsErrorWrongTypeOfFile value)?  wrongTypeOfFile,TResult? Function( OutputsErrorWrongVersionOfFile value)?  wrongVersionOfFile,TResult? Function( OutputsErrorJsonFileSyntaxError value)?  jsonFileSyntaxError,TResult? Function( OutputsErrorFileStructureError value)?  fileStructureError,TResult? Function( OutputsErrorOperationCancelled value)?  operationCancelled,TResult? Function( OutputsErrorRequiredDataIsEmpty value)?  requiredDataIsEmpty,TResult? Function( OutputsErrorOutputsDataIsEmpty value)?  outputsDataIsEmpty,TResult? Function( OutputsErrorAssetNotFound value)?  assetNotFound,}){
+final _that = this;
+switch (_that) {
+case OutputsErrorWrongTypeOfFile() when wrongTypeOfFile != null:
+return wrongTypeOfFile(_that);case OutputsErrorWrongVersionOfFile() when wrongVersionOfFile != null:
+return wrongVersionOfFile(_that);case OutputsErrorJsonFileSyntaxError() when jsonFileSyntaxError != null:
+return jsonFileSyntaxError(_that);case OutputsErrorFileStructureError() when fileStructureError != null:
+return fileStructureError(_that);case OutputsErrorOperationCancelled() when operationCancelled != null:
+return operationCancelled(_that);case OutputsErrorRequiredDataIsEmpty() when requiredDataIsEmpty != null:
+return requiredDataIsEmpty(_that);case OutputsErrorOutputsDataIsEmpty() when outputsDataIsEmpty != null:
+return outputsDataIsEmpty(_that);case OutputsErrorAssetNotFound() when assetNotFound != null:
+return assetNotFound(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String? message)?  wrongTypeOfFile,TResult Function( String? message)?  wrongVersionOfFile,TResult Function( String? message)?  jsonFileSyntaxError,TResult Function( String? message)?  fileStructureError,TResult Function( String? message)?  operationCancelled,TResult Function( String? message)?  requiredDataIsEmpty,TResult Function( String? message)?  outputsDataIsEmpty,TResult Function( String? message)?  assetNotFound,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case OutputsErrorWrongTypeOfFile() when wrongTypeOfFile != null:
+return wrongTypeOfFile(_that.message);case OutputsErrorWrongVersionOfFile() when wrongVersionOfFile != null:
+return wrongVersionOfFile(_that.message);case OutputsErrorJsonFileSyntaxError() when jsonFileSyntaxError != null:
+return jsonFileSyntaxError(_that.message);case OutputsErrorFileStructureError() when fileStructureError != null:
+return fileStructureError(_that.message);case OutputsErrorOperationCancelled() when operationCancelled != null:
+return operationCancelled(_that.message);case OutputsErrorRequiredDataIsEmpty() when requiredDataIsEmpty != null:
+return requiredDataIsEmpty(_that.message);case OutputsErrorOutputsDataIsEmpty() when outputsDataIsEmpty != null:
+return outputsDataIsEmpty(_that.message);case OutputsErrorAssetNotFound() when assetNotFound != null:
+return assetNotFound(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String? message)  wrongTypeOfFile,required TResult Function( String? message)  wrongVersionOfFile,required TResult Function( String? message)  jsonFileSyntaxError,required TResult Function( String? message)  fileStructureError,required TResult Function( String? message)  operationCancelled,required TResult Function( String? message)  requiredDataIsEmpty,required TResult Function( String? message)  outputsDataIsEmpty,required TResult Function( String? message)  assetNotFound,}) {final _that = this;
+switch (_that) {
+case OutputsErrorWrongTypeOfFile():
+return wrongTypeOfFile(_that.message);case OutputsErrorWrongVersionOfFile():
+return wrongVersionOfFile(_that.message);case OutputsErrorJsonFileSyntaxError():
+return jsonFileSyntaxError(_that.message);case OutputsErrorFileStructureError():
+return fileStructureError(_that.message);case OutputsErrorOperationCancelled():
+return operationCancelled(_that.message);case OutputsErrorRequiredDataIsEmpty():
+return requiredDataIsEmpty(_that.message);case OutputsErrorOutputsDataIsEmpty():
+return outputsDataIsEmpty(_that.message);case OutputsErrorAssetNotFound():
+return assetNotFound(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String? message)?  wrongTypeOfFile,TResult? Function( String? message)?  wrongVersionOfFile,TResult? Function( String? message)?  jsonFileSyntaxError,TResult? Function( String? message)?  fileStructureError,TResult? Function( String? message)?  operationCancelled,TResult? Function( String? message)?  requiredDataIsEmpty,TResult? Function( String? message)?  outputsDataIsEmpty,TResult? Function( String? message)?  assetNotFound,}) {final _that = this;
+switch (_that) {
+case OutputsErrorWrongTypeOfFile() when wrongTypeOfFile != null:
+return wrongTypeOfFile(_that.message);case OutputsErrorWrongVersionOfFile() when wrongVersionOfFile != null:
+return wrongVersionOfFile(_that.message);case OutputsErrorJsonFileSyntaxError() when jsonFileSyntaxError != null:
+return jsonFileSyntaxError(_that.message);case OutputsErrorFileStructureError() when fileStructureError != null:
+return fileStructureError(_that.message);case OutputsErrorOperationCancelled() when operationCancelled != null:
+return operationCancelled(_that.message);case OutputsErrorRequiredDataIsEmpty() when requiredDataIsEmpty != null:
+return requiredDataIsEmpty(_that.message);case OutputsErrorOutputsDataIsEmpty() when outputsDataIsEmpty != null:
+return outputsDataIsEmpty(_that.message);case OutputsErrorAssetNotFound() when assetNotFound != null:
+return assetNotFound(_that.message);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

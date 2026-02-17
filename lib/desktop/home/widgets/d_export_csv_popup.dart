@@ -12,7 +12,7 @@ class DExportCsvPopup extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(csvNotifierProvider, (_, next) {
+    ref.listen(csvProvider, (_, next) {
       final cvsState = switch (next) {
         AsyncValue(hasValue: true, :final CvsState value) => value,
         _ => CvsState.empty(),
@@ -23,7 +23,7 @@ class DExportCsvPopup extends HookConsumerWidget {
       }
     });
 
-    final exportCsvState = ref.watch(exportCsvStateNotifierProvider);
+    final exportCsvState = ref.watch(exportCsvStateProvider);
 
     return DPopupWithClose(
       width: 580,
@@ -77,7 +77,7 @@ class DExportCsvPopup extends HookConsumerWidget {
                   height: 44,
                   onPressed: exportCsvState is ExportCsvStateLoaded
                       ? () async {
-                          await ref.read(csvNotifierProvider.notifier).save();
+                          await ref.read(csvProvider.notifier).save();
                         }
                       : null,
                   child: Row(

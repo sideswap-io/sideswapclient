@@ -25,20 +25,18 @@ class MarketsPageListener extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(limitOrderAmountControllerNotifierProvider);
-    ref.watch(limitOrderPriceControllerNotifierProvider);
-    ref.watch(marketEditDetailsOrderNotifierProvider);
+    ref.watch(limitOrderAmountControllerProvider);
+    ref.watch(limitOrderPriceControllerProvider);
+    ref.watch(marketEditDetailsOrderProvider);
     ref.watch(marketIndexPriceProvider);
     ref.watch(marketLastPriceProvider);
-    ref.watch(chartsNotifierProvider);
-    ref.watch(marketPublicOrdersNotifierProvider);
+    ref.watch(chartsProvider);
+    ref.watch(marketPublicOrdersProvider);
     ref.watch(jadeOneTimeAuthorizationProvider);
     ref.watch(pageStorageKeyDataProvider);
     ref.watch(debouncedMarketPublicOrdersProvider);
 
-    final subscribedAssetPair = ref.watch(
-      marketSubscribedAssetPairNotifierProvider,
-    );
+    final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
     final stableMarkets = ref.watch(
       marketInfoByMarketTypeProvider(MarketType_.STABLECOIN),
     );
@@ -56,7 +54,7 @@ class MarketsPageListener extends HookConsumerWidget {
       if (subscribedAssetPair.isNone() && stableMarkets.isNotEmpty) {
         Future.microtask(
           () => ref
-              .read(marketSubscribedAssetPairNotifierProvider.notifier)
+              .read(marketSubscribedAssetPairProvider.notifier)
               .setState(stableMarkets.first.assetPair),
         );
       }
@@ -69,9 +67,7 @@ class MarketsPageListener extends HookConsumerWidget {
         .watch(configurationProvider)
         .stokrSettingsModel;
     final baseAsset = ref.watch(marketSubscribedBaseAssetProvider);
-    final stokrLastSelectedAsset = ref.watch(
-      stokrLastSelectedAssetNotifierProvider,
-    );
+    final stokrLastSelectedAsset = ref.watch(stokrLastSelectedAssetProvider);
 
     final stokrAssetRestrictedPopupCallback = useCallback((Asset asset) {
       final isStokrAsset = stokrSecurities.any(
@@ -86,7 +82,7 @@ class MarketsPageListener extends HookConsumerWidget {
       if (stokrSettingsModel?.firstRun != false) {
         Future.microtask(
           () => ref
-              .read(pageStatusNotifierProvider.notifier)
+              .read(pageStatusProvider.notifier)
               .setStatus(Status.stokrRestrictionsInfo),
         );
         return true;
@@ -110,7 +106,7 @@ class MarketsPageListener extends HookConsumerWidget {
 
         Future.microtask(
           () => ref
-              .read(stokrLastSelectedAssetNotifierProvider.notifier)
+              .read(stokrLastSelectedAssetProvider.notifier)
               .setLastSelectedAsset(asset),
         );
       });
@@ -150,8 +146,8 @@ class MarketsPageListener extends HookConsumerWidget {
                           )
                         : false,
                   );
-              ref.invalidate(marketQuoteNotifierProvider);
-              ref.invalidate(acceptQuoteNotifierProvider);
+              ref.invalidate(marketQuoteProvider);
+              ref.invalidate(acceptQuoteProvider);
             }
           });
         },
@@ -166,8 +162,8 @@ class MarketsPageListener extends HookConsumerWidget {
         (error) => () {
           Future.microtask(() async {
             await ref.read(desktopDialogProvider).showAcceptQuoteErrorDialog();
-            ref.invalidate(marketQuoteNotifierProvider);
-            ref.invalidate(acceptQuoteNotifierProvider);
+            ref.invalidate(marketQuoteProvider);
+            ref.invalidate(acceptQuoteProvider);
           });
         },
       )();
@@ -176,7 +172,7 @@ class MarketsPageListener extends HookConsumerWidget {
     }, [optionAcceptQuoteError]);
 
     final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
-    final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+    final optionOrderSubmit = ref.watch(orderSubmitProvider);
 
     useEffect(() {
       optionOrderSubmit.match(() {}, (orderSubmit) {
@@ -188,7 +184,7 @@ class MarketsPageListener extends HookConsumerWidget {
         if (orderSubmit.hasSubmitSucceed() && uiOwnOrder != null) {
           Future.microtask(
             () => ref
-                .read(orderSubmitSuccessNotifierProvider.notifier)
+                .read(orderSubmitSuccessProvider.notifier)
                 .setState(
                   uiOwnOrder.copyWith(ownOrder: orderSubmit.submitSucceed),
                 ),
@@ -199,7 +195,7 @@ class MarketsPageListener extends HookConsumerWidget {
         if (orderSubmit.hasError() && orderSubmit.error.isNotEmpty) {
           Future.microtask(
             () => ref
-                .read(orderSubmitErrorNotifierProvider.notifier)
+                .read(orderSubmitErrorProvider.notifier)
                 .setState(orderSubmit.error),
           );
         }
@@ -208,7 +204,7 @@ class MarketsPageListener extends HookConsumerWidget {
         if (orderSubmit.hasUnregisteredGaid()) {
           Future.microtask(
             () => ref
-                .read(orderSubmitUnregisteredGaidNotifierProvider.notifier)
+                .read(orderSubmitUnregisteredGaidProvider.notifier)
                 .setState(orderSubmit.unregisteredGaid.domainAgent),
           );
         }
@@ -217,12 +213,10 @@ class MarketsPageListener extends HookConsumerWidget {
       return;
     }, [optionOrderSubmit, uiOwnOrders]);
 
-    final optionOrderSubmitSuccess = ref.watch(
-      orderSubmitSuccessNotifierProvider,
-    );
-    final optionOrderSubmitError = ref.watch(orderSubmitErrorNotifierProvider);
+    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
+    final optionOrderSubmitError = ref.watch(orderSubmitErrorProvider);
     final optionOrderSubmitUnregisteredGaid = ref.watch(
-      orderSubmitUnregisteredGaidNotifierProvider,
+      orderSubmitUnregisteredGaidProvider,
     );
 
     useEffect(
@@ -263,9 +257,9 @@ class MarketsPageListener extends HookConsumerWidget {
     useEffect(() {
       Future.microtask(() {
         optionStartOrderQuoteSuccess.match(() {}, (quoteSuccess) async {
-          ref.invalidate(marketQuoteNotifierProvider);
+          ref.invalidate(marketQuoteProvider);
 
-          if (ref.read(previewOrderQuoteSuccessNotifierProvider).isSome()) {
+          if (ref.read(previewOrderQuoteSuccessProvider).isSome()) {
             return;
           }
 
@@ -274,8 +268,8 @@ class MarketsPageListener extends HookConsumerWidget {
             optionQuoteSuccess: optionStartOrderQuoteSuccess,
           );
 
-          ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
-          ref.invalidate(marketStartOrderNotifierProvider);
+          ref.read(quoteEventProvider.notifier).stopQuotes();
+          ref.invalidate(marketStartOrderProvider);
         });
       });
 
@@ -292,7 +286,7 @@ class MarketsPageListener extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          ref.invalidate(marketStartOrderNotifierProvider);
+          ref.invalidate(marketStartOrderProvider);
 
           await showDialog<void>(
             context: context,
@@ -308,7 +302,7 @@ class MarketsPageListener extends HookConsumerWidget {
             useRootNavigator: false,
           );
 
-          ref.invalidate(marketQuoteNotifierProvider);
+          ref.invalidate(marketQuoteProvider);
         });
       });
       return;
@@ -325,7 +319,7 @@ class MarketsPageListener extends HookConsumerWidget {
             return;
           }
 
-          ref.invalidate(marketStartOrderNotifierProvider);
+          ref.invalidate(marketStartOrderProvider);
 
           await showDialog<void>(
             context: context,
@@ -340,7 +334,7 @@ class MarketsPageListener extends HookConsumerWidget {
             useRootNavigator: false,
           );
 
-          ref.invalidate(marketQuoteNotifierProvider);
+          ref.invalidate(marketQuoteProvider);
         });
       });
       return;
@@ -356,7 +350,7 @@ class MarketsPageListener extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          ref.invalidate(marketStartOrderNotifierProvider);
+          ref.invalidate(marketStartOrderProvider);
 
           await showDialog<void>(
             context: context,
@@ -372,15 +366,13 @@ class MarketsPageListener extends HookConsumerWidget {
             useRootNavigator: false,
           );
 
-          ref.invalidate(marketQuoteNotifierProvider);
+          ref.invalidate(marketQuoteProvider);
         });
       });
       return;
     }, [optionStartOrderUnregisteredGaid]);
 
-    final optionStartOrderError = ref.watch(
-      marketStartOrderErrorNotifierProvider,
-    );
+    final optionStartOrderError = ref.watch(marketStartOrderErrorProvider);
 
     useEffect(() {
       Future.microtask(() {
@@ -388,7 +380,7 @@ class MarketsPageListener extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          ref.invalidate(marketStartOrderNotifierProvider);
+          ref.invalidate(marketStartOrderProvider);
 
           await showDialog<void>(
             context: context,
@@ -400,24 +392,24 @@ class MarketsPageListener extends HookConsumerWidget {
             barrierDismissible: false,
           );
 
-          ref.invalidate(marketStartOrderErrorNotifierProvider);
-          ref.invalidate(marketQuoteNotifierProvider);
+          ref.invalidate(marketStartOrderErrorProvider);
+          ref.invalidate(marketQuoteProvider);
         });
       });
 
       return;
     }, [optionStartOrderError]);
 
-    final optionCurrentQuote = ref.watch(marketQuoteNotifierProvider);
-    final optionStartOrderId = ref.watch(marketStartOrderNotifierProvider);
+    final optionCurrentQuote = ref.watch(marketQuoteProvider);
+    final optionStartOrderId = ref.watch(marketStartOrderProvider);
 
-    ref.listen(marketSideStateNotifierProvider, (_, _) {
+    ref.listen(marketSideStateProvider, (_, _) {
       optionStartOrderId.match(
         () => optionCurrentQuote.match(() {}, (_) {
           Future.microtask(() {
-            ref.invalidate(limitOrderPriceControllerNotifierProvider);
-            ref.invalidate(marketOrderAmountControllerNotifierProvider);
-            ref.invalidate(marketQuoteNotifierProvider);
+            ref.invalidate(limitOrderPriceControllerProvider);
+            ref.invalidate(marketOrderAmountControllerProvider);
+            ref.invalidate(marketQuoteProvider);
           });
         }),
         (_) {},

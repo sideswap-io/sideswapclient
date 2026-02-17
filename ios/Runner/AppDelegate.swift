@@ -26,7 +26,7 @@ public func dummyMethodToEnforceBundling() {
     sideswap_string_free(buffer)
 }
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     override func application(
         _ application: UIApplication,

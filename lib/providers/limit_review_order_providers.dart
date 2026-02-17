@@ -1,5 +1,4 @@
 import 'package:decimal/decimal.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
@@ -86,12 +85,8 @@ class MarketLimitTrackIndexPriceValueNotifier
 OrderAmount limitReviewOrderPrice(Ref ref) {
   final orderAmount = ref.watch(limitOrderPriceProvider);
 
-  final trackingState = ref.watch(
-    marketLimitTrackIndexPriceStateNotifierProvider,
-  );
-  final trackingValue = ref.watch(
-    marketLimitTrackIndexPriceValueNotifierProvider,
-  );
+  final trackingState = ref.watch(marketLimitTrackIndexPriceStateProvider);
+  final trackingValue = ref.watch(marketLimitTrackIndexPriceValueProvider);
 
   if (orderAmount.amount == Decimal.zero || orderAmount.assetId.isEmpty) {
     return orderAmount;
@@ -127,9 +122,7 @@ OrderAmount limitReviewOrderPrice(Ref ref) {
 @riverpod
 MarketOrderAggregateVolumeProvider limitReviewOrderAggregateVolume(Ref ref) {
   final aggregateVolume = ref.watch(marketLimitOrderAggregateVolumeProvider);
-  final trackingState = ref.watch(
-    marketLimitTrackIndexPriceStateNotifierProvider,
-  );
+  final trackingState = ref.watch(marketLimitTrackIndexPriceStateProvider);
 
   if (trackingState) {
     final orderPrice = ref.watch(limitReviewOrderPriceProvider);
@@ -211,7 +204,7 @@ bool limitReviewOrderSubmitButtonEnabled(Ref ref) {
     return false;
   }
 
-  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+  final optionOrderSubmit = ref.watch(orderSubmitProvider);
   if (optionOrderSubmit.isSome()) {
     return false;
   }

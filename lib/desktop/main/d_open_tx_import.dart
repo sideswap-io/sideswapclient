@@ -26,7 +26,7 @@ class DOpenTxImport extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textFieldFocusNode = useFocusNode();
     final textFieldHasFocus = useState(false);
-    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+    final walletMainArguments = ref.watch(uiStateArgsProvider);
 
     useEffect(() {
       textFieldFocusNode.addListener(() {
@@ -56,7 +56,7 @@ class DOpenTxImport extends HookConsumerWidget {
 
         final linkResultState = ref
             .read(universalLinkProvider)
-            .handleAppUrlStr(textController.text);
+            .handleAppUrlStr(textController.text, handleSwaption: false);
 
         (switch (linkResultState) {
           LinkResultStateUnknownScheme() => () {
@@ -83,9 +83,9 @@ class DOpenTxImport extends HookConsumerWidget {
       await handlePasteSingleLine(textController);
       final linkResultState = ref
           .read(universalLinkProvider)
-          .handleAppUrlStr(textController.text);
+          .handleAppUrlStr(textController.text, handleSwaption: true);
 
-      if (linkResultState == const LinkResultState.success()) {
+      if (linkResultState is LinkResultStateSuccess) {
         navigatorContext.pop();
         return;
       }
@@ -148,24 +148,21 @@ class DOpenTxImport extends HookConsumerWidget {
                   fontWeight: FontWeight.normal,
                   color: SideSwapColors.bitterSweet,
                 ),
-                suffixIcon:
-                    textFieldHasFocus.value
-                        ? null
-                        : SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: TextButton(
-                            onPressed: onPasteCallback,
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                            ),
-                            child: const Icon(
-                              Icons.paste,
-                              size: 24,
-                              color: SideSwapColors.brightTurquoise,
-                            ),
+                suffixIcon: textFieldHasFocus.value
+                    ? null
+                    : SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: TextButton(
+                          onPressed: onPasteCallback,
+                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                          child: const Icon(
+                            Icons.paste,
+                            size: 24,
+                            color: SideSwapColors.brightTurquoise,
                           ),
                         ),
+                      ),
                 border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(8)),
                   borderSide: BorderSide(color: Colors.transparent),
@@ -188,114 +185,112 @@ class DOpenTxImport extends HookConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Consumer(
-                  builder: (context, ref, child) {
-                    final paymentHelper = ref.watch(paymentHelperProvider);
+                DCustomButton(
+                  width: 245,
+                  height: 44,
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    const XTypeGroup typeGroup = XTypeGroup(
+                      label: 'Outputs json',
+                      extensions: <String>['json'],
+                    );
+                    final XFile? file = await openFile(
+                      acceptedTypeGroups: <XTypeGroup>[typeGroup],
+                    );
+                    final result = await ref
+                        .read(outputsReaderProvider.notifier)
+                        .setXFile(file);
 
-                    return DCustomButton(
-                      width: 245,
-                      height: 44,
-                      onPressed: () async {
-                        final navigator = Navigator.of(context);
-                        const XTypeGroup typeGroup = XTypeGroup(
-                          label: 'Outputs json',
-                          extensions: <String>['json'],
-                        );
-                        final XFile? file = await openFile(
-                          acceptedTypeGroups: <XTypeGroup>[typeGroup],
-                        );
-                        final result = await ref
-                            .read(outputsReaderNotifierProvider.notifier)
-                            .setXFile(file);
+                    return switch (result) {
+                      true => () async {
+                        final errorMessage = ref
+                            .read(paymentHelperProvider)
+                            .outputsPaymentSend();
 
-                        return switch (result) {
-                          true => () async {
-                            final errorMessage =
-                                paymentHelper.outputsPaymentSend();
-                            if (errorMessage != null) {
+                        if (errorMessage != null) {
+                          final flushbar = Flushbar<void>(
+                            messageText: Text(errorMessage),
+                            duration: const Duration(seconds: 5),
+                            backgroundColor: SideSwapColors.chathamsBlue,
+                          );
+
+                          if (context.mounted) {
+                            await flushbar.show(context);
+                          }
+                          return;
+                        }
+
+                        navigator.pop();
+                        ref.read(desktopDialogProvider).showSendTx();
+                      }(),
+                      _ => () {
+                        final outputsData = ref.read(outputsReaderProvider);
+                        return switch (outputsData) {
+                          Left(value: final l) => () async {
+                            if (l.message != null) {
                               final flushbar = Flushbar<void>(
-                                messageText: Text(errorMessage),
+                                messageText: Text(l.message!),
                                 duration: const Duration(seconds: 5),
                                 backgroundColor: SideSwapColors.chathamsBlue,
                               );
-
-                              if (context.mounted) {
-                                await flushbar.show(context);
-                              }
-                              return;
+                              await flushbar.show(context);
                             }
-
-                            navigator.pop();
-                            ref.read(desktopDialogProvider).showSendTx();
                           }(),
-                          _ => () {
-                            final outputsData = ref.read(
-                              outputsReaderNotifierProvider,
-                            );
-                            return switch (outputsData) {
-                              Left(value: final l) => () async {
-                                if (l.message != null) {
-                                  final flushbar = Flushbar<void>(
-                                    messageText: Text(l.message!),
-                                    duration: const Duration(seconds: 5),
-                                    backgroundColor:
-                                        SideSwapColors.chathamsBlue,
-                                  );
-                                  await flushbar.show(context);
-                                }
-                              }(),
-                              _ => () {}(),
-                            };
-                          }(),
+                          _ => () {}(),
                         };
-                      },
-                      child: Text('IMPORT FILE'.tr()),
-                    );
+                      }(),
+                    };
                   },
+                  child: Text('IMPORT FILE'.tr()),
                 ),
                 DCustomButton(
                   width: 245,
                   height: 44,
                   isFilled: true,
-                  onPressed:
-                      continueEnabled.value
-                          ? () {
-                            // import private swap
-                            final linkResultState = ref
-                                .read(universalLinkProvider)
-                                .handleAppUrlStr(textController.text);
+                  onPressed: continueEnabled.value
+                      ? () {
+                          // import url
+                          final linkResultState = ref
+                              .read(universalLinkProvider)
+                              .handleAppUrlStr(
+                                textController.text,
+                                handleSwaption: true,
+                              );
 
-                            ref
-                                .read(universalLinkProvider)
-                                .handleSwapLinkResult(linkResultState, (
-                                  orderId,
-                                  privateId,
-                                ) {
-                                  // stop market quotes if any
-                                  ref
-                                      .read(quoteEventNotifierProvider.notifier)
-                                      .stopQuotes();
-                                  final navigator = Navigator.of(context);
-                                  navigator.pop();
-                                  ref
-                                      .read(
-                                        uiStateArgsNotifierProvider.notifier,
-                                      )
-                                      .setWalletMainArguments(
-                                        walletMainArguments.fromIndexDesktop(1),
-                                      );
-
-                                  Future.microtask(() {
-                                    final msg = To();
-                                    msg.startOrder = To_StartOrder(
-                                      orderId: orderId,
-                                      privateId: privateId,
-                                    );
-                                    ref.read(walletProvider).sendMsg(msg);
-                                  });
-                                });
+                          if (linkResultState is LinkResultStateSuccess &&
+                              linkResultState.details
+                                  is LinkResultDetailsSwaption) {
+                            Navigator.of(context).pop();
+                            return;
                           }
-                          : null,
+
+                          ref.read(universalLinkProvider).handleSwapLinkResult(
+                            linkResultState,
+                            (orderId, privateId) {
+                              // stop market quotes if any
+                              ref
+                                  .read(quoteEventProvider.notifier)
+                                  .stopQuotes();
+                              final navigator = Navigator.of(context);
+                              navigator.pop();
+                              ref
+                                  .read(uiStateArgsProvider.notifier)
+                                  .setWalletMainArguments(
+                                    walletMainArguments.fromIndexDesktop(1),
+                                  );
+
+                              Future.microtask(() {
+                                final msg = To();
+                                msg.startOrder = To_StartOrder(
+                                  orderId: orderId,
+                                  privateId: privateId,
+                                );
+                                ref.read(walletProvider).sendMsg(msg);
+                              });
+                            },
+                          );
+                        }
+                      : null,
                   child: Text('CONTINUE'.tr()),
                 ),
               ],

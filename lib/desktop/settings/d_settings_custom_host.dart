@@ -23,25 +23,22 @@ class DSettingsCustomHost extends HookConsumerWidget {
   const DSettingsCustomHost({super.key});
 
   void goBack(BuildContext context, WidgetRef ref) {
-    final serverState = ref.read(serverLoginNotifierProvider);
+    final serverState = ref.read(serverLoginProvider);
 
     Navigator.of(context).pop();
 
     if (serverState is ServerLoginStateLogin) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.registered);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
 
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.settingsNetwork);
+      ref.read(pageStatusProvider.notifier).setStatus(Status.settingsNetwork);
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+    final defaultDialogTheme = ref
+        .watch(desktopAppThemeProvider)
+        .defaultDialogTheme;
 
     const textStyle = TextStyle(
       fontSize: 13,
@@ -57,7 +54,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
       text: ref.read(configurationProvider).networkPort.toString(),
     );
     final applyEnabled = useState(false);
-    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
     final validateCallback = useCallback(() {
       final host = hostController.text;
@@ -144,26 +141,23 @@ class DSettingsCustomHost extends HookConsumerWidget {
                   child: DCustomFilledBigButton(
                     width: 343,
                     height: 44,
-                    onPressed:
-                        applyEnabled.value
-                            ? () {
-                              ref
-                                  .read(
-                                    networkSettingsNotifierProvider.notifier,
-                                  )
-                                  .setModel(
-                                    NetworkSettingsModelApply(
-                                      settingsNetworkType:
-                                          SettingsNetworkType.personal,
-                                      env: SIDESWAP_ENV_PROD,
-                                      host: hostController.text,
-                                      port: int.parse(portController.text),
-                                      useTls: useTls.value,
-                                    ),
-                                  );
-                              goBack(context, ref);
-                            }
-                            : null,
+                    onPressed: applyEnabled.value
+                        ? () {
+                            ref
+                                .read(networkSettingsProvider.notifier)
+                                .setModel(
+                                  NetworkSettingsModelApply(
+                                    settingsNetworkType:
+                                        SettingsNetworkType.personal,
+                                    env: SIDESWAP_ENV_PROD,
+                                    host: hostController.text,
+                                    port: int.parse(portController.text),
+                                    useTls: useTls.value,
+                                  ),
+                                );
+                            goBack(context, ref);
+                          }
+                        : null,
                     child: Text('APPLY'.tr()),
                   ),
                 ),

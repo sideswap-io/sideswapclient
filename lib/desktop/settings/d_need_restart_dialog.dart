@@ -18,9 +18,7 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
       title: DContentDialogTitle(
         onClose: () {
           Navigator.of(context).pop();
-          ref
-              .read(pageStatusNotifierProvider.notifier)
-              .setStatus(Status.registered);
+          ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
         },
         content: SvgPicture.asset(
           'assets/restart.svg',
@@ -55,18 +53,18 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
                   isFilled: true,
                   onPressed: () {
                     Navigator.of(context).pop();
-                    ref.read(networkSettingsNotifierProvider.notifier).save();
-                    final pageStatus = ref.read(pageStatusNotifierProvider);
+                    ref.read(networkSettingsProvider.notifier).save();
+                    final pageStatus = ref.read(pageStatusProvider);
                     if (pageStatus == Status.noWallet) {
                       // call once more to back noWallet page
                       ref
-                          .read(pageStatusNotifierProvider.notifier)
+                          .read(pageStatusProvider.notifier)
                           .setStatus(Status.noWallet);
                       return;
                     }
 
                     ref
-                        .read(pageStatusNotifierProvider.notifier)
+                        .read(pageStatusProvider.notifier)
                         .setStatus(Status.registered);
                   },
                   child: Text('OK'.tr()),

@@ -6,331 +6,433 @@ part of 'orders_panel_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$internalUiOrdersHash() => r'f33866cf468a8a65bb5cdf76b2dadac47c01e067';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [internalUiOrders].
-@ProviderFor(internalUiOrders)
-final internalUiOrdersProvider =
-    AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
-      internalUiOrders,
-      name: r'internalUiOrdersProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$internalUiOrdersHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+@ProviderFor(RequestOrderSortFlagNotifier)
+const requestOrderSortFlagProvider = RequestOrderSortFlagNotifierProvider._();
+
+final class RequestOrderSortFlagNotifierProvider
+    extends
+        $NotifierProvider<RequestOrderSortFlagNotifier, RequestOrderSortFlag> {
+  const RequestOrderSortFlagNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'requestOrderSortFlagProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$requestOrderSortFlagNotifierHash();
+
+  @$internal
+  @override
+  RequestOrderSortFlagNotifier create() => RequestOrderSortFlagNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RequestOrderSortFlag value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RequestOrderSortFlag>(value),
     );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef InternalUiOrdersRef = AutoDisposeProviderRef<Iterable<InternalUiOrder>>;
-String _$maxOrderAmountHash() => r'8770516371abd8eb6549673fffc2342454aac366';
-
-/// See also [maxOrderAmount].
-@ProviderFor(maxOrderAmount)
-final maxOrderAmountProvider = AutoDisposeProvider<Decimal>.internal(
-  maxOrderAmount,
-  name: r'maxOrderAmountProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$maxOrderAmountHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef MaxOrderAmountRef = AutoDisposeProviderRef<Decimal>;
-String _$ordersBidsHash() => r'a36debc09ddfbbf6d4b79f863a098bafe531f8ed';
-
-/// See also [ordersBids].
-@ProviderFor(ordersBids)
-final ordersBidsProvider =
-    AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
-      ordersBids,
-      name: r'ordersBidsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ordersBidsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrdersBidsRef = AutoDisposeProviderRef<Iterable<InternalUiOrder>>;
-String _$ordersAsksHash() => r'a219b8095af5c092805bad910834c13d3af9184e';
-
-/// See also [ordersAsks].
-@ProviderFor(ordersAsks)
-final ordersAsksProvider =
-    AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
-      ordersAsks,
-      name: r'ordersAsksProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ordersAsksHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrdersAsksRef = AutoDisposeProviderRef<Iterable<InternalUiOrder>>;
-String _$mapRangeHash() => r'b9b31cf27f8ce8e3492e8c1bced581c77f6fd535';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
   }
 }
 
-/// See also [mapRange].
+String _$requestOrderSortFlagNotifierHash() =>
+    r'07fcb7ac5f9c32e2099111be7839e4119795c689';
+
+abstract class _$RequestOrderSortFlagNotifier
+    extends $Notifier<RequestOrderSortFlag> {
+  RequestOrderSortFlag build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<RequestOrderSortFlag, RequestOrderSortFlag>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<RequestOrderSortFlag, RequestOrderSortFlag>,
+              RequestOrderSortFlag,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(internalUiOrders)
+const internalUiOrdersProvider = InternalUiOrdersProvider._();
+
+final class InternalUiOrdersProvider
+    extends
+        $FunctionalProvider<
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>
+        >
+    with $Provider<Iterable<InternalUiOrder>> {
+  const InternalUiOrdersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'internalUiOrdersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$internalUiOrdersHash();
+
+  @$internal
+  @override
+  $ProviderElement<Iterable<InternalUiOrder>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Iterable<InternalUiOrder> create(Ref ref) {
+    return internalUiOrders(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<InternalUiOrder> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<InternalUiOrder>>(value),
+    );
+  }
+}
+
+String _$internalUiOrdersHash() => r'5dd8ee793c82f23338969303266c90a90437de92';
+
+@ProviderFor(maxOrderAmount)
+const maxOrderAmountProvider = MaxOrderAmountProvider._();
+
+final class MaxOrderAmountProvider
+    extends $FunctionalProvider<Decimal, Decimal, Decimal>
+    with $Provider<Decimal> {
+  const MaxOrderAmountProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'maxOrderAmountProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$maxOrderAmountHash();
+
+  @$internal
+  @override
+  $ProviderElement<Decimal> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Decimal create(Ref ref) {
+    return maxOrderAmount(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Decimal value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Decimal>(value),
+    );
+  }
+}
+
+String _$maxOrderAmountHash() => r'8770516371abd8eb6549673fffc2342454aac366';
+
+@ProviderFor(ordersBids)
+const ordersBidsProvider = OrdersBidsProvider._();
+
+final class OrdersBidsProvider
+    extends
+        $FunctionalProvider<
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>
+        >
+    with $Provider<Iterable<InternalUiOrder>> {
+  const OrdersBidsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ordersBidsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ordersBidsHash();
+
+  @$internal
+  @override
+  $ProviderElement<Iterable<InternalUiOrder>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Iterable<InternalUiOrder> create(Ref ref) {
+    return ordersBids(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<InternalUiOrder> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<InternalUiOrder>>(value),
+    );
+  }
+}
+
+String _$ordersBidsHash() => r'a36debc09ddfbbf6d4b79f863a098bafe531f8ed';
+
+@ProviderFor(ordersAsks)
+const ordersAsksProvider = OrdersAsksProvider._();
+
+final class OrdersAsksProvider
+    extends
+        $FunctionalProvider<
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>
+        >
+    with $Provider<Iterable<InternalUiOrder>> {
+  const OrdersAsksProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ordersAsksProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ordersAsksHash();
+
+  @$internal
+  @override
+  $ProviderElement<Iterable<InternalUiOrder>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Iterable<InternalUiOrder> create(Ref ref) {
+    return ordersAsks(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<InternalUiOrder> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<InternalUiOrder>>(value),
+    );
+  }
+}
+
+String _$ordersAsksHash() => r'a219b8095af5c092805bad910834c13d3af9184e';
+
 @ProviderFor(mapRange)
-const mapRangeProvider = MapRangeFamily();
+const mapRangeProvider = MapRangeFamily._();
 
-/// See also [mapRange].
-class MapRangeFamily extends Family<Decimal> {
-  /// See also [mapRange].
-  const MapRangeFamily();
+final class MapRangeProvider
+    extends $FunctionalProvider<Decimal, Decimal, Decimal>
+    with $Provider<Decimal> {
+  const MapRangeProvider._({
+    required MapRangeFamily super.from,
+    required (double, double, double, double, double) super.argument,
+  }) : super(
+         retry: null,
+         name: r'mapRangeProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
-  /// See also [mapRange].
+  @override
+  String debugGetCreateSourceHash() => _$mapRangeHash();
+
+  @override
+  String toString() {
+    return r'mapRangeProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<Decimal> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Decimal create(Ref ref) {
+    final argument = this.argument as (double, double, double, double, double);
+    return mapRange(
+      ref,
+      argument.$1,
+      argument.$2,
+      argument.$3,
+      argument.$4,
+      argument.$5,
+    );
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Decimal value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Decimal>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MapRangeProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$mapRangeHash() => r'b9b31cf27f8ce8e3492e8c1bced581c77f6fd535';
+
+final class MapRangeFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          Decimal,
+          (double, double, double, double, double)
+        > {
+  const MapRangeFamily._()
+    : super(
+        retry: null,
+        name: r'mapRangeProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
   MapRangeProvider call(
     double value,
     double inMin,
     double inMax,
     double outMin,
     double outMax,
-  ) {
-    return MapRangeProvider(value, inMin, inMax, outMin, outMax);
-  }
+  ) => MapRangeProvider._(
+    argument: (value, inMin, inMax, outMin, outMax),
+    from: this,
+  );
 
   @override
-  MapRangeProvider getProviderOverride(covariant MapRangeProvider provider) {
-    return call(
-      provider.value,
-      provider.inMin,
-      provider.inMax,
-      provider.outMin,
-      provider.outMax,
-    );
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'mapRangeProvider';
+  String toString() => r'mapRangeProvider';
 }
 
-/// See also [mapRange].
-class MapRangeProvider extends AutoDisposeProvider<Decimal> {
-  /// See also [mapRange].
-  MapRangeProvider(
-    double value,
-    double inMin,
-    double inMax,
-    double outMin,
-    double outMax,
-  ) : this._internal(
-        (ref) =>
-            mapRange(ref as MapRangeRef, value, inMin, inMax, outMin, outMax),
-        from: mapRangeProvider,
-        name: r'mapRangeProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$mapRangeHash,
-        dependencies: MapRangeFamily._dependencies,
-        allTransitiveDependencies: MapRangeFamily._allTransitiveDependencies,
-        value: value,
-        inMin: inMin,
-        inMax: inMax,
-        outMin: outMin,
-        outMax: outMax,
+@ProviderFor(ordersPanelBids)
+const ordersPanelBidsProvider = OrdersPanelBidsProvider._();
+
+final class OrdersPanelBidsProvider
+    extends
+        $FunctionalProvider<
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>
+        >
+    with $Provider<Iterable<InternalUiOrder>> {
+  const OrdersPanelBidsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ordersPanelBidsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  MapRangeProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.value,
-    required this.inMin,
-    required this.inMax,
-    required this.outMin,
-    required this.outMax,
-  }) : super.internal();
+  @override
+  String debugGetCreateSourceHash() => _$ordersPanelBidsHash();
 
-  final double value;
-  final double inMin;
-  final double inMax;
-  final double outMin;
-  final double outMax;
+  @$internal
+  @override
+  $ProviderElement<Iterable<InternalUiOrder>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  Override overrideWith(Decimal Function(MapRangeRef provider) create) {
-    return ProviderOverride(
+  Iterable<InternalUiOrder> create(Ref ref) {
+    return ordersPanelBids(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<InternalUiOrder> value) {
+    return $ProviderOverride(
       origin: this,
-      override: MapRangeProvider._internal(
-        (ref) => create(ref as MapRangeRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        value: value,
-        inMin: inMin,
-        inMax: inMax,
-        outMin: outMin,
-        outMax: outMax,
-      ),
+      providerOverride: $SyncValueProvider<Iterable<InternalUiOrder>>(value),
     );
   }
-
-  @override
-  AutoDisposeProviderElement<Decimal> createElement() {
-    return _MapRangeProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is MapRangeProvider &&
-        other.value == value &&
-        other.inMin == inMin &&
-        other.inMax == inMax &&
-        other.outMin == outMin &&
-        other.outMax == outMax;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, value.hashCode);
-    hash = _SystemHash.combine(hash, inMin.hashCode);
-    hash = _SystemHash.combine(hash, inMax.hashCode);
-    hash = _SystemHash.combine(hash, outMin.hashCode);
-    hash = _SystemHash.combine(hash, outMax.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin MapRangeRef on AutoDisposeProviderRef<Decimal> {
-  /// The parameter `value` of this provider.
-  double get value;
-
-  /// The parameter `inMin` of this provider.
-  double get inMin;
-
-  /// The parameter `inMax` of this provider.
-  double get inMax;
-
-  /// The parameter `outMin` of this provider.
-  double get outMin;
-
-  /// The parameter `outMax` of this provider.
-  double get outMax;
-}
-
-class _MapRangeProviderElement extends AutoDisposeProviderElement<Decimal>
-    with MapRangeRef {
-  _MapRangeProviderElement(super.provider);
-
-  @override
-  double get value => (origin as MapRangeProvider).value;
-  @override
-  double get inMin => (origin as MapRangeProvider).inMin;
-  @override
-  double get inMax => (origin as MapRangeProvider).inMax;
-  @override
-  double get outMin => (origin as MapRangeProvider).outMin;
-  @override
-  double get outMax => (origin as MapRangeProvider).outMax;
 }
 
 String _$ordersPanelBidsHash() => r'c18640c79c6516de2ebd5bb474e779f93cc279b4';
 
-/// See also [ordersPanelBids].
-@ProviderFor(ordersPanelBids)
-final ordersPanelBidsProvider =
-    AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
-      ordersPanelBids,
-      name: r'ordersPanelBidsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ordersPanelBidsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrdersPanelBidsRef = AutoDisposeProviderRef<Iterable<InternalUiOrder>>;
-String _$ordersPanelAsksHash() => r'6315ee5366426e4cbf5112ec258674ea38506b14';
-
-/// See also [ordersPanelAsks].
 @ProviderFor(ordersPanelAsks)
-final ordersPanelAsksProvider =
-    AutoDisposeProvider<Iterable<InternalUiOrder>>.internal(
-      ordersPanelAsks,
-      name: r'ordersPanelAsksProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$ordersPanelAsksHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+const ordersPanelAsksProvider = OrdersPanelAsksProvider._();
+
+final class OrdersPanelAsksProvider
+    extends
+        $FunctionalProvider<
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>,
+          Iterable<InternalUiOrder>
+        >
+    with $Provider<Iterable<InternalUiOrder>> {
+  const OrdersPanelAsksProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ordersPanelAsksProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ordersPanelAsksHash();
+
+  @$internal
+  @override
+  $ProviderElement<Iterable<InternalUiOrder>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Iterable<InternalUiOrder> create(Ref ref) {
+    return ordersPanelAsks(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Iterable<InternalUiOrder> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Iterable<InternalUiOrder>>(value),
     );
+  }
+}
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef OrdersPanelAsksRef = AutoDisposeProviderRef<Iterable<InternalUiOrder>>;
-String _$requestOrderSortFlagNotifierHash() =>
-    r'07fcb7ac5f9c32e2099111be7839e4119795c689';
-
-/// See also [RequestOrderSortFlagNotifier].
-@ProviderFor(RequestOrderSortFlagNotifier)
-final requestOrderSortFlagNotifierProvider =
-    AutoDisposeNotifierProvider<
-      RequestOrderSortFlagNotifier,
-      RequestOrderSortFlag
-    >.internal(
-      RequestOrderSortFlagNotifier.new,
-      name: r'requestOrderSortFlagNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$requestOrderSortFlagNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$RequestOrderSortFlagNotifier =
-    AutoDisposeNotifier<RequestOrderSortFlag>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+String _$ordersPanelAsksHash() => r'6315ee5366426e4cbf5112ec258674ea38506b14';

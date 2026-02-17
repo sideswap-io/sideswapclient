@@ -104,12 +104,11 @@ class DNewWalletBackupCheck extends ConsumerWidget {
               return DCustomFilledBigButton(
                 width: 460,
                 height: 49,
-                onPressed:
-                    canContinue
-                        ? () {
-                          ref.read(walletProvider).backupNewWalletVerify();
-                        }
-                        : null,
+                onPressed: canContinue
+                    ? () {
+                        ref.read(walletProvider).backupNewWalletVerify();
+                      }
+                    : null,
                 child: Text('CONFIRM'.tr()),
               );
             }),
@@ -222,10 +221,10 @@ class DWordRadioButton extends ConsumerWidget {
       ),
     ).merge(this.style);
 
-    final fastAnimationDuration =
-        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
-    final animationCurve =
-        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
+    final fastAnimationDuration = ref
+        .watch(desktopAppThemeProvider)
+        .fastAnimationDuration;
+    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
 
     return DHoverButton(
       onPressed: onChanged == null ? null : () => onChanged!(!checked),

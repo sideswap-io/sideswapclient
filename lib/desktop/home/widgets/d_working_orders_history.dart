@@ -61,9 +61,7 @@ class DWorkingHistoryOrders extends HookConsumerWidget {
         Flexible(
           child: Consumer(
             builder: (context, ref, child) {
-              final historyOrders = ref.watch(
-                marketHistoryOrderNotifierProvider,
-              );
+              final historyOrders = ref.watch(marketHistoryOrderProvider);
 
               if (historyOrders.isEmpty) {
                 return Column(
@@ -87,7 +85,7 @@ class DWorkingHistoryOrderEmpty extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isConnected = ref.watch(serverConnectionNotifierProvider);
+    final isConnected = ref.watch(serverConnectionProvider);
 
     return Text(
       isConnected ? 'No transactions history'.tr() : 'Connecting ...'.tr(),
@@ -108,14 +106,14 @@ class DWorkingHistoryOrderList extends HookConsumerWidget {
     final uiHistoryOrders = ref.watch(marketUiHistoryOrdersProvider);
     final totalHistoryOrders = ref.watch(marketHistoryTotalProvider);
     final buttonStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
+        .watch(desktopAppThemeProvider)
         .buttonWithoutBorderStyle;
 
     final scrollController = useScrollController();
 
     useEffect(() {
       void onScroll() {
-        final historyOrders = ref.read(marketHistoryOrderNotifierProvider);
+        final historyOrders = ref.read(marketHistoryOrderProvider);
         if (scrollController.position.pixels ==
                 scrollController.position.maxScrollExtent &&
             historyOrders.length < totalHistoryOrders) {

@@ -28,7 +28,7 @@ class SideSwapPopup extends ConsumerWidget {
   }) : _backgroundColor = backgroundColor ?? SideSwapColors.blumine;
 
   final Widget? child;
-  final AppBar? appBar;
+  final PreferredSizeWidget? appBar;
   final Color _backgroundColor;
   final bool enableInsideTopPadding;
   final bool enableInsideHorizontalPadding;

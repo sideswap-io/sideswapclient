@@ -17,7 +17,7 @@ class AssetReceiveScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
+    final selectedAccountType = ref.watch(selectedAccountTypeProvider);
 
     useEffect(() {
       ref.read(walletProvider).toggleRecvAddrType(selectedAccountType);
@@ -34,9 +34,7 @@ class AssetReceiveScreen extends HookConsumerWidget {
         showTrailingButton: true,
         trailingWidget: CustomBackButton(
           onPressed: () {
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.registered);
+            ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
           },
         ),
       ),

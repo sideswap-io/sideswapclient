@@ -6,269 +6,410 @@ part of 'payment_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$paymentHelperHash() => r'b3c9aa5cedd6bef767e15c18a01c29f5c0d32bbb';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [paymentHelper].
-@ProviderFor(paymentHelper)
-final paymentHelperProvider = AutoDisposeProvider<PaymentHelper>.internal(
-  paymentHelper,
-  name: r'paymentHelperProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paymentHelperHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(CreateTxStateNotifier)
+const createTxStateProvider = CreateTxStateNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PaymentHelperRef = AutoDisposeProviderRef<PaymentHelper>;
-String _$createdTxHelperHash() => r'5e1957359493ac06e1d97fbf503ccab68712494f';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [createdTxHelper].
-@ProviderFor(createdTxHelper)
-const createdTxHelperProvider = CreatedTxHelperFamily();
-
-/// See also [createdTxHelper].
-class CreatedTxHelperFamily extends Family<CreatedTxHelper> {
-  /// See also [createdTxHelper].
-  const CreatedTxHelperFamily();
-
-  /// See also [createdTxHelper].
-  CreatedTxHelperProvider call(CreatedTx? createdTx) {
-    return CreatedTxHelperProvider(createdTx);
-  }
-
-  @override
-  CreatedTxHelperProvider getProviderOverride(
-    covariant CreatedTxHelperProvider provider,
-  ) {
-    return call(provider.createdTx);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'createdTxHelperProvider';
-}
-
-/// See also [createdTxHelper].
-class CreatedTxHelperProvider extends AutoDisposeProvider<CreatedTxHelper> {
-  /// See also [createdTxHelper].
-  CreatedTxHelperProvider(CreatedTx? createdTx)
-    : this._internal(
-        (ref) => createdTxHelper(ref as CreatedTxHelperRef, createdTx),
-        from: createdTxHelperProvider,
-        name: r'createdTxHelperProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$createdTxHelperHash,
-        dependencies: CreatedTxHelperFamily._dependencies,
-        allTransitiveDependencies:
-            CreatedTxHelperFamily._allTransitiveDependencies,
-        createdTx: createdTx,
+final class CreateTxStateNotifierProvider
+    extends $NotifierProvider<CreateTxStateNotifier, CreateTxState> {
+  const CreateTxStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'createTxStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  CreatedTxHelperProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.createdTx,
-  }) : super.internal();
-
-  final CreatedTx? createdTx;
-
   @override
-  Override overrideWith(
-    CreatedTxHelper Function(CreatedTxHelperRef provider) create,
-  ) {
-    return ProviderOverride(
+  String debugGetCreateSourceHash() => _$createTxStateNotifierHash();
+
+  @$internal
+  @override
+  CreateTxStateNotifier create() => CreateTxStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CreateTxState value) {
+    return $ProviderOverride(
       origin: this,
-      override: CreatedTxHelperProvider._internal(
-        (ref) => create(ref as CreatedTxHelperRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        createdTx: createdTx,
-      ),
+      providerOverride: $SyncValueProvider<CreateTxState>(value),
     );
   }
-
-  @override
-  AutoDisposeProviderElement<CreatedTxHelper> createElement() {
-    return _CreatedTxHelperProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is CreatedTxHelperProvider && other.createdTx == createdTx;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, createdTx.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin CreatedTxHelperRef on AutoDisposeProviderRef<CreatedTxHelper> {
-  /// The parameter `createdTx` of this provider.
-  CreatedTx? get createdTx;
-}
-
-class _CreatedTxHelperProviderElement
-    extends AutoDisposeProviderElement<CreatedTxHelper>
-    with CreatedTxHelperRef {
-  _CreatedTxHelperProviderElement(super.provider);
-
-  @override
-  CreatedTx? get createdTx => (origin as CreatedTxHelperProvider).createdTx;
 }
 
 String _$createTxStateNotifierHash() =>
     r'f68ff9d72afd9357f14098b35b191bf05516def6';
 
-/// See also [CreateTxStateNotifier].
-@ProviderFor(CreateTxStateNotifier)
-final createTxStateNotifierProvider =
-    NotifierProvider<CreateTxStateNotifier, CreateTxState>.internal(
-      CreateTxStateNotifier.new,
-      name: r'createTxStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$createTxStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$CreateTxStateNotifier extends $Notifier<CreateTxState> {
+  CreateTxState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<CreateTxState, CreateTxState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CreateTxState, CreateTxState>,
+              CreateTxState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$CreateTxStateNotifier = Notifier<CreateTxState>;
+@ProviderFor(SendTxStateNotifier)
+const sendTxStateProvider = SendTxStateNotifierProvider._();
+
+final class SendTxStateNotifierProvider
+    extends $NotifierProvider<SendTxStateNotifier, SendTxState> {
+  const SendTxStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendTxStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendTxStateNotifierHash();
+
+  @$internal
+  @override
+  SendTxStateNotifier create() => SendTxStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SendTxState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SendTxState>(value),
+    );
+  }
+}
+
 String _$sendTxStateNotifierHash() =>
     r'7b11dadb3ef928c6288c75715fb42578d5727c4a';
 
-/// See also [SendTxStateNotifier].
-@ProviderFor(SendTxStateNotifier)
-final sendTxStateNotifierProvider =
-    NotifierProvider<SendTxStateNotifier, SendTxState>.internal(
-      SendTxStateNotifier.new,
-      name: r'sendTxStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendTxStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+abstract class _$SendTxStateNotifier extends $Notifier<SendTxState> {
+  SendTxState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<SendTxState, SendTxState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<SendTxState, SendTxState>,
+              SendTxState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(PaymentSendAddressParsedNotifier)
+const paymentSendAddressParsedProvider =
+    PaymentSendAddressParsedNotifierProvider._();
+
+final class PaymentSendAddressParsedNotifierProvider
+    extends $NotifierProvider<PaymentSendAddressParsedNotifier, String> {
+  const PaymentSendAddressParsedNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentSendAddressParsedProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$paymentSendAddressParsedNotifierHash();
+
+  @$internal
+  @override
+  PaymentSendAddressParsedNotifier create() =>
+      PaymentSendAddressParsedNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
     );
+  }
+}
 
-typedef _$SendTxStateNotifier = Notifier<SendTxState>;
-String _$paymentInsufficientFundsNotifierHash() =>
-    r'2f7cb58452f78885860c288d3b7dcc44ae928cac';
-
-/// See also [PaymentInsufficientFundsNotifier].
-@ProviderFor(PaymentInsufficientFundsNotifier)
-final paymentInsufficientFundsNotifierProvider =
-    NotifierProvider<PaymentInsufficientFundsNotifier, bool>.internal(
-      PaymentInsufficientFundsNotifier.new,
-      name: r'paymentInsufficientFundsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentInsufficientFundsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$PaymentInsufficientFundsNotifier = Notifier<bool>;
 String _$paymentSendAddressParsedNotifierHash() =>
     r'be1489a2c423e3450c337caf92f1dc4a29a8f076';
 
-/// See also [PaymentSendAddressParsedNotifier].
-@ProviderFor(PaymentSendAddressParsedNotifier)
-final paymentSendAddressParsedNotifierProvider =
-    NotifierProvider<PaymentSendAddressParsedNotifier, String>.internal(
-      PaymentSendAddressParsedNotifier.new,
-      name: r'paymentSendAddressParsedNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentSendAddressParsedNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$PaymentSendAddressParsedNotifier extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$PaymentSendAddressParsedNotifier = Notifier<String>;
+@ProviderFor(PaymentSendAmountParsedNotifier)
+const paymentSendAmountParsedProvider =
+    PaymentSendAmountParsedNotifierProvider._();
+
+final class PaymentSendAmountParsedNotifierProvider
+    extends $NotifierProvider<PaymentSendAmountParsedNotifier, int> {
+  const PaymentSendAmountParsedNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentSendAmountParsedProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$paymentSendAmountParsedNotifierHash();
+
+  @$internal
+  @override
+  PaymentSendAmountParsedNotifier create() => PaymentSendAmountParsedNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
 String _$paymentSendAmountParsedNotifierHash() =>
     r'88f0e9bf9c76bd8b4722af5837dd868f8205ece4';
 
-/// See also [PaymentSendAmountParsedNotifier].
-@ProviderFor(PaymentSendAmountParsedNotifier)
-final paymentSendAmountParsedNotifierProvider =
-    NotifierProvider<PaymentSendAmountParsedNotifier, int>.internal(
-      PaymentSendAmountParsedNotifier.new,
-      name: r'paymentSendAmountParsedNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentSendAmountParsedNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$PaymentSendAmountParsedNotifier extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$PaymentSendAmountParsedNotifier = Notifier<int>;
+@ProviderFor(PaymentAmountPageArgumentsNotifier)
+const paymentAmountPageArgumentsProvider =
+    PaymentAmountPageArgumentsNotifierProvider._();
+
+final class PaymentAmountPageArgumentsNotifierProvider
+    extends
+        $NotifierProvider<
+          PaymentAmountPageArgumentsNotifier,
+          PaymentAmountPageArguments
+        > {
+  const PaymentAmountPageArgumentsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentAmountPageArgumentsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$paymentAmountPageArgumentsNotifierHash();
+
+  @$internal
+  @override
+  PaymentAmountPageArgumentsNotifier create() =>
+      PaymentAmountPageArgumentsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PaymentAmountPageArguments value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PaymentAmountPageArguments>(value),
+    );
+  }
+}
+
 String _$paymentAmountPageArgumentsNotifierHash() =>
     r'99532cee5f9d8d3be6192e57450df28e2809a3b7';
 
-/// See also [PaymentAmountPageArgumentsNotifier].
-@ProviderFor(PaymentAmountPageArgumentsNotifier)
-final paymentAmountPageArgumentsNotifierProvider =
-    NotifierProvider<
-      PaymentAmountPageArgumentsNotifier,
-      PaymentAmountPageArguments
-    >.internal(
-      PaymentAmountPageArgumentsNotifier.new,
-      name: r'paymentAmountPageArgumentsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$paymentAmountPageArgumentsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$PaymentAmountPageArgumentsNotifier
+    extends $Notifier<PaymentAmountPageArguments> {
+  PaymentAmountPageArguments build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<PaymentAmountPageArguments, PaymentAmountPageArguments>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                PaymentAmountPageArguments,
+                PaymentAmountPageArguments
+              >,
+              PaymentAmountPageArguments,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$PaymentAmountPageArgumentsNotifier =
-    Notifier<PaymentAmountPageArguments>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(paymentHelper)
+const paymentHelperProvider = PaymentHelperProvider._();
+
+final class PaymentHelperProvider
+    extends $FunctionalProvider<PaymentHelper, PaymentHelper, PaymentHelper>
+    with $Provider<PaymentHelper> {
+  const PaymentHelperProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'paymentHelperProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$paymentHelperHash();
+
+  @$internal
+  @override
+  $ProviderElement<PaymentHelper> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PaymentHelper create(Ref ref) {
+    return paymentHelper(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PaymentHelper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PaymentHelper>(value),
+    );
+  }
+}
+
+String _$paymentHelperHash() => r'426240d4f895aeb427c51ffcc193d2d434cfb336';
+
+@ProviderFor(createdTxHelper)
+const createdTxHelperProvider = CreatedTxHelperFamily._();
+
+final class CreatedTxHelperProvider
+    extends
+        $FunctionalProvider<CreatedTxHelper, CreatedTxHelper, CreatedTxHelper>
+    with $Provider<CreatedTxHelper> {
+  const CreatedTxHelperProvider._({
+    required CreatedTxHelperFamily super.from,
+    required CreatedTx? super.argument,
+  }) : super(
+         retry: null,
+         name: r'createdTxHelperProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$createdTxHelperHash();
+
+  @override
+  String toString() {
+    return r'createdTxHelperProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<CreatedTxHelper> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  CreatedTxHelper create(Ref ref) {
+    final argument = this.argument as CreatedTx?;
+    return createdTxHelper(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CreatedTxHelper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CreatedTxHelper>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CreatedTxHelperProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$createdTxHelperHash() => r'5e1957359493ac06e1d97fbf503ccab68712494f';
+
+final class CreatedTxHelperFamily extends $Family
+    with $FunctionalFamilyOverride<CreatedTxHelper, CreatedTx?> {
+  const CreatedTxHelperFamily._()
+    : super(
+        retry: null,
+        name: r'createdTxHelperProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  CreatedTxHelperProvider call(CreatedTx? createdTx) =>
+      CreatedTxHelperProvider._(argument: createdTx, from: this);
+
+  @override
+  String toString() => r'createdTxHelperProvider';
+}

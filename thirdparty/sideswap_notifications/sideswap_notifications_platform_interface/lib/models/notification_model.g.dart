@@ -9,12 +9,14 @@ part of 'notification_model.dart';
 _FCMPayload _$FCMPayloadFromJson(Map json) => _FCMPayload(
   type: $enumDecodeNullable(_$FCMPayloadTypeEnumMap, json['type']),
   txid: json['txid'] as String?,
+  data: json['data'] as String?,
 );
 
 Map<String, dynamic> _$FCMPayloadToJson(_FCMPayload instance) =>
     <String, dynamic>{
       'type': _$FCMPayloadTypeEnumMap[instance.type],
       'txid': instance.txid,
+      'data': instance.data,
     };
 
 const _$FCMPayloadTypeEnumMap = {
@@ -25,6 +27,8 @@ const _$FCMPayloadTypeEnumMap = {
   FCMPayloadType.unknown: 'Unknown',
   FCMPayloadType.pegin: 'Peg-in',
   FCMPayloadType.pegout: 'Peg-out',
+  FCMPayloadType.swaptionConnect: 'SwaptionConnect',
+  FCMPayloadType.swaptionSign: 'SwaptionSign',
 };
 
 _FCMNotification _$FCMNotificationFromJson(Map json) => _FCMNotification(
@@ -36,12 +40,9 @@ Map<String, dynamic> _$FCMNotificationToJson(_FCMNotification instance) =>
     <String, dynamic>{'title': instance.title, 'body': instance.body};
 
 _FCMData _$FCMDataFromJson(Map json) => _FCMData(
-  details:
-      json['details'] == null
-          ? null
-          : FCMDetails.fromJson(
-            Map<String, dynamic>.from(json['details'] as Map),
-          ),
+  details: json['details'] == null
+      ? null
+      : FCMDetails.fromJson(Map<String, dynamic>.from(json['details'] as Map)),
 );
 
 Map<String, dynamic> _$FCMDataToJson(_FCMData instance) => <String, dynamic>{
@@ -49,28 +50,20 @@ Map<String, dynamic> _$FCMDataToJson(_FCMData instance) => <String, dynamic>{
 };
 
 _FCMDetails _$FCMDetailsFromJson(Map json) => _FCMDetails(
-  tx:
-      json['tx'] == null
-          ? null
-          : FCMTx.fromJson(Map<String, dynamic>.from(json['tx'] as Map)),
-  pegPayout:
-      json['peg_payout'] == null
-          ? null
-          : FCMPeg.fromJson(
-            Map<String, dynamic>.from(json['peg_payout'] as Map),
-          ),
-  pegDetected:
-      json['peg_detected'] == null
-          ? null
-          : FCMPeg.fromJson(
-            Map<String, dynamic>.from(json['peg_detected'] as Map),
-          ),
-  orderCancelled:
-      json['order_cancelled'] == null
-          ? null
-          : FCMOrderCancelled.fromJson(
-            Map<String, dynamic>.from(json['order_cancelled'] as Map),
-          ),
+  tx: json['tx'] == null
+      ? null
+      : FCMTx.fromJson(Map<String, dynamic>.from(json['tx'] as Map)),
+  pegPayout: json['peg_payout'] == null
+      ? null
+      : FCMPeg.fromJson(Map<String, dynamic>.from(json['peg_payout'] as Map)),
+  pegDetected: json['peg_detected'] == null
+      ? null
+      : FCMPeg.fromJson(Map<String, dynamic>.from(json['peg_detected'] as Map)),
+  orderCancelled: json['order_cancelled'] == null
+      ? null
+      : FCMOrderCancelled.fromJson(
+          Map<String, dynamic>.from(json['order_cancelled'] as Map),
+        ),
 );
 
 Map<String, dynamic> _$FCMDetailsToJson(_FCMDetails instance) =>
@@ -126,16 +119,14 @@ Map<String, dynamic> _$FCMOrderCancelledToJson(_FCMOrderCancelled instance) =>
     <String, dynamic>{'order_id': instance.orderId};
 
 _FCMMessage _$FCMMessageFromJson(Map json) => _FCMMessage(
-  notification:
-      json['notification'] == null
-          ? null
-          : FCMNotification.fromJson(
-            Map<String, dynamic>.from(json['notification'] as Map),
-          ),
-  data:
-      json['data'] == null
-          ? null
-          : FCMData.fromJson(Map<String, dynamic>.from(json['data'] as Map)),
+  notification: json['notification'] == null
+      ? null
+      : FCMNotification.fromJson(
+          Map<String, dynamic>.from(json['notification'] as Map),
+        ),
+  data: json['data'] == null
+      ? null
+      : FCMData.fromJson(Map<String, dynamic>.from(json['data'] as Map)),
 );
 
 Map<String, dynamic> _$FCMMessageToJson(_FCMMessage instance) =>

@@ -22,8 +22,8 @@ class LimitPriceTextField extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionQuoteAsset = ref.watch(marketSubscribedQuoteAssetProvider);
-    final tradeDirState = ref.watch(tradeDirStateNotifierProvider);
-    final priceString = ref.watch(limitOrderPriceControllerNotifierProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
+    final priceString = ref.watch(limitOrderPriceControllerProvider);
     final insufficientPrice = ref.watch(limitInsufficientPriceProvider);
     final minimumFeeAmount = ref.watch(limitMinimumFeeAmountProvider);
 
@@ -35,7 +35,7 @@ class LimitPriceTextField extends HookConsumerWidget {
       limitPriceController.addListener(() {
         Future.microtask(() {
           ref
-              .read(limitOrderPriceControllerNotifierProvider.notifier)
+              .read(limitOrderPriceControllerProvider.notifier)
               .setState(limitPriceController.text);
         });
       });
@@ -51,7 +51,7 @@ class LimitPriceTextField extends HookConsumerWidget {
       return;
     }, [priceString]);
 
-    final indexPriceAsync = ref.watch(indexPriceButtonAsyncNotifierProvider);
+    final indexPriceAsync = ref.watch(indexPriceButtonAsyncProvider);
 
     useEffect(() {
       indexPriceAsync.maybeWhen(
@@ -59,7 +59,7 @@ class LimitPriceTextField extends HookConsumerWidget {
           limitPriceController.text = price;
 
           Future.microtask(() {
-            ref.invalidate(indexPriceButtonAsyncNotifierProvider);
+            ref.invalidate(indexPriceButtonAsyncProvider);
           });
         },
         orElse: () {},
@@ -71,10 +71,9 @@ class LimitPriceTextField extends HookConsumerWidget {
     return optionQuoteAsset.match(
       () => SizedBox(),
       (quoteAsset) => MarketAmountTextField(
-        caption:
-            tradeDirState == TradeDir.SELL
-                ? 'Offer price per unit'.tr()
-                : 'Bid price per unit'.tr(),
+        caption: tradeDirState == TradeDir.SELL
+            ? 'Offer price per unit'.tr()
+            : 'Bid price per unit'.tr(),
         asset: quoteAsset,
         controller: limitPriceController,
         autofocus: true,
@@ -84,12 +83,11 @@ class LimitPriceTextField extends HookConsumerWidget {
         showConversion: showConversion,
         showBalance: showBalance,
         showAggregate: true,
-        error:
-            insufficientPrice
-                ? LimitMinimumFeeError(
-                  text: 'MINIMUM_MUL_FEE'.tr(args: [minimumFeeAmount]),
-                )
-                : null,
+        error: insufficientPrice
+            ? LimitMinimumFeeError(
+                text: 'MINIMUM_MUL_FEE'.tr(args: [minimumFeeAmount]),
+              )
+            : null,
       ),
     );
   }

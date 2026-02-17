@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C311480DCE26AB1568A14AE /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BC0F709E40DAEDEF6D7EC8B /* Pods_Runner.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
-		82561C401FD5ACC337598EBF /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BC0F709E40DAEDEF6D7EC8B /* Pods_Runner.framework */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -19,7 +19,7 @@
 		B0CA660D274CED8100C136E1 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B0CA660C274CED8100C136E1 /* libc++.tbd */; };
 		B0E81C972C07057E00D6F78E /* sideswap_jade.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E81C962C07057E00D6F78E /* sideswap_jade.swift */; };
 		B0E81C992C07085800D6F78E /* BleImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E81C982C07085800D6F78E /* BleImpl.swift */; };
-		D473D0DE29F2D42600D4D6B6 /* libsideswap_client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D473D0DD29F2D42600D4D6B6 /* libsideswap_client.a */; };
+		D4B6CA4D2E795B07005F8D39 /* libsideswap_client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D4B6CA4C2E795B07005F8D39 /* libsideswap_client.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,7 +58,7 @@
 		B0CA660C274CED8100C136E1 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		B0E81C962C07057E00D6F78E /* sideswap_jade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = sideswap_jade.swift; sourceTree = "<group>"; };
 		B0E81C982C07085800D6F78E /* BleImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BleImpl.swift; sourceTree = "<group>"; };
-		D473D0DD29F2D42600D4D6B6 /* libsideswap_client.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsideswap_client.a; path = "../rust/target/aarch64-apple-ios/release/libsideswap_client.a"; sourceTree = "<group>"; };
+		D4B6CA4C2E795B07005F8D39 /* libsideswap_client.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libsideswap_client.a; sourceTree = "<group>"; };
 		D5E03FE7DDA056F6884837D4 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -67,10 +67,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D473D0DE29F2D42600D4D6B6 /* libsideswap_client.a in Frameworks */,
+				D4B6CA4D2E795B07005F8D39 /* libsideswap_client.a in Frameworks */,
 				B0CA660D274CED8100C136E1 /* libc++.tbd in Frameworks */,
 				B0C246272BDBAFC90026FEDF /* CoreBluetooth.framework in Frameworks */,
-				82561C401FD5ACC337598EBF /* Pods_Runner.framework in Frameworks */,
+				0C311480DCE26AB1568A14AE /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,8 +80,8 @@
 		0BF124F1BD2C83BAC49ACCE3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4B6CA4C2E795B07005F8D39 /* libsideswap_client.a */,
 				B0C246262BDBAFC90026FEDF /* CoreBluetooth.framework */,
-				D473D0DD29F2D42600D4D6B6 /* libsideswap_client.a */,
 				B0CA660C274CED8100C136E1 /* libc++.tbd */,
 				5BC0F709E40DAEDEF6D7EC8B /* Pods_Runner.framework */,
 			);
@@ -287,23 +287,6 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
-		CAD3A4D7F6EA707B1DF717EA /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		F0FC45F4BB15E0E6F1A51F94 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -405,7 +388,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LIBRARY_SEARCH_PATHS = "../../../rust/target/aarch64-apple-ios/release";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
@@ -442,6 +425,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
+					"$(PROJECT_DIR)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.sideswap.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -501,7 +485,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LIBRARY_SEARCH_PATHS = "../../../rust/target/aarch64-apple-ios/release";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -555,7 +539,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LIBRARY_SEARCH_PATHS = "../../../rust/target/aarch64-apple-ios/release";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
@@ -594,6 +578,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
+					"$(PROJECT_DIR)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.sideswap.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -630,6 +615,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
+					"$(PROJECT_DIR)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.sideswap.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";

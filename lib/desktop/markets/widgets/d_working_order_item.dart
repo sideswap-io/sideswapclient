@@ -150,7 +150,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
                   icon: Icon(Icons.edit, size: 20),
                   onPressed: () async {
                     ref
-                        .read(marketEditDetailsOrderNotifierProvider.notifier)
+                        .read(marketEditDetailsOrderProvider.notifier)
                         .setState(order);
 
                     await showDialog<void>(
@@ -162,7 +162,7 @@ class DWorkingOrderItem extends HookConsumerWidget {
                       useRootNavigator: false,
                     );
 
-                    ref.invalidate(marketEditDetailsOrderNotifierProvider);
+                    ref.invalidate(marketEditDetailsOrderProvider);
                   },
                 ),
               ],

@@ -30,19 +30,17 @@ class OrderSubmitDialog extends HookConsumerWidget {
 
       // clear order submit state
       Future.microtask(() {
-        ref.invalidate(orderSubmitNotifierProvider);
-        ref.invalidate(orderSubmitSuccessNotifierProvider);
-        ref.invalidate(orderSubmitErrorNotifierProvider);
-        ref.invalidate(orderSubmitUnregisteredGaidNotifierProvider);
+        ref.invalidate(orderSubmitProvider);
+        ref.invalidate(orderSubmitSuccessProvider);
+        ref.invalidate(orderSubmitErrorProvider);
+        ref.invalidate(orderSubmitUnregisteredGaidProvider);
       });
     });
 
-    final optionOrderSubmitSuccess = ref.watch(
-      orderSubmitSuccessNotifierProvider,
-    );
-    final optionOrderSubmitError = ref.watch(orderSubmitErrorNotifierProvider);
+    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
+    final optionOrderSubmitError = ref.watch(orderSubmitErrorProvider);
     final optionOrderSubmitUnregisteredGaid = ref.watch(
-      orderSubmitUnregisteredGaidNotifierProvider,
+      orderSubmitUnregisteredGaidProvider,
     );
 
     useEffect(
@@ -84,14 +82,12 @@ class OrderSubmitDialog extends HookConsumerWidget {
           onClose: () {
             ref.invalidate(limitOrderPriceProvider);
             ref.invalidate(limitOrderAmountProvider);
-            ref.invalidate(limitOrderAmountControllerNotifierProvider);
-            ref.invalidate(limitOrderPriceControllerNotifierProvider);
+            ref.invalidate(limitOrderAmountControllerProvider);
+            ref.invalidate(limitOrderPriceControllerProvider);
             closeCallback();
+            ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
             ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.registered);
-            ref
-                .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                .read(selectedMarketTypeButtonProvider.notifier)
                 .setSelectedMarketType(SelectedMarketTypeButtonEnum.orders);
           },
         ),
@@ -131,7 +127,7 @@ class MobileOrderSubmitUnregisteredGaid extends HookConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionUnregisteredGaid = ref.watch(
-                  orderSubmitUnregisteredGaidNotifierProvider,
+                  orderSubmitUnregisteredGaidProvider,
                 );
                 return optionUnregisteredGaid.match(
                   () => SizedBox(),
@@ -209,7 +205,7 @@ class MobileOrderSubmitErrorDialog extends HookConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionOrderSubmitError = ref.watch(
-                  orderSubmitErrorNotifierProvider,
+                  orderSubmitErrorProvider,
                 );
 
                 return optionOrderSubmitError.match(
@@ -247,9 +243,7 @@ class MobileOrderSubmitSuccessDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final optionOrderSubmitSuccess = ref.watch(
-      orderSubmitSuccessNotifierProvider,
-    );
+    final optionOrderSubmitSuccess = ref.watch(orderSubmitSuccessProvider);
 
     return SideSwapPopup(
       onClose: () {

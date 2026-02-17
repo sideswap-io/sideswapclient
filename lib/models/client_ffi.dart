@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';

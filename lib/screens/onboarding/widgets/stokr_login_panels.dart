@@ -15,9 +15,9 @@ class StokrLoginPanels extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = FlavorConfig.isDesktop
-        ? ref.watch(desktopAppThemeNotifierProvider).textTheme
+        ? ref.watch(desktopAppThemeProvider).textTheme
         : Theme.of(context).textTheme;
-    final ampId = ref.watch(ampIdNotifierProvider);
+    final ampId = ref.watch(ampIdProvider);
 
     return Column(
       children: [

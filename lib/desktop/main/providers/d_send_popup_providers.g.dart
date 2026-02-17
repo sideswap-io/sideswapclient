@@ -6,211 +6,554 @@ part of 'd_send_popup_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$sendPopupDecimalAmountHash() =>
-    r'4c0abdf688f8276e4ebbfe0e261bf278bc407710';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [sendPopupDecimalAmount].
-@ProviderFor(sendPopupDecimalAmount)
-final sendPopupDecimalAmountProvider = AutoDisposeProvider<Decimal>.internal(
-  sendPopupDecimalAmount,
-  name: r'sendPopupDecimalAmountProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupDecimalAmountHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(SendPopupAmountNotifier)
+const sendPopupAmountProvider = SendPopupAmountNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SendPopupDecimalAmountRef = AutoDisposeProviderRef<Decimal>;
-String _$sendPopupShowInsufficientFundsHash() =>
-    r'e1d7937a9e0f37645dc3301fed6ecb3c5ab27cdd';
+final class SendPopupAmountNotifierProvider
+    extends $NotifierProvider<SendPopupAmountNotifier, String> {
+  const SendPopupAmountNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupAmountProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// See also [sendPopupShowInsufficientFunds].
-@ProviderFor(sendPopupShowInsufficientFunds)
-final sendPopupShowInsufficientFundsProvider =
-    AutoDisposeProvider<bool>.internal(
-      sendPopupShowInsufficientFunds,
-      name: r'sendPopupShowInsufficientFundsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupShowInsufficientFundsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupAmountNotifierHash();
+
+  @$internal
+  @override
+  SendPopupAmountNotifier create() => SendPopupAmountNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
     );
+  }
+}
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SendPopupShowInsufficientFundsRef = AutoDisposeProviderRef<bool>;
-String _$sendPopupDefaultCurrencyConversionHash() =>
-    r'52e166d8e385a01d42ba4da86ae0c09e11834b4e';
-
-/// See also [sendPopupDefaultCurrencyConversion].
-@ProviderFor(sendPopupDefaultCurrencyConversion)
-final sendPopupDefaultCurrencyConversionProvider =
-    AutoDisposeProvider<String?>.internal(
-      sendPopupDefaultCurrencyConversion,
-      name: r'sendPopupDefaultCurrencyConversionProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupDefaultCurrencyConversionHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SendPopupDefaultCurrencyConversionRef = AutoDisposeProviderRef<String?>;
-String _$sendPopupParseAddressHash() =>
-    r'54f49c84816603f78c5d51867f3828dff5bdb4ce';
-
-/// See also [sendPopupParseAddress].
-@ProviderFor(sendPopupParseAddress)
-final sendPopupParseAddressProvider =
-    AutoDisposeProvider<Either<Exception, SendPopupAddressResult>>.internal(
-      sendPopupParseAddress,
-      name: r'sendPopupParseAddressProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupParseAddressHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SendPopupParseAddressRef =
-    AutoDisposeProviderRef<Either<Exception, SendPopupAddressResult>>;
 String _$sendPopupAmountNotifierHash() =>
     r'fc04a7624f668ec6ee35f8e2a75e6fb4095489e7';
 
-/// See also [SendPopupAmountNotifier].
-@ProviderFor(SendPopupAmountNotifier)
-final sendPopupAmountNotifierProvider =
-    NotifierProvider<SendPopupAmountNotifier, String>.internal(
-      SendPopupAmountNotifier.new,
-      name: r'sendPopupAmountNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupAmountNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$SendPopupAmountNotifier extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$SendPopupAmountNotifier = Notifier<String>;
+@ProviderFor(sendPopupDecimalAmount)
+const sendPopupDecimalAmountProvider = SendPopupDecimalAmountProvider._();
+
+final class SendPopupDecimalAmountProvider
+    extends $FunctionalProvider<Decimal, Decimal, Decimal>
+    with $Provider<Decimal> {
+  const SendPopupDecimalAmountProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupDecimalAmountProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupDecimalAmountHash();
+
+  @$internal
+  @override
+  $ProviderElement<Decimal> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Decimal create(Ref ref) {
+    return sendPopupDecimalAmount(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Decimal value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Decimal>(value),
+    );
+  }
+}
+
+String _$sendPopupDecimalAmountHash() =>
+    r'a5f436f595681039947d8001faf71bc5b9f4a375';
+
+@ProviderFor(SendPopupAddressNotifier)
+const sendPopupAddressProvider = SendPopupAddressNotifierProvider._();
+
+final class SendPopupAddressNotifierProvider
+    extends $NotifierProvider<SendPopupAddressNotifier, String> {
+  const SendPopupAddressNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupAddressProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupAddressNotifierHash();
+
+  @$internal
+  @override
+  SendPopupAddressNotifier create() => SendPopupAddressNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
 String _$sendPopupAddressNotifierHash() =>
     r'd19b4480407c0c9dad14df36f484daea8e7ad031';
 
-/// See also [SendPopupAddressNotifier].
-@ProviderFor(SendPopupAddressNotifier)
-final sendPopupAddressNotifierProvider =
-    NotifierProvider<SendPopupAddressNotifier, String>.internal(
-      SendPopupAddressNotifier.new,
-      name: r'sendPopupAddressNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupAddressNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$SendPopupAddressNotifier extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$SendPopupAddressNotifier = Notifier<String>;
-String _$sendPopupSelectedAssetIdNotifierHash() =>
-    r'e21c62c57279431cf9c4e604ec00d161b64501bf';
-
-/// See also [SendPopupSelectedAssetIdNotifier].
 @ProviderFor(SendPopupSelectedAssetIdNotifier)
-final sendPopupSelectedAssetIdNotifierProvider =
-    NotifierProvider<SendPopupSelectedAssetIdNotifier, String>.internal(
-      SendPopupSelectedAssetIdNotifier.new,
-      name: r'sendPopupSelectedAssetIdNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupSelectedAssetIdNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+const sendPopupSelectedAssetIdProvider =
+    SendPopupSelectedAssetIdNotifierProvider._();
+
+final class SendPopupSelectedAssetIdNotifierProvider
+    extends $NotifierProvider<SendPopupSelectedAssetIdNotifier, String> {
+  const SendPopupSelectedAssetIdNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupSelectedAssetIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupSelectedAssetIdNotifierHash();
+
+  @$internal
+  @override
+  SendPopupSelectedAssetIdNotifier create() =>
+      SendPopupSelectedAssetIdNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
     );
+  }
+}
 
-typedef _$SendPopupSelectedAssetIdNotifier = Notifier<String>;
-String _$sendPopupReceiveConversionNotifierHash() =>
-    r'97b36bb2411e5c33abfb6342343969a860c2db17';
+String _$sendPopupSelectedAssetIdNotifierHash() =>
+    r'2fccfca0a5ae61177849004516f831fab35f1bc5';
 
-/// See also [SendPopupReceiveConversionNotifier].
+abstract class _$SendPopupSelectedAssetIdNotifier extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(SendPopupReceiveConversionNotifier)
-final sendPopupReceiveConversionNotifierProvider =
-    AutoDisposeNotifierProvider<
-      SendPopupReceiveConversionNotifier,
-      String
-    >.internal(
-      SendPopupReceiveConversionNotifier.new,
-      name: r'sendPopupReceiveConversionNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupReceiveConversionNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+const sendPopupReceiveConversionProvider =
+    SendPopupReceiveConversionNotifierProvider._();
+
+final class SendPopupReceiveConversionNotifierProvider
+    extends $NotifierProvider<SendPopupReceiveConversionNotifier, String> {
+  const SendPopupReceiveConversionNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupReceiveConversionProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$sendPopupReceiveConversionNotifierHash();
+
+  @$internal
+  @override
+  SendPopupReceiveConversionNotifier create() =>
+      SendPopupReceiveConversionNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
     );
+  }
+}
 
-typedef _$SendPopupReceiveConversionNotifier = AutoDisposeNotifier<String>;
-String _$sendPopupValidDataInsertedHash() =>
-    r'4321fb0628d487403c6106c1a3638df629ad4c8e';
+String _$sendPopupReceiveConversionNotifierHash() =>
+    r'77ba1fe2c2a5817daa98ec4f25a43784b17edc6b';
 
-/// See also [SendPopupValidDataInserted].
+abstract class _$SendPopupReceiveConversionNotifier extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(SendPopupValidDataInserted)
-final sendPopupValidDataInsertedProvider =
-    AutoDisposeAsyncNotifierProvider<SendPopupValidDataInserted, bool>.internal(
-      SendPopupValidDataInserted.new,
-      name: r'sendPopupValidDataInsertedProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupValidDataInsertedHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const sendPopupValidDataInsertedProvider =
+    SendPopupValidDataInsertedProvider._();
 
-typedef _$SendPopupValidDataInserted = AutoDisposeAsyncNotifier<bool>;
-String _$sendPopupAddMoreOutputsButtonEnabledHash() =>
-    r'5f2225e2b77a62e82261f0b2c9208546434858eb';
+final class SendPopupValidDataInsertedProvider
+    extends $AsyncNotifierProvider<SendPopupValidDataInserted, bool> {
+  const SendPopupValidDataInsertedProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupValidDataInsertedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// See also [SendPopupAddMoreOutputsButtonEnabled].
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupValidDataInsertedHash();
+
+  @$internal
+  @override
+  SendPopupValidDataInserted create() => SendPopupValidDataInserted();
+}
+
+String _$sendPopupValidDataInsertedHash() =>
+    r'a37e8eacb2914f8d53fd398245a6772c5328d2f4';
+
+abstract class _$SendPopupValidDataInserted extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(SendPopupAddMoreOutputsButtonEnabled)
-final sendPopupAddMoreOutputsButtonEnabledProvider =
-    AutoDisposeAsyncNotifierProvider<
-      SendPopupAddMoreOutputsButtonEnabled,
-      bool
-    >.internal(
-      SendPopupAddMoreOutputsButtonEnabled.new,
-      name: r'sendPopupAddMoreOutputsButtonEnabledProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupAddMoreOutputsButtonEnabledHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const sendPopupAddMoreOutputsButtonEnabledProvider =
+    SendPopupAddMoreOutputsButtonEnabledProvider._();
 
-typedef _$SendPopupAddMoreOutputsButtonEnabled = AutoDisposeAsyncNotifier<bool>;
-String _$sendPopupReviewButtonEnabledHash() =>
-    r'7ff88602c1fed8c4094087b33bc6145ca16d2d0a';
+final class SendPopupAddMoreOutputsButtonEnabledProvider
+    extends $AsyncNotifierProvider<SendPopupAddMoreOutputsButtonEnabled, bool> {
+  const SendPopupAddMoreOutputsButtonEnabledProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupAddMoreOutputsButtonEnabledProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$sendPopupAddMoreOutputsButtonEnabledHash();
+
+  @$internal
+  @override
+  SendPopupAddMoreOutputsButtonEnabled create() =>
+      SendPopupAddMoreOutputsButtonEnabled();
+}
+
+String _$sendPopupAddMoreOutputsButtonEnabledHash() =>
+    r'def221c981f1c06085806545932f99440fee8530';
+
+abstract class _$SendPopupAddMoreOutputsButtonEnabled
+    extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
 /// Accept only liquidnetwork or elements address type
-///
-/// Copied from [SendPopupReviewButtonEnabled].
-@ProviderFor(SendPopupReviewButtonEnabled)
-final sendPopupReviewButtonEnabledProvider =
-    AutoDisposeAsyncNotifierProvider<
-      SendPopupReviewButtonEnabled,
-      bool
-    >.internal(
-      SendPopupReviewButtonEnabled.new,
-      name: r'sendPopupReviewButtonEnabledProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sendPopupReviewButtonEnabledHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
 
-typedef _$SendPopupReviewButtonEnabled = AutoDisposeAsyncNotifier<bool>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(SendPopupReviewButtonEnabled)
+const sendPopupReviewButtonEnabledProvider =
+    SendPopupReviewButtonEnabledProvider._();
+
+/// Accept only liquidnetwork or elements address type
+final class SendPopupReviewButtonEnabledProvider
+    extends $AsyncNotifierProvider<SendPopupReviewButtonEnabled, bool> {
+  /// Accept only liquidnetwork or elements address type
+  const SendPopupReviewButtonEnabledProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupReviewButtonEnabledProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupReviewButtonEnabledHash();
+
+  @$internal
+  @override
+  SendPopupReviewButtonEnabled create() => SendPopupReviewButtonEnabled();
+}
+
+String _$sendPopupReviewButtonEnabledHash() =>
+    r'f751e4bde69fdbd395384820b80513da37952673';
+
+/// Accept only liquidnetwork or elements address type
+
+abstract class _$SendPopupReviewButtonEnabled extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(sendPopupShowInsufficientFunds)
+const sendPopupShowInsufficientFundsProvider =
+    SendPopupShowInsufficientFundsProvider._();
+
+final class SendPopupShowInsufficientFundsProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const SendPopupShowInsufficientFundsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupShowInsufficientFundsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupShowInsufficientFundsHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return sendPopupShowInsufficientFunds(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$sendPopupShowInsufficientFundsHash() =>
+    r'58bbd47af1e922d7872a1b74efb835f9ebb0a44e';
+
+@ProviderFor(sendPopupDefaultCurrencyConversion)
+const sendPopupDefaultCurrencyConversionProvider =
+    SendPopupDefaultCurrencyConversionProvider._();
+
+final class SendPopupDefaultCurrencyConversionProvider
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  const SendPopupDefaultCurrencyConversionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupDefaultCurrencyConversionProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$sendPopupDefaultCurrencyConversionHash();
+
+  @$internal
+  @override
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  String? create(Ref ref) {
+    return sendPopupDefaultCurrencyConversion(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$sendPopupDefaultCurrencyConversionHash() =>
+    r'bf4e614908269bf8031cd4523e162a230e0b9ddc';
+
+@ProviderFor(sendPopupParseAddress)
+const sendPopupParseAddressProvider = SendPopupParseAddressProvider._();
+
+final class SendPopupParseAddressProvider
+    extends
+        $FunctionalProvider<
+          Either<Exception, SendPopupAddressResult>,
+          Either<Exception, SendPopupAddressResult>,
+          Either<Exception, SendPopupAddressResult>
+        >
+    with $Provider<Either<Exception, SendPopupAddressResult>> {
+  const SendPopupParseAddressProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sendPopupParseAddressProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sendPopupParseAddressHash();
+
+  @$internal
+  @override
+  $ProviderElement<Either<Exception, SendPopupAddressResult>> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  Either<Exception, SendPopupAddressResult> create(Ref ref) {
+    return sendPopupParseAddress(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Either<Exception, SendPopupAddressResult> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride:
+          $SyncValueProvider<Either<Exception, SendPopupAddressResult>>(value),
+    );
+  }
+}
+
+String _$sendPopupParseAddressHash() =>
+    r'2e76a587ed887b799c87bd35753156a043aaacc5';

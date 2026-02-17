@@ -152,10 +152,7 @@ class SideSwapPageHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleStyle = ref
-        .watch(desktopAppThemeNotifierProvider)
-        .typography
-        .title;
+    final titleStyle = ref.watch(desktopAppThemeProvider).typography.title;
     final leading = this.leading;
     final horizontalPadding = SideSwapPageHeader.horizontalPadding(context);
     return Padding(
@@ -173,7 +170,7 @@ class SideSwapPageHeader extends ConsumerWidget {
               child: title ?? const SizedBox(),
             ),
           ),
-          if (commandBar != null) commandBar!,
+          ?commandBar,
         ],
       ),
     );

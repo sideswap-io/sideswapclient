@@ -21,9 +21,7 @@ class QrReceiveAddress extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const qrWidgetSize = 263.0;
 
-    final jadeVerifyAddressState = ref.watch(
-      jadeVerifyAddressStateNotifierProvider,
-    );
+    final jadeVerifyAddressState = ref.watch(jadeVerifyAddressStateProvider);
     final receiveAddress = ref.watch(currentReceiveAddressProvider);
     final isJadeWallet = ref.watch(isJadeWalletProvider);
 
@@ -128,6 +126,28 @@ class QrReceiveAddress extends HookConsumerWidget {
               ),
             ),
           ],
+          JadeVerifyAddressStateError() => [
+            DecoratedBox(
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1.0,
+                    style: BorderStyle.solid,
+                    color: SideSwapColors.brightTurquoise,
+                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  jadeVerifyAddressState.message ??
+                      'Error verifying address'.tr(),
+                  style: const TextStyle(color: SideSwapColors.bitterSweet),
+                ),
+              ),
+            ),
+          ],
           _ => [const SizedBox()],
         },
         const SizedBox(height: 16),
@@ -177,7 +197,7 @@ class QrReceiveAddress extends HookConsumerWidget {
                   iconWidth: 48,
                   onTap: () {
                     ref
-                        .read(jadeVerifyAddressStateNotifierProvider.notifier)
+                        .read(jadeVerifyAddressStateProvider.notifier)
                         .setState(JadeVerifyAddressState.verifying());
                     final msg = To();
                     msg.jadeVerifyAddress = Address(

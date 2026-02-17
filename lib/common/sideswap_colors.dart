@@ -538,19 +538,34 @@ class SideSwapColors {
       });
   static const int _darkCerulean = 0xFF0E4D72;
 
-  // #0x002336
+  // #021C36
   static const MaterialColor maastrichtBlue =
       MaterialColor(_maastrichtBlue, <int, Color>{
-        50: Color.fromRGBO(0, 35, 54, .1),
-        100: Color.fromRGBO(0, 35, 54, .2),
-        200: Color.fromRGBO(0, 35, 54, .3),
-        300: Color.fromRGBO(0, 35, 54, .4),
-        400: Color.fromRGBO(0, 35, 54, .5),
-        500: Color.fromRGBO(0, 35, 54, .6),
-        600: Color.fromRGBO(0, 35, 54, .7),
-        700: Color.fromRGBO(0, 35, 54, .8),
-        800: Color.fromRGBO(0, 35, 54, .9),
-        900: Color.fromRGBO(0, 35, 54, 1),
+        50: Color.fromRGBO(2, 28, 54, .1),
+        100: Color.fromRGBO(2, 28, 54, .2),
+        200: Color.fromRGBO(2, 28, 54, .3),
+        300: Color.fromRGBO(2, 28, 54, .4),
+        400: Color.fromRGBO(2, 28, 54, .5),
+        500: Color.fromRGBO(2, 28, 54, .6),
+        600: Color.fromRGBO(2, 28, 54, .7),
+        700: Color.fromRGBO(2, 28, 54, .8),
+        800: Color.fromRGBO(2, 28, 54, .9),
+        900: Color.fromRGBO(2, 28, 54, 1),
       });
-  static const int _maastrichtBlue = 0xFF002336;
+  static const int _maastrichtBlue = 0xFF021C36;
+
+  // #234262
+  static const MaterialColor indigo = MaterialColor(_indigo, <int, Color>{
+    50: Color.fromRGBO(35, 66, 98, .1),
+    100: Color.fromRGBO(35, 66, 98, .2),
+    200: Color.fromRGBO(35, 66, 98, .3),
+    300: Color.fromRGBO(35, 66, 98, .4),
+    400: Color.fromRGBO(35, 66, 98, .5),
+    500: Color.fromRGBO(35, 66, 98, .6),
+    600: Color.fromRGBO(35, 66, 98, .7),
+    700: Color.fromRGBO(35, 66, 98, .8),
+    800: Color.fromRGBO(35, 66, 98, .9),
+    900: Color.fromRGBO(35, 66, 98, 1),
+  });
+  static const int _indigo = 0xFF234262;
 }

@@ -6,162 +6,398 @@ part of 'limit_review_order_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$limitReviewOrderPriceHash() =>
-    r'cc6e197c022816ae385b66119366abcd8e7b9e4a';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [limitReviewOrderPrice].
-@ProviderFor(limitReviewOrderPrice)
-final limitReviewOrderPriceProvider = AutoDisposeProvider<OrderAmount>.internal(
-  limitReviewOrderPrice,
-  name: r'limitReviewOrderPriceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$limitReviewOrderPriceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(MarketLimitTrackIndexPriceStateNotifier)
+const marketLimitTrackIndexPriceStateProvider =
+    MarketLimitTrackIndexPriceStateNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LimitReviewOrderPriceRef = AutoDisposeProviderRef<OrderAmount>;
-String _$limitReviewOrderAggregateVolumeHash() =>
-    r'5d323e37b494495f93d42ee459f6fafc41fcb1a7';
+final class MarketLimitTrackIndexPriceStateNotifierProvider
+    extends $NotifierProvider<MarketLimitTrackIndexPriceStateNotifier, bool> {
+  const MarketLimitTrackIndexPriceStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'marketLimitTrackIndexPriceStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// See also [limitReviewOrderAggregateVolume].
-@ProviderFor(limitReviewOrderAggregateVolume)
-final limitReviewOrderAggregateVolumeProvider =
-    AutoDisposeProvider<MarketOrderAggregateVolumeProvider>.internal(
-      limitReviewOrderAggregateVolume,
-      name: r'limitReviewOrderAggregateVolumeProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$limitReviewOrderAggregateVolumeHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
+  @override
+  String debugGetCreateSourceHash() =>
+      _$marketLimitTrackIndexPriceStateNotifierHash();
+
+  @$internal
+  @override
+  MarketLimitTrackIndexPriceStateNotifier create() =>
+      MarketLimitTrackIndexPriceStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
     );
+  }
+}
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LimitReviewOrderAggregateVolumeRef =
-    AutoDisposeProviderRef<MarketOrderAggregateVolumeProvider>;
-String _$limitReviewOrderAggregateVolumeTooHighHash() =>
-    r'b6bc9c9ec47578239ea07c45b1f09921e40e015f';
-
-/// See also [limitReviewOrderAggregateVolumeTooHigh].
-@ProviderFor(limitReviewOrderAggregateVolumeTooHigh)
-final limitReviewOrderAggregateVolumeTooHighProvider =
-    AutoDisposeProvider<bool>.internal(
-      limitReviewOrderAggregateVolumeTooHigh,
-      name: r'limitReviewOrderAggregateVolumeTooHighProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$limitReviewOrderAggregateVolumeTooHighHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LimitReviewOrderAggregateVolumeTooHighRef =
-    AutoDisposeProviderRef<bool>;
-String _$limitReviewOrderInsufficientPriceHash() =>
-    r'2c65a277c88eb2149b24e51d3053e8a96effb963';
-
-/// See also [limitReviewOrderInsufficientPrice].
-@ProviderFor(limitReviewOrderInsufficientPrice)
-final limitReviewOrderInsufficientPriceProvider =
-    AutoDisposeProvider<bool>.internal(
-      limitReviewOrderInsufficientPrice,
-      name: r'limitReviewOrderInsufficientPriceProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$limitReviewOrderInsufficientPriceHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LimitReviewOrderInsufficientPriceRef = AutoDisposeProviderRef<bool>;
-String _$limitReviewOrderSubmitButtonEnabledHash() =>
-    r'8df46fb98853443f5d706d61a3b24bbc614999ae';
-
-/// See also [limitReviewOrderSubmitButtonEnabled].
-@ProviderFor(limitReviewOrderSubmitButtonEnabled)
-final limitReviewOrderSubmitButtonEnabledProvider =
-    AutoDisposeProvider<bool>.internal(
-      limitReviewOrderSubmitButtonEnabled,
-      name: r'limitReviewOrderSubmitButtonEnabledProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$limitReviewOrderSubmitButtonEnabledHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LimitReviewOrderSubmitButtonEnabledRef = AutoDisposeProviderRef<bool>;
-String _$trackingRangeConverterHash() =>
-    r'b79f11fae9bb77a75cd7c0e144088df080c07f35';
-
-/// See also [trackingRangeConverter].
-@ProviderFor(trackingRangeConverter)
-final trackingRangeConverterProvider =
-    AutoDisposeProvider<TrackingRangeConverter>.internal(
-      trackingRangeConverter,
-      name: r'trackingRangeConverterProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$trackingRangeConverterHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef TrackingRangeConverterRef =
-    AutoDisposeProviderRef<TrackingRangeConverter>;
 String _$marketLimitTrackIndexPriceStateNotifierHash() =>
     r'7fba1f0bf9fc12c1bf141637f5391df1a283accb';
 
-/// See also [MarketLimitTrackIndexPriceStateNotifier].
-@ProviderFor(MarketLimitTrackIndexPriceStateNotifier)
-final marketLimitTrackIndexPriceStateNotifierProvider =
-    AutoDisposeNotifierProvider<
-      MarketLimitTrackIndexPriceStateNotifier,
-      bool
-    >.internal(
-      MarketLimitTrackIndexPriceStateNotifier.new,
-      name: r'marketLimitTrackIndexPriceStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$marketLimitTrackIndexPriceStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$MarketLimitTrackIndexPriceStateNotifier
+    extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$MarketLimitTrackIndexPriceStateNotifier = AutoDisposeNotifier<bool>;
+@ProviderFor(MarketLimitTrackIndexPriceValueNotifier)
+const marketLimitTrackIndexPriceValueProvider =
+    MarketLimitTrackIndexPriceValueNotifierProvider._();
+
+final class MarketLimitTrackIndexPriceValueNotifierProvider
+    extends
+        $NotifierProvider<
+          MarketLimitTrackIndexPriceValueNotifier,
+          TrackingValue
+        > {
+  const MarketLimitTrackIndexPriceValueNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'marketLimitTrackIndexPriceValueProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$marketLimitTrackIndexPriceValueNotifierHash();
+
+  @$internal
+  @override
+  MarketLimitTrackIndexPriceValueNotifier create() =>
+      MarketLimitTrackIndexPriceValueNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TrackingValue value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TrackingValue>(value),
+    );
+  }
+}
+
 String _$marketLimitTrackIndexPriceValueNotifierHash() =>
     r'33555dbaf5e16e67c754a846ded7b599e403b333';
 
-/// See also [MarketLimitTrackIndexPriceValueNotifier].
-@ProviderFor(MarketLimitTrackIndexPriceValueNotifier)
-final marketLimitTrackIndexPriceValueNotifierProvider =
-    AutoDisposeNotifierProvider<
-      MarketLimitTrackIndexPriceValueNotifier,
-      TrackingValue
-    >.internal(
-      MarketLimitTrackIndexPriceValueNotifier.new,
-      name: r'marketLimitTrackIndexPriceValueNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$marketLimitTrackIndexPriceValueNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$MarketLimitTrackIndexPriceValueNotifier
+    extends $Notifier<TrackingValue> {
+  TrackingValue build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<TrackingValue, TrackingValue>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<TrackingValue, TrackingValue>,
+              TrackingValue,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$MarketLimitTrackIndexPriceValueNotifier =
-    AutoDisposeNotifier<TrackingValue>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(limitReviewOrderPrice)
+const limitReviewOrderPriceProvider = LimitReviewOrderPriceProvider._();
+
+final class LimitReviewOrderPriceProvider
+    extends $FunctionalProvider<OrderAmount, OrderAmount, OrderAmount>
+    with $Provider<OrderAmount> {
+  const LimitReviewOrderPriceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'limitReviewOrderPriceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$limitReviewOrderPriceHash();
+
+  @$internal
+  @override
+  $ProviderElement<OrderAmount> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  OrderAmount create(Ref ref) {
+    return limitReviewOrderPrice(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(OrderAmount value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<OrderAmount>(value),
+    );
+  }
+}
+
+String _$limitReviewOrderPriceHash() =>
+    r'a45bfb9a7afe33950567e1d8788a8fadec0e0906';
+
+@ProviderFor(limitReviewOrderAggregateVolume)
+const limitReviewOrderAggregateVolumeProvider =
+    LimitReviewOrderAggregateVolumeProvider._();
+
+final class LimitReviewOrderAggregateVolumeProvider
+    extends
+        $FunctionalProvider<
+          MarketOrderAggregateVolumeProvider,
+          MarketOrderAggregateVolumeProvider,
+          MarketOrderAggregateVolumeProvider
+        >
+    with $Provider<MarketOrderAggregateVolumeProvider> {
+  const LimitReviewOrderAggregateVolumeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'limitReviewOrderAggregateVolumeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$limitReviewOrderAggregateVolumeHash();
+
+  @$internal
+  @override
+  $ProviderElement<MarketOrderAggregateVolumeProvider> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  MarketOrderAggregateVolumeProvider create(Ref ref) {
+    return limitReviewOrderAggregateVolume(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MarketOrderAggregateVolumeProvider value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MarketOrderAggregateVolumeProvider>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$limitReviewOrderAggregateVolumeHash() =>
+    r'9adfa8003c8865bdf6189c8a3f9b0561daa01dce';
+
+@ProviderFor(limitReviewOrderAggregateVolumeTooHigh)
+const limitReviewOrderAggregateVolumeTooHighProvider =
+    LimitReviewOrderAggregateVolumeTooHighProvider._();
+
+final class LimitReviewOrderAggregateVolumeTooHighProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const LimitReviewOrderAggregateVolumeTooHighProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'limitReviewOrderAggregateVolumeTooHighProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$limitReviewOrderAggregateVolumeTooHighHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return limitReviewOrderAggregateVolumeTooHigh(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$limitReviewOrderAggregateVolumeTooHighHash() =>
+    r'b6bc9c9ec47578239ea07c45b1f09921e40e015f';
+
+@ProviderFor(limitReviewOrderInsufficientPrice)
+const limitReviewOrderInsufficientPriceProvider =
+    LimitReviewOrderInsufficientPriceProvider._();
+
+final class LimitReviewOrderInsufficientPriceProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const LimitReviewOrderInsufficientPriceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'limitReviewOrderInsufficientPriceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$limitReviewOrderInsufficientPriceHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return limitReviewOrderInsufficientPrice(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$limitReviewOrderInsufficientPriceHash() =>
+    r'2c65a277c88eb2149b24e51d3053e8a96effb963';
+
+@ProviderFor(limitReviewOrderSubmitButtonEnabled)
+const limitReviewOrderSubmitButtonEnabledProvider =
+    LimitReviewOrderSubmitButtonEnabledProvider._();
+
+final class LimitReviewOrderSubmitButtonEnabledProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const LimitReviewOrderSubmitButtonEnabledProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'limitReviewOrderSubmitButtonEnabledProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$limitReviewOrderSubmitButtonEnabledHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return limitReviewOrderSubmitButtonEnabled(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$limitReviewOrderSubmitButtonEnabledHash() =>
+    r'd9b42ba648052af46b27f7b86153bfa2b139f4e1';
+
+@ProviderFor(trackingRangeConverter)
+const trackingRangeConverterProvider = TrackingRangeConverterProvider._();
+
+final class TrackingRangeConverterProvider
+    extends
+        $FunctionalProvider<
+          TrackingRangeConverter,
+          TrackingRangeConverter,
+          TrackingRangeConverter
+        >
+    with $Provider<TrackingRangeConverter> {
+  const TrackingRangeConverterProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'trackingRangeConverterProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$trackingRangeConverterHash();
+
+  @$internal
+  @override
+  $ProviderElement<TrackingRangeConverter> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  TrackingRangeConverter create(Ref ref) {
+    return trackingRangeConverter(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TrackingRangeConverter value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TrackingRangeConverter>(value),
+    );
+  }
+}
+
+String _$trackingRangeConverterHash() =>
+    r'b79f11fae9bb77a75cd7c0e144088df080c07f35';

@@ -32,7 +32,7 @@ class WalletMain extends HookConsumerWidget {
 
     return Consumer(
       builder: (context, ref, _) {
-        final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+        final walletMainArguments = ref.watch(uiStateArgsProvider);
         final currentPageIndex = walletMainArguments.currentIndex;
         final navigationItemEnum = walletMainArguments.navigationItemEnum;
 
@@ -89,7 +89,7 @@ class WalletMain extends HookConsumerWidget {
                 index,
               );
               ref
-                  .read(uiStateArgsNotifierProvider.notifier)
+                  .read(uiStateArgsProvider.notifier)
                   .setWalletMainArguments(newWalletMainArguments);
 
               final navigationItemEnum =
@@ -101,7 +101,7 @@ class WalletMain extends HookConsumerWidget {
                   ref.read(swapHelperProvider).switchToSwaps(),
                 WalletMainNavigationItemEnum.markets =>
                   ref
-                      .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                      .read(selectedMarketTypeButtonProvider.notifier)
                       .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap),
                 _ => () {}(),
               });
@@ -118,7 +118,7 @@ class WalletMainChildPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+    final walletMainArguments = ref.watch(uiStateArgsProvider);
     final navigationItemEnum = walletMainArguments.navigationItemEnum;
 
     return switch (navigationItemEnum) {

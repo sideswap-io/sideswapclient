@@ -20,32 +20,31 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdNotifierProvider);
-    final textTheme = ref.watch(desktopAppThemeNotifierProvider).textTheme;
-    final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
+    final ampId = ref.watch(ampIdProvider);
+    final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
+    final pegxLoginState = ref.watch(pegxLoginStateProvider);
     final gaidWaiting = useState(false);
 
     useEffect(() {
       Future.microtask(
-        () =>
-            (switch (pegxLoginState) {
-              PegxLoginStateGaidWaiting() => () {
-                gaidWaiting.value = true;
-              },
-              PegxLoginStateGaidAdded() => () {
-                ref
-                    .read(pageStatusNotifierProvider.notifier)
-                    .setStatus(Status.pegxSubmitFinish);
-              },
-              PegxLoginStateGaidError() => () {
-                ref
-                    .read(pegxWebsocketClientProvider)
-                    .errorAndGoBack(
-                      'Adding AMP ID failed or cancelled by the user'.tr(),
-                    );
-              },
-              _ => () {},
-            }()),
+        () => (switch (pegxLoginState) {
+          PegxLoginStateGaidWaiting() => () {
+            gaidWaiting.value = true;
+          },
+          PegxLoginStateGaidAdded() => () {
+            ref
+                .read(pageStatusProvider.notifier)
+                .setStatus(Status.pegxSubmitFinish);
+          },
+          PegxLoginStateGaidError() => () {
+            ref
+                .read(pegxWebsocketClientProvider)
+                .errorAndGoBack(
+                  'Adding AMP ID failed or cancelled by the user'.tr(),
+                );
+          },
+          _ => () {},
+        }()),
       );
 
       return;
@@ -112,7 +111,7 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                       height: 49,
                       onPressed: () {
                         ref
-                            .read(pageStatusNotifierProvider.notifier)
+                            .read(pageStatusProvider.notifier)
                             .setStatus(Status.ampRegister);
                       },
                       child: Text('CANCEL'.tr()),
@@ -121,12 +120,11 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                     DCustomFilledBigButton(
                       width: 245,
                       height: 49,
-                      onPressed:
-                          gaidWaiting.value
-                              ? null
-                              : () {
-                                ref.read(pegxWebsocketClientProvider).addGaid();
-                              },
+                      onPressed: gaidWaiting.value
+                          ? null
+                          : () {
+                              ref.read(pegxWebsocketClientProvider).addGaid();
+                            },
                       child: Row(
                         children: [
                           const Spacer(),

@@ -108,7 +108,7 @@ class DFirstLaunch extends HookConsumerWidget {
 
                   // and also reset network settings model
                   ref
-                      .read(networkSettingsNotifierProvider.notifier)
+                      .read(networkSettingsProvider.notifier)
                       .setModel(const NetworkSettingsModelEmpty());
 
                   exit(0);
@@ -127,9 +127,9 @@ class DFirstLaunch extends HookConsumerWidget {
       }
     });
 
-    final lang = ref.watch(localesNotifierProvider);
+    final lang = ref.watch(localesProvider);
 
-    final serverLoginState = ref.watch(serverLoginNotifierProvider);
+    final serverLoginState = ref.watch(serverLoginProvider);
 
     return Stack(
       key: ValueKey(lang),
@@ -186,9 +186,9 @@ class DFirstLaunch extends HookConsumerWidget {
                 child: DCustomFilledBigButton(
                   onPressed: () async {
                     ref
-                        .read(firstLaunchStateNotifierProvider.notifier)
+                        .read(firstLaunchStateProvider.notifier)
                         .setFirstLaunchState(
-                          const FirstLaunchStateCreateWallet(),
+                          const FirstLaunchStateTypeCreateWallet(),
                         );
 
                     await ref
@@ -205,13 +205,13 @@ class DFirstLaunch extends HookConsumerWidget {
                   width: 266,
                   onPressed: () {
                     ref.read(walletProvider).cleanAppStates();
-                    ref.invalidate(mnemonicWordItemsNotifierProvider);
+                    ref.invalidate(mnemonicWordItemsProvider);
                     ref.read(walletProvider).setReviewLicenseImportWallet();
 
                     ref
-                        .read(firstLaunchStateNotifierProvider.notifier)
+                        .read(firstLaunchStateProvider.notifier)
                         .setFirstLaunchState(
-                          const FirstLaunchStateImportWallet(),
+                          const FirstLaunchStateTypeImportWallet(),
                         );
                   },
                   child: Text('IMPORT WALLET'.tr()),
@@ -225,7 +225,7 @@ class DFirstLaunch extends HookConsumerWidget {
                     width: 266,
                     onPressed: () {
                       ref
-                          .read(pageStatusNotifierProvider.notifier)
+                          .read(pageStatusProvider.notifier)
                           .setStatus(Status.jadeImport);
                     },
                     child: Row(
@@ -300,7 +300,7 @@ class DeleteWalletButton extends ConsumerWidget {
         ),
         onPressed: () {
           ref
-              .read(launchPageDeleteWalletNotifierProvider.notifier)
+              .read(launchPageDeleteWalletProvider.notifier)
               .setState(const LaunchPageDeleteWalletStateDelete());
         },
       ),

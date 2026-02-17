@@ -50,11 +50,10 @@ class IndexPriceRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonStyle =
-        ref
-            .watch(desktopAppThemeNotifierProvider)
-            .buttonThemeData
-            .defaultButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeProvider)
+        .buttonThemeData
+        .defaultButtonStyle;
 
     return Row(
       children: [
@@ -120,7 +119,7 @@ class IndexPriceRow extends ConsumerWidget {
           ),
           onPressed: () {
             ref
-                .read(indexPriceButtonAsyncNotifierProvider.notifier)
+                .read(indexPriceButtonAsyncProvider.notifier)
                 .setIndexPrice(price);
           },
         ),

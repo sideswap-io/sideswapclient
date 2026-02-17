@@ -45,7 +45,7 @@ class DWorkingOrders extends ConsumerWidget {
         Flexible(
           child: Consumer(
             builder: (context, ref, child) {
-              final ownOrders = ref.watch(marketOwnOrdersNotifierProvider);
+              final ownOrders = ref.watch(marketOwnOrdersProvider);
 
               if (ownOrders.isEmpty) {
                 return Column(
@@ -68,8 +68,9 @@ class DWorkingOrdersList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final uiOwnOrders = ref.watch(marketUiOwnOrdersProvider);
-    final buttonStyle =
-        ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeProvider)
+        .buttonWithoutBorderStyle;
 
     return CustomScrollView(
       slivers: [
@@ -109,7 +110,7 @@ class DWorkingOrdersEmpty extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isConnected = ref.watch(serverConnectionNotifierProvider);
+    final isConnected = ref.watch(serverConnectionProvider);
 
     return Text(
       isConnected ? 'No working orders'.tr() : 'Connecting ...'.tr(),

@@ -4,6 +4,7 @@
   "todo-tree.tree.showCountsInTree": false,
   "todo-tree.tree.showBadges": true,
   "dart.showTodos": false,
+  "dart.mcpServer": true,
   "editor.tokenColorCustomizations": {
     "textMateRules": []
   }

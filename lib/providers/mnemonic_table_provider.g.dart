@@ -6,73 +6,207 @@ part of 'mnemonic_table_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$wordListFutureHash() => r'fdf11f450abf94c6b4d72ebfbee516c506552f53';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [wordListFuture].
-@ProviderFor(wordListFuture)
-final wordListFutureProvider = AutoDisposeFutureProvider<List<String>>.internal(
-  wordListFuture,
-  name: r'wordListFutureProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$wordListFutureHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(CurrentMnemonicIndexNotifier)
+const currentMnemonicIndexProvider = CurrentMnemonicIndexNotifierProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef WordListFutureRef = AutoDisposeFutureProviderRef<List<String>>;
+final class CurrentMnemonicIndexNotifierProvider
+    extends $NotifierProvider<CurrentMnemonicIndexNotifier, int> {
+  const CurrentMnemonicIndexNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentMnemonicIndexProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentMnemonicIndexNotifierHash();
+
+  @$internal
+  @override
+  CurrentMnemonicIndexNotifier create() => CurrentMnemonicIndexNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
 String _$currentMnemonicIndexNotifierHash() =>
     r'a65a762a7477c5df5ccbcc21658c12c0b5da13b6';
 
-/// See also [CurrentMnemonicIndexNotifier].
-@ProviderFor(CurrentMnemonicIndexNotifier)
-final currentMnemonicIndexNotifierProvider =
-    AutoDisposeNotifierProvider<CurrentMnemonicIndexNotifier, int>.internal(
-      CurrentMnemonicIndexNotifier.new,
-      name: r'currentMnemonicIndexNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$currentMnemonicIndexNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$CurrentMnemonicIndexNotifier extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$CurrentMnemonicIndexNotifier = AutoDisposeNotifier<int>;
+@ProviderFor(wordListFuture)
+const wordListFutureProvider = WordListFutureProvider._();
+
+final class WordListFutureProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<String>>,
+          List<String>,
+          FutureOr<List<String>>
+        >
+    with $FutureModifier<List<String>>, $FutureProvider<List<String>> {
+  const WordListFutureProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'wordListFutureProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$wordListFutureHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<String>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<String>> create(Ref ref) {
+    return wordListFuture(ref);
+  }
+}
+
+String _$wordListFutureHash() => r'fdf11f450abf94c6b4d72ebfbee516c506552f53';
+
+@ProviderFor(MnemonicWordsCounterNotifier)
+const mnemonicWordsCounterProvider = MnemonicWordsCounterNotifierProvider._();
+
+final class MnemonicWordsCounterNotifierProvider
+    extends $NotifierProvider<MnemonicWordsCounterNotifier, int> {
+  const MnemonicWordsCounterNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mnemonicWordsCounterProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$mnemonicWordsCounterNotifierHash();
+
+  @$internal
+  @override
+  MnemonicWordsCounterNotifier create() => MnemonicWordsCounterNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
 String _$mnemonicWordsCounterNotifierHash() =>
     r'c7d1d4a52fcf275557cc20cec522ff3609ab8de6';
 
-/// See also [MnemonicWordsCounterNotifier].
-@ProviderFor(MnemonicWordsCounterNotifier)
-final mnemonicWordsCounterNotifierProvider =
-    NotifierProvider<MnemonicWordsCounterNotifier, int>.internal(
-      MnemonicWordsCounterNotifier.new,
-      name: r'mnemonicWordsCounterNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$mnemonicWordsCounterNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$MnemonicWordsCounterNotifier extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$MnemonicWordsCounterNotifier = Notifier<int>;
-String _$mnemonicWordItemsNotifierHash() =>
-    r'66405177fefb00bb4ac13a1b4134fa2951db36d4';
-
-/// See also [MnemonicWordItemsNotifier].
 @ProviderFor(MnemonicWordItemsNotifier)
-final mnemonicWordItemsNotifierProvider =
-    NotifierProvider<MnemonicWordItemsNotifier, Map<int, WordItem>>.internal(
-      MnemonicWordItemsNotifier.new,
-      name: r'mnemonicWordItemsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$mnemonicWordItemsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const mnemonicWordItemsProvider = MnemonicWordItemsNotifierProvider._();
 
-typedef _$MnemonicWordItemsNotifier = Notifier<Map<int, WordItem>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class MnemonicWordItemsNotifierProvider
+    extends $NotifierProvider<MnemonicWordItemsNotifier, Map<int, WordItem>> {
+  const MnemonicWordItemsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mnemonicWordItemsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$mnemonicWordItemsNotifierHash();
+
+  @$internal
+  @override
+  MnemonicWordItemsNotifier create() => MnemonicWordItemsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<int, WordItem> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<int, WordItem>>(value),
+    );
+  }
+}
+
+String _$mnemonicWordItemsNotifierHash() =>
+    r'ca38839f4025cb815b31021b4075fe22ca64903f';
+
+abstract class _$MnemonicWordItemsNotifier
+    extends $Notifier<Map<int, WordItem>> {
+  Map<int, WordItem> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<Map<int, WordItem>, Map<int, WordItem>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<int, WordItem>, Map<int, WordItem>>,
+              Map<int, WordItem>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

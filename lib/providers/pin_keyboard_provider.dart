@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -53,8 +52,9 @@ class PinKeyboardHelper {
       return;
     }
 
-    final oldPinKeys =
-        oldValue.runes.map((e) => String.fromCharCode(e)).toList();
+    final oldPinKeys = oldValue.runes
+        .map((e) => String.fromCharCode(e))
+        .toList();
     for (var _ in oldPinKeys) {
       // backspace
       keyPressed(9);

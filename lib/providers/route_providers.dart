@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/app_main.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -127,7 +126,7 @@ class RouteName {
 
 @Riverpod(keepAlive: true)
 MobileRoutePage mobileRoutePage(Ref ref) {
-  final status = ref.watch(pageStatusNotifierProvider);
+  final status = ref.watch(pageStatusProvider);
 
   return MobileRoutePage(ref: ref, status: status);
 }
@@ -301,25 +300,25 @@ class MobileRoutePage {
 
 @Riverpod(keepAlive: true)
 DesktopRoutePage desktopRoutePage(Ref ref) {
-  final status = ref.watch(pageStatusNotifierProvider);
-  final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
+  final status = ref.watch(pageStatusProvider);
+  final firstLaunchStateType = ref.watch(firstLaunchStateProvider);
 
   return DesktopRoutePage(
     ref: ref,
     status: status,
-    firstLaunchState: firstLaunchState,
+    firstLaunchStateType: firstLaunchStateType,
   );
 }
 
 class DesktopRoutePage {
   final Ref ref;
   final Status status;
-  final FirstLaunchState firstLaunchState;
+  final FirstLaunchStateType firstLaunchStateType;
 
   DesktopRoutePage({
     required this.ref,
     required this.status,
-    required this.firstLaunchState,
+    required this.firstLaunchStateType,
   });
 
   Future<void> mapStatus() async {
@@ -360,7 +359,7 @@ class DesktopRoutePage {
         (route) => false,
       ),
       Status.pinWelcome || Status.pinSetup => () async {
-        if (firstLaunchState == const FirstLaunchStateEmpty()) {
+        if (firstLaunchStateType == const FirstLaunchStateTypeEmpty()) {
           await navigator.pushNamedAndRemoveUntil(
             RouteName.pinSetup,
             (route) => route.isFirst,
@@ -374,12 +373,12 @@ class DesktopRoutePage {
         );
       }(),
       Status.pinSuccess => () async {
-        if (firstLaunchState != const FirstLaunchStateEmpty()) {
+        if (firstLaunchStateType != const FirstLaunchStateTypeEmpty()) {
           await ref.read(walletProvider).walletBiometricSkip();
-          final firstLaunchState = ref.read(firstLaunchStateNotifierProvider);
+          final firstLaunchState = ref.read(firstLaunchStateProvider);
 
           return switch (firstLaunchState) {
-            FirstLaunchStateCreateWallet() =>
+            FirstLaunchStateTypeCreateWallet() =>
               ref.read(walletProvider).newWalletBackupPrompt(),
             _ => ref.read(walletProvider).setImportWalletBiometricPrompt(),
           };
@@ -541,7 +540,7 @@ class DesktopRoutePage {
         settings: settings,
       ),
       RouteName.pinSetup
-          when firstLaunchState != const FirstLaunchStateEmpty() =>
+          when firstLaunchStateType != const FirstLaunchStateTypeEmpty() =>
         DesktopPageRoute(builder: (_) => const DPinSetup(), settings: settings),
       RouteName.pinSetup => RawDialogRoute<Widget>(
         pageBuilder: (_, _, _) => const DPinSetup(),

@@ -29,9 +29,7 @@ class DPinProtection extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final focusNode = useFocusNode();
-
-    final pinUnlockState = ref.watch(pinUnlockStateNotifierProvider);
+    final pinUnlockState = ref.watch(pinUnlockStateProvider);
 
     useAsyncEffect(() async {
       return switch (pinUnlockState) {
@@ -42,17 +40,14 @@ class DPinProtection extends HookConsumerWidget {
         PinUnlockStateFailed() => () {
           Navigator.of(context).pop(false);
         }(),
-        PinUnlockStateWrong() => () {
-          focusNode.requestFocus();
-        }(),
+        PinUnlockStateWrong() => () {}(),
       };
     }, [pinUnlockState]);
 
     useEffect(() {
-      focusNode.requestFocus();
       ref.read(pinProtectionHelperProvider).init();
       return;
-    }, [focusNode]);
+    }, const []);
 
     final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
 
@@ -64,13 +59,7 @@ class DPinProtection extends HookConsumerWidget {
       return;
     }, [pinKeyStream]);
 
-    final pinCode = ref.watch(pinCodeProtectionNotifierProvider);
-
-    useEffect(() {
-      focusNode.requestFocus();
-
-      return;
-    }, [pinCode]);
+    final pinCode = ref.watch(pinCodeProtectionProvider);
 
     return SideSwapPopupPage(
       onClose: () {
@@ -100,32 +89,61 @@ class DPinProtection extends HookConsumerWidget {
                   child: Consumer(
                     builder: ((context, ref, child) {
                       final pinProtectionState = ref.watch(
-                        pinProtectionStateNotifierProvider,
+                        pinProtectionStateProvider,
                       );
 
-                      return DPinTextField(
-                        focusNode: focusNode,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(8),
+                      final errorMessage = switch (pinProtectionState) {
+                        PinProtectionStateError(message: final message) =>
+                          message ?? '',
+                        _ => '',
+                      };
+
+                      return Column(
+                        children: [
+                          DPinTextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(8),
+                            ],
+                            pin: pinCode,
+                            enabled:
+                                pinProtectionState !=
+                                const PinProtectionState.waiting(),
+                            error:
+                                pinProtectionState is PinProtectionStateError,
+                            errorMessage: '',
+                            onChanged: (value) {
+                              ref
+                                  .read(pinKeyboardHelperProvider)
+                                  .onDesktopKeyChanged(pinCode, value);
+                            },
+                            onSubmitted: (_) {
+                              ref
+                                  .read(pinKeyboardHelperProvider)
+                                  .keyPressed(11);
+                            },
+                          ),
+                          switch (errorMessage.isNotEmpty) {
+                            true => SizedBox(
+                              height: 74,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(
+                                    errorMessage,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
+                                      color: SideSwapColors.bitterSweet,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            false => const SizedBox(height: 74),
+                          },
                         ],
-                        pin: pinCode,
-                        enabled:
-                            pinProtectionState !=
-                            const PinProtectionState.waiting(),
-                        error: pinProtectionState is PinProtectionStateError,
-                        errorMessage:
-                            (pinProtectionState is PinProtectionStateError)
-                                ? pinProtectionState.message ?? ''
-                                : '',
-                        onChanged: (value) {
-                          ref
-                              .read(pinKeyboardHelperProvider)
-                              .onDesktopKeyChanged(pinCode, value);
-                        },
-                        onSubmitted: (_) {
-                          ref.read(pinKeyboardHelperProvider).keyPressed(11);
-                        },
                       );
                     }),
                   ),
@@ -135,21 +153,20 @@ class DPinProtection extends HookConsumerWidget {
                   child: Consumer(
                     builder: (context, ref, child) {
                       final firstLaunchState = ref.watch(
-                        firstLaunchStateNotifierProvider,
+                        firstLaunchStateProvider,
                       );
-                      final pinFieldState = ref.watch(
-                        pinFieldStateNotifierProvider,
-                      );
+                      final pinFieldState = ref.watch(pinFieldStateProvider);
 
                       return DPinKeyboard(
                         width: 260,
                         height: 206,
                         acceptType:
-                            (firstLaunchState != const FirstLaunchState.empty())
-                                ? pinFieldState == const PinFieldState.second()
-                                    ? PinKeyboardAcceptType.save
-                                    : PinKeyboardAcceptType.icon
-                                : iconType,
+                            (firstLaunchState !=
+                                const FirstLaunchStateType.empty())
+                            ? pinFieldState == const PinFieldState.second()
+                                  ? PinKeyboardAcceptType.save
+                                  : PinKeyboardAcceptType.icon
+                            : iconType,
                       );
                     },
                   ),
@@ -160,21 +177,20 @@ class DPinProtection extends HookConsumerWidget {
           ),
         ),
       ),
-      actions:
-          showBackButton
-              ? [
-                Center(
-                  child: DCustomTextBigButton(
-                    width: 260,
-                    height: 44,
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                    child: Text('Back'.tr()),
-                  ),
+      actions: showBackButton
+          ? [
+              Center(
+                child: DCustomTextBigButton(
+                  width: 260,
+                  height: 44,
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text('Back'.tr()),
                 ),
-              ]
-              : null,
+              ),
+            ]
+          : null,
     );
   }
 }

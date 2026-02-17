@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
@@ -105,13 +106,14 @@ class ProductGroup extends HookConsumerWidget {
 }
 
 class ProductItem extends ConsumerWidget {
-  final MarketInfo marketInfo;
-  final VoidCallback? onMarketSelected;
   const ProductItem({
     this.onMarketSelected,
     required this.marketInfo,
     super.key,
   });
+
+  final MarketInfo marketInfo;
+  final VoidCallback? onMarketSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -119,18 +121,15 @@ class ProductItem extends ConsumerWidget {
       builder: (context, states) {
         return Consumer(
           builder: (context, ref, child) {
-            final baseAsset =
-                ref
-                    .watch(baseAssetByMarketInfoProvider(marketInfo))
-                    .toNullable();
-            final quoteAsset =
-                ref
-                    .watch(quoteAssetByMarketInfoProvider(marketInfo))
-                    .toNullable();
-            final subscribedAssetPair =
-                ref
-                    .watch(marketSubscribedAssetPairNotifierProvider)
-                    .toNullable();
+            final baseAsset = ref
+                .watch(baseAssetByMarketInfoProvider(marketInfo))
+                .toNullable();
+            final quoteAsset = ref
+                .watch(quoteAssetByMarketInfoProvider(marketInfo))
+                .toNullable();
+            final subscribedAssetPair = ref
+                .watch(marketSubscribedAssetPairProvider)
+                .toNullable();
             final baseIcon = ref
                 .read(assetImageRepositoryProvider)
                 .getVerySmallImage(baseAsset?.assetId);
@@ -138,35 +137,43 @@ class ProductItem extends ConsumerWidget {
                 .read(assetImageRepositoryProvider)
                 .getVerySmallImage(quoteAsset?.assetId);
 
-            return Container(
-              padding: const EdgeInsets.only(top: 7, bottom: 7),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                color:
-                    marketInfo.assetPair == subscribedAssetPair
-                        ? SideSwapColors.brightTurquoise
-                        : (states.isHovering
+            final tooltip = '${baseAsset?.ticker} / ${quoteAsset?.ticker}';
+
+            return Tooltip(
+              message: tooltip,
+              waitDuration: Duration(seconds: 1),
+              child: Container(
+                padding: const EdgeInsets.only(top: 7, bottom: 7),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  color: marketInfo.assetPair == subscribedAssetPair
+                      ? SideSwapColors.brightTurquoise
+                      : (states.isHovering
                             ? SideSwapColors.chathamsBlue
                             : null),
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 6),
-                  baseIcon,
-                  const SizedBox(width: 6),
-                  Text(
-                    '${baseAsset?.ticker ?? ''}  /',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(width: 8),
-                  quoteIcon,
-                  const SizedBox(width: 6),
-                  Text(
-                    quoteAsset?.ticker ?? '',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(width: 6),
-                ],
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 6),
+                    baseIcon,
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: MiddleEllipsisText(
+                        text: baseAsset?.ticker ?? '',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    Text('  /', style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    quoteIcon,
+                    const SizedBox(width: 6),
+                    Text(
+                      quoteAsset?.ticker ?? '',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                ),
               ),
             );
           },
@@ -174,7 +181,7 @@ class ProductItem extends ConsumerWidget {
       },
       onPressed: () {
         ref
-            .read(marketSubscribedAssetPairNotifierProvider.notifier)
+            .read(marketSubscribedAssetPairProvider.notifier)
             .setState(marketInfo.assetPair);
         onMarketSelected?.call();
       },

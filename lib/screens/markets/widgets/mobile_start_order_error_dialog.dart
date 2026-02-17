@@ -38,7 +38,7 @@ class MobileStartOrderErrorDialog extends HookConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final optionStartOrderError = ref.watch(
-                  marketStartOrderErrorNotifierProvider,
+                  marketStartOrderErrorProvider,
                 );
 
                 return optionStartOrderError.match(

@@ -5,19 +5,19 @@ part 'inputs_providers.g.dart';
 part 'inputs_providers.freezed.dart';
 
 @freezed
-sealed class InputsWalletTypeFlag with _$InputsWalletTypeFlag {
-  const factory InputsWalletTypeFlag.regular() = InputsWalletTypeFlagRegular;
-  const factory InputsWalletTypeFlag.amp() = InputsWalletTypeFlagAmp;
+sealed class InputsWalletFlagType with _$InputsWalletFlagType {
+  const factory InputsWalletFlagType.regular() = InputsWalletFlagTypeRegular;
+  const factory InputsWalletFlagType.amp() = InputsWalletFlagTypeAmp;
 }
 
 @riverpod
-class InputsWalletTypeFlagNotifier extends _$InputsWalletTypeFlagNotifier {
+class InputsWalletFlagNotifier extends _$InputsWalletFlagNotifier {
   @override
-  InputsWalletTypeFlag build() {
-    return const InputsWalletTypeFlag.regular();
+  InputsWalletFlagType build() {
+    return const InputsWalletFlagType.regular();
   }
 
-  void setInputsWalletTypeFlag(InputsWalletTypeFlag value) {
+  void setInputsWalletTypeFlag(InputsWalletFlagType value) {
     state = value;
   }
 }

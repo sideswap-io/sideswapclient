@@ -10,8 +10,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double toolbarHeight;
   final Color backgroundColor;
   final bool showTrailingButton;
-  final VoidCallback? onTrailingButtonPressed;
   final Widget? trailingWidget;
+  final bool centerTitle;
 
   const CustomAppBar({
     super.key,
@@ -22,8 +22,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.toolbarHeight = kToolbarHeight,
     this.backgroundColor = Colors.transparent,
     this.showTrailingButton = false,
-    this.onTrailingButtonPressed,
     this.trailingWidget,
+    this.centerTitle = true,
   });
 
   @override
@@ -31,22 +31,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       elevation: 0,
       backgroundColor: backgroundColor,
-      centerTitle: false,
+      centerTitle: centerTitle,
       automaticallyImplyLeading: false,
-      flexibleSpace: Align(
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title ?? '',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
+      title: Text(
+        title ?? '',
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
       actions: [

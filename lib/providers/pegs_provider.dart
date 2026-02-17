@@ -1,13 +1,16 @@
+import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/swap_providers.dart';
+import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -22,6 +25,7 @@ sealed class PegSubscribedValues with _$PegSubscribedValues {
     @Default(0) int pegInWalletBalance,
     @Default(0) int pegOutMinimumAmount,
     @Default(0) int pegOutWalletBalance,
+    @Default(0) double pegOutNextBlockFeeRate,
   }) = _PegSubscribedValues;
 }
 
@@ -32,6 +36,7 @@ abstract class AbstractPegRepository {
   String pegInWalletBalance();
   String pegOutMinAmount();
   String pegOutWalletBalance();
+  String pegOutNextBlockFeeRate();
   void getPegOutAmount();
 }
 
@@ -41,6 +46,8 @@ class PegRepository implements AbstractPegRepository {
   final bool serverConnected;
   final PegSubscribedValues pegSubscribedValues;
   final String liquidAssetId;
+
+  ActivePage currentActivePage = ActivePage.OTHER;
 
   PegRepository({
     required this.ref,
@@ -52,6 +59,10 @@ class PegRepository implements AbstractPegRepository {
 
   @override
   void setActivePage({ActivePage activePage = ActivePage.OTHER}) {
+    if (currentActivePage == activePage) {
+      return;
+    }
+
     if (libClientState != LibClientStateInitialized()) {
       return;
     }
@@ -63,6 +74,8 @@ class PegRepository implements AbstractPegRepository {
     final msg = To();
     msg.activePage = activePage;
     ref.read(walletProvider).sendMsg(msg);
+
+    currentActivePage = activePage;
   }
 
   @override
@@ -112,15 +125,18 @@ class PegRepository implements AbstractPegRepository {
   }
 
   @override
+  String pegOutNextBlockFeeRate() {
+    return pegSubscribedValues.pegOutNextBlockFeeRate.toString();
+  }
+
+  @override
   void getPegOutAmount() {
     ref.read(swapHelperProvider).clearNetworkStates();
     final swapType = ref.read(swapTypeProvider);
 
     if (swapType == const SwapType.pegOut()) {
-      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
-      final optionCurrentFeeRate = ref.read(
-        bitcoinCurrentFeeRateNotifierProvider,
-      );
+      final subscribe = ref.read(swapPriceSubscribeProvider);
+      final optionCurrentFeeRate = ref.read(bitcoinCurrentFeeRateProvider);
       final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
           ? ref.read(swapSendSatoshiAmountProvider)
           : null;
@@ -131,7 +147,7 @@ class PegRepository implements AbstractPegRepository {
         optionCurrentFeeRate.match(() {}, (feeRate) {
           ref
               .read(walletProvider)
-              .getPegOutAmount(sendAmount, recvAmount, feeRate.value);
+              .getPegOutAmount(sendAmount, recvAmount, feeRate);
         });
       }
     }
@@ -141,8 +157,8 @@ class PegRepository implements AbstractPegRepository {
 @riverpod
 AbstractPegRepository pegRepository(Ref ref) {
   final libClientState = ref.watch(libClientStateProvider);
-  final serverConnected = ref.watch(serverConnectionNotifierProvider);
-  final pegSubscribedValues = ref.watch(pegSubscribedValueNotifierProvider);
+  final serverConnected = ref.watch(serverConnectionProvider);
+  final pegSubscribedValues = ref.watch(pegSubscribedValueProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
   return PegRepository(
@@ -168,22 +184,33 @@ class AllPegsNotifier extends _$AllPegsNotifier {
   }
 }
 
+// Keep here all peg items by id.
+// Peg-ins items can be in initiated state (not received yet)
+// and it's txidRecv can be empty!
 @Riverpod(keepAlive: true)
 Map<String, TransItem> allPegsById(Ref ref) {
   final allPegsByIdMap = <String, TransItem>{};
-  final allPegs = ref.watch(allPegsNotifierProvider);
+  final allPegs = ref.watch(allPegsProvider);
 
   for (var key in allPegs.keys) {
     final peg = allPegs[key]!;
 
     for (var item in peg) {
-      if (item.peg.isPegIn) {
-        allPegsByIdMap[item.peg.txidRecv] = item;
-        continue;
-      }
-      allPegsByIdMap[item.peg.txidSend] = item;
+      allPegsByIdMap[item.id] = item;
     }
   }
+
+  // for (var key in allPegs.keys) {
+  //   final peg = allPegs[key]!;
+
+  //   for (var item in peg) {
+  //     if (item.peg.isPegIn) {
+  //       allPegsByTxidMap[item.peg.txidSend] = item;
+  //       continue;
+  //     }
+  //     allPegsByTxidMap[item.peg.txidRecv] = item;
+  //   }
+  // }
 
   return allPegsByIdMap;
 }
@@ -217,5 +244,188 @@ class PegSubscribedValueNotifier extends _$PegSubscribedValueNotifier {
         pegOutWalletBalance: subscribedValue.pegOutWalletBalance.toInt(),
       );
     }
+    if (subscribedValue.hasPegOutNextBlockFeeRate()) {
+      state = current.copyWith(
+        pegOutNextBlockFeeRate: subscribedValue.pegOutNextBlockFeeRate,
+      );
+    }
   }
+}
+
+@riverpod
+Option<String> pegOrderIdForTransItem(Ref ref, TransItem transItem) {
+  final allPegs = ref.watch(allPegsProvider);
+  return Option.fromNullable(
+    allPegs.entries
+        .firstWhereOrNull((entry) => entry.value.contains(transItem))
+        ?.key,
+  );
+}
+
+@freezed
+sealed class PegOrderFeeData with _$PegOrderFeeData {
+  const factory PegOrderFeeData({
+    required Decimal feeRate,
+    required int bitcoinNetworkFee,
+  }) = _PegOrderFeeData;
+}
+
+@Riverpod(keepAlive: true)
+class PegOrderFeesNotifier extends _$PegOrderFeesNotifier {
+  @override
+  Map<String, PegOrderFeeData> build() {
+    return {};
+  }
+
+  void setState(From_UpdatedPegs pegs) {
+    final allPegs = {...state};
+    final decimalFeeRate =
+        Decimal.tryParse(pegs.feeRate.toString()) ?? Decimal.zero;
+    if (decimalFeeRate == Decimal.zero) {
+      return;
+    }
+    allPegs[pegs.orderId] = PegOrderFeeData(
+      feeRate: decimalFeeRate,
+      bitcoinNetworkFee: pegs.bitcoinNetworkFee.toInt(),
+    );
+    state = allPegs;
+  }
+}
+
+@riverpod
+Option<PegOrderFeeData> pegOrderFeeRates(Ref ref, TransItem transItem) {
+  final optionOrderId = ref.watch(pegOrderIdForTransItemProvider(transItem));
+  final pegOrderFee = ref.watch(pegOrderFeesProvider);
+  return optionOrderId.flatMap(
+    (orderId) => Option.fromNullable(pegOrderFee[orderId]),
+  );
+}
+
+@riverpod
+bool availablePegOrderFeeChange(Ref ref, TransItem transItem) {
+  return transItem.hasPeg()
+      ? transItem.peg.isPegIn
+            ? false
+            : transItem.peg.txidRecv.isEmpty
+      : false;
+}
+
+@riverpod
+String pegOutNextBlockFeeRate(Ref ref) {
+  final repository = ref.watch(pegRepositoryProvider);
+  return repository.pegOutNextBlockFeeRate();
+}
+
+@riverpod
+PegOutEditFeeRateHelper pegOutEditFeeRateHelper(
+  Ref ref,
+  Option<String> optionSelectedFeeRate,
+) {
+  final feeRates = ref.watch(bitcoinFeeRatesProvider);
+  return PegOutEditFeeRateHelper(feeRates, optionSelectedFeeRate);
+}
+
+/// Helper for peg-out fee rate editing UI logic.
+class PegOutEditFeeRateHelper {
+  final List<FeeRate> feeRates;
+  final Option<String> optionSelectedFeeRate;
+
+  // Magic numbers as static const for clarity and maintainability
+  static const double fallbackFeeRate = 1.0;
+  static const double minFee = 1.0;
+  static const double maxFeeMultiplier = 1.5;
+
+  PegOutEditFeeRateHelper(this.feeRates, this.optionSelectedFeeRate);
+
+  /// Returns the two-block fee rate, or fallback if not found.
+  double _getTwoBlockFeeRate() =>
+      feeRates.firstWhereOrNull((e) => e.blocks == 2)?.value ?? fallbackFeeRate;
+
+  /// Returns the max fee for the slider.
+  double _getMaxFee(double twoBlockFeeRate) =>
+      maxFeeMultiplier * twoBlockFeeRate;
+
+  /// Parses the current fee from string, or falls back to [fallback].
+  double _parseCurrentFee(String value, double fallback) =>
+      double.tryParse(value) ?? fallback;
+
+  /// Returns the min, max, and current fee for the slider.
+  ({double minFee, double maxFee, double currentFee}) sliderValues() {
+    final twoBlockFeeRate = _getTwoBlockFeeRate();
+    final maxFee = _getMaxFee(twoBlockFeeRate);
+    final currentFee = optionSelectedFeeRate.match(() => twoBlockFeeRate, (
+      value,
+    ) {
+      final current = _parseCurrentFee(value, twoBlockFeeRate);
+      return current < maxFee ? current : maxFee;
+    });
+    return (minFee: minFee, maxFee: maxFee, currentFee: currentFee);
+  }
+
+  /// Returns the current fee as a string for display.
+  String get currentFeeStr {
+    return optionSelectedFeeRate.match(() => 'N/A', (value) {
+      final parsed = double.tryParse(value);
+      return parsed == null ? 'N/A' : '${parsed.toStringAsFixed(2)} sats';
+    });
+  }
+
+  /// Returns the default fee rate, capped at maxFee.
+  double defaultFeeRate() {
+    final twoBlockFeeRate = _getTwoBlockFeeRate();
+    final maxFee = _getMaxFee(twoBlockFeeRate);
+    final currentFee = optionSelectedFeeRate.match(() => twoBlockFeeRate, (
+      value,
+    ) {
+      final current = _parseCurrentFee(value, twoBlockFeeRate);
+      return current < maxFee ? current : maxFee;
+    });
+    return currentFee;
+  }
+}
+
+@freezed
+sealed class PegOutEditFeeRateResult with _$PegOutEditFeeRateResult {
+  const factory PegOutEditFeeRateResult.success() =
+      _PegOutEditFeeRateResultSuccess;
+  const factory PegOutEditFeeRateResult.failure(String error) =
+      _PegOutEditFeeRateResultFailure;
+}
+
+@riverpod
+class PegOutEditFeeRateResultStream extends _$PegOutEditFeeRateResultStream {
+  @override
+  Stream<Option<PegOutEditFeeRateResult>> build() async* {
+    yield* Stream<Option<PegOutEditFeeRateResult>>.empty();
+  }
+
+  void setResult(PegOutEditFeeRateResult result) {
+    state = AsyncValue.data(Option.of(result));
+  }
+}
+
+@riverpod
+Option<TransItem> pegDetailsTransItem(Ref ref) {
+  final optionCurrentTxid = ref.watch(currentTxPopupItemProvider);
+
+  return optionCurrentTxid.match(() => none(), (txid) {
+    final allTxs = ref.watch(allTxsProvider);
+    final allPegs = ref.watch(allPegsProvider);
+
+    final txTransItem = allTxs[txid];
+
+    final transItem =
+        allPegs.values
+            .map(
+              (item) => item.firstWhereOrNull(
+                (pegTransItem) =>
+                    pegTransItem.peg.txidRecv == txid ||
+                    pegTransItem.peg.txidSend == txid,
+              ),
+            )
+            .firstWhereOrNull((item) => item != null) ??
+        txTransItem;
+
+    return Option.fromNullable(transItem);
+  });
 }

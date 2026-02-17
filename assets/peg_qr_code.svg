@@ -1,0 +1,95 @@
+<svg width="120" height="120" fill="none" version="1.1" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+ <g fill="#23526E">
+  <rect x="104" y="40" width="8" height="8"/>
+  <rect x="104" y="8" width="8" height="8"/>
+  <rect x="96" y="48" width="8" height="8"/>
+ </g>
+ <rect x="98" y="2" width="20" height="20" stroke="#22526E" stroke-width="4"/>
+ <g fill="#23526E">
+  <rect x="104" y="56" width="8" height="8"/>
+  <rect x="104" y="24" width="8" height="8"/>
+  <rect x="96" y="64" width="8" height="8"/>
+  <rect x="96" y="32" width="8" height="8"/>
+  <rect x="104" y="72" width="8" height="8"/>
+  <rect x="96" y="80" width="8" height="8"/>
+  <rect x="104" y="88" width="8" height="8"/>
+  <rect x="104" y="104" width="8" height="8"/>
+ </g>
+ <path d="m118 98v20h-20v-20h20z" stroke="#22526E" stroke-width="4"/>
+ <g fill="#23526E">
+  <rect x="8" y="40" width="8" height="8"/>
+  <rect x="24" y="40" width="8" height="8"/>
+  <rect x="40" y="40" width="8" height="8"/>
+  <rect x="56" y="40" width="8" height="8"/>
+  <rect x="88" y="40" width="8" height="8"/>
+  <rect x="72" y="40" width="8" height="8"/>
+  <rect x="8" y="8" width="8" height="8"/>
+  <rect x="24" y="8" width="8" height="8"/>
+  <rect x="40" y="8" width="8" height="8"/>
+  <rect x="56" y="8" width="8" height="8"/>
+  <rect x="88" y="8" width="8" height="8"/>
+  <rect x="72" y="8" width="8" height="8"/>
+  <rect x="16" y="48" width="8" height="8"/>
+  <rect x="32" y="48" width="8" height="8"/>
+  <rect x="48" y="48" width="8" height="8"/>
+  <rect x="64" y="48" width="8" height="8"/>
+  <rect x="80" y="48" width="8" height="8"/>
+  <rect x="32" y="16" width="8" height="8"/>
+  <rect x="48" y="16" width="8" height="8"/>
+  <rect x="64" y="16" width="8" height="8"/>
+  <rect x="80" y="16" width="8" height="8"/>
+ </g>
+ <path d="M22 2V22H2V2H22Z" stroke="#22526E" stroke-width="4"/>
+ <g fill="#23526E">
+  <rect x="8" y="56" width="8" height="8"/>
+  <rect x="24" y="56" width="8" height="8"/>
+  <rect x="40" y="56" width="8" height="8"/>
+  <rect x="56" y="56" width="8" height="8"/>
+  <rect x="88" y="56" width="8" height="8"/>
+  <rect x="72" y="56" width="8" height="8"/>
+  <rect x="8" y="24" width="8" height="8"/>
+  <rect x="24" y="24" width="8" height="8"/>
+  <rect x="40" y="24" width="8" height="8"/>
+  <rect x="56" y="24" width="8" height="8"/>
+  <rect x="88" y="24" width="8" height="8"/>
+  <rect x="72" y="24" width="8" height="8"/>
+  <rect x="16" y="64" width="8" height="8"/>
+  <rect x="32" y="64" width="8" height="8"/>
+  <rect x="48" y="64" width="8" height="8"/>
+  <rect x="64" y="64" width="8" height="8"/>
+  <rect x="80" y="64" width="8" height="8"/>
+  <rect x="16" y="32" width="8" height="8"/>
+  <rect x="32" y="32" width="8" height="8"/>
+  <rect x="48" y="32" width="8" height="8"/>
+  <rect x="64" y="32" width="8" height="8"/>
+  <rect x="80" y="32" width="8" height="8"/>
+  <rect x="8" y="72" width="8" height="8"/>
+  <rect x="24" y="72" width="8" height="8"/>
+  <rect x="40" y="72" width="8" height="8"/>
+  <rect x="56" y="72" width="8" height="8"/>
+  <rect x="88" y="72" width="8" height="8"/>
+  <rect x="72" y="72" width="8" height="8"/>
+  <rect x="16" y="80" width="8" height="8"/>
+  <rect x="32" y="80" width="8" height="8"/>
+  <rect x="48" y="80" width="8" height="8"/>
+  <rect x="64" y="80" width="8" height="8"/>
+  <rect x="80" y="80" width="8" height="8"/>
+  <rect x="8" y="88" width="8" height="8"/>
+  <rect x="24" y="88" width="8" height="8"/>
+  <rect x="40" y="88" width="8" height="8"/>
+  <rect x="56" y="88" width="8" height="8"/>
+  <rect x="88" y="88" width="8" height="8"/>
+  <rect x="72" y="88" width="8" height="8"/>
+  <rect x="8" y="104" width="8" height="8"/>
+  <rect x="32" y="96" width="8" height="8"/>
+  <rect x="48" y="96" width="8" height="8"/>
+  <rect x="64" y="96" width="8" height="8"/>
+  <rect x="80" y="96" width="8" height="8"/>
+  <rect x="24" y="104" width="8" height="8"/>
+  <rect x="40" y="104" width="8" height="8"/>
+  <rect x="56" y="104" width="8" height="8"/>
+  <rect x="88" y="104" width="8" height="8"/>
+  <rect x="72" y="104" width="8" height="8"/>
+ </g>
+ <path d="M22 98V118H2V98H22Z" stroke="#22526E" stroke-width="4"/>
+</svg>

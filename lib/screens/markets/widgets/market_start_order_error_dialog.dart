@@ -22,7 +22,7 @@ class MarketStartOrderErrorDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final closeCallback = useCallback(() {
       // clear order submit state
-      ref.invalidate(marketStartOrderErrorNotifierProvider);
+      ref.invalidate(marketStartOrderErrorProvider);
 
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != marketStartOrderErrorRouteName;
@@ -70,7 +70,7 @@ class MarketStartOrderLowBalanceErrorDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final closeCallback = useCallback(() {
-      ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+      ref.read(quoteEventProvider.notifier).stopQuotes();
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != marketStartOrderLowBalanceErrorRouteName;
       });
@@ -94,7 +94,7 @@ class MarketStartOrderUnregisteredGaidDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final closeCallback = useCallback(() {
-      ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+      ref.read(quoteEventProvider.notifier).stopQuotes();
       Navigator.of(context, rootNavigator: false).popUntil((route) {
         return route.settings.name != marketStartOrderUnregisteredGaidRouteName;
       });

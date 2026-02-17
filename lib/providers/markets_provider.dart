@@ -7,9 +7,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:rxdart/rxdart.dart';
 
 import 'package:sideswap/common/helpers.dart' show kCoin;
 import 'package:sideswap/desktop/markets/widgets/d_preview_order_dialog.dart';
@@ -92,7 +90,7 @@ class MarketsNotifier extends _$MarketsNotifier {
 
 @riverpod
 List<MarketInfo> marketInfoByMarketType(Ref ref, MarketType_ marketType) {
-  final markets = ref.watch(marketsNotifierProvider);
+  final markets = ref.watch(marketsProvider);
   return markets.where((e) => e.type == marketType).toList();
 }
 
@@ -143,17 +141,13 @@ Widget quoteAssetIconByMarketInfo(Ref ref, MarketInfo marketInfo) {
 class MarketPublicOrdersNotifier extends _$MarketPublicOrdersNotifier {
   @override
   Map<AssetPair, List<PublicOrder>> build() {
-    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, next) {
+    ref.listen(marketSubscribedAssetPairProvider, (_, next) {
       next.match(
         () => () {},
         (assetPair) => () {
-          _subscribe(assetPair);
+          marketSubscribe(assetPair);
         },
       )();
-    });
-
-    ref.onDispose(() {
-      _unsubscribe();
     });
 
     return {};
@@ -194,13 +188,13 @@ class MarketPublicOrdersNotifier extends _$MarketPublicOrdersNotifier {
     state = orders;
   }
 
-  void _subscribe(AssetPair assetPair) {
+  void marketSubscribe(AssetPair assetPair) {
     final msg = To();
     msg.marketSubscribe = assetPair;
     ref.read(walletProvider).sendMsg(msg);
   }
 
-  void _unsubscribe() {
+  void marketUnsubscribe() {
     final msg = To();
     msg.marketUnsubscribe = Empty();
     ref.read(walletProvider).sendMsg(msg);
@@ -214,13 +208,11 @@ class DebouncedMarketPublicOrders extends _$DebouncedMarketPublicOrders {
 
   @override
   Map<AssetPair, List<PublicOrder>> build() {
-    ref.listen(marketPublicOrdersNotifierProvider, (_, next) {
+    ref.listen(marketPublicOrdersProvider, (_, next) {
       _streamController.sink.add(next);
     });
 
-    final subscription = _streamController.stream
-        .debounceTime(const Duration(milliseconds: 150))
-        .listen(_updateState);
+    final subscription = _streamController.stream.listen(_updateState);
 
     ref.onDispose(() {
       _streamController.close();
@@ -271,13 +263,13 @@ class MarketOwnOrdersNotifier extends _$MarketOwnOrdersNotifier {
 
 @riverpod
 List<UiOwnOrder> marketUiOwnOrders(Ref ref) {
-  final ownOrders = ref.watch(marketOwnOrdersNotifierProvider);
+  final ownOrders = ref.watch(marketOwnOrdersProvider);
   final amountToString = ref.watch(amountToStringProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final assetImageRepository = ref.watch(assetImageRepositoryProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
   final assetUtils = ref.watch(assetUtilsProvider);
-  final locale = ref.watch(localesNotifierProvider);
+  final locale = ref.watch(localesProvider);
 
   return ownOrders.map((e) {
     final quoteAsset = assetsState[e.assetPair.quote];
@@ -324,10 +316,8 @@ class MarketSubscribedAssetPairNotifier
 
 @riverpod
 Option<MarketInfo> subscribedMarketInfo(Ref ref) {
-  final markets = ref.watch(marketsNotifierProvider);
-  final subscribedAssetPair = ref.watch(
-    marketSubscribedAssetPairNotifierProvider,
-  );
+  final markets = ref.watch(marketsProvider);
+  final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
 
   return subscribedAssetPair.match(() => Option.none(), (assetPair) {
     final index = markets.indexWhere((e) => e.assetPair == assetPair);
@@ -409,10 +399,8 @@ class MarketPriceNotifier extends _$MarketPriceNotifier {
 @riverpod
 Option<({int satoshiIndexPrice, Option<Asset> quoteAsset})>
 marketSatoshiIndexPrice(Ref ref) {
-  final subscribedAssetPair = ref.watch(
-    marketSubscribedAssetPairNotifierProvider,
-  );
-  final marketPrices = ref.watch(marketPriceNotifierProvider);
+  final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final marketPrices = ref.watch(marketPriceProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
@@ -488,10 +476,8 @@ marketDecimalIndexPrice(Ref ref) {
 @riverpod
 Option<({int satoshiLastPrice, Option<Asset> quoteAsset})>
 marketSatoshiLastPrice(Ref ref) {
-  final subscribedAssetPair = ref.watch(
-    marketSubscribedAssetPairNotifierProvider,
-  );
-  final marketPrices = ref.watch(marketPriceNotifierProvider);
+  final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final marketPrices = ref.watch(marketPriceProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
@@ -667,9 +653,9 @@ class MarketOrderAmountControllerNotifier
   @override
   String build() {
     // cleanup when asset pair changed or order submit success
-    ref.watch(marketSubscribedAssetPairNotifierProvider);
-    ref.watch(orderSubmitSuccessNotifierProvider);
-    ref.watch(marketTypeSwitchStateNotifierProvider);
+    ref.watch(marketSubscribedAssetPairProvider);
+    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(marketTypeSwitchStateProvider);
 
     return '';
   }
@@ -681,11 +667,9 @@ class MarketOrderAmountControllerNotifier
 
 @riverpod
 OrderAmount marketOrderAmount(Ref ref) {
-  final subscribedAssetPair = ref.watch(
-    marketSubscribedAssetPairNotifierProvider,
-  );
-  final amountString = ref.watch(marketOrderAmountControllerNotifierProvider);
-  final marketSideState = ref.watch(marketSideStateNotifierProvider);
+  final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final amountString = ref.watch(marketOrderAmountControllerProvider);
+  final marketSideState = ref.watch(marketSideStateProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return subscribedAssetPair.match(
@@ -742,11 +726,11 @@ bool marketOrderTradeButtonEnabled(Ref ref) {
 class MarketQuoteNotifier extends _$MarketQuoteNotifier {
   @override
   Option<From_Quote> build() {
-    ref.listen(marketTypeSwitchStateNotifierProvider, (_, _) {
+    ref.listen(marketTypeSwitchStateProvider, (_, _) {
       _stopQuotes();
     });
 
-    ref.listen(marketSubscribedAssetPairNotifierProvider, (_, _) {
+    ref.listen(marketSubscribedAssetPairProvider, (_, _) {
       _startQuotes();
     });
 
@@ -755,31 +739,31 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
       _startQuotes();
     });
 
-    ref.listen(marketSideStateNotifierProvider, (_, _) {
+    ref.listen(marketSideStateProvider, (_, _) {
       _stopQuotes();
     });
 
-    ref.listen(tradeDirStateNotifierProvider, (_, _) {
+    ref.listen(tradeDirStateProvider, (_, _) {
       _stopQuotes();
     });
 
-    return ref.watch(quoteEventNotifierProvider);
+    return ref.watch(quoteEventProvider);
   }
 
   void _startQuotes() {
     final optionSubscribedAssetPair = ref.read(
-      marketSubscribedAssetPairNotifierProvider,
+      marketSubscribedAssetPairProvider,
     );
     final marketOrderAmount = ref.read(marketOrderAmountProvider);
-    final marketSideState = ref.read(marketSideStateNotifierProvider);
-    final tradeDir = ref.read(tradeDirStateNotifierProvider);
+    final marketSideState = ref.read(marketSideStateProvider);
+    final tradeDir = ref.read(tradeDirStateProvider);
 
     optionSubscribedAssetPair.match(
       () => () {
         _stopQuotes();
       },
       (assetPair) => () {
-        final optionStartOrderId = ref.read(marketStartOrderNotifierProvider);
+        final optionStartOrderId = ref.read(marketStartOrderProvider);
 
         if (state.isSome() && optionStartOrderId.isNone()) {
           _stopQuotes();
@@ -798,7 +782,7 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
         }
 
         ref
-            .read(quoteEventNotifierProvider.notifier)
+            .read(quoteEventProvider.notifier)
             .startQuotes(
               assetPair: assetPair,
               assetType: marketSideState == MarketSideStateBase()
@@ -812,14 +796,14 @@ class MarketQuoteNotifier extends _$MarketQuoteNotifier {
   }
 
   void _stopQuotes() {
-    ref.read(quoteEventNotifierProvider.notifier).stopQuotes();
+    ref.read(quoteEventProvider.notifier).stopQuotes();
   }
 }
 
 @riverpod
 Option<QuoteError> marketQuoteError(Ref ref) {
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
 
   return optionStartOrder.match(
     () => optionQuote.match(
@@ -842,12 +826,12 @@ Option<QuoteError> marketQuoteError(Ref ref) {
 
 @riverpod
 Option<QuoteLowBalance> marketQuoteLowBalanceError(Ref ref) {
-  final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
   final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
 
   return optionStartOrder.match(
     () => optionAssetPair.match(
@@ -889,12 +873,12 @@ Option<QuoteLowBalance> marketQuoteLowBalanceError(Ref ref) {
 
 @riverpod
 Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
-  final optionAssetPair = ref.watch(marketSubscribedAssetPairNotifierProvider);
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
   final optionSubscribedMarket = ref.watch(subscribedMarketInfoProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
 
   return optionStartOrder.match(
     () => optionAssetPair.match(
@@ -936,8 +920,8 @@ Option<QuoteSuccess> marketQuoteSuccess(Ref ref) {
 
 @riverpod
 Option<QuoteUnregisteredGaid> marketQuoteUnregisteredGaid(Ref ref) {
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
 
   return optionStartOrder.match(
     () => optionQuote.match(
@@ -963,7 +947,7 @@ Option<QuoteUnregisteredGaid> marketQuoteUnregisteredGaid(Ref ref) {
 
 @riverpod
 Option<From_AcceptQuote> marketAcceptQuote(Ref ref) {
-  return ref.watch(acceptQuoteNotifierProvider);
+  return ref.watch(acceptQuoteProvider);
 }
 
 @riverpod
@@ -1062,9 +1046,9 @@ class LimitOrderAmountControllerNotifier
   @override
   String build() {
     // cleanup when asset pair changed or order submit success
-    ref.watch(marketSubscribedAssetPairNotifierProvider);
-    ref.watch(orderSubmitSuccessNotifierProvider);
-    ref.watch(marketTypeSwitchStateNotifierProvider);
+    ref.watch(marketSubscribedAssetPairProvider);
+    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(marketTypeSwitchStateProvider);
 
     return '';
   }
@@ -1076,10 +1060,8 @@ class LimitOrderAmountControllerNotifier
 
 @riverpod
 OrderAmount limitOrderAmount(Ref ref) {
-  final subscribedAssetPair = ref.watch(
-    marketSubscribedAssetPairNotifierProvider,
-  );
-  final amountString = ref.watch(limitOrderAmountControllerNotifierProvider);
+  final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final amountString = ref.watch(limitOrderAmountControllerProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return subscribedAssetPair.match(
@@ -1124,9 +1106,9 @@ class LimitOrderPriceControllerNotifier
   @override
   String build() {
     // cleanup when asset pair changed or order submit success
-    ref.watch(marketSubscribedAssetPairNotifierProvider);
-    ref.watch(orderSubmitSuccessNotifierProvider);
-    ref.watch(marketTypeSwitchStateNotifierProvider);
+    ref.watch(marketSubscribedAssetPairProvider);
+    ref.watch(orderSubmitSuccessProvider);
+    ref.watch(marketTypeSwitchStateProvider);
 
     return '';
   }
@@ -1138,11 +1120,9 @@ class LimitOrderPriceControllerNotifier
 
 @riverpod
 OrderAmount limitOrderPrice(Ref ref) {
-  final subscribedAssetPair = ref.watch(
-    marketSubscribedAssetPairNotifierProvider,
-  );
-  final priceString = ref.watch(limitOrderPriceControllerNotifierProvider);
-  final marketSideState = ref.watch(marketSideStateNotifierProvider);
+  final subscribedAssetPair = ref.watch(marketSubscribedAssetPairProvider);
+  final priceString = ref.watch(limitOrderPriceControllerProvider);
+  final marketSideState = ref.watch(marketSideStateProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return subscribedAssetPair.match(
@@ -1192,7 +1172,7 @@ bool limitOrderTradeButtonEnabled(Ref ref) {
     return false;
   }
 
-  final optionOrderSubmit = ref.watch(orderSubmitNotifierProvider);
+  final optionOrderSubmit = ref.watch(orderSubmitProvider);
   if (optionOrderSubmit.isSome()) {
     return false;
   }
@@ -1317,7 +1297,7 @@ class MarketEditOrderAmountControllerNotifier
 
 @riverpod
 Option<OrderAmount> marketEditOrderAmount(Ref ref) {
-  final optionOrder = ref.watch(marketEditDetailsOrderNotifierProvider);
+  final optionOrder = ref.watch(marketEditDetailsOrderProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return optionOrder.match(
@@ -1327,9 +1307,7 @@ Option<OrderAmount> marketEditOrderAmount(Ref ref) {
     (order) => () {
       final assetId = order.assetPair.base;
 
-      final amountString = ref.watch(
-        marketEditOrderAmountControllerNotifierProvider,
-      );
+      final amountString = ref.watch(marketEditOrderAmountControllerProvider);
       final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: amountDecimal.toString(),
@@ -1363,7 +1341,7 @@ class MarketEditOrderPriceControllerNotifier
 
 @riverpod
 Option<OrderAmount> marketEditOrderPrice(Ref ref) {
-  final optionOrder = ref.watch(marketEditDetailsOrderNotifierProvider);
+  final optionOrder = ref.watch(marketEditDetailsOrderProvider);
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
 
   return optionOrder.match(
@@ -1373,9 +1351,7 @@ Option<OrderAmount> marketEditOrderPrice(Ref ref) {
     (order) => () {
       final assetId = order.assetPair.quote;
 
-      final amountString = ref.watch(
-        marketEditOrderPriceControllerNotifierProvider,
-      );
+      final amountString = ref.watch(marketEditOrderPriceControllerProvider);
       final amountDecimal = Decimal.tryParse(amountString) ?? Decimal.zero;
       final amountSatoshi = satoshiRepository.satoshiForAmount(
         amount: amountDecimal.toString(),
@@ -1537,7 +1513,7 @@ List<UiHistoryOrder> marketUiHistoryOrders(Ref ref) {
   final satoshiRepository = ref.watch(satoshiRepositoryProvider);
   final assetUtils = ref.watch(assetUtilsProvider);
 
-  final historyOrders = ref.watch(marketHistoryOrderNotifierProvider);
+  final historyOrders = ref.watch(marketHistoryOrderProvider);
   return historyOrders
       .map(
         (e) => UiHistoryOrder(
@@ -1610,8 +1586,8 @@ class MarketStartOrderErrorNotifier extends _$MarketStartOrderErrorNotifier {
 
 @riverpod
 Option<QuoteSuccess> marketStartOrderQuoteSuccess(Ref ref) {
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
 
@@ -1653,8 +1629,8 @@ Option<QuoteSuccess> marketStartOrderQuoteSuccess(Ref ref) {
 
 @riverpod
 Option<QuoteLowBalance> marketStartOrderLowBalanceError(Ref ref) {
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
   final assetsState = ref.watch(assetsStateProvider);
   final amountToString = ref.watch(amountToStringProvider);
 
@@ -1691,8 +1667,8 @@ Option<QuoteLowBalance> marketStartOrderLowBalanceError(Ref ref) {
 
 @riverpod
 Option<QuoteError> marketStartOrderQuoteError(Ref ref) {
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
 
   return optionQuote.match(
     () {
@@ -1718,8 +1694,8 @@ Option<QuoteError> marketStartOrderQuoteError(Ref ref) {
 
 @riverpod
 Option<QuoteUnregisteredGaid> marketStartOrderUnregisteredGaid(Ref ref) {
-  final optionQuote = ref.watch(marketQuoteNotifierProvider);
-  final optionStartOrder = ref.watch(marketStartOrderNotifierProvider);
+  final optionQuote = ref.watch(marketQuoteProvider);
+  final optionStartOrder = ref.watch(marketStartOrderProvider);
 
   return optionQuote.match(() => Option.none(), (quote) {
     return optionStartOrder.match(() => Option.none(), (startOrder) {
@@ -1761,9 +1737,9 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
     Option<PreviewOrderDialogModifiers> optionModifiers = const Option.none(),
   }) async {
     optionModifiers.match(
-      () => ref.invalidate(previewOrderDialogModifiersNotifierProvider),
+      () => ref.invalidate(previewOrderDialogModifiersProvider),
       (modifiers) => ref
-          .read(previewOrderDialogModifiersNotifierProvider.notifier)
+          .read(previewOrderDialogModifiersProvider.notifier)
           .setState(modifiers),
     );
 
@@ -1771,7 +1747,7 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
       () => () {},
       (quoteSuccess) => () async {
         ref
-            .read(previewOrderQuoteSuccessNotifierProvider.notifier)
+            .read(previewOrderQuoteSuccessProvider.notifier)
             .setState(quoteSuccess);
 
         if (context.mounted) {
@@ -1806,7 +1782,7 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
             return;
           }
 
-          ref.invalidate(previewOrderQuoteSuccessNotifierProvider);
+          ref.invalidate(previewOrderQuoteSuccessProvider);
         }
       },
     )();
@@ -1980,7 +1956,7 @@ String marketOrderButtonText(Ref ref) {
     return continueText;
   }
 
-  final jadeLockState = ref.watch(jadeLockStateNotifierProvider);
+  final jadeLockState = ref.watch(jadeLockStateProvider);
   return switch (jadeLockState) {
     JadeLockStateUnlocked() => continueText,
     _ => unlockText,

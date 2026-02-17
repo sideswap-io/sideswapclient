@@ -6,25 +6,59 @@ part of 'ui_state_args_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(UiStateArgsNotifier)
+const uiStateArgsProvider = UiStateArgsNotifierProvider._();
+
+final class UiStateArgsNotifierProvider
+    extends $NotifierProvider<UiStateArgsNotifier, WalletMainArguments> {
+  const UiStateArgsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'uiStateArgsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$uiStateArgsNotifierHash();
+
+  @$internal
+  @override
+  UiStateArgsNotifier create() => UiStateArgsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WalletMainArguments value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WalletMainArguments>(value),
+    );
+  }
+}
+
 String _$uiStateArgsNotifierHash() =>
     r'942aa310a047c6262afa94d25942b0b1ed575c6b';
 
-/// See also [UiStateArgsNotifier].
-@ProviderFor(UiStateArgsNotifier)
-final uiStateArgsNotifierProvider =
-    AutoDisposeNotifierProvider<
-      UiStateArgsNotifier,
-      WalletMainArguments
-    >.internal(
-      UiStateArgsNotifier.new,
-      name: r'uiStateArgsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$uiStateArgsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$UiStateArgsNotifier = AutoDisposeNotifier<WalletMainArguments>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$UiStateArgsNotifier extends $Notifier<WalletMainArguments> {
+  WalletMainArguments build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<WalletMainArguments, WalletMainArguments>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<WalletMainArguments, WalletMainArguments>,
+              WalletMainArguments,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
