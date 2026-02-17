@@ -36,8 +36,6 @@ popd
 popd
 
 echo "Building sideswap flutter app..."
-./deps/flutter/bin/flutter upgrade
-./deps/flutter/bin/flutter --version
 ./deps/flutter/bin/flutter clean
 ./deps/flutter/bin/flutter build linux --release
 
