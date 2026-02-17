@@ -5,7 +5,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y --no-install-recommends \
   autoconf automake autotools-dev pkg-config build-essential libtool \
-  clang git curl cmake ca-certificates \
+  clang llvm git curl cmake ca-certificates \
   libssl-dev libtool-bin  lld libudev-dev protobuf-compiler \
   ninja-build libgtk-3-dev liblzma-dev \
   unzip
@@ -36,7 +36,6 @@ popd
 popd
 
 echo "Building sideswap flutter app..."
-./deps/flutter/bin/flutter upgrade
 ./deps/flutter/bin/flutter --version
 ./deps/flutter/bin/flutter clean
 ./deps/flutter/bin/flutter build linux --release
