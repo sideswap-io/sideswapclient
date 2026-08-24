@@ -20,11 +20,11 @@ Map<String, dynamic> _$StokrSettingsModelToJson(_StokrSettingsModel instance) =>
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(StokrSettingsNotifier)
-const stokrSettingsProvider = StokrSettingsNotifierProvider._();
+final stokrSettingsProvider = StokrSettingsNotifierProvider._();
 
 final class StokrSettingsNotifierProvider
     extends $NotifierProvider<StokrSettingsNotifier, StokrSettingsModel> {
-  const StokrSettingsNotifierProvider._()
+  StokrSettingsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -58,8 +58,7 @@ abstract class _$StokrSettingsNotifier extends $Notifier<StokrSettingsModel> {
   StokrSettingsModel build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<StokrSettingsModel, StokrSettingsModel>;
     final element =
         ref.element
@@ -69,16 +68,16 @@ abstract class _$StokrSettingsNotifier extends $Notifier<StokrSettingsModel> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(StokrBlockedCountries)
-const stokrBlockedCountriesProvider = StokrBlockedCountriesProvider._();
+final stokrBlockedCountriesProvider = StokrBlockedCountriesProvider._();
 
 final class StokrBlockedCountriesProvider
     extends $AsyncNotifierProvider<StokrBlockedCountries, List<CountryCode>> {
-  const StokrBlockedCountriesProvider._()
+  StokrBlockedCountriesProvider._()
     : super(
         from: null,
         argument: null,
@@ -105,8 +104,7 @@ abstract class _$StokrBlockedCountries
   FutureOr<List<CountryCode>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CountryCode>>, List<CountryCode>>;
     final element =
@@ -117,12 +115,12 @@ abstract class _$StokrBlockedCountries
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(stokrCountryBlacklistSearch)
-const stokrCountryBlacklistSearchProvider =
+final stokrCountryBlacklistSearchProvider =
     StokrCountryBlacklistSearchFamily._();
 
 final class StokrCountryBlacklistSearchProvider
@@ -135,7 +133,7 @@ final class StokrCountryBlacklistSearchProvider
     with
         $FutureModifier<List<CountryCode>>,
         $FutureProvider<List<CountryCode>> {
-  const StokrCountryBlacklistSearchProvider._({
+  StokrCountryBlacklistSearchProvider._({
     required StokrCountryBlacklistSearchFamily super.from,
     required String super.argument,
   }) : super(
@@ -185,7 +183,7 @@ String _$stokrCountryBlacklistSearchHash() =>
 
 final class StokrCountryBlacklistSearchFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<CountryCode>>, String> {
-  const StokrCountryBlacklistSearchFamily._()
+  StokrCountryBlacklistSearchFamily._()
     : super(
         retry: null,
         name: r'stokrCountryBlacklistSearchProvider',
@@ -202,12 +200,12 @@ final class StokrCountryBlacklistSearchFamily extends $Family
 }
 
 @ProviderFor(StokrLastSelectedAssetNotifier)
-const stokrLastSelectedAssetProvider =
+final stokrLastSelectedAssetProvider =
     StokrLastSelectedAssetNotifierProvider._();
 
 final class StokrLastSelectedAssetNotifierProvider
     extends $NotifierProvider<StokrLastSelectedAssetNotifier, Option<Asset>> {
-  const StokrLastSelectedAssetNotifierProvider._()
+  StokrLastSelectedAssetNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -242,8 +240,7 @@ abstract class _$StokrLastSelectedAssetNotifier
   Option<Asset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<Asset>, Option<Asset>>;
     final element =
         ref.element
@@ -253,6 +250,6 @@ abstract class _$StokrLastSelectedAssetNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

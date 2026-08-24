@@ -87,22 +87,24 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
       return;
     }
 
-    final oldNetworkSettingsModel = NetworkSettingsModel.apply(
-      settingsNetworkType: settingsNetworkType,
-      env: env,
-      host: host,
-      port: port,
-      useTls: useTls,
-    );
-
     // if it's the same values like current, set model as empty
-    if (networkSettingsModel == oldNetworkSettingsModel) {
+    final isSameAsConfig = switch (networkSettingsModel.settingsNetworkType) {
+      SettingsNetworkType.personal =>
+        settingsNetworkType == SettingsNetworkType.personal &&
+            networkSettingsModel.env == env &&
+            networkSettingsModel.host == host &&
+            networkSettingsModel.port == port &&
+            networkSettingsModel.useTls == useTls,
+      final type => type == settingsNetworkType && networkSettingsModel.env == env,
+    };
+
+    if (isSameAsConfig) {
       state = NetworkSettingsModel.empty(
-        settingsNetworkType: networkSettingsModel.settingsNetworkType,
-        env: networkSettingsModel.env,
-        host: networkSettingsModel.host,
-        port: networkSettingsModel.port,
-        useTls: networkSettingsModel.useTls,
+        settingsNetworkType: settingsNetworkType,
+        env: env,
+        host: host,
+        port: port,
+        useTls: useTls,
       );
       save();
       return;

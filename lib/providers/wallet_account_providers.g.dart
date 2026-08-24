@@ -10,11 +10,11 @@ part of 'wallet_account_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(DefaultAccountsState)
-const defaultAccountsStateProvider = DefaultAccountsStateProvider._();
+final defaultAccountsStateProvider = DefaultAccountsStateProvider._();
 
 final class DefaultAccountsStateProvider
     extends $NotifierProvider<DefaultAccountsState, Set<AccountAsset>> {
-  const DefaultAccountsStateProvider._()
+  DefaultAccountsStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$DefaultAccountsState extends $Notifier<Set<AccountAsset>> {
   Set<AccountAsset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Set<AccountAsset>, Set<AccountAsset>>;
     final element =
         ref.element
@@ -59,12 +58,12 @@ abstract class _$DefaultAccountsState extends $Notifier<Set<AccountAsset>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(predefinedAccountAssets)
-const predefinedAccountAssetsProvider = PredefinedAccountAssetsProvider._();
+final predefinedAccountAssetsProvider = PredefinedAccountAssetsProvider._();
 
 final class PredefinedAccountAssetsProvider
     extends
@@ -74,7 +73,7 @@ final class PredefinedAccountAssetsProvider
           List<AccountAsset>
         >
     with $Provider<List<AccountAsset>> {
-  const PredefinedAccountAssetsProvider._()
+  PredefinedAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -112,13 +111,13 @@ String _$predefinedAccountAssetsHash() =>
     r'7052a7e0b4cd517e5d97be91c20d62fc4e8fd175';
 
 @ProviderFor(predefinedAssets)
-const predefinedAssetsProvider = PredefinedAssetsProvider._();
+final predefinedAssetsProvider = PredefinedAssetsProvider._();
 
 final class PredefinedAssetsProvider
     extends
         $FunctionalProvider<Iterable<Asset>, Iterable<Asset>, Iterable<Asset>>
     with $Provider<Iterable<Asset>> {
-  const PredefinedAssetsProvider._()
+  PredefinedAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -157,7 +156,7 @@ String _$predefinedAssetsHash() => r'f1609f95d2335219b2d96671e17ded0f3f48bfcb';
 ///
 
 @ProviderFor(allAlwaysShowAccountAssets)
-const allAlwaysShowAccountAssetsProvider =
+final allAlwaysShowAccountAssetsProvider =
     AllAlwaysShowAccountAssetsProvider._();
 
 /// Needed by ui which want to display limited list of assets - ex. home page wallet
@@ -173,7 +172,7 @@ final class AllAlwaysShowAccountAssetsProvider
     with $Provider<List<AccountAsset>> {
   /// Needed by ui which want to display limited list of assets - ex. home page wallet
   ///
-  const AllAlwaysShowAccountAssetsProvider._()
+  AllAlwaysShowAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -211,13 +210,13 @@ String _$allAlwaysShowAccountAssetsHash() =>
     r'dd8174c09e4645b2e96a191269cdc76bde94451a';
 
 @ProviderFor(allAlwaysShowAssets)
-const allAlwaysShowAssetsProvider = AllAlwaysShowAssetsProvider._();
+final allAlwaysShowAssetsProvider = AllAlwaysShowAssetsProvider._();
 
 final class AllAlwaysShowAssetsProvider
     extends
         $FunctionalProvider<Iterable<Asset>, Iterable<Asset>, Iterable<Asset>>
     with $Provider<Iterable<Asset>> {
-  const AllAlwaysShowAssetsProvider._()
+  AllAlwaysShowAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -254,7 +253,7 @@ String _$allAlwaysShowAssetsHash() =>
     r'5903d2990b81b2b9372404ae1781992962918097';
 
 @ProviderFor(allVisibleAccountAssets)
-const allVisibleAccountAssetsProvider = AllVisibleAccountAssetsProvider._();
+final allVisibleAccountAssetsProvider = AllVisibleAccountAssetsProvider._();
 
 final class AllVisibleAccountAssetsProvider
     extends
@@ -264,7 +263,7 @@ final class AllVisibleAccountAssetsProvider
           List<AccountAsset>
         >
     with $Provider<List<AccountAsset>> {
-  const AllVisibleAccountAssetsProvider._()
+  AllVisibleAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -302,7 +301,7 @@ String _$allVisibleAccountAssetsHash() =>
     r'9dd4e2577f0fdb41e7782685770916831d094e70';
 
 @ProviderFor(regularVisibleAccountAssets)
-const regularVisibleAccountAssetsProvider =
+final regularVisibleAccountAssetsProvider =
     RegularVisibleAccountAssetsProvider._();
 
 final class RegularVisibleAccountAssetsProvider
@@ -313,7 +312,7 @@ final class RegularVisibleAccountAssetsProvider
           List<AccountAsset>
         >
     with $Provider<List<AccountAsset>> {
-  const RegularVisibleAccountAssetsProvider._()
+  RegularVisibleAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -351,7 +350,7 @@ String _$regularVisibleAccountAssetsHash() =>
     r'89a34fda5d6e7d5557246980d4e0afd8c1b931c5';
 
 @ProviderFor(ampVisibleAccountAssets)
-const ampVisibleAccountAssetsProvider = AmpVisibleAccountAssetsProvider._();
+final ampVisibleAccountAssetsProvider = AmpVisibleAccountAssetsProvider._();
 
 final class AmpVisibleAccountAssetsProvider
     extends
@@ -361,7 +360,7 @@ final class AmpVisibleAccountAssetsProvider
           List<AccountAsset>
         >
     with $Provider<List<AccountAsset>> {
-  const AmpVisibleAccountAssetsProvider._()
+  AmpVisibleAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -402,7 +401,7 @@ String _$ampVisibleAccountAssetsHash() =>
 ///
 
 @ProviderFor(allAccountAssets)
-const allAccountAssetsProvider = AllAccountAssetsProvider._();
+final allAccountAssetsProvider = AllAccountAssetsProvider._();
 
 /// Needed by ui parts which want to search assetid over all assets - ex. market
 ///
@@ -417,7 +416,7 @@ final class AllAccountAssetsProvider
     with $Provider<List<AccountAsset>> {
   /// Needed by ui parts which want to search assetid over all assets - ex. market
   ///
-  const AllAccountAssetsProvider._()
+  AllAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -454,7 +453,7 @@ final class AllAccountAssetsProvider
 String _$allAccountAssetsHash() => r'9e8cac327c050654d1ea7f4c20f73f2da7f4b014';
 
 @ProviderFor(regularAccountAssets)
-const regularAccountAssetsProvider = RegularAccountAssetsProvider._();
+final regularAccountAssetsProvider = RegularAccountAssetsProvider._();
 
 final class RegularAccountAssetsProvider
     extends
@@ -464,7 +463,7 @@ final class RegularAccountAssetsProvider
           List<AccountAsset>
         >
     with $Provider<List<AccountAsset>> {
-  const RegularAccountAssetsProvider._()
+  RegularAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -502,7 +501,7 @@ String _$regularAccountAssetsHash() =>
     r'7d2e3c2430b79e1a3d911ce2997e55e138a81acf';
 
 @ProviderFor(ampAccountAssets)
-const ampAccountAssetsProvider = AmpAccountAssetsProvider._();
+final ampAccountAssetsProvider = AmpAccountAssetsProvider._();
 
 final class AmpAccountAssetsProvider
     extends
@@ -512,7 +511,7 @@ final class AmpAccountAssetsProvider
           List<AccountAsset>
         >
     with $Provider<List<AccountAsset>> {
-  const AmpAccountAssetsProvider._()
+  AmpAccountAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -549,12 +548,12 @@ final class AmpAccountAssetsProvider
 String _$ampAccountAssetsHash() => r'c94a5ac43a8b4d7e91c394a65bb6099d18eea286';
 
 @ProviderFor(marketTypeForAccountAsset)
-const marketTypeForAccountAssetProvider = MarketTypeForAccountAssetFamily._();
+final marketTypeForAccountAssetProvider = MarketTypeForAccountAssetFamily._();
 
 final class MarketTypeForAccountAssetProvider
     extends $FunctionalProvider<MarketType_, MarketType_, MarketType_>
     with $Provider<MarketType_> {
-  const MarketTypeForAccountAssetProvider._({
+  MarketTypeForAccountAssetProvider._({
     required MarketTypeForAccountAssetFamily super.from,
     required AccountAsset? super.argument,
   }) : super(
@@ -611,7 +610,7 @@ String _$marketTypeForAccountAssetHash() =>
 
 final class MarketTypeForAccountAssetFamily extends $Family
     with $FunctionalFamilyOverride<MarketType_, AccountAsset?> {
-  const MarketTypeForAccountAssetFamily._()
+  MarketTypeForAccountAssetFamily._()
     : super(
         retry: null,
         name: r'marketTypeForAccountAssetProvider',
@@ -628,12 +627,12 @@ final class MarketTypeForAccountAssetFamily extends $Family
 }
 
 @ProviderFor(accountAssetFromAsset)
-const accountAssetFromAssetProvider = AccountAssetFromAssetFamily._();
+final accountAssetFromAssetProvider = AccountAssetFromAssetFamily._();
 
 final class AccountAssetFromAssetProvider
     extends $FunctionalProvider<AccountAsset, AccountAsset, AccountAsset>
     with $Provider<AccountAsset> {
-  const AccountAssetFromAssetProvider._({
+  AccountAssetFromAssetProvider._({
     required AccountAssetFromAssetFamily super.from,
     required Asset? super.argument,
   }) : super(
@@ -689,7 +688,7 @@ String _$accountAssetFromAssetHash() =>
 
 final class AccountAssetFromAssetFamily extends $Family
     with $FunctionalFamilyOverride<AccountAsset, Asset?> {
-  const AccountAssetFromAssetFamily._()
+  AccountAssetFromAssetFamily._()
     : super(
         retry: null,
         name: r'accountAssetFromAssetProvider',
@@ -711,7 +710,7 @@ final class AccountAssetFromAssetFamily extends $Family
 /// 3. have flag always show
 
 @ProviderFor(allVisibleAssets)
-const allVisibleAssetsProvider = AllVisibleAssetsProvider._();
+final allVisibleAssetsProvider = AllVisibleAssetsProvider._();
 
 /// Show assets which are:
 /// 1. predefined
@@ -726,7 +725,7 @@ final class AllVisibleAssetsProvider
   /// 1. predefined
   /// 2. have balance
   /// 3. have flag always show
-  const AllVisibleAssetsProvider._()
+  AllVisibleAssetsProvider._()
     : super(
         from: null,
         argument: null,

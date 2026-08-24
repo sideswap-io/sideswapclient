@@ -1,18 +1,18 @@
 name: sideswap_notifications
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.26
+version: 0.1.29
 
 environment:
-  sdk: ^3.10.0
-  flutter: ^3.38.1
+  sdk: ^3.12.2
+  flutter: ^3.44.6
 
 dependencies:
   flutter:
     sdk: flutter
   sideswap_notifications_platform_interface:
     path: ../../sideswap_notifications/sideswap_notifications_platform_interface
-  flutter_local_notifications: ^19.5.0
+  flutter_local_notifications: ^22.1.0
 
 dev_dependencies:
   flutter_test:

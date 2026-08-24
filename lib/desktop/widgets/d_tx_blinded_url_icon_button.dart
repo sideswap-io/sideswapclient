@@ -20,7 +20,11 @@ class DTxBlindedUrlIconButton extends ConsumerWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: IconButton(
-        onPressed: () => openTxidUrl(ref, txid, isLiquid, unblinded),
+        // A peg that has not completed yet has no txid, so there is nothing to
+        // open. Callers must not be able to send an empty txid to the client.
+        onPressed: txid.isEmpty
+            ? null
+            : () => openTxidUrl(ref, txid, isLiquid, unblinded),
         icon: SvgPicture.asset('assets/link2.svg', width: 14, height: 14),
       ),
     );

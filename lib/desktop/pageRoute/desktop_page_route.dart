@@ -6,14 +6,12 @@ class DesktopPageRoute<T> extends PageRoute<T> {
   final String? _barrierLabel;
 
   DesktopPageRoute({
-    bool maintainState = true,
-    String? barrierLabel,
-    required WidgetBuilder builder,
+    this._maintainState = true,
+    this._barrierLabel,
+    required this._builder,
     super.settings,
     super.fullscreenDialog,
-  }) : _barrierLabel = barrierLabel,
-       _maintainState = maintainState,
-       _builder = builder;
+  });
 
   @override
   Color? get barrierColor => null;

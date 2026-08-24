@@ -10,10 +10,10 @@ part of 'env_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(Env)
-const envProvider = EnvProvider._();
+final envProvider = EnvProvider._();
 
 final class EnvProvider extends $NotifierProvider<Env, int> {
-  const EnvProvider._()
+  EnvProvider._()
     : super(
         from: null,
         argument: null,
@@ -40,14 +40,13 @@ final class EnvProvider extends $NotifierProvider<Env, int> {
   }
 }
 
-String _$envHash() => r'88f98d23c00ec0d7f25f92d533ab21916fb5f654';
+String _$envHash() => r'f5560e6ad3436b2cdf6574386e9066911d225154';
 
 abstract class _$Env extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -57,6 +56,6 @@ abstract class _$Env extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

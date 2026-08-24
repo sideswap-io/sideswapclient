@@ -10,12 +10,12 @@ part of 'swap_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(swapType)
-const swapTypeProvider = SwapTypeProvider._();
+final swapTypeProvider = SwapTypeProvider._();
 
 final class SwapTypeProvider
     extends $FunctionalProvider<SwapType, SwapType, SwapType>
     with $Provider<SwapType> {
-  const SwapTypeProvider._()
+  SwapTypeProvider._()
     : super(
         from: null,
         argument: null,
@@ -51,12 +51,12 @@ final class SwapTypeProvider
 String _$swapTypeHash() => r'59ee6b630e8102d5ff83150c375b4d08d1663775';
 
 @ProviderFor(swapTypeString)
-const swapTypeStringProvider = SwapTypeStringProvider._();
+final swapTypeStringProvider = SwapTypeStringProvider._();
 
 final class SwapTypeStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const SwapTypeStringProvider._()
+  SwapTypeStringProvider._()
     : super(
         from: null,
         argument: null,
@@ -92,12 +92,12 @@ final class SwapTypeStringProvider
 String _$swapTypeStringHash() => r'60046dd90d0247e5d78a6884065850e80b69d6a5';
 
 @ProviderFor(swapAddrType)
-const swapAddrTypeProvider = SwapAddrTypeProvider._();
+final swapAddrTypeProvider = SwapAddrTypeProvider._();
 
 final class SwapAddrTypeProvider
     extends $FunctionalProvider<AddrType, AddrType, AddrType>
     with $Provider<AddrType> {
-  const SwapAddrTypeProvider._()
+  SwapAddrTypeProvider._()
     : super(
         from: null,
         argument: null,
@@ -133,12 +133,12 @@ final class SwapAddrTypeProvider
 String _$swapAddrTypeHash() => r'26832a85824a3f5cd10728fa3471802e75d266ad';
 
 @ProviderFor(addrTypeString)
-const addrTypeStringProvider = AddrTypeStringProvider._();
+final addrTypeStringProvider = AddrTypeStringProvider._();
 
 final class AddrTypeStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const AddrTypeStringProvider._()
+  AddrTypeStringProvider._()
     : super(
         from: null,
         argument: null,
@@ -174,11 +174,11 @@ final class AddrTypeStringProvider
 String _$addrTypeStringHash() => r'2f0072df5bb36b5d7fe7de00d0967f1ecf069028';
 
 @ProviderFor(SwapSendAssetIdNotifier)
-const swapSendAssetIdProvider = SwapSendAssetIdNotifierProvider._();
+final swapSendAssetIdProvider = SwapSendAssetIdNotifierProvider._();
 
 final class SwapSendAssetIdNotifierProvider
     extends $NotifierProvider<SwapSendAssetIdNotifier, String> {
-  const SwapSendAssetIdNotifierProvider._()
+  SwapSendAssetIdNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -212,8 +212,7 @@ abstract class _$SwapSendAssetIdNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -223,12 +222,12 @@ abstract class _$SwapSendAssetIdNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(swapDeliverAssetIdList)
-const swapDeliverAssetIdListProvider = SwapDeliverAssetIdListProvider._();
+final swapDeliverAssetIdListProvider = SwapDeliverAssetIdListProvider._();
 
 final class SwapDeliverAssetIdListProvider
     extends
@@ -238,7 +237,7 @@ final class SwapDeliverAssetIdListProvider
           Iterable<String>
         >
     with $Provider<Iterable<String>> {
-  const SwapDeliverAssetIdListProvider._()
+  SwapDeliverAssetIdListProvider._()
     : super(
         from: null,
         argument: null,
@@ -275,12 +274,12 @@ String _$swapDeliverAssetIdListHash() =>
     r'a95fd8ef75ab60079b615ba15ac3fa92213ad556';
 
 @ProviderFor(swapDeliverAsset)
-const swapDeliverAssetProvider = SwapDeliverAssetProvider._();
+final swapDeliverAssetProvider = SwapDeliverAssetProvider._();
 
 final class SwapDeliverAssetProvider
     extends $FunctionalProvider<SwapAsset, SwapAsset, SwapAsset>
     with $Provider<SwapAsset> {
-  const SwapDeliverAssetProvider._()
+  SwapDeliverAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -316,7 +315,7 @@ final class SwapDeliverAssetProvider
 String _$swapDeliverAssetHash() => r'a8abaf47d63cc69f7d03181956e20e1a4bb7e6b0';
 
 @ProviderFor(swapReceiveAssetIdList)
-const swapReceiveAssetIdListProvider = SwapReceiveAssetIdListProvider._();
+final swapReceiveAssetIdListProvider = SwapReceiveAssetIdListProvider._();
 
 final class SwapReceiveAssetIdListProvider
     extends
@@ -326,7 +325,7 @@ final class SwapReceiveAssetIdListProvider
           Iterable<String>
         >
     with $Provider<Iterable<String>> {
-  const SwapReceiveAssetIdListProvider._()
+  SwapReceiveAssetIdListProvider._()
     : super(
         from: null,
         argument: null,
@@ -363,12 +362,12 @@ String _$swapReceiveAssetIdListHash() =>
     r'f46324466f4566049dbcab2f5fe0203f811122fd';
 
 @ProviderFor(swapReceiveAsset)
-const swapReceiveAssetProvider = SwapReceiveAssetProvider._();
+final swapReceiveAssetProvider = SwapReceiveAssetProvider._();
 
 final class SwapReceiveAssetProvider
     extends $FunctionalProvider<SwapAsset, SwapAsset, SwapAsset>
     with $Provider<SwapAsset> {
-  const SwapReceiveAssetProvider._()
+  SwapReceiveAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -404,11 +403,11 @@ final class SwapReceiveAssetProvider
 String _$swapReceiveAssetHash() => r'80af010b47256cf370a11a57c9051320b185096a';
 
 @ProviderFor(SwapRecvAssetIdNotifier)
-const swapRecvAssetIdProvider = SwapRecvAssetIdNotifierProvider._();
+final swapRecvAssetIdProvider = SwapRecvAssetIdNotifierProvider._();
 
 final class SwapRecvAssetIdNotifierProvider
     extends $NotifierProvider<SwapRecvAssetIdNotifier, String> {
-  const SwapRecvAssetIdNotifierProvider._()
+  SwapRecvAssetIdNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -442,8 +441,7 @@ abstract class _$SwapRecvAssetIdNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -453,16 +451,16 @@ abstract class _$SwapRecvAssetIdNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SwapPegNotifier)
-const swapPegProvider = SwapPegNotifierProvider._();
+final swapPegProvider = SwapPegNotifierProvider._();
 
 final class SwapPegNotifierProvider
     extends $NotifierProvider<SwapPegNotifier, bool> {
-  const SwapPegNotifierProvider._()
+  SwapPegNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -495,8 +493,7 @@ abstract class _$SwapPegNotifier extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -506,17 +503,17 @@ abstract class _$SwapPegNotifier extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(swapSendWallet)
-const swapSendWalletProvider = SwapSendWalletProvider._();
+final swapSendWalletProvider = SwapSendWalletProvider._();
 
 final class SwapSendWalletProvider
     extends $FunctionalProvider<SwapWallet, SwapWallet, SwapWallet>
     with $Provider<SwapWallet> {
-  const SwapSendWalletProvider._()
+  SwapSendWalletProvider._()
     : super(
         from: null,
         argument: null,
@@ -552,12 +549,12 @@ final class SwapSendWalletProvider
 String _$swapSendWalletHash() => r'cf582d33f771960232dbb8bd41f031659c674395';
 
 @ProviderFor(swapRecvWallet)
-const swapRecvWalletProvider = SwapRecvWalletProvider._();
+final swapRecvWalletProvider = SwapRecvWalletProvider._();
 
 final class SwapRecvWalletProvider
     extends $FunctionalProvider<SwapWallet, SwapWallet, SwapWallet>
     with $Provider<SwapWallet> {
-  const SwapRecvWalletProvider._()
+  SwapRecvWalletProvider._()
     : super(
         from: null,
         argument: null,
@@ -593,12 +590,12 @@ final class SwapRecvWalletProvider
 String _$swapRecvWalletHash() => r'feb95d04ef6fb308bd25a432732d215943bcfd46';
 
 @ProviderFor(SwapRecvAddressExternalNotifier)
-const swapRecvAddressExternalProvider =
+final swapRecvAddressExternalProvider =
     SwapRecvAddressExternalNotifierProvider._();
 
 final class SwapRecvAddressExternalNotifierProvider
     extends $NotifierProvider<SwapRecvAddressExternalNotifier, String> {
-  const SwapRecvAddressExternalNotifierProvider._()
+  SwapRecvAddressExternalNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -632,8 +629,7 @@ abstract class _$SwapRecvAddressExternalNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -643,16 +639,16 @@ abstract class _$SwapRecvAddressExternalNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SwapPegAddressServerNotifier)
-const swapPegAddressServerProvider = SwapPegAddressServerNotifierProvider._();
+final swapPegAddressServerProvider = SwapPegAddressServerNotifierProvider._();
 
 final class SwapPegAddressServerNotifierProvider
     extends $NotifierProvider<SwapPegAddressServerNotifier, String?> {
-  const SwapPegAddressServerNotifierProvider._()
+  SwapPegAddressServerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -686,8 +682,7 @@ abstract class _$SwapPegAddressServerNotifier extends $Notifier<String?> {
   String? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String?, String?>;
     final element =
         ref.element
@@ -697,58 +692,17 @@ abstract class _$SwapPegAddressServerNotifier extends $Notifier<String?> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
-
-@ProviderFor(swapPriceString)
-const swapPriceStringProvider = SwapPriceStringProvider._();
-
-final class SwapPriceStringProvider
-    extends $FunctionalProvider<String, String, String>
-    with $Provider<String> {
-  const SwapPriceStringProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'swapPriceStringProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$swapPriceStringHash();
-
-  @$internal
-  @override
-  $ProviderElement<String> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  String create(Ref ref) {
-    return swapPriceString(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String>(value),
-    );
-  }
-}
-
-String _$swapPriceStringHash() => r'99d46247fc3b405e4c71391af00b1e3d254e349b';
 
 @ProviderFor(SwapPriceSubscribeNotifier)
-const swapPriceSubscribeProvider = SwapPriceSubscribeNotifierProvider._();
+final swapPriceSubscribeProvider = SwapPriceSubscribeNotifierProvider._();
 
 final class SwapPriceSubscribeNotifierProvider
     extends
         $NotifierProvider<SwapPriceSubscribeNotifier, SwapPriceSubscribeState> {
-  const SwapPriceSubscribeNotifierProvider._()
+  SwapPriceSubscribeNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -776,15 +730,14 @@ final class SwapPriceSubscribeNotifierProvider
 }
 
 String _$swapPriceSubscribeNotifierHash() =>
-    r'55197568525f906857bcdcbf20c01e82ae82ac68';
+    r'ddf280eff3d31d0da312e973d751d558ea3cf3bb';
 
 abstract class _$SwapPriceSubscribeNotifier
     extends $Notifier<SwapPriceSubscribeState> {
   SwapPriceSubscribeState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<SwapPriceSubscribeState, SwapPriceSubscribeState>;
     final element =
@@ -795,16 +748,16 @@ abstract class _$SwapPriceSubscribeNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(BitcoinCurrentFeeRateNotifier)
-const bitcoinCurrentFeeRateProvider = BitcoinCurrentFeeRateNotifierProvider._();
+final bitcoinCurrentFeeRateProvider = BitcoinCurrentFeeRateNotifierProvider._();
 
 final class BitcoinCurrentFeeRateNotifierProvider
     extends $NotifierProvider<BitcoinCurrentFeeRateNotifier, Option<double>> {
-  const BitcoinCurrentFeeRateNotifierProvider._()
+  BitcoinCurrentFeeRateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -839,8 +792,7 @@ abstract class _$BitcoinCurrentFeeRateNotifier
   Option<double> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<double>, Option<double>>;
     final element =
         ref.element
@@ -850,16 +802,16 @@ abstract class _$BitcoinCurrentFeeRateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SwapSendTextAmountNotifier)
-const swapSendTextAmountProvider = SwapSendTextAmountNotifierProvider._();
+final swapSendTextAmountProvider = SwapSendTextAmountNotifierProvider._();
 
 final class SwapSendTextAmountNotifierProvider
     extends $NotifierProvider<SwapSendTextAmountNotifier, String> {
-  const SwapSendTextAmountNotifierProvider._()
+  SwapSendTextAmountNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -893,8 +845,7 @@ abstract class _$SwapSendTextAmountNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -904,17 +855,17 @@ abstract class _$SwapSendTextAmountNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(swapSendSatoshiAmount)
-const swapSendSatoshiAmountProvider = SwapSendSatoshiAmountProvider._();
+final swapSendSatoshiAmountProvider = SwapSendSatoshiAmountProvider._();
 
 final class SwapSendSatoshiAmountProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const SwapSendSatoshiAmountProvider._()
+  SwapSendSatoshiAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -951,11 +902,11 @@ String _$swapSendSatoshiAmountHash() =>
     r'84a3998c2f379356a0d23fe2cb5f89c404552ec5';
 
 @ProviderFor(SwapRecvTextAmountNotifier)
-const swapRecvTextAmountProvider = SwapRecvTextAmountNotifierProvider._();
+final swapRecvTextAmountProvider = SwapRecvTextAmountNotifierProvider._();
 
 final class SwapRecvTextAmountNotifierProvider
     extends $NotifierProvider<SwapRecvTextAmountNotifier, String> {
-  const SwapRecvTextAmountNotifierProvider._()
+  SwapRecvTextAmountNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -989,8 +940,7 @@ abstract class _$SwapRecvTextAmountNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -1000,17 +950,17 @@ abstract class _$SwapRecvTextAmountNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(swapRecvSatoshiAmount)
-const swapRecvSatoshiAmountProvider = SwapRecvSatoshiAmountProvider._();
+final swapRecvSatoshiAmountProvider = SwapRecvSatoshiAmountProvider._();
 
 final class SwapRecvSatoshiAmountProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const SwapRecvSatoshiAmountProvider._()
+  SwapRecvSatoshiAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -1047,12 +997,12 @@ String _$swapRecvSatoshiAmountHash() =>
     r'00ee722e01ef9aeb03c3b71143bc4be9ca0ad962';
 
 @ProviderFor(showInsufficientFunds)
-const showInsufficientFundsProvider = ShowInsufficientFundsProvider._();
+final showInsufficientFundsProvider = ShowInsufficientFundsProvider._();
 
 final class ShowInsufficientFundsProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const ShowInsufficientFundsProvider._()
+  ShowInsufficientFundsProvider._()
     : super(
         from: null,
         argument: null,
@@ -1086,222 +1036,14 @@ final class ShowInsufficientFundsProvider
 }
 
 String _$showInsufficientFundsHash() =>
-    r'e396d66ba7ea6b4eaf819cf3a6c6ec182489bda6';
-
-@ProviderFor(SatoshiRecvAmountStateNotifier)
-const satoshiRecvAmountStateProvider =
-    SatoshiRecvAmountStateNotifierProvider._();
-
-final class SatoshiRecvAmountStateNotifierProvider
-    extends $NotifierProvider<SatoshiRecvAmountStateNotifier, int> {
-  const SatoshiRecvAmountStateNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'satoshiRecvAmountStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$satoshiRecvAmountStateNotifierHash();
-
-  @$internal
-  @override
-  SatoshiRecvAmountStateNotifier create() => SatoshiRecvAmountStateNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$satoshiRecvAmountStateNotifierHash() =>
-    r'4375dee1177a6fdda0dee5b949d82a555bed44ea';
-
-abstract class _$SatoshiRecvAmountStateNotifier extends $Notifier<int> {
-  int build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final created = build();
-    final ref = this.ref as $Ref<int, int>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<int, int>,
-              int,
-              Object?,
-              Object?
-            >;
-    element.handleValue(ref, created);
-  }
-}
-
-@ProviderFor(SatoshiSendAmountStateNotifier)
-const satoshiSendAmountStateProvider =
-    SatoshiSendAmountStateNotifierProvider._();
-
-final class SatoshiSendAmountStateNotifierProvider
-    extends $NotifierProvider<SatoshiSendAmountStateNotifier, int> {
-  const SatoshiSendAmountStateNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'satoshiSendAmountStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$satoshiSendAmountStateNotifierHash();
-
-  @$internal
-  @override
-  SatoshiSendAmountStateNotifier create() => SatoshiSendAmountStateNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$satoshiSendAmountStateNotifierHash() =>
-    r'0d503cedcd4c7029f798c924ed1047ffdbbaa467';
-
-abstract class _$SatoshiSendAmountStateNotifier extends $Notifier<int> {
-  int build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final created = build();
-    final ref = this.ref as $Ref<int, int>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<int, int>,
-              int,
-              Object?,
-              Object?
-            >;
-    element.handleValue(ref, created);
-  }
-}
-
-@ProviderFor(recvAmountPriceStreamWatcher)
-const recvAmountPriceStreamWatcherProvider =
-    RecvAmountPriceStreamWatcherProvider._();
-
-final class RecvAmountPriceStreamWatcherProvider
-    extends
-        $FunctionalProvider<
-          SwapRecvAmountPriceStream,
-          SwapRecvAmountPriceStream,
-          SwapRecvAmountPriceStream
-        >
-    with $Provider<SwapRecvAmountPriceStream> {
-  const RecvAmountPriceStreamWatcherProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'recvAmountPriceStreamWatcherProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$recvAmountPriceStreamWatcherHash();
-
-  @$internal
-  @override
-  $ProviderElement<SwapRecvAmountPriceStream> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  SwapRecvAmountPriceStream create(Ref ref) {
-    return recvAmountPriceStreamWatcher(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SwapRecvAmountPriceStream value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SwapRecvAmountPriceStream>(value),
-    );
-  }
-}
-
-String _$recvAmountPriceStreamWatcherHash() =>
-    r'6e1991392b4a844e63f8125fbd76bcfbe7c3e68f';
-
-@ProviderFor(sendAmountPriceStreamWatcher)
-const sendAmountPriceStreamWatcherProvider =
-    SendAmountPriceStreamWatcherProvider._();
-
-final class SendAmountPriceStreamWatcherProvider
-    extends
-        $FunctionalProvider<
-          SwapSendAmountPriceStream,
-          SwapSendAmountPriceStream,
-          SwapSendAmountPriceStream
-        >
-    with $Provider<SwapSendAmountPriceStream> {
-  const SendAmountPriceStreamWatcherProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'sendAmountPriceStreamWatcherProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$sendAmountPriceStreamWatcherHash();
-
-  @$internal
-  @override
-  $ProviderElement<SwapSendAmountPriceStream> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  SwapSendAmountPriceStream create(Ref ref) {
-    return sendAmountPriceStreamWatcher(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SwapSendAmountPriceStream value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SwapSendAmountPriceStream>(value),
-    );
-  }
-}
-
-String _$sendAmountPriceStreamWatcherHash() =>
-    r'da4946a0f1dfa4cc50ebda4d29e4e36854315f74';
+    r'44163746c70038077f8f20e0b0721d649552182c';
 
 @ProviderFor(SwapStateNotifier)
-const swapStateProvider = SwapStateNotifierProvider._();
+final swapStateProvider = SwapStateNotifierProvider._();
 
 final class SwapStateNotifierProvider
     extends $NotifierProvider<SwapStateNotifier, SwapState> {
-  const SwapStateNotifierProvider._()
+  SwapStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1334,8 +1076,7 @@ abstract class _$SwapStateNotifier extends $Notifier<SwapState> {
   SwapState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<SwapState, SwapState>;
     final element =
         ref.element
@@ -1345,16 +1086,16 @@ abstract class _$SwapStateNotifier extends $Notifier<SwapState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SwapNetworkErrorNotifier)
-const swapNetworkErrorProvider = SwapNetworkErrorNotifierProvider._();
+final swapNetworkErrorProvider = SwapNetworkErrorNotifierProvider._();
 
 final class SwapNetworkErrorNotifierProvider
     extends $NotifierProvider<SwapNetworkErrorNotifier, String> {
-  const SwapNetworkErrorNotifierProvider._()
+  SwapNetworkErrorNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1388,8 +1129,7 @@ abstract class _$SwapNetworkErrorNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -1399,17 +1139,17 @@ abstract class _$SwapNetworkErrorNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(swapPriceText)
-const swapPriceTextProvider = SwapPriceTextProvider._();
+final swapPriceTextProvider = SwapPriceTextProvider._();
 
 final class SwapPriceTextProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const SwapPriceTextProvider._()
+  SwapPriceTextProvider._()
     : super(
         from: null,
         argument: null,
@@ -1445,12 +1185,12 @@ final class SwapPriceTextProvider
 String _$swapPriceTextHash() => r'4b9ada8c71d564820c19ac1383935bf7f1ea30b9';
 
 @ProviderFor(swapAddressError)
-const swapAddressErrorProvider = SwapAddressErrorProvider._();
+final swapAddressErrorProvider = SwapAddressErrorProvider._();
 
 final class SwapAddressErrorProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
-  const SwapAddressErrorProvider._()
+  SwapAddressErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -1486,12 +1226,12 @@ final class SwapAddressErrorProvider
 String _$swapAddressErrorHash() => r'69daf425b47a6293528af8f3e17e48a382ae578c';
 
 @ProviderFor(showAddressLabel)
-const showAddressLabelProvider = ShowAddressLabelProvider._();
+final showAddressLabelProvider = ShowAddressLabelProvider._();
 
 final class ShowAddressLabelProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const ShowAddressLabelProvider._()
+  ShowAddressLabelProvider._()
     : super(
         from: null,
         argument: null,
@@ -1524,15 +1264,15 @@ final class ShowAddressLabelProvider
   }
 }
 
-String _$showAddressLabelHash() => r'aec8e3a1cb4ba761df5cd9ea0f0a6bc03d3d47b8';
+String _$showAddressLabelHash() => r'a8ba04081b7e9b5c3f2abbb8af638b5ff6a5fdfa';
 
 @ProviderFor(swapEnabledState)
-const swapEnabledStateProvider = SwapEnabledStateProvider._();
+final swapEnabledStateProvider = SwapEnabledStateProvider._();
 
 final class SwapEnabledStateProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const SwapEnabledStateProvider._()
+  SwapEnabledStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -1568,12 +1308,12 @@ final class SwapEnabledStateProvider
 String _$swapEnabledStateHash() => r'f31c2d4a370c9da157885f3e9d4e8f7a9dcfd160';
 
 @ProviderFor(swapHelper)
-const swapHelperProvider = SwapHelperProvider._();
+final swapHelperProvider = SwapHelperProvider._();
 
 final class SwapHelperProvider
     extends $FunctionalProvider<SwapHelper, SwapHelper, SwapHelper>
     with $Provider<SwapHelper> {
-  const SwapHelperProvider._()
+  SwapHelperProvider._()
     : super(
         from: null,
         argument: null,

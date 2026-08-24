@@ -1,5 +1,6 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
@@ -33,8 +34,8 @@ class LangSelector extends ConsumerWidget {
               child: Icon(Icons.keyboard_arrow_down, color: Color(0xFF00B4E9)),
             ),
             dropdownColor: const Color(0xFF2B6F95),
-            onChanged: (value) {
-              ref.read(localesProvider.notifier).setSelectedLang(value!);
+            onChanged: (value) async {
+              await context.setLocale(Locale(value!));
             },
             value: locale,
             items: supportedLanguages()

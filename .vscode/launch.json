@@ -21,6 +21,23 @@
       ]
     },
     {
+      "name": "desktop (debug mode, build Rust lib)",
+      "request": "launch",
+      "type": "dart",
+      "preLaunchTask": "Sideswap: cargo sideswap_client (desktop)",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-entrypoint-args",
+        "--localEndpoint",
+        "--dart-entrypoint-args",
+        "--no-mobileMode",
+        "--dart-entrypoint-args",
+        "--networkSettings",
+        "--dart-entrypoint-args",
+        "--enableJade"
+      ]
+    },
+    {
       "name": "desktop (profile mode)",
       "request": "launch",
       "type": "dart",
@@ -53,6 +70,14 @@
       "name": "mobile full android (debug mode)",
       "request": "launch",
       "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--flavor", "full"]
+    },
+    {
+      "name": "mobile full android (debug mode, build Rust .so)",
+      "request": "launch",
+      "type": "dart",
+      "preLaunchTask": "Sideswap: cargo sideswap_client + copy .so to jniLibs (Android)",
       "program": "lib/main.dart",
       "args": ["--flavor", "full"]
     },

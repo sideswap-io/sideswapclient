@@ -10,11 +10,11 @@ part of 'amp_id_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AmpIdNotifier)
-const ampIdProvider = AmpIdNotifierProvider._();
+final ampIdProvider = AmpIdNotifierProvider._();
 
 final class AmpIdNotifierProvider
     extends $NotifierProvider<AmpIdNotifier, String> {
-  const AmpIdNotifierProvider._()
+  AmpIdNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$AmpIdNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$AmpIdNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

@@ -10,11 +10,11 @@ part of 'send_asset_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SendAssetIdNotifier)
-const sendAssetIdProvider = SendAssetIdNotifierProvider._();
+final sendAssetIdProvider = SendAssetIdNotifierProvider._();
 
 final class SendAssetIdNotifierProvider
     extends $NotifierProvider<SendAssetIdNotifier, String> {
-  const SendAssetIdNotifierProvider._()
+  SendAssetIdNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$SendAssetIdNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$SendAssetIdNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

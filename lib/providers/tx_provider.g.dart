@@ -10,7 +10,7 @@ part of 'tx_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LoadTransactionsStateNotifier)
-const loadTransactionsStateProvider = LoadTransactionsStateNotifierProvider._();
+final loadTransactionsStateProvider = LoadTransactionsStateNotifierProvider._();
 
 final class LoadTransactionsStateNotifierProvider
     extends
@@ -18,7 +18,7 @@ final class LoadTransactionsStateNotifierProvider
           LoadTransactionsStateNotifier,
           LoadTransactionsState
         > {
-  const LoadTransactionsStateNotifierProvider._()
+  LoadTransactionsStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -53,8 +53,7 @@ abstract class _$LoadTransactionsStateNotifier
   LoadTransactionsState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<LoadTransactionsState, LoadTransactionsState>;
     final element =
         ref.element
@@ -64,16 +63,16 @@ abstract class _$LoadTransactionsStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(TxHistoryStateNotifier)
-const txHistoryStateProvider = TxHistoryStateNotifierProvider._();
+final txHistoryStateProvider = TxHistoryStateNotifierProvider._();
 
 final class TxHistoryStateNotifierProvider
     extends $NotifierProvider<TxHistoryStateNotifier, TxHistoryState> {
-  const TxHistoryStateNotifierProvider._()
+  TxHistoryStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -107,8 +106,7 @@ abstract class _$TxHistoryStateNotifier extends $Notifier<TxHistoryState> {
   TxHistoryState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<TxHistoryState, TxHistoryState>;
     final element =
         ref.element
@@ -118,16 +116,16 @@ abstract class _$TxHistoryStateNotifier extends $Notifier<TxHistoryState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(UpdatedTxsNotifier)
-const updatedTxsProvider = UpdatedTxsNotifierProvider._();
+final updatedTxsProvider = UpdatedTxsNotifierProvider._();
 
 final class UpdatedTxsNotifierProvider
     extends $NotifierProvider<UpdatedTxsNotifier, List<TransItem>> {
-  const UpdatedTxsNotifierProvider._()
+  UpdatedTxsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -161,8 +159,7 @@ abstract class _$UpdatedTxsNotifier extends $Notifier<List<TransItem>> {
   List<TransItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<TransItem>, List<TransItem>>;
     final element =
         ref.element
@@ -172,18 +169,18 @@ abstract class _$UpdatedTxsNotifier extends $Notifier<List<TransItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(unconfirmedTxs)
-const unconfirmedTxsProvider = UnconfirmedTxsProvider._();
+final unconfirmedTxsProvider = UnconfirmedTxsProvider._();
 
 final class UnconfirmedTxsProvider
     extends
         $FunctionalProvider<List<TransItem>, List<TransItem>, List<TransItem>>
     with $Provider<List<TransItem>> {
-  const UnconfirmedTxsProvider._()
+  UnconfirmedTxsProvider._()
     : super(
         from: null,
         argument: null,
@@ -219,11 +216,11 @@ final class UnconfirmedTxsProvider
 String _$unconfirmedTxsHash() => r'bc77ea69daddd9618bc7bf1fa2b14871e9dc82f1';
 
 @ProviderFor(ShowTransactionNotifier)
-const showTransactionProvider = ShowTransactionNotifierProvider._();
+final showTransactionProvider = ShowTransactionNotifierProvider._();
 
 final class ShowTransactionNotifierProvider
     extends $NotifierProvider<ShowTransactionNotifier, Option<TransItem>> {
-  const ShowTransactionNotifierProvider._()
+  ShowTransactionNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -257,8 +254,7 @@ abstract class _$ShowTransactionNotifier extends $Notifier<Option<TransItem>> {
   Option<TransItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<TransItem>, Option<TransItem>>;
     final element =
         ref.element
@@ -268,16 +264,16 @@ abstract class _$ShowTransactionNotifier extends $Notifier<Option<TransItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AllTxsNotifier)
-const allTxsProvider = AllTxsNotifierProvider._();
+final allTxsProvider = AllTxsNotifierProvider._();
 
 final class AllTxsNotifierProvider
     extends $NotifierProvider<AllTxsNotifier, Map<String, TransItem>> {
-  const AllTxsNotifierProvider._()
+  AllTxsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -310,8 +306,7 @@ abstract class _$AllTxsNotifier extends $Notifier<Map<String, TransItem>> {
   Map<String, TransItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Map<String, TransItem>, Map<String, TransItem>>;
     final element =
@@ -322,18 +317,18 @@ abstract class _$AllTxsNotifier extends $Notifier<Map<String, TransItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(allTxsSorted)
-const allTxsSortedProvider = AllTxsSortedProvider._();
+final allTxsSortedProvider = AllTxsSortedProvider._();
 
 final class AllTxsSortedProvider
     extends
         $FunctionalProvider<List<TransItem>, List<TransItem>, List<TransItem>>
     with $Provider<List<TransItem>> {
-  const AllTxsSortedProvider._()
+  AllTxsSortedProvider._()
     : super(
         from: null,
         argument: null,
@@ -369,13 +364,13 @@ final class AllTxsSortedProvider
 String _$allTxsSortedHash() => r'96b84a7d6568fc741203bd372d217722a12916e4';
 
 @ProviderFor(allNewTxsSorted)
-const allNewTxsSortedProvider = AllNewTxsSortedProvider._();
+final allNewTxsSortedProvider = AllNewTxsSortedProvider._();
 
 final class AllNewTxsSortedProvider
     extends
         $FunctionalProvider<List<TransItem>, List<TransItem>, List<TransItem>>
     with $Provider<List<TransItem>> {
-  const AllNewTxsSortedProvider._()
+  AllNewTxsSortedProvider._()
     : super(
         from: null,
         argument: null,
@@ -416,7 +411,7 @@ String _$allNewTxsSortedHash() => r'ef0553a60d0973cb7475a27d812df09433ba78d1';
 /// Each pair of AccountAsset and list of TxItem can hold duplicates of TxItem.
 
 @ProviderFor(accountAssetTransactions)
-const accountAssetTransactionsProvider = AccountAssetTransactionsProvider._();
+final accountAssetTransactionsProvider = AccountAssetTransactionsProvider._();
 
 /// Returns map of AccountAsset and list of TxItem.
 /// List of TxItem is based on tx balances list. Balances list can include multiple different assets.
@@ -435,7 +430,7 @@ final class AccountAssetTransactionsProvider
   /// List of TxItem is based on tx balances list. Balances list can include multiple different assets.
   /// AccountAsset hold AccountType and assetId information.
   /// Each pair of AccountAsset and list of TxItem can hold duplicates of TxItem.
-  const AccountAssetTransactionsProvider._()
+  AccountAssetTransactionsProvider._()
     : super(
         from: null,
         argument: null,
@@ -475,7 +470,7 @@ String _$accountAssetTransactionsHash() =>
     r'97cada9aa9eb7718f67e3a38a7433a3894b7a19a';
 
 @ProviderFor(assetTransactions)
-const assetTransactionsProvider = AssetTransactionsProvider._();
+final assetTransactionsProvider = AssetTransactionsProvider._();
 
 final class AssetTransactionsProvider
     extends
@@ -485,7 +480,7 @@ final class AssetTransactionsProvider
           Map<String, List<TxItem>>
         >
     with $Provider<Map<String, List<TxItem>>> {
-  const AssetTransactionsProvider._()
+  AssetTransactionsProvider._()
     : super(
         from: null,
         argument: null,
@@ -522,13 +517,13 @@ final class AssetTransactionsProvider
 String _$assetTransactionsHash() => r'5e8d92d4b57e38c0705ba2931c453c9066a52134';
 
 @ProviderFor(distinctTransactionsForAccount)
-const distinctTransactionsForAccountProvider =
+final distinctTransactionsForAccountProvider =
     DistinctTransactionsForAccountProvider._();
 
 final class DistinctTransactionsForAccountProvider
     extends $FunctionalProvider<List<TxItem>, List<TxItem>, List<TxItem>>
     with $Provider<List<TxItem>> {
-  const DistinctTransactionsForAccountProvider._()
+  DistinctTransactionsForAccountProvider._()
     : super(
         from: null,
         argument: null,
@@ -565,13 +560,13 @@ String _$distinctTransactionsForAccountHash() =>
     r'c17e3303ea6b759884ab1136bcf41894290a775f';
 
 @ProviderFor(transItemHelper)
-const transItemHelperProvider = TransItemHelperFamily._();
+final transItemHelperProvider = TransItemHelperFamily._();
 
 final class TransItemHelperProvider
     extends
         $FunctionalProvider<TransItemHelper, TransItemHelper, TransItemHelper>
     with $Provider<TransItemHelper> {
-  const TransItemHelperProvider._({
+  TransItemHelperProvider._({
     required TransItemHelperFamily super.from,
     required TransItem super.argument,
   }) : super(
@@ -626,7 +621,7 @@ String _$transItemHelperHash() => r'9e2e9051878d75b5c4a464c5c282884e87de544e';
 
 final class TransItemHelperFamily extends $Family
     with $FunctionalFamilyOverride<TransItemHelper, TransItem> {
-  const TransItemHelperFamily._()
+  TransItemHelperFamily._()
     : super(
         retry: null,
         name: r'transItemHelperProvider',
@@ -643,11 +638,11 @@ final class TransItemHelperFamily extends $Family
 }
 
 @ProviderFor(CurrentTxPopupItemNotifier)
-const currentTxPopupItemProvider = CurrentTxPopupItemNotifierProvider._();
+final currentTxPopupItemProvider = CurrentTxPopupItemNotifierProvider._();
 
 final class CurrentTxPopupItemNotifierProvider
     extends $NotifierProvider<CurrentTxPopupItemNotifier, Option<String>> {
-  const CurrentTxPopupItemNotifierProvider._()
+  CurrentTxPopupItemNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -681,8 +676,7 @@ abstract class _$CurrentTxPopupItemNotifier extends $Notifier<Option<String>> {
   Option<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<String>, Option<String>>;
     final element =
         ref.element
@@ -692,6 +686,6 @@ abstract class _$CurrentTxPopupItemNotifier extends $Notifier<Option<String>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

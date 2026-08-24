@@ -8,13 +8,15 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 part 'licenses_provider.g.dart';
 
 @riverpod
+AssetBundle assetBundle(Ref ref) => rootBundle;
+
+@riverpod
 FutureOr<bool> licensesLoaderFuture(Ref ref) {
+  final bundle = ref.read(assetBundleProvider);
   logger.d('Loading licenses...');
   LicenseRegistry.addLicense(() async* {
-    var license = await rootBundle.loadString(
-      'assets/licenses/gdk-license.txt',
-    );
-    yield LicenseEntryWithLineBreaks([kPackageGdk], license);
+    var license = await bundle.loadString('assets/licenses/lwk-license.txt');
+    yield LicenseEntryWithLineBreaks([kPackageLwk], license);
   });
   return true;
 }
@@ -52,16 +54,10 @@ class LicensesData {
 }
 
 @riverpod
-FutureOr<List<LicensesData>> licensesEntries(Ref ref) async {
-  final licenses = <LicensesData>[];
-  await for (final LicenseEntry license in LicenseRegistry.licenses) {
-    licenses.add(
-      LicensesData(
-        licenseEntry: license,
-        paragraphs: license.paragraphs.toList(),
-      ),
-    );
-  }
-
-  return licenses;
+Future<List<LicensesData>> licensesEntries(Ref ref) {
+  return LicenseRegistry.licenses
+      .map(
+        (l) => LicensesData(licenseEntry: l, paragraphs: l.paragraphs.toList()),
+      )
+      .toList();
 }

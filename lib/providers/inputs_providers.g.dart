@@ -10,11 +10,11 @@ part of 'inputs_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(InputsWalletFlagNotifier)
-const inputsWalletFlagProvider = InputsWalletFlagNotifierProvider._();
+final inputsWalletFlagProvider = InputsWalletFlagNotifierProvider._();
 
 final class InputsWalletFlagNotifierProvider
     extends $NotifierProvider<InputsWalletFlagNotifier, InputsWalletFlagType> {
-  const InputsWalletFlagNotifierProvider._()
+  InputsWalletFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$InputsWalletFlagNotifier
   InputsWalletFlagType build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<InputsWalletFlagType, InputsWalletFlagType>;
     final element =
         ref.element
@@ -60,16 +59,16 @@ abstract class _$InputsWalletFlagNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(InputsNotifier)
-const inputsProvider = InputsNotifierProvider._();
+final inputsProvider = InputsNotifierProvider._();
 
 final class InputsNotifierProvider
     extends $NotifierProvider<InputsNotifier, List<InputsItem>> {
-  const InputsNotifierProvider._()
+  InputsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$InputsNotifier extends $Notifier<List<InputsItem>> {
   List<InputsItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<InputsItem>, List<InputsItem>>;
     final element =
         ref.element
@@ -113,16 +111,16 @@ abstract class _$InputsNotifier extends $Notifier<List<InputsItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SelectedInputsNotifier)
-const selectedInputsProvider = SelectedInputsNotifierProvider._();
+final selectedInputsProvider = SelectedInputsNotifierProvider._();
 
 final class SelectedInputsNotifierProvider
     extends $NotifierProvider<SelectedInputsNotifier, List<InputsTxItem>> {
-  const SelectedInputsNotifierProvider._()
+  SelectedInputsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -156,8 +154,7 @@ abstract class _$SelectedInputsNotifier extends $Notifier<List<InputsTxItem>> {
   List<InputsTxItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<InputsTxItem>, List<InputsTxItem>>;
     final element =
         ref.element
@@ -167,6 +164,6 @@ abstract class _$SelectedInputsNotifier extends $Notifier<List<InputsTxItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

@@ -9,6 +9,7 @@
 .history
 .svn/
 android/app/src/main/jniLibs/
+macos/Frameworks/
 # IntelliJ related
 *.iml
 *.ipr
@@ -34,6 +35,7 @@ android/app/src/main/jniLibs/
 /flutter/desktop/build/
 /flutter/mobile/build/
 /flutter/fdroid/build/
+/coverage/
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -57,4 +59,8 @@ app.*.map.json
 
 libgreenaddress.so
 
-.codegpt
+.codegpt.claude/settings.local.json
+
+tools/credentials.json
+tools/token.json
+tools/.env

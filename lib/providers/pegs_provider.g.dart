@@ -10,7 +10,7 @@ part of 'pegs_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(pegRepository)
-const pegRepositoryProvider = PegRepositoryProvider._();
+final pegRepositoryProvider = PegRepositoryProvider._();
 
 final class PegRepositoryProvider
     extends
@@ -20,7 +20,7 @@ final class PegRepositoryProvider
           AbstractPegRepository
         >
     with $Provider<AbstractPegRepository> {
-  const PegRepositoryProvider._()
+  PegRepositoryProvider._()
     : super(
         from: null,
         argument: null,
@@ -57,11 +57,11 @@ final class PegRepositoryProvider
 String _$pegRepositoryHash() => r'50398cb614a6b9062940aad1b49bdda42b4fb89c';
 
 @ProviderFor(AllPegsNotifier)
-const allPegsProvider = AllPegsNotifierProvider._();
+final allPegsProvider = AllPegsNotifierProvider._();
 
 final class AllPegsNotifierProvider
     extends $NotifierProvider<AllPegsNotifier, Map<String, List<TransItem>>> {
-  const AllPegsNotifierProvider._()
+  AllPegsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -95,8 +95,7 @@ abstract class _$AllPegsNotifier
   Map<String, List<TransItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<Map<String, List<TransItem>>, Map<String, List<TransItem>>>;
@@ -111,12 +110,12 @@ abstract class _$AllPegsNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(allPegsById)
-const allPegsByIdProvider = AllPegsByIdProvider._();
+final allPegsByIdProvider = AllPegsByIdProvider._();
 
 final class AllPegsByIdProvider
     extends
@@ -126,7 +125,7 @@ final class AllPegsByIdProvider
           Map<String, TransItem>
         >
     with $Provider<Map<String, TransItem>> {
-  const AllPegsByIdProvider._()
+  AllPegsByIdProvider._()
     : super(
         from: null,
         argument: null,
@@ -163,11 +162,11 @@ final class AllPegsByIdProvider
 String _$allPegsByIdHash() => r'369a23416d4ec7e65005a0447d22dd2b2c08c405';
 
 @ProviderFor(PegSubscribedValueNotifier)
-const pegSubscribedValueProvider = PegSubscribedValueNotifierProvider._();
+final pegSubscribedValueProvider = PegSubscribedValueNotifierProvider._();
 
 final class PegSubscribedValueNotifierProvider
     extends $NotifierProvider<PegSubscribedValueNotifier, PegSubscribedValues> {
-  const PegSubscribedValueNotifierProvider._()
+  PegSubscribedValueNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -195,15 +194,14 @@ final class PegSubscribedValueNotifierProvider
 }
 
 String _$pegSubscribedValueNotifierHash() =>
-    r'8b367f9ea9790b9b9028e727e62a83dd829190f0';
+    r'4174e44df79e648d1f8f9f8037f48e24f2ce06df';
 
 abstract class _$PegSubscribedValueNotifier
     extends $Notifier<PegSubscribedValues> {
   PegSubscribedValues build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PegSubscribedValues, PegSubscribedValues>;
     final element =
         ref.element
@@ -213,17 +211,17 @@ abstract class _$PegSubscribedValueNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(pegOrderIdForTransItem)
-const pegOrderIdForTransItemProvider = PegOrderIdForTransItemFamily._();
+final pegOrderIdForTransItemProvider = PegOrderIdForTransItemFamily._();
 
 final class PegOrderIdForTransItemProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const PegOrderIdForTransItemProvider._({
+  PegOrderIdForTransItemProvider._({
     required PegOrderIdForTransItemFamily super.from,
     required TransItem super.argument,
   }) : super(
@@ -280,7 +278,7 @@ String _$pegOrderIdForTransItemHash() =>
 
 final class PegOrderIdForTransItemFamily extends $Family
     with $FunctionalFamilyOverride<Option<String>, TransItem> {
-  const PegOrderIdForTransItemFamily._()
+  PegOrderIdForTransItemFamily._()
     : super(
         retry: null,
         name: r'pegOrderIdForTransItemProvider',
@@ -297,12 +295,12 @@ final class PegOrderIdForTransItemFamily extends $Family
 }
 
 @ProviderFor(PegOrderFeesNotifier)
-const pegOrderFeesProvider = PegOrderFeesNotifierProvider._();
+final pegOrderFeesProvider = PegOrderFeesNotifierProvider._();
 
 final class PegOrderFeesNotifierProvider
     extends
         $NotifierProvider<PegOrderFeesNotifier, Map<String, PegOrderFeeData>> {
-  const PegOrderFeesNotifierProvider._()
+  PegOrderFeesNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -337,8 +335,7 @@ abstract class _$PegOrderFeesNotifier
   Map<String, PegOrderFeeData> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<Map<String, PegOrderFeeData>, Map<String, PegOrderFeeData>>;
@@ -353,12 +350,12 @@ abstract class _$PegOrderFeesNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(pegOrderFeeRates)
-const pegOrderFeeRatesProvider = PegOrderFeeRatesFamily._();
+final pegOrderFeeRatesProvider = PegOrderFeeRatesFamily._();
 
 final class PegOrderFeeRatesProvider
     extends
@@ -368,7 +365,7 @@ final class PegOrderFeeRatesProvider
           Option<PegOrderFeeData>
         >
     with $Provider<Option<PegOrderFeeData>> {
-  const PegOrderFeeRatesProvider._({
+  PegOrderFeeRatesProvider._({
     required PegOrderFeeRatesFamily super.from,
     required TransItem super.argument,
   }) : super(
@@ -424,7 +421,7 @@ String _$pegOrderFeeRatesHash() => r'c71dc2357fb7ec93ac2f0267e485e217da9377f7';
 
 final class PegOrderFeeRatesFamily extends $Family
     with $FunctionalFamilyOverride<Option<PegOrderFeeData>, TransItem> {
-  const PegOrderFeeRatesFamily._()
+  PegOrderFeeRatesFamily._()
     : super(
         retry: null,
         name: r'pegOrderFeeRatesProvider',
@@ -441,12 +438,12 @@ final class PegOrderFeeRatesFamily extends $Family
 }
 
 @ProviderFor(availablePegOrderFeeChange)
-const availablePegOrderFeeChangeProvider = AvailablePegOrderFeeChangeFamily._();
+final availablePegOrderFeeChangeProvider = AvailablePegOrderFeeChangeFamily._();
 
 final class AvailablePegOrderFeeChangeProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const AvailablePegOrderFeeChangeProvider._({
+  AvailablePegOrderFeeChangeProvider._({
     required AvailablePegOrderFeeChangeFamily super.from,
     required TransItem super.argument,
   }) : super(
@@ -503,7 +500,7 @@ String _$availablePegOrderFeeChangeHash() =>
 
 final class AvailablePegOrderFeeChangeFamily extends $Family
     with $FunctionalFamilyOverride<bool, TransItem> {
-  const AvailablePegOrderFeeChangeFamily._()
+  AvailablePegOrderFeeChangeFamily._()
     : super(
         retry: null,
         name: r'availablePegOrderFeeChangeProvider',
@@ -520,12 +517,12 @@ final class AvailablePegOrderFeeChangeFamily extends $Family
 }
 
 @ProviderFor(pegOutNextBlockFeeRate)
-const pegOutNextBlockFeeRateProvider = PegOutNextBlockFeeRateProvider._();
+final pegOutNextBlockFeeRateProvider = PegOutNextBlockFeeRateProvider._();
 
 final class PegOutNextBlockFeeRateProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const PegOutNextBlockFeeRateProvider._()
+  PegOutNextBlockFeeRateProvider._()
     : super(
         from: null,
         argument: null,
@@ -562,7 +559,7 @@ String _$pegOutNextBlockFeeRateHash() =>
     r'af885c16c4d4371343a0dfb7ff0b41c27f945625';
 
 @ProviderFor(pegOutEditFeeRateHelper)
-const pegOutEditFeeRateHelperProvider = PegOutEditFeeRateHelperFamily._();
+final pegOutEditFeeRateHelperProvider = PegOutEditFeeRateHelperFamily._();
 
 final class PegOutEditFeeRateHelperProvider
     extends
@@ -572,7 +569,7 @@ final class PegOutEditFeeRateHelperProvider
           PegOutEditFeeRateHelper
         >
     with $Provider<PegOutEditFeeRateHelper> {
-  const PegOutEditFeeRateHelperProvider._({
+  PegOutEditFeeRateHelperProvider._({
     required PegOutEditFeeRateHelperFamily super.from,
     required Option<String> super.argument,
   }) : super(
@@ -630,7 +627,7 @@ String _$pegOutEditFeeRateHelperHash() =>
 
 final class PegOutEditFeeRateHelperFamily extends $Family
     with $FunctionalFamilyOverride<PegOutEditFeeRateHelper, Option<String>> {
-  const PegOutEditFeeRateHelperFamily._()
+  PegOutEditFeeRateHelperFamily._()
     : super(
         retry: null,
         name: r'pegOutEditFeeRateHelperProvider',
@@ -650,7 +647,7 @@ final class PegOutEditFeeRateHelperFamily extends $Family
 }
 
 @ProviderFor(PegOutEditFeeRateResultStream)
-const pegOutEditFeeRateResultStreamProvider =
+final pegOutEditFeeRateResultStreamProvider =
     PegOutEditFeeRateResultStreamProvider._();
 
 final class PegOutEditFeeRateResultStreamProvider
@@ -659,7 +656,7 @@ final class PegOutEditFeeRateResultStreamProvider
           PegOutEditFeeRateResultStream,
           Option<PegOutEditFeeRateResult>
         > {
-  const PegOutEditFeeRateResultStreamProvider._()
+  PegOutEditFeeRateResultStreamProvider._()
     : super(
         from: null,
         argument: null,
@@ -686,8 +683,7 @@ abstract class _$PegOutEditFeeRateResultStream
   Stream<Option<PegOutEditFeeRateResult>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -705,12 +701,12 @@ abstract class _$PegOutEditFeeRateResultStream
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(pegDetailsTransItem)
-const pegDetailsTransItemProvider = PegDetailsTransItemProvider._();
+final pegDetailsTransItemProvider = PegDetailsTransItemProvider._();
 
 final class PegDetailsTransItemProvider
     extends
@@ -720,7 +716,7 @@ final class PegDetailsTransItemProvider
           Option<TransItem>
         >
     with $Provider<Option<TransItem>> {
-  const PegDetailsTransItemProvider._()
+  PegDetailsTransItemProvider._()
     : super(
         from: null,
         argument: null,

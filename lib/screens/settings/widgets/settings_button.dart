@@ -17,18 +17,25 @@ enum SettingsButtonType {
   currency,
 }
 
+/// Opacity applied to a disabled [SettingsButton]/[DSettingsButton]: the
+/// widgets hard-code active-looking text/icon colors, so a null callback alone
+/// would not read as disabled -- the dimmed layer is what signals it.
+const double kSettingsButtonDisabledOpacity = 0.4;
+
 class SettingsButton extends HookConsumerWidget {
   const SettingsButton({
     super.key,
     this.transparent = false,
     this.type = SettingsButtonType.recovery,
     required this.text,
+    this.disabled = false,
     this.onPressed,
   });
 
   final bool transparent;
   final SettingsButtonType type;
   final String text;
+  final bool disabled;
   final VoidCallback? onPressed;
 
   @override
@@ -88,11 +95,11 @@ class SettingsButton extends HookConsumerWidget {
       };
     }, [type]);
 
-    return SizedBox(
+    final button = SizedBox(
       height: 60,
       width: double.infinity,
       child: TextButton(
-        onPressed: onPressed,
+        onPressed: disabled ? null : onPressed,
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
           backgroundColor:
@@ -138,5 +145,9 @@ class SettingsButton extends HookConsumerWidget {
         ),
       ),
     );
+
+    return disabled
+        ? Opacity(opacity: kSettingsButtonDisabledOpacity, child: button)
+        : button;
   }
 }

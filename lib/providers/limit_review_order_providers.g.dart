@@ -10,12 +10,12 @@ part of 'limit_review_order_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(MarketLimitTrackIndexPriceStateNotifier)
-const marketLimitTrackIndexPriceStateProvider =
+final marketLimitTrackIndexPriceStateProvider =
     MarketLimitTrackIndexPriceStateNotifierProvider._();
 
 final class MarketLimitTrackIndexPriceStateNotifierProvider
     extends $NotifierProvider<MarketLimitTrackIndexPriceStateNotifier, bool> {
-  const MarketLimitTrackIndexPriceStateNotifierProvider._()
+  MarketLimitTrackIndexPriceStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -52,8 +52,7 @@ abstract class _$MarketLimitTrackIndexPriceStateNotifier
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -63,12 +62,12 @@ abstract class _$MarketLimitTrackIndexPriceStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketLimitTrackIndexPriceValueNotifier)
-const marketLimitTrackIndexPriceValueProvider =
+final marketLimitTrackIndexPriceValueProvider =
     MarketLimitTrackIndexPriceValueNotifierProvider._();
 
 final class MarketLimitTrackIndexPriceValueNotifierProvider
@@ -77,7 +76,7 @@ final class MarketLimitTrackIndexPriceValueNotifierProvider
           MarketLimitTrackIndexPriceValueNotifier,
           TrackingValue
         > {
-  const MarketLimitTrackIndexPriceValueNotifierProvider._()
+  MarketLimitTrackIndexPriceValueNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -114,8 +113,7 @@ abstract class _$MarketLimitTrackIndexPriceValueNotifier
   TrackingValue build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<TrackingValue, TrackingValue>;
     final element =
         ref.element
@@ -125,17 +123,17 @@ abstract class _$MarketLimitTrackIndexPriceValueNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(limitReviewOrderPrice)
-const limitReviewOrderPriceProvider = LimitReviewOrderPriceProvider._();
+final limitReviewOrderPriceProvider = LimitReviewOrderPriceProvider._();
 
 final class LimitReviewOrderPriceProvider
     extends $FunctionalProvider<OrderAmount, OrderAmount, OrderAmount>
     with $Provider<OrderAmount> {
-  const LimitReviewOrderPriceProvider._()
+  LimitReviewOrderPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -172,7 +170,7 @@ String _$limitReviewOrderPriceHash() =>
     r'a45bfb9a7afe33950567e1d8788a8fadec0e0906';
 
 @ProviderFor(limitReviewOrderAggregateVolume)
-const limitReviewOrderAggregateVolumeProvider =
+final limitReviewOrderAggregateVolumeProvider =
     LimitReviewOrderAggregateVolumeProvider._();
 
 final class LimitReviewOrderAggregateVolumeProvider
@@ -183,7 +181,7 @@ final class LimitReviewOrderAggregateVolumeProvider
           MarketOrderAggregateVolumeProvider
         >
     with $Provider<MarketOrderAggregateVolumeProvider> {
-  const LimitReviewOrderAggregateVolumeProvider._()
+  LimitReviewOrderAggregateVolumeProvider._()
     : super(
         from: null,
         argument: null,
@@ -223,13 +221,13 @@ String _$limitReviewOrderAggregateVolumeHash() =>
     r'9adfa8003c8865bdf6189c8a3f9b0561daa01dce';
 
 @ProviderFor(limitReviewOrderAggregateVolumeTooHigh)
-const limitReviewOrderAggregateVolumeTooHighProvider =
+final limitReviewOrderAggregateVolumeTooHighProvider =
     LimitReviewOrderAggregateVolumeTooHighProvider._();
 
 final class LimitReviewOrderAggregateVolumeTooHighProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LimitReviewOrderAggregateVolumeTooHighProvider._()
+  LimitReviewOrderAggregateVolumeTooHighProvider._()
     : super(
         from: null,
         argument: null,
@@ -267,13 +265,13 @@ String _$limitReviewOrderAggregateVolumeTooHighHash() =>
     r'b6bc9c9ec47578239ea07c45b1f09921e40e015f';
 
 @ProviderFor(limitReviewOrderInsufficientPrice)
-const limitReviewOrderInsufficientPriceProvider =
+final limitReviewOrderInsufficientPriceProvider =
     LimitReviewOrderInsufficientPriceProvider._();
 
 final class LimitReviewOrderInsufficientPriceProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LimitReviewOrderInsufficientPriceProvider._()
+  LimitReviewOrderInsufficientPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -311,13 +309,13 @@ String _$limitReviewOrderInsufficientPriceHash() =>
     r'2c65a277c88eb2149b24e51d3053e8a96effb963';
 
 @ProviderFor(limitReviewOrderSubmitButtonEnabled)
-const limitReviewOrderSubmitButtonEnabledProvider =
+final limitReviewOrderSubmitButtonEnabledProvider =
     LimitReviewOrderSubmitButtonEnabledProvider._();
 
 final class LimitReviewOrderSubmitButtonEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LimitReviewOrderSubmitButtonEnabledProvider._()
+  LimitReviewOrderSubmitButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -355,7 +353,7 @@ String _$limitReviewOrderSubmitButtonEnabledHash() =>
     r'd9b42ba648052af46b27f7b86153bfa2b139f4e1';
 
 @ProviderFor(trackingRangeConverter)
-const trackingRangeConverterProvider = TrackingRangeConverterProvider._();
+final trackingRangeConverterProvider = TrackingRangeConverterProvider._();
 
 final class TrackingRangeConverterProvider
     extends
@@ -365,7 +363,7 @@ final class TrackingRangeConverterProvider
           TrackingRangeConverter
         >
     with $Provider<TrackingRangeConverter> {
-  const TrackingRangeConverterProvider._()
+  TrackingRangeConverterProvider._()
     : super(
         from: null,
         argument: null,

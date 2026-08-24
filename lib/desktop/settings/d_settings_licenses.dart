@@ -126,8 +126,10 @@ class DSettingsLicenses extends HookConsumerWidget {
             ),
           );
 
-          if (packageName == kPackageGdk || packageName == kPackageSideswap) {
+          if (packageName == kPackageSideswap) {
             newLicenses.insert(0, widget);
+          } else if (packageName == kPackageLwk) {
+            newLicenses.insert(1, widget);
           } else {
             newLicenses.add(widget);
           }

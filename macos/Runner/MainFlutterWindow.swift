@@ -10,6 +10,9 @@ class MainFlutterWindow: NSWindow {
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
+    DockAttentionChannel.register(
+      messenger: flutterViewController.engine.binaryMessenger, window: self)
+
     super.awakeFromNib()
   }
 }

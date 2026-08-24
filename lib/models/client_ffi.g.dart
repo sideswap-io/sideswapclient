@@ -10,10 +10,10 @@ part of 'client_ffi.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LibClientId)
-const libClientIdProvider = LibClientIdProvider._();
+final libClientIdProvider = LibClientIdProvider._();
 
 final class LibClientIdProvider extends $NotifierProvider<LibClientId, int> {
-  const LibClientIdProvider._()
+  LibClientIdProvider._()
     : super(
         from: null,
         argument: null,
@@ -46,8 +46,7 @@ abstract class _$LibClientId extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -57,17 +56,17 @@ abstract class _$LibClientId extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(libClientState)
-const libClientStateProvider = LibClientStateProvider._();
+final libClientStateProvider = LibClientStateProvider._();
 
 final class LibClientStateProvider
     extends $FunctionalProvider<LibClientState, LibClientState, LibClientState>
     with $Provider<LibClientState> {
-  const LibClientStateProvider._()
+  LibClientStateProvider._()
     : super(
         from: null,
         argument: null,

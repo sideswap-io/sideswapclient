@@ -313,7 +313,8 @@ class QrCodeHelper {
 
     logger.d(_result);
 
-    return Right(QrCodeResult());
+    // Fixed: was Right(QrCodeResult()) — introduced in 2f68aefe during Either refactoring
+    return Right(_result);
   }
 
   QrCodeResult _emitError(String errorMessage) {

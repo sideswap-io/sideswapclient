@@ -63,11 +63,11 @@ class Languages extends ConsumerWidget {
                             borderRadius: const BorderRadius.all(
                               Radius.circular(8),
                             ),
-                            onTap: () {
-                              ref
-                                  .read(localesProvider.notifier)
-                                  .setSelectedLang(lang);
-                              Navigator.of(context).pop();
+                            onTap: () async {
+                              await context.setLocale(Locale(lang));
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                              }
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(

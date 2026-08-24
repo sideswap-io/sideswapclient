@@ -15,7 +15,7 @@ import 'package:sideswap/screens/home/home.dart';
 import 'package:sideswap/screens/markets/markets.dart';
 import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
 import 'package:sideswap/screens/instant_swap/instant_swap.dart';
-import 'package:sideswap/screens/swap/swap.dart';
+import 'package:sideswap/screens/pegs/peg_in_out.dart';
 import 'package:sideswap/screens/wallet_main/widgets/main_bottom_navigation_bar.dart';
 
 class WalletMain extends HookConsumerWidget {
@@ -127,7 +127,7 @@ class WalletMainChildPage extends ConsumerWidget {
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
       WalletMainNavigationItemEnum.markets => const Markets(),
       WalletMainNavigationItemEnum.swap => InstantSwap(),
-      WalletMainNavigationItemEnum.pegs => const SwapMain(key: ValueKey(true)),
+      WalletMainNavigationItemEnum.pegs => const PegInOut(),
       _ => const SizedBox(),
     };
   }

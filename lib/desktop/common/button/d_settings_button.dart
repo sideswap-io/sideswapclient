@@ -7,6 +7,8 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/screens/settings/widgets/settings_button.dart'
+    show kSettingsButtonDisabledOpacity;
 
 enum DSettingsButtonIcon {
   recovery,
@@ -29,6 +31,7 @@ class DSettingsButton extends ConsumerWidget {
     this.title = '',
     this.forward = true,
     this.icon = DSettingsButtonIcon.recovery,
+    this.disabled = false,
     this.child,
   });
 
@@ -36,6 +39,7 @@ class DSettingsButton extends ConsumerWidget {
   final String title;
   final bool forward;
   final DSettingsButtonIcon icon;
+  final bool disabled;
   final Widget? child;
 
   @override
@@ -88,11 +92,11 @@ class DSettingsButton extends ConsumerWidget {
               .defaultButtonStyle
               ?.merge(settingsButtonStyle);
 
-    return DCustomFilledBigButton(
+    final button = DCustomFilledBigButton(
       width: 344,
       height: 44,
       style: buttonStyle,
-      onPressed: onPressed,
+      onPressed: disabled ? null : onPressed,
       child: Padding(
         padding: const EdgeInsets.only(left: 17, right: 17),
         child: Row(
@@ -119,5 +123,9 @@ class DSettingsButton extends ConsumerWidget {
         ),
       ),
     );
+
+    return disabled
+        ? Opacity(opacity: kSettingsButtonDisabledOpacity, child: button)
+        : button;
   }
 }

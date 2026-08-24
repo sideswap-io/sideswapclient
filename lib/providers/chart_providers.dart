@@ -201,7 +201,7 @@ abstract class AbstractChartStatsRepository {
   String statsVolumeString();
   String freeFloatString();
   String totalFloatString();
-  bool pricedInLiquid = false;
+  bool get pricedInLiquid;
 }
 
 class ChartStatsRepository implements AbstractChartStatsRepository {
@@ -387,10 +387,6 @@ class ChartStatsRepository implements AbstractChartStatsRepository {
     );
   }
 
-  @override
-  set pricedInLiquid(bool value) {
-    pricedInLiquid = value;
-  }
 }
 
 @riverpod

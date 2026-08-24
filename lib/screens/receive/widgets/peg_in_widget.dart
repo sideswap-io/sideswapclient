@@ -8,10 +8,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/use_timeout_fn.dart';
+import 'package:sideswap/common/widgets/peg_in_info_lines.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
-import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/swap_providers.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 
@@ -37,10 +36,7 @@ class PegInWidet extends HookConsumerWidget {
     }
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: PegInReceiveAddress(showCopyInfo: showCopyInfo),
@@ -123,7 +119,7 @@ class PegInWidet extends HookConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: AnimatedOpacity(
@@ -235,27 +231,14 @@ class PegInReceiveAddress extends HookConsumerWidget {
   }
 }
 
-class PegInDescription extends HookConsumerWidget {
+class PegInDescription extends StatelessWidget {
   const PegInDescription({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
-    final pegOutServerFeePercent = ref.watch(pegOutServerFeePercentProvider);
-    final pegInServerFeePercent = ref.watch(pegInServerFeePercentProvider);
-
-    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    var percentConversion =
-        (pegInServerFeePercent == 0 || pegInServerFeePercent == 0)
-        ? 0
-        : swapDeliverAsset.assetId == liquidAssetId
-        ? 100 - pegOutServerFeePercent
-        : 100 - pegInServerFeePercent;
-
-    final conversionStr = percentConversion.toStringAsFixed(2);
-
-    final pegRepository = ref.watch(pegRepositoryProvider);
-
+  Widget build(BuildContext context) {
+    // The shared widget owns the conversion-rate rule (100 - peg-in server fee
+    // percent, hidden at zero); this caller only owns the container styling and
+    // the mobile bullet gap.
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: DecoratedBox(
@@ -263,222 +246,9 @@ class PegInDescription extends HookConsumerWidget {
           color: SideSwapColors.chathamsBlue,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '•',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      color: SideSwapColors.ceruleanFrost,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'PEGIN_1STLINE'.tr(),
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontSize: 13,
-                              color: SideSwapColors.ceruleanFrost,
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '•',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      color: SideSwapColors.ceruleanFrost,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'PEGIN_2NDLINE'.tr(),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.ceruleanFrost,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '•',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      color: SideSwapColors.ceruleanFrost,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'PEGIN_CONVERSION_RATE'.tr(args: [conversionStr]),
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontSize: 13,
-                              color: SideSwapColors.ceruleanFrost,
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '•',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      color: SideSwapColors.ceruleanFrost,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'PEGIN_LESS'.tr(),
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontSize: 13,
-                              color: SideSwapColors.ceruleanFrost,
-                            ),
-                        children: [
-                          TextSpan(
-                            text: 'PEGIN_LESS_AMOUNT'.tr(
-                              args: [pegRepository.pegInWalletBalance()],
-                            ),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  fontSize: 13,
-                                  color: SideSwapColors.brightTurquoise,
-                                ),
-                          ),
-                          TextSpan(
-                            text: 'PEGIN_LESS_END'.tr(),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  fontSize: 13,
-                                  color: SideSwapColors.ceruleanFrost,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '•',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      color: SideSwapColors.ceruleanFrost,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'PEGIN_GREATER'.tr(),
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontSize: 13,
-                              color: SideSwapColors.ceruleanFrost,
-                            ),
-                        children: [
-                          TextSpan(
-                            text: 'PEGIN_GREATER_AMOUNT'.tr(
-                              args: [pegRepository.pegInWalletBalance()],
-                            ),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  fontSize: 13,
-                                  color: SideSwapColors.brightTurquoise,
-                                ),
-                          ),
-                          TextSpan(
-                            text: 'PEGIN_GREATER_END'.tr(),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  fontSize: 13,
-                                  color: SideSwapColors.ceruleanFrost,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '•',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 13,
-                      color: SideSwapColors.ceruleanFrost,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'PEGIN_RELEASED'.tr(),
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontSize: 13,
-                              color: SideSwapColors.ceruleanFrost,
-                            ),
-                        children: [
-                          TextSpan(
-                            text: 'PEGIN_LESS_AMOUNT'.tr(
-                              args: [pegRepository.pegInWalletBalance()],
-                            ),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  fontSize: 13,
-                                  color: SideSwapColors.brightTurquoise,
-                                ),
-                          ),
-                          TextSpan(
-                            text: 'PEGIN_RELEASED_END'.tr(),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  fontSize: 13,
-                                  color: SideSwapColors.ceruleanFrost,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+          child: PegInInfoLines(bulletSpacing: 8),
         ),
       ),
     );

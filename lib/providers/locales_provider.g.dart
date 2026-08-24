@@ -10,17 +10,17 @@ part of 'locales_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LocalesNotifier)
-const localesProvider = LocalesNotifierProvider._();
+final localesProvider = LocalesNotifierProvider._();
 
 final class LocalesNotifierProvider
     extends $NotifierProvider<LocalesNotifier, String> {
-  const LocalesNotifierProvider._()
+  LocalesNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'localesProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,14 +41,13 @@ final class LocalesNotifierProvider
   }
 }
 
-String _$localesNotifierHash() => r'1018e1e0d353a2858e1010e7d2fd665844009c3a';
+String _$localesNotifierHash() => r'ca5282de0405c226f64c1ea03ed21cd447596cd6';
 
 abstract class _$LocalesNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$LocalesNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

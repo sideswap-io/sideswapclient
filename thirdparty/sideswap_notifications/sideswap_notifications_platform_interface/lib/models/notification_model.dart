@@ -99,7 +99,7 @@ sealed class FCMDetails with _$FCMDetails {
 @freezed
 sealed class FCMTx with _$FCMTx {
   @JsonSerializable(fieldRename: FieldRename.snake)
-  const factory FCMTx({FCMTxType? txType, String? txId}) = _FCMTx;
+  const factory FCMTx({FCMTxType? txType, @JsonKey(name: 'txid') String? txId}) = _FCMTx;
 
   factory FCMTx.fromJson(Map<String, dynamic> json) => _$FCMTxFromJson(json);
 }

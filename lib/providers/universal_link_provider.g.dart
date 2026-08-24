@@ -10,13 +10,13 @@ part of 'universal_link_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(UniversalLinkResultStateNotifier)
-const universalLinkResultStateProvider =
+final universalLinkResultStateProvider =
     UniversalLinkResultStateNotifierProvider._();
 
 final class UniversalLinkResultStateNotifierProvider
     extends
         $NotifierProvider<UniversalLinkResultStateNotifier, LinkResultState> {
-  const UniversalLinkResultStateNotifierProvider._()
+  UniversalLinkResultStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -52,8 +52,7 @@ abstract class _$UniversalLinkResultStateNotifier
   LinkResultState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<LinkResultState, LinkResultState>;
     final element =
         ref.element
@@ -63,17 +62,17 @@ abstract class _$UniversalLinkResultStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(universalLink)
-const universalLinkProvider = UniversalLinkProvider._();
+final universalLinkProvider = UniversalLinkProvider._();
 
 final class UniversalLinkProvider
     extends $FunctionalProvider<UniversalLink, UniversalLink, UniversalLink>
     with $Provider<UniversalLink> {
-  const UniversalLinkProvider._()
+  UniversalLinkProvider._()
     : super(
         from: null,
         argument: null,

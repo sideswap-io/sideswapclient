@@ -93,7 +93,7 @@ class SwaptionSessionsDialog extends HookConsumerWidget {
                                 swaptionSession: swaptionSessions[index],
                               ),
                               index < swaptionSessions.length - 1
-                                  ? const SizedBox(height: 10)
+                                  ? const SizedBox(height: 3)
                                   : const SizedBox.shrink(),
                             ],
                           ),

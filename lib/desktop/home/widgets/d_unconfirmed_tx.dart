@@ -136,6 +136,7 @@ class DUnconfirmedTxItem extends ConsumerWidget {
     final transItemHelper = ref.watch(transItemHelperProvider(transItem!));
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+    final txIds = transItemHelper.txId();
 
     return DFlexesRow(
       flexes: flexes,
@@ -173,7 +174,14 @@ class DUnconfirmedTxItem extends ConsumerWidget {
           transItem: transItem!,
           textStyle: Theme.of(context).textTheme.titleSmall,
         ),
-        DTxBlindedUrlIconButton(txid: transItem!.tx.txid),
+        // A peg TransItem carries no `tx`, so `tx.txid` is always empty for
+        // pegs -- and this list is built to hold exactly the pegs that have not
+        // completed. Take the link target from the helper, like the tx history.
+        DTxBlindedUrlIconButton(
+          txid: txIds.txId,
+          isLiquid: txIds.isLiquid,
+          unblinded: txIds.unblinded,
+        ),
       ],
     );
   }

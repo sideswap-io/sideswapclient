@@ -644,10 +644,6 @@ Option<QuoteError> exchangeQuoteError(Ref ref) {
         return Option.none();
       }
 
-      if (quote.hasIndPrice()) {
-        return Option.none();
-      }
-
       return Option.of(
         QuoteError(error: quote.error, orderId: quote.orderId.toInt()),
       );

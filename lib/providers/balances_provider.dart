@@ -13,6 +13,8 @@ import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+import '../common/utils/sideswap_logger.dart';
+
 part 'balances_provider.g.dart';
 
 @Riverpod(keepAlive: true)
@@ -176,14 +178,28 @@ Decimal amountUsdInDefaultCurrency(Ref ref, String? assetId, num amount) {
 @riverpod
 Decimal amountUsd(Ref ref, String? assetId, num amount) {
   if (assetId == null) {
+    logger.w('[amountUsdProvider] Asset ID is null, returning 0');
     return Decimal.zero;
   }
 
-  final assetPrice = ref.watch(portfolioPricesProvider)[assetId];
+  final asset = ref.watch(assetsStateProvider)[assetId];
+
+  final portfolioPrices = ref.watch(portfolioPricesProvider);
+  if (!portfolioPrices.containsKey(assetId)) {
+    logger.w(
+      '[amountUsdProvider] Portfolio asset price not found for (${asset?.ticker ?? 'unknown'}) assetId: $assetId, returning 0',
+    );
+    return Decimal.zero;
+  }
+
+  final assetPrice = portfolioPrices[assetId];
 
   final internalAssetPrice = Decimal.tryParse('$assetPrice') ?? Decimal.zero;
 
   if (internalAssetPrice == Decimal.zero) {
+    logger.w(
+      '[amountUsdProvider] Parsed portfolio asset price is 0 for (${asset?.ticker ?? 'unknown'}) assetId: $assetId, returning 0',
+    );
     return Decimal.zero;
   }
 
@@ -292,7 +308,7 @@ String assetsTotalLbtcBalance(Ref ref, Iterable<Asset> assets) {
 
 /// USD currency converters ============
 @riverpod
-String _assetsTotalUsdBalanceString(Ref ref, Iterable<Asset> assets) {
+String assetsTotalUsdBalanceString(Ref ref, Iterable<Asset> assets) {
   Decimal amountUsdDecimal = ref.watch(_assetsTotalUsdBalanceProvider(assets));
 
   var dollarConversion = '0.0';
@@ -305,14 +321,14 @@ Decimal _assetsTotalUsdBalance(Ref ref, Iterable<Asset> assets) {
   var amountUsdDecimalSum = Decimal.zero;
 
   for (final asset in assets) {
-    amountUsdDecimalSum += ref.watch(_assetBalanceInUsdProvider(asset));
+    amountUsdDecimalSum += ref.watch(assetBalanceInUsdProvider(asset));
   }
 
   return amountUsdDecimalSum;
 }
 
 @riverpod
-Decimal _assetBalanceInUsd(Ref ref, Asset asset) {
+Decimal assetBalanceInUsd(Ref ref, Asset asset) {
   final portfolioPrices = ref.watch(portfolioPricesProvider);
   final assetPortfolioPrice = portfolioPrices[asset.assetId];
 
@@ -331,8 +347,8 @@ Decimal _assetBalanceInUsd(Ref ref, Asset asset) {
 }
 
 @riverpod
-String _assetBalanceInUsdString(Ref ref, Asset asset) {
-  final usdAssetBalance = ref.watch(_assetBalanceInUsdProvider(asset));
+String assetBalanceInUsdString(Ref ref, Asset asset) {
+  final usdAssetBalance = ref.watch(assetBalanceInUsdProvider(asset));
   return usdAssetBalance.toStringAsFixed(2);
 }
 

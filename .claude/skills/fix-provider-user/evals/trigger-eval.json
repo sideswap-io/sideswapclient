@@ -1,0 +1,102 @@
+[
+  {
+    "query": "pick next provider from queue and fix coverage",
+    "should_trigger": true,
+    "note": "No specific provider, asks to auto-select from queue"
+  },
+  {
+    "query": "/fix-provider-user wallet_balance_provider.dart",
+    "should_trigger": true,
+    "note": "Direct slash command invocation with argument"
+  },
+  {
+    "query": "Let's fix test coverage for order_provider.dart — it's at 42% and needs to get to 100%",
+    "should_trigger": true,
+    "note": "Specific provider + coverage target, natural phrasing"
+  },
+  {
+    "query": "fix tests for peg_provider, coverage is at 67.3%",
+    "should_trigger": true,
+    "note": "Specific provider + exact coverage percentage"
+  },
+  {
+    "query": "pick the easiest provider from coverage_progress.json and run the full pipeline on it",
+    "should_trigger": true,
+    "note": "References work queue + pipeline explicitly"
+  },
+  {
+    "query": "continue pipeline for swap_provider — writer is done, need to test",
+    "should_trigger": true,
+    "note": "Resume mid-pipeline — skill will start from scratch (no checkpoint), but should still trigger"
+  },
+  {
+    "query": "run fix pipeline on lib/providers/network_settings_provider.dart, it needs lib/ changes too",
+    "should_trigger": true,
+    "note": "Full path, mentions lib/ changes which is a key pipeline feature"
+  },
+  {
+    "query": "what's next to fix in test coverage? run it",
+    "should_trigger": true,
+    "note": "Casual, auto-select + execute"
+  },
+  {
+    "query": "endpoint_provider is at 16.9% — let's get it to 100%",
+    "should_trigger": true,
+    "note": "Real provider from recent commits, coverage gap"
+  },
+  {
+    "query": "fix the next provider please, I think csv_provider or jade_provider has lowest retry count",
+    "should_trigger": true,
+    "note": "References auto-selection criteria (retry count)"
+  },
+  {
+    "query": "Write a new provider for managing user preferences — call it preferences_provider.dart",
+    "should_trigger": false,
+    "note": "Creating NEW provider, not fixing coverage of existing one"
+  },
+  {
+    "query": "what's the current coverage for all providers? show me a table",
+    "should_trigger": false,
+    "note": "Asking for coverage stats only — no intent to fix"
+  },
+  {
+    "query": "write a single test for swap_provider.dart checking the null case at line 87",
+    "should_trigger": false,
+    "note": "Manual single test write — not the full pipeline"
+  },
+  {
+    "query": "review the test file test/providers/order_provider_test.dart for quality issues",
+    "should_trigger": false,
+    "note": "Code review only, no coverage fix pipeline"
+  },
+  {
+    "query": "how does ref.listen work in Riverpod? I need to understand the pattern before writing tests",
+    "should_trigger": false,
+    "note": "Riverpod learning question, shares keywords but no fix intent"
+  },
+  {
+    "query": "add a provider that connects via WebSocket and streams transaction data",
+    "should_trigger": false,
+    "note": "Creating new provider with WebSocket — not coverage fix"
+  },
+  {
+    "query": "run dart test test/providers/wallet_provider_test.dart and show me the output",
+    "should_trigger": false,
+    "note": "Running tests manually, not the orchestrated pipeline"
+  },
+  {
+    "query": "refactor peg_provider.dart — extract the validation logic into a separate method",
+    "should_trigger": false,
+    "note": "Refactoring provider lib/ code, not fixing test coverage"
+  },
+  {
+    "query": "update coverage_progress.json to mark network_provider as done with 100%",
+    "should_trigger": false,
+    "note": "Manual status update — finalize step only, not running the pipeline"
+  },
+  {
+    "query": "can you set up overrideWithBuild for testing the swap_provider dependencies? I want to mock the ref",
+    "should_trigger": false,
+    "note": "Specific Riverpod testing technique question, shares test+provider keywords"
+  }
+]

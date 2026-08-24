@@ -20,16 +20,14 @@ class MiddleEllipsisText extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        // Measure the width of the text
         final textPainter = TextPainter(
           text: TextSpan(text: text, style: style),
           maxLines: maxLines,
           textDirection: Directionality.of(context),
           textAlign: textAlign,
-        )..layout(minWidth: 0, maxWidth: double.infinity);
+        )..layout(minWidth: 0, maxWidth: constraints.maxWidth);
 
-        if (textPainter.width <= (constraints.maxWidth * maxLines!)) {
-          // Text fits without truncation
+        if (!textPainter.didExceedMaxLines) {
           return Text(
             text,
             style: style,
@@ -39,31 +37,33 @@ class MiddleEllipsisText extends StatelessWidget {
           );
         }
 
-        // Calculate the truncation point
-        final ellipsis = '...';
-        final ellipsisPainter = TextPainter(
-          text: TextSpan(text: ellipsis, style: style),
-          maxLines: maxLines,
-          textDirection: Directionality.of(context),
-        )..layout(minWidth: 0, maxWidth: double.infinity);
+        final chars = text.characters.toList();
+        int lo = 0, hi = chars.length ~/ 2;
+        while (lo < hi) {
+          final mid = (lo + hi + 1) >> 1;
+          final candidate =
+              '${chars.take(mid).join()}…${chars.skip(chars.length - mid).join()}';
+          final tp = TextPainter(
+            text: TextSpan(text: candidate, style: style),
+            textDirection: Directionality.of(context),
+            maxLines: 1,
+          )..layout(minWidth: 0, maxWidth: double.infinity);
+          if (tp.width <= constraints.maxWidth) {
+            lo = mid;
+          } else {
+            hi = mid - 1;
+          }
+        }
 
-        final ellipsisWidth = ellipsisPainter.width;
-        final availableWidth = constraints.maxWidth - ellipsisWidth;
-        final charWidth = textPainter.width / text.length;
-
-        // Determine the number of characters that can fit on each side of the ellipsis
-        final charsToShow = (availableWidth / (2 * charWidth)).floor();
-        final startText = text.substring(0, charsToShow);
-        final endText = text.substring(text.length - charsToShow);
-
-        // Create the final truncated text
-        final truncatedText = '$startText$ellipsis$endText';
+        final truncated = lo > 0
+            ? '${chars.take(lo).join()}…${chars.skip(chars.length - lo).join()}'
+            : '…';
 
         return Text(
-          truncatedText,
+          truncated,
           style: style,
           textAlign: textAlign,
-          maxLines: maxLines,
+          maxLines: 1,
           softWrap: softWrap,
         );
       },

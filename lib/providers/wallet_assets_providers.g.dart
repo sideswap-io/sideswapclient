@@ -10,12 +10,12 @@ part of 'wallet_assets_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(bitcoinAssetId)
-const bitcoinAssetIdProvider = BitcoinAssetIdProvider._();
+final bitcoinAssetIdProvider = BitcoinAssetIdProvider._();
 
 final class BitcoinAssetIdProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const BitcoinAssetIdProvider._()
+  BitcoinAssetIdProvider._()
     : super(
         from: null,
         argument: null,
@@ -51,11 +51,11 @@ final class BitcoinAssetIdProvider
 String _$bitcoinAssetIdHash() => r'ab5ab5393629fbc1cd35fa94391e71a8d0847f81';
 
 @ProviderFor(LiquidAssetIdState)
-const liquidAssetIdStateProvider = LiquidAssetIdStateProvider._();
+final liquidAssetIdStateProvider = LiquidAssetIdStateProvider._();
 
 final class LiquidAssetIdStateProvider
     extends $NotifierProvider<LiquidAssetIdState, String> {
-  const LiquidAssetIdStateProvider._()
+  LiquidAssetIdStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -89,8 +89,7 @@ abstract class _$LiquidAssetIdState extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -100,16 +99,16 @@ abstract class _$LiquidAssetIdState extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(TetherAssetIdState)
-const tetherAssetIdStateProvider = TetherAssetIdStateProvider._();
+final tetherAssetIdStateProvider = TetherAssetIdStateProvider._();
 
 final class TetherAssetIdStateProvider
     extends $NotifierProvider<TetherAssetIdState, String> {
-  const TetherAssetIdStateProvider._()
+  TetherAssetIdStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -143,8 +142,7 @@ abstract class _$TetherAssetIdState extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -154,16 +152,16 @@ abstract class _$TetherAssetIdState extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(EurxAssetIdState)
-const eurxAssetIdStateProvider = EurxAssetIdStateProvider._();
+final eurxAssetIdStateProvider = EurxAssetIdStateProvider._();
 
 final class EurxAssetIdStateProvider
     extends $NotifierProvider<EurxAssetIdState, String> {
-  const EurxAssetIdStateProvider._()
+  EurxAssetIdStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -196,8 +194,7 @@ abstract class _$EurxAssetIdState extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -207,16 +204,16 @@ abstract class _$EurxAssetIdState extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AmpAssetIdsNotifier)
-const ampAssetIdsProvider = AmpAssetIdsNotifierProvider._();
+final ampAssetIdsProvider = AmpAssetIdsNotifierProvider._();
 
 final class AmpAssetIdsNotifierProvider
     extends $NotifierProvider<AmpAssetIdsNotifier, List<String>> {
-  const AmpAssetIdsNotifierProvider._()
+  AmpAssetIdsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -250,8 +247,7 @@ abstract class _$AmpAssetIdsNotifier extends $Notifier<List<String>> {
   List<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<String>, List<String>>;
     final element =
         ref.element
@@ -261,16 +257,16 @@ abstract class _$AmpAssetIdsNotifier extends $Notifier<List<String>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AssetsState)
-const assetsStateProvider = AssetsStateProvider._();
+final assetsStateProvider = AssetsStateProvider._();
 
 final class AssetsStateProvider
     extends $NotifierProvider<AssetsState, Map<String, Asset>> {
-  const AssetsStateProvider._()
+  AssetsStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -303,8 +299,7 @@ abstract class _$AssetsState extends $Notifier<Map<String, Asset>> {
   Map<String, Asset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Map<String, Asset>, Map<String, Asset>>;
     final element =
         ref.element
@@ -314,18 +309,18 @@ abstract class _$AssetsState extends $Notifier<Map<String, Asset>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(assets)
-const assetsProvider = AssetsProvider._();
+final assetsProvider = AssetsProvider._();
 
 final class AssetsProvider
     extends
         $FunctionalProvider<Iterable<Asset>, Iterable<Asset>, Iterable<Asset>>
     with $Provider<Iterable<Asset>> {
-  const AssetsProvider._()
+  AssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -361,12 +356,12 @@ final class AssetsProvider
 String _$assetsHash() => r'8c124724af564e592ba0632abcef778f8aab2bea';
 
 @ProviderFor(assetFromAssetId)
-const assetFromAssetIdProvider = AssetFromAssetIdFamily._();
+final assetFromAssetIdProvider = AssetFromAssetIdFamily._();
 
 final class AssetFromAssetIdProvider
     extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
     with $Provider<Option<Asset>> {
-  const AssetFromAssetIdProvider._({
+  AssetFromAssetIdProvider._({
     required AssetFromAssetIdFamily super.from,
     required String? super.argument,
   }) : super(
@@ -421,7 +416,7 @@ String _$assetFromAssetIdHash() => r'b72841dbd1056e3de308d8a84b47822c12263170';
 
 final class AssetFromAssetIdFamily extends $Family
     with $FunctionalFamilyOverride<Option<Asset>, String?> {
-  const AssetFromAssetIdFamily._()
+  AssetFromAssetIdFamily._()
     : super(
         retry: null,
         name: r'assetFromAssetIdProvider',
@@ -438,12 +433,12 @@ final class AssetFromAssetIdFamily extends $Family
 }
 
 @ProviderFor(assetUtils)
-const assetUtilsProvider = AssetUtilsProvider._();
+final assetUtilsProvider = AssetUtilsProvider._();
 
 final class AssetUtilsProvider
     extends $FunctionalProvider<AssetUtils, AssetUtils, AssetUtils>
     with $Provider<AssetUtils> {
-  const AssetUtilsProvider._()
+  AssetUtilsProvider._()
     : super(
         from: null,
         argument: null,
@@ -478,13 +473,54 @@ final class AssetUtilsProvider
 
 String _$assetUtilsHash() => r'3ab23b14fed091938634c0c8d49080f197bcc2d5';
 
+@ProviderFor(imageCacheConfig)
+final imageCacheConfigProvider = ImageCacheConfigProvider._();
+
+final class ImageCacheConfigProvider
+    extends $FunctionalProvider<Config, Config, Config>
+    with $Provider<Config> {
+  ImageCacheConfigProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'imageCacheConfigProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$imageCacheConfigHash();
+
+  @$internal
+  @override
+  $ProviderElement<Config> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  Config create(Ref ref) {
+    return imageCacheConfig(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Config value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Config>(value),
+    );
+  }
+}
+
+String _$imageCacheConfigHash() => r'f224e4fd21d4dcd5c23a47c75c0d78ef0446a953';
+
 @ProviderFor(cacheManager)
-const cacheManagerProvider = CacheManagerProvider._();
+final cacheManagerProvider = CacheManagerProvider._();
 
 final class CacheManagerProvider
     extends $FunctionalProvider<CacheManager, CacheManager, CacheManager>
     with $Provider<CacheManager> {
-  const CacheManagerProvider._()
+  CacheManagerProvider._()
     : super(
         from: null,
         argument: null,
@@ -517,10 +553,10 @@ final class CacheManagerProvider
   }
 }
 
-String _$cacheManagerHash() => r'e1b08ebd0a33e4e5a44d8fda304e3a88d3f25da7';
+String _$cacheManagerHash() => r'7d465b2a6fadeec896a8d3cfca918a582ea038b4';
 
 @ProviderFor(cachedImageManager)
-const cachedImageManagerProvider = CachedImageManagerProvider._();
+final cachedImageManagerProvider = CachedImageManagerProvider._();
 
 final class CachedImageManagerProvider
     extends
@@ -530,7 +566,7 @@ final class CachedImageManagerProvider
           CachedImageBase64Manager
         >
     with $Provider<CachedImageBase64Manager> {
-  const CachedImageManagerProvider._()
+  CachedImageManagerProvider._()
     : super(
         from: null,
         argument: null,
@@ -568,12 +604,12 @@ String _$cachedImageManagerHash() =>
     r'0eb7658243703a883423f52915e0ec0fc998af9e';
 
 @ProviderFor(clearImageCacheFuture)
-const clearImageCacheFutureProvider = ClearImageCacheFutureProvider._();
+final clearImageCacheFutureProvider = ClearImageCacheFutureProvider._();
 
 final class ClearImageCacheFutureProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
-  const ClearImageCacheFutureProvider._()
+  ClearImageCacheFutureProvider._()
     : super(
         from: null,
         argument: null,
@@ -602,7 +638,7 @@ String _$clearImageCacheFutureHash() =>
     r'ec01d17910dbfa5b87607209ccf50243b9873f85';
 
 @ProviderFor(builtinAssets)
-const builtinAssetsProvider = BuiltinAssetsProvider._();
+final builtinAssetsProvider = BuiltinAssetsProvider._();
 
 final class BuiltinAssetsProvider
     extends
@@ -612,7 +648,7 @@ final class BuiltinAssetsProvider
           Map<String, Asset>
         >
     with $Provider<Map<String, Asset>> {
-  const BuiltinAssetsProvider._()
+  BuiltinAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -649,7 +685,7 @@ final class BuiltinAssetsProvider
 String _$builtinAssetsHash() => r'747435613ca20555dcac7dde1b8cb10fe604d7c2';
 
 @ProviderFor(imageBytesResizedFuture)
-const imageBytesResizedFutureProvider = ImageBytesResizedFutureFamily._();
+final imageBytesResizedFutureProvider = ImageBytesResizedFutureFamily._();
 
 final class ImageBytesResizedFutureProvider
     extends
@@ -659,7 +695,7 @@ final class ImageBytesResizedFutureProvider
           FutureOr<Uint8List?>
         >
     with $FutureModifier<Uint8List?>, $FutureProvider<Uint8List?> {
-  const ImageBytesResizedFutureProvider._({
+  ImageBytesResizedFutureProvider._({
     required ImageBytesResizedFutureFamily super.from,
     required ({
       String uniqueKey,
@@ -740,7 +776,7 @@ final class ImageBytesResizedFutureFamily extends $Family
             double height,
           })
         > {
-  const ImageBytesResizedFutureFamily._()
+  ImageBytesResizedFutureFamily._()
     : super(
         retry: null,
         name: r'imageBytesResizedFutureProvider',
@@ -772,14 +808,14 @@ final class ImageBytesResizedFutureFamily extends $Family
 
 @ProviderFor(SelectedWalletAccountAssetNotifier)
 @Deprecated('Only for mobile app version, should not be used now')
-const selectedWalletAccountAssetProvider =
+final selectedWalletAccountAssetProvider =
     SelectedWalletAccountAssetNotifierProvider._();
 
 @Deprecated('Only for mobile app version, should not be used now')
 final class SelectedWalletAccountAssetNotifierProvider
     extends
         $NotifierProvider<SelectedWalletAccountAssetNotifier, AccountAsset?> {
-  const SelectedWalletAccountAssetNotifierProvider._()
+  SelectedWalletAccountAssetNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -817,8 +853,7 @@ abstract class _$SelectedWalletAccountAssetNotifier
   AccountAsset? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AccountAsset?, AccountAsset?>;
     final element =
         ref.element
@@ -828,16 +863,16 @@ abstract class _$SelectedWalletAccountAssetNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SelectedWalletAssetNotifier)
-const selectedWalletAssetProvider = SelectedWalletAssetNotifierProvider._();
+final selectedWalletAssetProvider = SelectedWalletAssetNotifierProvider._();
 
 final class SelectedWalletAssetNotifierProvider
     extends $NotifierProvider<SelectedWalletAssetNotifier, Option<Asset>> {
-  const SelectedWalletAssetNotifierProvider._()
+  SelectedWalletAssetNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -871,8 +906,7 @@ abstract class _$SelectedWalletAssetNotifier extends $Notifier<Option<Asset>> {
   Option<Asset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<Asset>, Option<Asset>>;
     final element =
         ref.element
@@ -882,6 +916,6 @@ abstract class _$SelectedWalletAssetNotifier extends $Notifier<Option<Asset>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

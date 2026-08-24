@@ -10,11 +10,11 @@ part of 'pegx_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PegxLoginStateNotifier)
-const pegxLoginStateProvider = PegxLoginStateNotifierProvider._();
+final pegxLoginStateProvider = PegxLoginStateNotifierProvider._();
 
 final class PegxLoginStateNotifierProvider
     extends $NotifierProvider<PegxLoginStateNotifier, PegxLoginState> {
-  const PegxLoginStateNotifierProvider._()
+  PegxLoginStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$PegxLoginStateNotifier extends $Notifier<PegxLoginState> {
   PegxLoginState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PegxLoginState, PegxLoginState>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$PegxLoginStateNotifier extends $Notifier<PegxLoginState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PegxGaidNotifier)
-const pegxGaidProvider = PegxGaidNotifierProvider._();
+final pegxGaidProvider = PegxGaidNotifierProvider._();
 
 final class PegxGaidNotifierProvider
     extends $NotifierProvider<PegxGaidNotifier, PegxGaidState> {
-  const PegxGaidNotifierProvider._()
+  PegxGaidNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -101,8 +100,7 @@ abstract class _$PegxGaidNotifier extends $Notifier<PegxGaidState> {
   PegxGaidState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PegxGaidState, PegxGaidState>;
     final element =
         ref.element
@@ -112,16 +110,16 @@ abstract class _$PegxGaidNotifier extends $Notifier<PegxGaidState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PegxRegisterFailedNotifier)
-const pegxRegisterFailedProvider = PegxRegisterFailedNotifierProvider._();
+final pegxRegisterFailedProvider = PegxRegisterFailedNotifierProvider._();
 
 final class PegxRegisterFailedNotifierProvider
     extends $NotifierProvider<PegxRegisterFailedNotifier, String> {
-  const PegxRegisterFailedNotifierProvider._()
+  PegxRegisterFailedNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -155,8 +153,7 @@ abstract class _$PegxRegisterFailedNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -166,22 +163,22 @@ abstract class _$PegxRegisterFailedNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(pegxWebsocketClient)
-const pegxWebsocketClientProvider = PegxWebsocketClientProvider._();
+final pegxWebsocketClientProvider = PegxWebsocketClientProvider._();
 
 final class PegxWebsocketClientProvider
     extends
         $FunctionalProvider<
-          PegxWebsocketClient,
-          PegxWebsocketClient,
-          PegxWebsocketClient
+          PegxProtocolHandler,
+          PegxProtocolHandler,
+          PegxProtocolHandler
         >
-    with $Provider<PegxWebsocketClient> {
-  const PegxWebsocketClientProvider._()
+    with $Provider<PegxProtocolHandler> {
+  PegxWebsocketClientProvider._()
     : super(
         from: null,
         argument: null,
@@ -197,23 +194,23 @@ final class PegxWebsocketClientProvider
 
   @$internal
   @override
-  $ProviderElement<PegxWebsocketClient> $createElement(
+  $ProviderElement<PegxProtocolHandler> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  PegxWebsocketClient create(Ref ref) {
+  PegxProtocolHandler create(Ref ref) {
     return pegxWebsocketClient(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PegxWebsocketClient value) {
+  Override overrideWithValue(PegxProtocolHandler value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<PegxWebsocketClient>(value),
+      providerOverride: $SyncValueProvider<PegxProtocolHandler>(value),
     );
   }
 }
 
 String _$pegxWebsocketClientHash() =>
-    r'f99ce970171c9f0091e9117fddd8330d59ad95d6';
+    r'460c2198b1a0099c0a260e8e18e6ac9844fde633';

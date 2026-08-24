@@ -198,18 +198,16 @@ class DAddressesListItem extends ConsumerWidget {
                     '${addressesItemHelper.addressIndex()}',
                     textAlign: TextAlign.left,
                   ),
-                  Flexible(
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: MiddleEllipsisText(
-                            text: addressesItemHelper.address(),
-                            textAlign: TextAlign.left,
-                          ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: MiddleEllipsisText(
+                          text: addressesItemHelper.address(),
+                          textAlign: TextAlign.left,
                         ),
-                        const SizedBox(width: 16),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -229,37 +227,6 @@ class DAddressesListItem extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class DAddressesTopPanel extends ConsumerWidget {
-  const DAddressesTopPanel({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ColoredContainer(
-      width: double.infinity,
-      height: 72,
-      theme: ColoredContainerStyle(
-        backgroundColor: SideSwapColors.blumine,
-        borderColor: SideSwapColors.blumine,
-      ),
-      child: Row(
-        children: [
-          SvgPicture.asset('assets/liquid_logo.svg', width: 24, height: 24),
-          const SizedBox(width: 4),
-          const Text(
-            'Liquid',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          const Spacer(),
-        ],
       ),
     );
   }
@@ -688,7 +655,7 @@ class DAddressDetailsColumn extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const flexes = [560, 90, 110, 80, 55, 65];
+    const flexes = [560, 90, 106, 84, 55, 65];
 
     final addressDetailsState = ref.watch(addressDetailsDialogProvider);
     final buttonStyle = ref

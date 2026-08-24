@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:sideswap/providers/licenses_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 part 'mnemonic_table_provider.g.dart';
@@ -21,9 +21,10 @@ class CurrentMnemonicIndexNotifier extends _$CurrentMnemonicIndexNotifier {
 
 @riverpod
 FutureOr<List<String>> wordListFuture(Ref ref) async {
+  final bundle = ref.read(assetBundleProvider);
   return [
     ...const LineSplitter().convert(
-      await rootBundle.loadString('assets/wordlist.txt'),
+      await bundle.loadString('assets/wordlist.txt'),
     ),
   ]..sort();
 }
@@ -159,15 +160,20 @@ class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
       return;
     }
 
-    final previousValue = wordItems[currentIndex]!.word;
-    if (previousValue.length > searchWord.length &&
-        previousValue.startsWith(searchWord)) {
-      final wordlist = await ref.read(wordListFutureProvider.future);
-      final found = wordlist.any((e) => e == searchWord);
-      wordItems[currentIndex] = WordItem(word: searchWord, isCorrect: found);
-      state = wordItems;
-      return;
-    }
+    final wordlist = await ref.read(wordListFutureProvider.future);
+    final found = wordlist.any((e) => e == searchWord);
+    wordItems[currentIndex] = WordItem(word: searchWord, isCorrect: found);
+    state = wordItems;
+
+    // final previousValue = wordItems[currentIndex]!.word;
+    // if (previousValue.length > searchWord.length &&
+    //     previousValue.startsWith(searchWord)) {
+    //   final wordlist = await ref.read(wordListFutureProvider.future);
+    //   final found = wordlist.any((e) => e == searchWord);
+    //   wordItems[currentIndex] = WordItem(word: searchWord, isCorrect: found);
+    //   state = wordItems;
+    //   return;
+    // }
   }
 
   Future<void> validateOnSubmit(String value, int currentIndex) async {

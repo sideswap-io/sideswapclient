@@ -29,6 +29,7 @@ import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/screens/markets/market_swap_dialog.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -516,7 +517,6 @@ class MarketAmountPanel extends HookConsumerWidget {
           );
     }, [marketSideState]);
 
-    final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
 
     final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
@@ -525,8 +525,8 @@ class MarketAmountPanel extends HookConsumerWidget {
       () => switch (jadeLockRepository.isUnlocked()) {
         true => switch (tradeButtonEnabled) {
           true => () async {
-            await marketTradeRepository.makeSwapTrade(
-              context: context,
+            await showSwapTradeDialog(
+              context, ref,
               optionQuoteSuccess: optionQuoteSuccess,
               optionModifiers: Option.of(
                 PreviewOrderDialogModifiers(showOrderType: false),
@@ -541,7 +541,6 @@ class MarketAmountPanel extends HookConsumerWidget {
         jadeLockRepository.lockState,
         tradeButtonEnabled,
         optionQuoteSuccess,
-        marketTradeRepository,
       ],
     );
 
@@ -567,8 +566,8 @@ class MarketAmountPanel extends HookConsumerWidget {
                   onEditingComplete: () async {
                     onEditingComplete?.call();
                     if (tradeButtonEnabled) {
-                      await marketTradeRepository.makeSwapTrade(
-                        context: context,
+                      await showSwapTradeDialog(
+                        context, ref,
                         optionQuoteSuccess: optionQuoteSuccess,
                       );
                     }

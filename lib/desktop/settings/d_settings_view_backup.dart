@@ -158,49 +158,50 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                               ),
                             ),
                             const SizedBox(height: 24),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  final enabled = ref.watch(
-                                    isCopyEnabledProvider,
-                                  );
+                            Consumer(
+                              builder: (context, ref, child) {
+                                final enabled = ref.watch(
+                                  isCopyEnabledProvider,
+                                );
 
-                                  return DButton(
-                                    onPressed: enabled
-                                        ? () {
-                                            Actions.maybeInvoke<
-                                              CopyMnemonicIntent
-                                            >(
-                                              context,
-                                              const CopyMnemonicIntent(),
-                                            );
-                                          }
-                                        : null,
-                                    child: SizedBox(
-                                      height: 34,
-                                      width: 200,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              'assets/copy3.svg',
-                                              width: 16,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text('Copy mnemonic'.tr()),
-                                          ],
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    DButton(
+                                      onPressed: enabled
+                                          ? () {
+                                              Actions.maybeInvoke<
+                                                CopyMnemonicIntent
+                                              >(
+                                                context,
+                                                const CopyMnemonicIntent(),
+                                              );
+                                            }
+                                          : null,
+                                      child: SizedBox(
+                                        height: 34,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/copy3.svg',
+                                                width: 16,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text('Copy mnemonic'.tr()),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
+                                  ],
+                                );
+                              },
                             ),
                             const SizedBox(height: 16),
                           ],

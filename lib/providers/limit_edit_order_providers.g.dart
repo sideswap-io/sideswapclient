@@ -10,12 +10,12 @@ part of 'limit_edit_order_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(limitEditOrderPrice)
-const limitEditOrderPriceProvider = LimitEditOrderPriceProvider._();
+final limitEditOrderPriceProvider = LimitEditOrderPriceProvider._();
 
 final class LimitEditOrderPriceProvider
     extends $FunctionalProvider<OrderAmount, OrderAmount, OrderAmount>
     with $Provider<OrderAmount> {
-  const LimitEditOrderPriceProvider._()
+  LimitEditOrderPriceProvider._()
     : super(
         from: null,
         argument: null,

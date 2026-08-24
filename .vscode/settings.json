@@ -7,5 +7,8 @@
   "dart.mcpServer": true,
   "editor.tokenColorCustomizations": {
     "textMateRules": []
-  }
+  },
+  "coverage-gutters.showLineCoverage": false,
+  "coverage-gutters.showGutterCoverage": false,
+  "coverage-gutters.showRulerCoverage": false
 }

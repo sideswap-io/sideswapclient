@@ -10,11 +10,11 @@ part of 'addresses_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LoadAddressesStateNotifier)
-const loadAddressesStateProvider = LoadAddressesStateNotifierProvider._();
+final loadAddressesStateProvider = LoadAddressesStateNotifierProvider._();
 
 final class LoadAddressesStateNotifierProvider
     extends $NotifierProvider<LoadAddressesStateNotifier, LoadAddressesState> {
-  const LoadAddressesStateNotifierProvider._()
+  LoadAddressesStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$LoadAddressesStateNotifier
   LoadAddressesState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<LoadAddressesState, LoadAddressesState>;
     final element =
         ref.element
@@ -60,16 +59,16 @@ abstract class _$LoadAddressesStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(LoadUtxosStateNotifier)
-const loadUtxosStateProvider = LoadUtxosStateNotifierProvider._();
+final loadUtxosStateProvider = LoadUtxosStateNotifierProvider._();
 
 final class LoadUtxosStateNotifierProvider
     extends $NotifierProvider<LoadUtxosStateNotifier, LoadUtxosState> {
-  const LoadUtxosStateNotifierProvider._()
+  LoadUtxosStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -103,8 +102,7 @@ abstract class _$LoadUtxosStateNotifier extends $Notifier<LoadUtxosState> {
   LoadUtxosState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<LoadUtxosState, LoadUtxosState>;
     final element =
         ref.element
@@ -114,16 +112,16 @@ abstract class _$LoadUtxosStateNotifier extends $Notifier<LoadUtxosState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AddressesAsyncNotifier)
-const addressesAsyncProvider = AddressesAsyncNotifierFamily._();
+final addressesAsyncProvider = AddressesAsyncNotifierFamily._();
 
 final class AddressesAsyncNotifierProvider
     extends $AsyncNotifierProvider<AddressesAsyncNotifier, AddressesModel> {
-  const AddressesAsyncNotifierProvider._({
+  AddressesAsyncNotifierProvider._({
     required AddressesAsyncNotifierFamily super.from,
     required Account super.argument,
   }) : super(
@@ -172,7 +170,7 @@ final class AddressesAsyncNotifierFamily extends $Family
           FutureOr<AddressesModel>,
           Account
         > {
-  const AddressesAsyncNotifierFamily._()
+  AddressesAsyncNotifierFamily._()
     : super(
         retry: null,
         name: r'addressesAsyncProvider',
@@ -195,8 +193,7 @@ abstract class _$AddressesAsyncNotifier extends $AsyncNotifier<AddressesModel> {
   FutureOr<AddressesModel> build(Account account);
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(_$args);
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<AddressesModel>, AddressesModel>;
     final element =
         ref.element
@@ -206,12 +203,12 @@ abstract class _$AddressesAsyncNotifier extends $AsyncNotifier<AddressesModel> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, () => build(_$args));
   }
 }
 
 @ProviderFor(regularAddressesModelAsync)
-const regularAddressesModelAsyncProvider =
+final regularAddressesModelAsyncProvider =
     RegularAddressesModelAsyncProvider._();
 
 final class RegularAddressesModelAsyncProvider
@@ -222,7 +219,7 @@ final class RegularAddressesModelAsyncProvider
           AsyncValue<AddressesModel>
         >
     with $Provider<AsyncValue<AddressesModel>> {
-  const RegularAddressesModelAsyncProvider._()
+  RegularAddressesModelAsyncProvider._()
     : super(
         from: null,
         argument: null,
@@ -260,7 +257,7 @@ String _$regularAddressesModelAsyncHash() =>
     r'b190b52de6e870d2e8ba8b44a4542795857aa417';
 
 @ProviderFor(ampAdressesModelAsync)
-const ampAdressesModelAsyncProvider = AmpAdressesModelAsyncProvider._();
+final ampAdressesModelAsyncProvider = AmpAdressesModelAsyncProvider._();
 
 final class AmpAdressesModelAsyncProvider
     extends
@@ -270,7 +267,7 @@ final class AmpAdressesModelAsyncProvider
           AsyncValue<AddressesModel>
         >
     with $Provider<AsyncValue<AddressesModel>> {
-  const AmpAdressesModelAsyncProvider._()
+  AmpAdressesModelAsyncProvider._()
     : super(
         from: null,
         argument: null,
@@ -308,7 +305,7 @@ String _$ampAdressesModelAsyncHash() =>
     r'07845243df46deb80541936ae95bc0cbb4788761';
 
 @ProviderFor(groupedAddressesAsync)
-const groupedAddressesAsyncProvider = GroupedAddressesAsyncProvider._();
+final groupedAddressesAsyncProvider = GroupedAddressesAsyncProvider._();
 
 final class GroupedAddressesAsyncProvider
     extends
@@ -318,7 +315,7 @@ final class GroupedAddressesAsyncProvider
           AsyncValue<AddressesModel>
         >
     with $Provider<AsyncValue<AddressesModel>> {
-  const GroupedAddressesAsyncProvider._()
+  GroupedAddressesAsyncProvider._()
     : super(
         from: null,
         argument: null,
@@ -356,7 +353,7 @@ String _$groupedAddressesAsyncHash() =>
     r'661851a01af4ef5af94b33cd57170d0e6be92dce';
 
 @ProviderFor(filteredAddressesAsync)
-const filteredAddressesAsyncProvider = FilteredAddressesAsyncProvider._();
+final filteredAddressesAsyncProvider = FilteredAddressesAsyncProvider._();
 
 final class FilteredAddressesAsyncProvider
     extends
@@ -366,7 +363,7 @@ final class FilteredAddressesAsyncProvider
           AsyncValue<AddressesModel>
         >
     with $Provider<AsyncValue<AddressesModel>> {
-  const FilteredAddressesAsyncProvider._()
+  FilteredAddressesAsyncProvider._()
     : super(
         from: null,
         argument: null,
@@ -404,12 +401,12 @@ String _$filteredAddressesAsyncHash() =>
     r'fe049785862654420cfafd93fc06fe21f3ad78d3';
 
 @ProviderFor(AddressDetailsDialogNotifier)
-const addressDetailsDialogProvider = AddressDetailsDialogNotifierProvider._();
+final addressDetailsDialogProvider = AddressDetailsDialogNotifierProvider._();
 
 final class AddressDetailsDialogNotifierProvider
     extends
         $NotifierProvider<AddressDetailsDialogNotifier, AddressDetailsState> {
-  const AddressDetailsDialogNotifierProvider._()
+  AddressDetailsDialogNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -444,8 +441,7 @@ abstract class _$AddressDetailsDialogNotifier
   AddressDetailsState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AddressDetailsState, AddressDetailsState>;
     final element =
         ref.element
@@ -455,12 +451,12 @@ abstract class _$AddressDetailsDialogNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(addressesItemHelper)
-const addressesItemHelperProvider = AddressesItemHelperFamily._();
+final addressesItemHelperProvider = AddressesItemHelperFamily._();
 
 final class AddressesItemHelperProvider
     extends
@@ -470,7 +466,7 @@ final class AddressesItemHelperProvider
           AddressesItemHelper
         >
     with $Provider<AddressesItemHelper> {
-  const AddressesItemHelperProvider._({
+  AddressesItemHelperProvider._({
     required AddressesItemHelperFamily super.from,
     required AddressesItem super.argument,
   }) : super(
@@ -527,7 +523,7 @@ String _$addressesItemHelperHash() =>
 
 final class AddressesItemHelperFamily extends $Family
     with $FunctionalFamilyOverride<AddressesItemHelper, AddressesItem> {
-  const AddressesItemHelperFamily._()
+  AddressesItemHelperFamily._()
     : super(
         retry: null,
         name: r'addressesItemHelperProvider',
@@ -544,7 +540,7 @@ final class AddressesItemHelperFamily extends $Family
 }
 
 @ProviderFor(AddressesWalletTypeFlagNotifier)
-const addressesWalletTypeFlagProvider =
+final addressesWalletTypeFlagProvider =
     AddressesWalletTypeFlagNotifierProvider._();
 
 final class AddressesWalletTypeFlagNotifierProvider
@@ -553,7 +549,7 @@ final class AddressesWalletTypeFlagNotifierProvider
           AddressesWalletTypeFlagNotifier,
           AddressesWalletTypeFlag
         > {
-  const AddressesWalletTypeFlagNotifierProvider._()
+  AddressesWalletTypeFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -588,8 +584,7 @@ abstract class _$AddressesWalletTypeFlagNotifier
   AddressesWalletTypeFlag build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AddressesWalletTypeFlag, AddressesWalletTypeFlag>;
     final element =
@@ -600,12 +595,12 @@ abstract class _$AddressesWalletTypeFlagNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AddressesAddressTypeFlagNotifier)
-const addressesAddressTypeFlagProvider =
+final addressesAddressTypeFlagProvider =
     AddressesAddressTypeFlagNotifierProvider._();
 
 final class AddressesAddressTypeFlagNotifierProvider
@@ -614,7 +609,7 @@ final class AddressesAddressTypeFlagNotifierProvider
           AddressesAddressTypeFlagNotifier,
           AddressesAddressTypeFlag
         > {
-  const AddressesAddressTypeFlagNotifierProvider._()
+  AddressesAddressTypeFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -650,8 +645,7 @@ abstract class _$AddressesAddressTypeFlagNotifier
   AddressesAddressTypeFlag build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AddressesAddressTypeFlag, AddressesAddressTypeFlag>;
     final element =
@@ -662,12 +656,12 @@ abstract class _$AddressesAddressTypeFlagNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AddressesBalanceTypeFlagNotifier)
-const addressesBalanceTypeFlagProvider =
+final addressesBalanceTypeFlagProvider =
     AddressesBalanceTypeFlagNotifierProvider._();
 
 final class AddressesBalanceTypeFlagNotifierProvider
@@ -676,7 +670,7 @@ final class AddressesBalanceTypeFlagNotifierProvider
           AddressesBalanceTypeFlagNotifier,
           AddressesBalanceFlag
         > {
-  const AddressesBalanceTypeFlagNotifierProvider._()
+  AddressesBalanceTypeFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -712,8 +706,7 @@ abstract class _$AddressesBalanceTypeFlagNotifier
   AddressesBalanceFlag build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AddressesBalanceFlag, AddressesBalanceFlag>;
     final element =
         ref.element
@@ -723,12 +716,12 @@ abstract class _$AddressesBalanceTypeFlagNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(inputsAddressesAsync)
-const inputsAddressesAsyncProvider = InputsAddressesAsyncProvider._();
+final inputsAddressesAsyncProvider = InputsAddressesAsyncProvider._();
 
 final class InputsAddressesAsyncProvider
     extends
@@ -738,7 +731,7 @@ final class InputsAddressesAsyncProvider
           AsyncValue<AddressesModel>
         >
     with $Provider<AsyncValue<AddressesModel>> {
-  const InputsAddressesAsyncProvider._()
+  InputsAddressesAsyncProvider._()
     : super(
         from: null,
         argument: null,
@@ -776,11 +769,11 @@ String _$inputsAddressesAsyncHash() =>
     r'b46c153f2c9554afc2caeaa77aff6fa248d520ff';
 
 @ProviderFor(SelectedInputsNotifier)
-const selectedInputsProvider = SelectedInputsNotifierProvider._();
+final selectedInputsProvider = SelectedInputsNotifierProvider._();
 
 final class SelectedInputsNotifierProvider
     extends $NotifierProvider<SelectedInputsNotifier, List<UtxosItem>> {
-  const SelectedInputsNotifierProvider._()
+  SelectedInputsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -814,8 +807,7 @@ abstract class _$SelectedInputsNotifier extends $Notifier<List<UtxosItem>> {
   List<UtxosItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<UtxosItem>, List<UtxosItem>>;
     final element =
         ref.element
@@ -825,12 +817,12 @@ abstract class _$SelectedInputsNotifier extends $Notifier<List<UtxosItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(selectedInputsHelper)
-const selectedInputsHelperProvider = SelectedInputsHelperProvider._();
+final selectedInputsHelperProvider = SelectedInputsHelperProvider._();
 
 final class SelectedInputsHelperProvider
     extends
@@ -840,7 +832,7 @@ final class SelectedInputsHelperProvider
           SelectedInputsHelper
         >
     with $Provider<SelectedInputsHelper> {
-  const SelectedInputsHelperProvider._()
+  SelectedInputsHelperProvider._()
     : super(
         from: null,
         argument: null,
@@ -878,7 +870,7 @@ String _$selectedInputsHelperHash() =>
     r'00f9e6826360f87d21ef6ed4805e04f9ae79b9d4';
 
 @ProviderFor(InputListItemExpandedStatesNotifier)
-const inputListItemExpandedStatesProvider =
+final inputListItemExpandedStatesProvider =
     InputListItemExpandedStatesNotifierProvider._();
 
 final class InputListItemExpandedStatesNotifierProvider
@@ -887,7 +879,7 @@ final class InputListItemExpandedStatesNotifierProvider
           InputListItemExpandedStatesNotifier,
           List<InputListItemExpandedState>
         > {
-  const InputListItemExpandedStatesNotifierProvider._()
+  InputListItemExpandedStatesNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -926,8 +918,7 @@ abstract class _$InputListItemExpandedStatesNotifier
   List<InputListItemExpandedState> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -945,17 +936,17 @@ abstract class _$InputListItemExpandedStatesNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(inputListItemExpandedState)
-const inputListItemExpandedStateProvider = InputListItemExpandedStateFamily._();
+final inputListItemExpandedStateProvider = InputListItemExpandedStateFamily._();
 
 final class InputListItemExpandedStateProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const InputListItemExpandedStateProvider._({
+  InputListItemExpandedStateProvider._({
     required InputListItemExpandedStateFamily super.from,
     required int super.argument,
   }) : super(
@@ -1012,7 +1003,7 @@ String _$inputListItemExpandedStateHash() =>
 
 final class InputListItemExpandedStateFamily extends $Family
     with $FunctionalFamilyOverride<bool, int> {
-  const InputListItemExpandedStateFamily._()
+  InputListItemExpandedStateFamily._()
     : super(
         retry: null,
         name: r'inputListItemExpandedStateProvider',

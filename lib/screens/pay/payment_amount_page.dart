@@ -244,6 +244,17 @@ class PaymentAmountPageCreateTxBody extends HookConsumerWidget {
       return;
     }, [createTxState]);
 
+    useEffect(() {
+      final assetId = paymentAmountPageArguments.result?.assetId;
+      if (assetId != null && assetIds.contains(assetId)) {
+        Future.microtask(() {
+          ref.read(sendAssetIdProvider.notifier).setSendAsset(assetId);
+        });
+      }
+
+      return;
+    }, [paymentAmountPageArguments.result?.assetId]);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(

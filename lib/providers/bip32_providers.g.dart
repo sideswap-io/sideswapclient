@@ -10,7 +10,7 @@ part of 'bip32_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(parseBIP21)
-const parseBIP21Provider = ParseBIP21Family._();
+final parseBIP21Provider = ParseBIP21Family._();
 
 final class ParseBIP21Provider
     extends
@@ -20,7 +20,7 @@ final class ParseBIP21Provider
           Either<Exception, BIP21Result>
         >
     with $Provider<Either<Exception, BIP21Result>> {
-  const ParseBIP21Provider._({
+  ParseBIP21Provider._({
     required ParseBIP21Family super.from,
     required (String, BIP21AddressTypeEnum) super.argument,
   }) : super(
@@ -82,7 +82,7 @@ final class ParseBIP21Family extends $Family
           Either<Exception, BIP21Result>,
           (String, BIP21AddressTypeEnum)
         > {
-  const ParseBIP21Family._()
+  ParseBIP21Family._()
     : super(
         retry: null,
         name: r'parseBIP21Provider',

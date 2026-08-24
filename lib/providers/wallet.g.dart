@@ -10,11 +10,11 @@ part of 'wallet.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SyncCompleteState)
-const syncCompleteStateProvider = SyncCompleteStateProvider._();
+final syncCompleteStateProvider = SyncCompleteStateProvider._();
 
 final class SyncCompleteStateProvider
     extends $NotifierProvider<SyncCompleteState, bool> {
-  const SyncCompleteStateProvider._()
+  SyncCompleteStateProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$SyncCompleteState extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -58,17 +57,17 @@ abstract class _$SyncCompleteState extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(wallet)
-const walletProvider = WalletProvider._();
+final walletProvider = WalletProvider._();
 
 final class WalletProvider
     extends $FunctionalProvider<SideswapWallet, SideswapWallet, SideswapWallet>
     with $Provider<SideswapWallet> {
-  const WalletProvider._()
+  WalletProvider._()
     : super(
         from: null,
         argument: null,

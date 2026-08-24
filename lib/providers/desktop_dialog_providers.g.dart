@@ -10,12 +10,12 @@ part of 'desktop_dialog_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(desktopDialog)
-const desktopDialogProvider = DesktopDialogProvider._();
+final desktopDialogProvider = DesktopDialogProvider._();
 
 final class DesktopDialogProvider
     extends $FunctionalProvider<DesktopDialog, DesktopDialog, DesktopDialog>
     with $Provider<DesktopDialog> {
-  const DesktopDialogProvider._()
+  DesktopDialogProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,4 +48,4 @@ final class DesktopDialogProvider
   }
 }
 
-String _$desktopDialogHash() => r'be97dde1ba7844f6341dfa2d61519df57b29956c';
+String _$desktopDialogHash() => r'e8207c0f6d7127dc5cae1863ef302aaecb31e685';

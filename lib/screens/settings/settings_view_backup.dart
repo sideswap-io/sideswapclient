@@ -48,11 +48,10 @@ class SettingsViewBackup extends HookConsumerWidget {
                   onCheckError: (index) {
                     return false;
                   },
-                  currentSelectedItem: -1,
+                  currentIndex: -1,
                   onCheckField: (index) {
                     return true;
                   },
-                  words: words,
                 ),
               ],
             );

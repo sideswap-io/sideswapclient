@@ -10,7 +10,7 @@ part of 'sideswap_notification_listener.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(sideswapNotification)
-const sideswapNotificationProvider = SideswapNotificationProvider._();
+final sideswapNotificationProvider = SideswapNotificationProvider._();
 
 final class SideswapNotificationProvider
     extends
@@ -20,7 +20,7 @@ final class SideswapNotificationProvider
           SideswapNotificationHelper
         >
     with $Provider<SideswapNotificationHelper> {
-  const SideswapNotificationProvider._()
+  SideswapNotificationProvider._()
     : super(
         from: null,
         argument: null,

@@ -48,6 +48,7 @@ NotificationDetails getNotificationDetails({
   NotificationVisibility visibility = NotificationVisibility.public,
   StyleInformation styleInformation = const DefaultStyleInformation(true, true),
   NotificationChannelType type = NotificationChannelType.main,
+  String? desktopSubtitle,
 }) {
   String channelId, channelName, channelDescription;
 
@@ -83,6 +84,8 @@ NotificationDetails getNotificationDetails({
   final platformChannelSpecifics = NotificationDetails(
     android: androidPlatformChannelSpecifics,
     iOS: const DarwinNotificationDetails(),
+    windows: WindowsNotificationDetails(subtitle: desktopSubtitle),
+    macOS: DarwinNotificationDetails(subtitle: desktopSubtitle),
   );
 
   return platformChannelSpecifics;
@@ -90,8 +93,10 @@ NotificationDetails getNotificationDetails({
 
 class LocalNotificationService {
   final Ref ref;
-
-  final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
+  final InitializationSettings Function() _initSettingsFactory;
+  final WindowManager _windowManager;
+  final bool _isIOS;
 
   int _notificationId = 0;
 
@@ -103,108 +108,133 @@ class LocalNotificationService {
 
   final selectNotificationSubject = BehaviorSubject<FCMPayload>();
 
-  LocalNotificationService(this.ref);
+  LocalNotificationService(
+    this.ref, {
+    FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin,
+    InitializationSettings Function()? initSettingsFactory,
+    WindowManager? windowManager,
+    bool? isIOS,
+  }) : _flutterLocalNotificationsPlugin =
+           flutterLocalNotificationsPlugin ?? FlutterLocalNotificationsPlugin(),
+       _initSettingsFactory =
+           initSettingsFactory ?? _defaultInitSettingsFactory,
+       _windowManager = windowManager ?? WindowManager.instance,
+       _isIOS = isIOS ?? Platform.isIOS;
 
-  Future<void> init() async {
-    if (Platform.isIOS) {
-      await _flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(sound: true, alert: true, badge: true);
-    }
-
-    // remove old notification channel
-    // TODO: This could be removed later
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.deleteNotificationChannel(_notificationChannelId);
-
-    // create new notification channel
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(mainChannel);
-
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(signChannel);
-
+  static InitializationSettings _defaultInitSettingsFactory() {
     final plugin = SideswapNotificationsPlugin(
       androidPlatform: FlavorConfig.isFdroid
           ? AndroidPlatformEnum.fdroid
           : AndroidPlatformEnum.android,
     );
-    final initializationSettings = plugin
-        .getLocalNotificationsInitializationSettings();
+    return plugin.getLocalNotificationsInitializationSettings();
+  }
+
+  Future<void> init() async {
+    if (_isIOS) {
+      // Logged unconditionally: a denied or absent grant is the difference
+      // between "no banner was submitted" and "a banner was submitted and the
+      // OS declined to show it", and only this result distinguishes them.
+      final granted = await _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(sound: true, alert: true, badge: true);
+      logger.i(
+        '[LocalNotificationService][init]: notification permission result: '
+        '$granted',
+      );
+    }
+
+    // remove old notification channel
+    // TODO: This could be removed later
+    final androidPlugin = _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidPlugin?.deleteNotificationChannel(
+      channelId: _notificationChannelId,
+    );
+
+    // create new notification channel
+    await androidPlugin?.createNotificationChannel(mainChannel);
+    await androidPlugin?.createNotificationChannel(signChannel);
+
+    final initializationSettings = _initSettingsFactory();
 
     // initialise the plugin.
     try {
-      await _flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
-        onDidReceiveNotificationResponse:
-            (NotificationResponse response) async {
-              if (FlavorConfig.isDesktop) {
-                logger.d('Desktop notification received');
-                await windowManager.waitUntilReadyToShow(null, () async {
-                  await windowManager.show();
-                  await windowManager.restore();
-                  await windowManager.focus();
-                });
+      final initialized = await _flutterLocalNotificationsPlugin.initialize(
+        settings: initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+          if (FlavorConfig.isDesktop) {
+            logger.d(
+              '[LocalNotificationService][init]: Desktop notification received',
+            );
+            await _windowManager.waitUntilReadyToShow(null, () async {
+              await _windowManager.show();
+              await _windowManager.restore();
+              await _windowManager.focus();
+            });
 
-                try {
-                  if (response.payload == null) {
-                    return;
-                  }
+            if (response.payload == null) {
+              return;
+            }
 
-                  String txid = switch (response.payload!.split(":")) {
-                    [_, var txid] => txid.trim(),
-                    _ => '',
-                  };
-                  txid.isNotEmpty
-                      ? selectNotificationSubject.add(
-                          FCMPayload(type: FCMPayloadType.unknown, txid: txid),
-                        )
-                      : null;
-                } catch (e) {
-                  logger.e('Cannot parse payload: $e');
-                }
+            // try JSON first (swaption payload)
+            try {
+              final json =
+                  jsonDecode(response.payload!) as Map<String, dynamic>;
+              final fcmPayload = FCMPayload.fromJson(json);
+              selectNotificationSubject.add(fcmPayload);
+              return;
+            } catch (_) {}
 
-                // swaption payload handling
-                try {
-                  final json =
-                      jsonDecode(response.payload!) as Map<String, dynamic>;
-                  final fcmPayload = FCMPayload.fromJson(json);
-                  selectNotificationSubject.add(fcmPayload);
-                } catch (e) {
-                  logger.e('Cannot parse payload: $e');
-                }
-                return;
-              }
+            // fallback: colon-split txid
+            final txid = switch (response.payload!.split(':')) {
+              [_, var txid] => txid.trim(),
+              _ => '',
+            };
+            if (txid.isNotEmpty) {
+              selectNotificationSubject.add(
+                FCMPayload(type: FCMPayloadType.unknown, txid: txid),
+              );
+            }
+            return;
+          }
 
-              if (response.payload == null) {
-                logger.w('Empty notification payload');
-                return;
-              }
+          if (response.payload == null) {
+            logger.w(
+              '[LocalNotificationService][init]: Empty notification payload',
+            );
+            return;
+          }
 
-              try {
-                _selectedNotificationPayload = response.payload!;
-                final json =
-                    jsonDecode(response.payload!) as Map<String, dynamic>;
-                final fcmPayload = FCMPayload.fromJson(json);
-                selectNotificationSubject.add(fcmPayload);
-              } catch (e) {
-                logger.e('Cannot parse payload: $e');
-              }
-            },
+          try {
+            _selectedNotificationPayload = response.payload!;
+            final json = jsonDecode(response.payload!) as Map<String, dynamic>;
+            final fcmPayload = FCMPayload.fromJson(json);
+            selectNotificationSubject.add(fcmPayload);
+          } catch (e) {
+            logger.e(
+              '[LocalNotificationService][init]: Cannot parse payload: $e',
+            );
+          }
+        },
+      );
+      // On macOS the `_isIOS` gate above skips the permission log, so this is
+      // the only permission-adjacent signal. It reflects the authorization
+      // status the OS returned at initialisation, not the per-app delivery
+      // settings a user can change later in System Settings — a `true` here
+      // does not promise a banner. AC6's manual pass records those settings.
+      logger.i(
+        '[LocalNotificationService][init]: plugin initialize result: '
+        '$initialized',
       );
     } catch (e) {
-      logger.e('Flutter local notification plugin isn\'t initialized: $e');
+      logger.e(
+        '[LocalNotificationService][init]: Flutter local notification plugin isn\'t initialized: $e',
+      );
       rethrow;
     }
   }
@@ -216,29 +246,32 @@ class LocalNotificationService {
     NotificationVisibility visibility = NotificationVisibility.public,
     NotificationDetails? notificationDetails,
     NotificationChannelType type = NotificationChannelType.main,
+    StyleInformation styleInformation = const DefaultStyleInformation(
+      true,
+      true,
+    ),
   }) async {
-    // Do not reset _notificationId because activeNotifications is null on Linux
-    // and there is only one notification shown as the result.
+    String effectiveBody = body;
+    String? desktopSubtitle;
 
-    // final activeNotifications = await _flutterLocalNotificationsPlugin
-    //     .resolvePlatformSpecificImplementation<
-    //         AndroidFlutterLocalNotificationsPlugin>()
-    //     ?.getActiveNotifications();
-
-    // if (activeNotifications != null && activeNotifications.isEmpty) {
-    //   _notificationId = 0;
-    // }
+    if (Platform.isWindows && body.contains('\n')) {
+      final parts = body.split('\n');
+      effectiveBody = parts.first;
+      desktopSubtitle = parts.skip(1).join('\n');
+    }
 
     notificationDetails ??= getNotificationDetails(
       visibility: visibility,
       type: type,
+      styleInformation: styleInformation,
+      desktopSubtitle: desktopSubtitle,
     );
 
     await _flutterLocalNotificationsPlugin.show(
-      _notificationId,
-      title,
-      body,
-      notificationDetails,
+      id: _notificationId,
+      title: title,
+      body: effectiveBody,
+      notificationDetails: notificationDetails,
       payload: payload,
     );
 

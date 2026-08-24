@@ -47,6 +47,7 @@ enum Status {
   settingsNetwork,
   settingsLogs,
   settingsCurrency,
+  settingsDescriptors,
 
   paymentPage,
   paymentAmountPage,

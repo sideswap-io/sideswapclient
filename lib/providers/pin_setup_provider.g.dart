@@ -10,11 +10,11 @@ part of 'pin_setup_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PinDataNotifier)
-const pinDataProvider = PinDataNotifierProvider._();
+final pinDataProvider = PinDataNotifierProvider._();
 
 final class PinDataNotifierProvider
     extends $NotifierProvider<PinDataNotifier, PinDataState> {
-  const PinDataNotifierProvider._()
+  PinDataNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$PinDataNotifier extends $Notifier<PinDataState> {
   PinDataState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PinDataState, PinDataState>;
     final element =
         ref.element
@@ -58,16 +57,16 @@ abstract class _$PinDataNotifier extends $Notifier<PinDataState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PinSetupCallerNotifier)
-const pinSetupCallerProvider = PinSetupCallerNotifierProvider._();
+final pinSetupCallerProvider = PinSetupCallerNotifierProvider._();
 
 final class PinSetupCallerNotifierProvider
     extends $NotifierProvider<PinSetupCallerNotifier, PinSetupCallerState> {
-  const PinSetupCallerNotifierProvider._()
+  PinSetupCallerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -101,8 +100,7 @@ abstract class _$PinSetupCallerNotifier extends $Notifier<PinSetupCallerState> {
   PinSetupCallerState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PinSetupCallerState, PinSetupCallerState>;
     final element =
         ref.element
@@ -112,16 +110,16 @@ abstract class _$PinSetupCallerNotifier extends $Notifier<PinSetupCallerState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PinSetupExitNotifier)
-const pinSetupExitProvider = PinSetupExitNotifierProvider._();
+final pinSetupExitProvider = PinSetupExitNotifierProvider._();
 
 final class PinSetupExitNotifierProvider
     extends $NotifierProvider<PinSetupExitNotifier, PinSetupExitState> {
-  const PinSetupExitNotifierProvider._()
+  PinSetupExitNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -155,8 +153,7 @@ abstract class _$PinSetupExitNotifier extends $Notifier<PinSetupExitState> {
   PinSetupExitState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PinSetupExitState, PinSetupExitState>;
     final element =
         ref.element
@@ -166,16 +163,16 @@ abstract class _$PinSetupExitNotifier extends $Notifier<PinSetupExitState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PinFieldStateNotifier)
-const pinFieldStateProvider = PinFieldStateNotifierProvider._();
+final pinFieldStateProvider = PinFieldStateNotifierProvider._();
 
 final class PinFieldStateNotifierProvider
     extends $NotifierProvider<PinFieldStateNotifier, PinFieldState> {
-  const PinFieldStateNotifierProvider._()
+  PinFieldStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -209,8 +206,7 @@ abstract class _$PinFieldStateNotifier extends $Notifier<PinFieldState> {
   PinFieldState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PinFieldState, PinFieldState>;
     final element =
         ref.element
@@ -220,16 +216,16 @@ abstract class _$PinFieldStateNotifier extends $Notifier<PinFieldState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PinSetupStateNotifier)
-const pinSetupStateProvider = PinSetupStateNotifierProvider._();
+final pinSetupStateProvider = PinSetupStateNotifierProvider._();
 
 final class PinSetupStateNotifierProvider
     extends $NotifierProvider<PinSetupStateNotifier, PinSetupState> {
-  const PinSetupStateNotifierProvider._()
+  PinSetupStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -263,8 +259,7 @@ abstract class _$PinSetupStateNotifier extends $Notifier<PinSetupState> {
   PinSetupState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PinSetupState, PinSetupState>;
     final element =
         ref.element
@@ -274,16 +269,16 @@ abstract class _$PinSetupStateNotifier extends $Notifier<PinSetupState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(FirstPinNotifier)
-const firstPinProvider = FirstPinNotifierProvider._();
+final firstPinProvider = FirstPinNotifierProvider._();
 
 final class FirstPinNotifierProvider
     extends $NotifierProvider<FirstPinNotifier, String> {
-  const FirstPinNotifierProvider._()
+  FirstPinNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -316,8 +311,7 @@ abstract class _$FirstPinNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -327,16 +321,16 @@ abstract class _$FirstPinNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SecondPinNotifier)
-const secondPinProvider = SecondPinNotifierProvider._();
+final secondPinProvider = SecondPinNotifierProvider._();
 
 final class SecondPinNotifierProvider
     extends $NotifierProvider<SecondPinNotifier, String> {
-  const SecondPinNotifierProvider._()
+  SecondPinNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -369,8 +363,7 @@ abstract class _$SecondPinNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -380,16 +373,16 @@ abstract class _$SecondPinNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(FirstPinEnabled)
-const firstPinEnabledProvider = FirstPinEnabledProvider._();
+final firstPinEnabledProvider = FirstPinEnabledProvider._();
 
 final class FirstPinEnabledProvider
     extends $NotifierProvider<FirstPinEnabled, bool> {
-  const FirstPinEnabledProvider._()
+  FirstPinEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -422,8 +415,7 @@ abstract class _$FirstPinEnabled extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -433,16 +425,16 @@ abstract class _$FirstPinEnabled extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SecondPinEnabled)
-const secondPinEnabledProvider = SecondPinEnabledProvider._();
+final secondPinEnabledProvider = SecondPinEnabledProvider._();
 
 final class SecondPinEnabledProvider
     extends $NotifierProvider<SecondPinEnabled, bool> {
-  const SecondPinEnabledProvider._()
+  SecondPinEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -475,8 +467,7 @@ abstract class _$SecondPinEnabled extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -486,17 +477,17 @@ abstract class _$SecondPinEnabled extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(pinHelper)
-const pinHelperProvider = PinHelperProvider._();
+final pinHelperProvider = PinHelperProvider._();
 
 final class PinHelperProvider
     extends $FunctionalProvider<PinHelper, PinHelper, PinHelper>
     with $Provider<PinHelper> {
-  const PinHelperProvider._()
+  PinHelperProvider._()
     : super(
         from: null,
         argument: null,

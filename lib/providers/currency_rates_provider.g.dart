@@ -10,11 +10,11 @@ part of 'currency_rates_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(RequestConversionRates)
-const requestConversionRatesProvider = RequestConversionRatesProvider._();
+final requestConversionRatesProvider = RequestConversionRatesProvider._();
 
 final class RequestConversionRatesProvider
     extends $NotifierProvider<RequestConversionRates, void> {
-  const RequestConversionRatesProvider._()
+  RequestConversionRatesProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$RequestConversionRates extends $Notifier<void> {
   void build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<void, void>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$RequestConversionRates extends $Notifier<void> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, null);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(ConversionRatesNotifier)
-const conversionRatesProvider = ConversionRatesNotifierProvider._();
+final conversionRatesProvider = ConversionRatesNotifierProvider._();
 
 final class ConversionRatesNotifierProvider
     extends $NotifierProvider<ConversionRatesNotifier, ConversionRates> {
-  const ConversionRatesNotifierProvider._()
+  ConversionRatesNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$ConversionRatesNotifier extends $Notifier<ConversionRates> {
   ConversionRates build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ConversionRates, ConversionRates>;
     final element =
         ref.element
@@ -113,20 +111,20 @@ abstract class _$ConversionRatesNotifier extends $Notifier<ConversionRates> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 /// Default conversion rate helpers ============
 
 @ProviderFor(DefaultConversionRateNotifier)
-const defaultConversionRateProvider = DefaultConversionRateNotifierProvider._();
+final defaultConversionRateProvider = DefaultConversionRateNotifierProvider._();
 
 /// Default conversion rate helpers ============
 final class DefaultConversionRateNotifierProvider
     extends $NotifierProvider<DefaultConversionRateNotifier, ConversionRate?> {
   /// Default conversion rate helpers ============
-  const DefaultConversionRateNotifierProvider._()
+  DefaultConversionRateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -163,8 +161,7 @@ abstract class _$DefaultConversionRateNotifier
   ConversionRate? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ConversionRate?, ConversionRate?>;
     final element =
         ref.element
@@ -174,18 +171,18 @@ abstract class _$DefaultConversionRateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(defaultConversionRateMultiplier)
-const defaultConversionRateMultiplierProvider =
+final defaultConversionRateMultiplierProvider =
     DefaultConversionRateMultiplierProvider._();
 
 final class DefaultConversionRateMultiplierProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const DefaultConversionRateMultiplierProvider._()
+  DefaultConversionRateMultiplierProvider._()
     : super(
         from: null,
         argument: null,

@@ -23,6 +23,7 @@ import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/market_header.dart';
 import 'package:sideswap/screens/markets/widgets/market_index_price.dart';
+import 'package:sideswap/screens/markets/market_swap_dialog.dart';
 import 'package:sideswap/screens/markets/widgets/market_preview_order_dialog_common_body.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -35,7 +36,6 @@ class MarketSwapPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tradeDirState = ref.watch(tradeDirStateProvider);
     final tradeButtonEnabled = ref.watch(marketOrderTradeButtonEnabledProvider);
-    final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
     final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
     final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
@@ -46,8 +46,8 @@ class MarketSwapPage extends HookConsumerWidget {
           true => () async {
             FocusManager.instance.primaryFocus?.unfocus();
 
-            await marketTradeRepository.makeSwapTrade(
-              context: context,
+            await showSwapTradeDialog(
+              context, ref,
               optionQuoteSuccess: optionQuoteSuccess,
             );
           },
@@ -59,7 +59,6 @@ class MarketSwapPage extends HookConsumerWidget {
         jadeLockRepository.lockState,
         tradeButtonEnabled,
         optionQuoteSuccess,
-        marketTradeRepository,
       ],
     );
 
@@ -134,7 +133,6 @@ class MarketSwapAmount extends HookConsumerWidget {
     );
     final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
     final tradeDirState = ref.watch(tradeDirStateProvider);
-    final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
 
     final amountController = useTextEditingController();
@@ -223,8 +221,8 @@ class MarketSwapAmount extends HookConsumerWidget {
               onEditingComplete: () async {
                 onEditingComplete?.call();
                 if (tradeButtonEnabled) {
-                  await marketTradeRepository.makeSwapTrade(
-                    context: context,
+                  await showSwapTradeDialog(
+                    context, ref,
                     optionQuoteSuccess: optionQuoteSuccess,
                   );
                 }

@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/theme.dart';
 import 'package:sideswap/desktop/home/listeners/conversion_rates_listener.dart';
 import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
+import 'package:sideswap/listeners/app_lifecycle_wallet_listener.dart';
 import 'package:sideswap/listeners/jade_status_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/proxy_settings_listener.dart';
@@ -49,39 +50,31 @@ class AppMain extends StatelessWidget {
   }
 }
 
-class MyApp extends ConsumerStatefulWidget {
+class MyApp extends HookConsumerWidget {
   const MyApp({super.key});
 
   @override
-  MyAppState createState() => MyAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    useEffect(() {
+      if (!FlavorConfig.isFdroid) {
+        ref.read(localNotificationsProvider).init();
+      }
+      ref.read(universalLinkProvider).handleIncomingLinks();
+      ref.read(universalLinkProvider).handleInitialUri();
+      return null;
+    }, const []);
 
-class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    if (!FlavorConfig.isFdroid) {
-      ref.read(localNotificationsProvider).init();
-    }
-    ref.read(universalLinkProvider).handleIncomingLinks();
-    ref.read(universalLinkProvider).handleInitialUri();
-  }
+    final locale = context.locale.languageCode;
+    useEffect(() {
+      var cancelled = false;
+      Future.microtask(() {
+        if (!cancelled) {
+          ref.read(localesProvider.notifier).setSelectedLang(locale);
+        }
+      });
+      return () => cancelled = true;
+    }, [locale]);
 
-  @override
-  dispose() {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    ref.read(walletProvider).handleAppStateChange(state);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final mobileThemeData = ref.watch(mobileAppThemeProvider);
 
     return MaterialApp(
@@ -106,11 +99,7 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
           data: MediaQuery.of(
             context,
           ).copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: Builder(
-            builder: (context) {
-              return widget!;
-            },
-          ),
+          child: widget!,
         );
       },
       home: RootWidget(),
@@ -201,6 +190,7 @@ class RootWidget extends HookConsumerWidget {
 
     return Stack(
       children: [
+        const AppLifecycleWalletListener(),
         const ProxySettingsListener(),
         const SendAssetIdListener(),
         const ConversionRatesListener(),

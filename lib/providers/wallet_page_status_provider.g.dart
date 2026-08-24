@@ -10,11 +10,11 @@ part of 'wallet_page_status_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PageStatusNotifier)
-const pageStatusProvider = PageStatusNotifierProvider._();
+final pageStatusProvider = PageStatusNotifierProvider._();
 
 final class PageStatusNotifierProvider
     extends $NotifierProvider<PageStatusNotifier, Status> {
-  const PageStatusNotifierProvider._()
+  PageStatusNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$PageStatusNotifier extends $Notifier<Status> {
   Status build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Status, Status>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$PageStatusNotifier extends $Notifier<Status> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

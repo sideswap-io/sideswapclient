@@ -10,12 +10,11 @@ Future<void> registerProtocol(String scheme) async {
   final appPath = Platform.resolvedExecutable;
 
   final protocolRegKey = 'Software\\Classes\\$scheme';
-  final protocolRegValue = RegistryValue.string('URL Protocol', '');
-
   final protocolCmdRegKey = 'shell\\open\\command';
-  final protocolCmdRegValue = RegistryValue.string('', '"$appPath" "%1"');
 
-  final regKey = Registry.currentUser.createKey(protocolRegKey);
-  regKey.createValue(protocolRegValue);
-  regKey.createKey(protocolCmdRegKey).createValue(protocolCmdRegValue);
+  final regKey = CURRENT_USER.create(protocolRegKey);
+  regKey.setValue('URL Protocol', RegistryValue.string(''));
+  regKey
+      .create(protocolCmdRegKey)
+      .setValue('', RegistryValue.string('"$appPath" "%1"'));
 }

@@ -10,11 +10,11 @@ part of 'd_send_popup_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SendPopupAmountNotifier)
-const sendPopupAmountProvider = SendPopupAmountNotifierProvider._();
+final sendPopupAmountProvider = SendPopupAmountNotifierProvider._();
 
 final class SendPopupAmountNotifierProvider
     extends $NotifierProvider<SendPopupAmountNotifier, String> {
-  const SendPopupAmountNotifierProvider._()
+  SendPopupAmountNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$SendPopupAmountNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -59,17 +58,17 @@ abstract class _$SendPopupAmountNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(sendPopupDecimalAmount)
-const sendPopupDecimalAmountProvider = SendPopupDecimalAmountProvider._();
+final sendPopupDecimalAmountProvider = SendPopupDecimalAmountProvider._();
 
 final class SendPopupDecimalAmountProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const SendPopupDecimalAmountProvider._()
+  SendPopupDecimalAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -106,11 +105,11 @@ String _$sendPopupDecimalAmountHash() =>
     r'a5f436f595681039947d8001faf71bc5b9f4a375';
 
 @ProviderFor(SendPopupAddressNotifier)
-const sendPopupAddressProvider = SendPopupAddressNotifierProvider._();
+final sendPopupAddressProvider = SendPopupAddressNotifierProvider._();
 
 final class SendPopupAddressNotifierProvider
     extends $NotifierProvider<SendPopupAddressNotifier, String> {
-  const SendPopupAddressNotifierProvider._()
+  SendPopupAddressNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -144,8 +143,7 @@ abstract class _$SendPopupAddressNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -155,17 +153,17 @@ abstract class _$SendPopupAddressNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SendPopupSelectedAssetIdNotifier)
-const sendPopupSelectedAssetIdProvider =
+final sendPopupSelectedAssetIdProvider =
     SendPopupSelectedAssetIdNotifierProvider._();
 
 final class SendPopupSelectedAssetIdNotifierProvider
     extends $NotifierProvider<SendPopupSelectedAssetIdNotifier, String> {
-  const SendPopupSelectedAssetIdNotifierProvider._()
+  SendPopupSelectedAssetIdNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -200,8 +198,7 @@ abstract class _$SendPopupSelectedAssetIdNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -211,17 +208,17 @@ abstract class _$SendPopupSelectedAssetIdNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SendPopupReceiveConversionNotifier)
-const sendPopupReceiveConversionProvider =
+final sendPopupReceiveConversionProvider =
     SendPopupReceiveConversionNotifierProvider._();
 
 final class SendPopupReceiveConversionNotifierProvider
     extends $NotifierProvider<SendPopupReceiveConversionNotifier, String> {
-  const SendPopupReceiveConversionNotifierProvider._()
+  SendPopupReceiveConversionNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -257,8 +254,7 @@ abstract class _$SendPopupReceiveConversionNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -268,17 +264,17 @@ abstract class _$SendPopupReceiveConversionNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SendPopupValidDataInserted)
-const sendPopupValidDataInsertedProvider =
+final sendPopupValidDataInsertedProvider =
     SendPopupValidDataInsertedProvider._();
 
 final class SendPopupValidDataInsertedProvider
     extends $AsyncNotifierProvider<SendPopupValidDataInserted, bool> {
-  const SendPopupValidDataInsertedProvider._()
+  SendPopupValidDataInsertedProvider._()
     : super(
         from: null,
         argument: null,
@@ -304,8 +300,7 @@ abstract class _$SendPopupValidDataInserted extends $AsyncNotifier<bool> {
   FutureOr<bool> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
@@ -315,17 +310,17 @@ abstract class _$SendPopupValidDataInserted extends $AsyncNotifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SendPopupAddMoreOutputsButtonEnabled)
-const sendPopupAddMoreOutputsButtonEnabledProvider =
+final sendPopupAddMoreOutputsButtonEnabledProvider =
     SendPopupAddMoreOutputsButtonEnabledProvider._();
 
 final class SendPopupAddMoreOutputsButtonEnabledProvider
     extends $AsyncNotifierProvider<SendPopupAddMoreOutputsButtonEnabled, bool> {
-  const SendPopupAddMoreOutputsButtonEnabledProvider._()
+  SendPopupAddMoreOutputsButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -354,8 +349,7 @@ abstract class _$SendPopupAddMoreOutputsButtonEnabled
   FutureOr<bool> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
@@ -365,21 +359,21 @@ abstract class _$SendPopupAddMoreOutputsButtonEnabled
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 /// Accept only liquidnetwork or elements address type
 
 @ProviderFor(SendPopupReviewButtonEnabled)
-const sendPopupReviewButtonEnabledProvider =
+final sendPopupReviewButtonEnabledProvider =
     SendPopupReviewButtonEnabledProvider._();
 
 /// Accept only liquidnetwork or elements address type
 final class SendPopupReviewButtonEnabledProvider
     extends $AsyncNotifierProvider<SendPopupReviewButtonEnabled, bool> {
   /// Accept only liquidnetwork or elements address type
-  const SendPopupReviewButtonEnabledProvider._()
+  SendPopupReviewButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -407,8 +401,7 @@ abstract class _$SendPopupReviewButtonEnabled extends $AsyncNotifier<bool> {
   FutureOr<bool> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
@@ -418,18 +411,18 @@ abstract class _$SendPopupReviewButtonEnabled extends $AsyncNotifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(sendPopupShowInsufficientFunds)
-const sendPopupShowInsufficientFundsProvider =
+final sendPopupShowInsufficientFundsProvider =
     SendPopupShowInsufficientFundsProvider._();
 
 final class SendPopupShowInsufficientFundsProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const SendPopupShowInsufficientFundsProvider._()
+  SendPopupShowInsufficientFundsProvider._()
     : super(
         from: null,
         argument: null,
@@ -466,13 +459,13 @@ String _$sendPopupShowInsufficientFundsHash() =>
     r'58bbd47af1e922d7872a1b74efb835f9ebb0a44e';
 
 @ProviderFor(sendPopupDefaultCurrencyConversion)
-const sendPopupDefaultCurrencyConversionProvider =
+final sendPopupDefaultCurrencyConversionProvider =
     SendPopupDefaultCurrencyConversionProvider._();
 
 final class SendPopupDefaultCurrencyConversionProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
-  const SendPopupDefaultCurrencyConversionProvider._()
+  SendPopupDefaultCurrencyConversionProvider._()
     : super(
         from: null,
         argument: null,
@@ -510,7 +503,7 @@ String _$sendPopupDefaultCurrencyConversionHash() =>
     r'bf4e614908269bf8031cd4523e162a230e0b9ddc';
 
 @ProviderFor(sendPopupParseAddress)
-const sendPopupParseAddressProvider = SendPopupParseAddressProvider._();
+final sendPopupParseAddressProvider = SendPopupParseAddressProvider._();
 
 final class SendPopupParseAddressProvider
     extends
@@ -520,7 +513,7 @@ final class SendPopupParseAddressProvider
           Either<Exception, SendPopupAddressResult>
         >
     with $Provider<Either<Exception, SendPopupAddressResult>> {
-  const SendPopupParseAddressProvider._()
+  SendPopupParseAddressProvider._()
     : super(
         from: null,
         argument: null,

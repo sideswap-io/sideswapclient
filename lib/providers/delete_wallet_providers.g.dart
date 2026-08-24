@@ -10,7 +10,7 @@ part of 'delete_wallet_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LaunchPageDeleteWalletNotifier)
-const launchPageDeleteWalletProvider =
+final launchPageDeleteWalletProvider =
     LaunchPageDeleteWalletNotifierProvider._();
 
 final class LaunchPageDeleteWalletNotifierProvider
@@ -19,7 +19,7 @@ final class LaunchPageDeleteWalletNotifierProvider
           LaunchPageDeleteWalletNotifier,
           LaunchPageDeleteWalletState
         > {
-  const LaunchPageDeleteWalletNotifierProvider._()
+  LaunchPageDeleteWalletNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -54,8 +54,7 @@ abstract class _$LaunchPageDeleteWalletNotifier
   LaunchPageDeleteWalletState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<LaunchPageDeleteWalletState, LaunchPageDeleteWalletState>;
@@ -70,6 +69,6 @@ abstract class _$LaunchPageDeleteWalletNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

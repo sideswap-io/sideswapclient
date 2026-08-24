@@ -33,6 +33,8 @@ class DropdownAmountTextField extends HookConsumerWidget {
     this.onAssetChanged,
     this.onChanged,
     this.balanceAlignment,
+    this.onSubmitted,
+    this.onEditingComplete,
     super.key,
   });
 
@@ -51,6 +53,8 @@ class DropdownAmountTextField extends HookConsumerWidget {
   final void Function()? onMaxPressed;
   final void Function(Asset asset)? onAssetChanged;
   final void Function(String value)? onChanged;
+  final void Function(String)? onSubmitted;
+  final void Function()? onEditingComplete;
   final MainAxisAlignment? balanceAlignment;
 
   @override
@@ -181,6 +185,8 @@ class DropdownAmountTextField extends HookConsumerWidget {
                     precision: asset.precision,
                     disabledAmount: disabledAmount,
                     onChanged: onChanged,
+                    onSubmitted: onSubmitted,
+                    onEditingComplete: onEditingComplete,
                   ),
                 ),
               ),

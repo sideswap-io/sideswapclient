@@ -10,7 +10,7 @@ part of 'market_type_buttons.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SelectedMarketTypeButtonNotifier)
-const selectedMarketTypeButtonProvider =
+final selectedMarketTypeButtonProvider =
     SelectedMarketTypeButtonNotifierProvider._();
 
 final class SelectedMarketTypeButtonNotifierProvider
@@ -19,7 +19,7 @@ final class SelectedMarketTypeButtonNotifierProvider
           SelectedMarketTypeButtonNotifier,
           SelectedMarketTypeButtonEnum
         > {
-  const SelectedMarketTypeButtonNotifierProvider._()
+  SelectedMarketTypeButtonNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -55,8 +55,7 @@ abstract class _$SelectedMarketTypeButtonNotifier
   SelectedMarketTypeButtonEnum build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<SelectedMarketTypeButtonEnum, SelectedMarketTypeButtonEnum>;
@@ -71,6 +70,6 @@ abstract class _$SelectedMarketTypeButtonNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

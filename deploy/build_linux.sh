@@ -11,7 +11,7 @@ apt-get install -y --no-install-recommends \
   unzip
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
- | sh -s -- --default-toolchain 1.86.0 -y
+ | sh -s -- --default-toolchain 1.95.0 -y
 . "$HOME/.cargo/env"
 
 cd "$(dirname "$0")/.."
@@ -22,14 +22,14 @@ mkdir deps
 pushd deps
 
 echo "Downloading Flutter. This may take some time..."
-curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.38.9-stable.tar.xz \
+curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.6-stable.tar.xz \
  | tar -xJ -C ./
 chown -R "$(whoami)" ./flutter
 
 echo "Building sideswap rust library..."
 git clone https://github.com/sideswap-io/sideswap_rust
 pushd sideswap_rust
-git checkout 9b0eea90b18007621eb15282d0064976dfedfa91
+git checkout 612474f05ee908c4c3fe2ec021ed13d79a7e7ecd
 cargo build --release --package sideswap_client
 popd
 

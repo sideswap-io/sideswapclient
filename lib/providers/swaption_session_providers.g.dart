@@ -9,12 +9,14 @@ part of 'swaption_session_providers.dart';
 _SwaptionSession _$SwaptionSessionFromJson(Map json) => _SwaptionSession(
   sessionId: json['sessionId'] as String,
   domain: json['domain'] as String,
+  isLocal: json['isLocal'] as bool,
 );
 
 Map<String, dynamic> _$SwaptionSessionToJson(_SwaptionSession instance) =>
     <String, dynamic>{
       'sessionId': instance.sessionId,
       'domain': instance.domain,
+      'isLocal': instance.isLocal,
     };
 
 // **************************************************************************
@@ -25,11 +27,11 @@ Map<String, dynamic> _$SwaptionSessionToJson(_SwaptionSession instance) =>
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SwaptionSessionNotifier)
-const swaptionSessionProvider = SwaptionSessionNotifierProvider._();
+final swaptionSessionProvider = SwaptionSessionNotifierProvider._();
 
 final class SwaptionSessionNotifierProvider
     extends $NotifierProvider<SwaptionSessionNotifier, List<SwaptionSession>> {
-  const SwaptionSessionNotifierProvider._()
+  SwaptionSessionNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -57,15 +59,14 @@ final class SwaptionSessionNotifierProvider
 }
 
 String _$swaptionSessionNotifierHash() =>
-    r'de286fb6d34a46f0d9eb98f9c29e30b017e4d220';
+    r'e0d0605cc4ad6c2f78a14cb48a5049cc56827a98';
 
 abstract class _$SwaptionSessionNotifier
     extends $Notifier<List<SwaptionSession>> {
   List<SwaptionSession> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<SwaptionSession>, List<SwaptionSession>>;
     final element =
         ref.element
@@ -75,6 +76,6 @@ abstract class _$SwaptionSessionNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

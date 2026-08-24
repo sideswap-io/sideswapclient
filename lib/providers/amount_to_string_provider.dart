@@ -47,11 +47,12 @@ class AmountToString {
     final bitAmount = amount ~/ kCoin;
     final satAmount = amount % kCoin;
     final satAmountStr = satAmount.toString().padLeft(8, '0');
-    final newAmount =
-        Decimal.tryParse('$bitAmount$satAmountStr') ?? Decimal.zero;
+    // tryParse always succeeds: '$bitAmount$satAmountStr' is always a valid integer string
+    final newAmount = Decimal.tryParse('$bitAmount$satAmountStr')!;
+    // tryParse always succeeds: toStringAsFixed(0..20) produces valid numeric strings,
+    // and precision > 20 throws RangeError before reaching tryParse
     final power =
-        Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
-        Decimal.zero;
+        Decimal.tryParse(pow(10, precision).toStringAsFixed(precision))!;
     final amountWithPrecision = newAmount / power;
     if (precision == 0) {
       return sign + amountWithPrecision.toBigInt().toString();
@@ -61,8 +62,9 @@ class AmountToString {
     final resultAmountWithTrailingZeroes = arg.trailingZeroes
         ? resultAmount.toStringAsFixed(precision)
         : resultAmount.toString();
+    // tryParse always succeeds: source is toStringAsFixed or toString of a Decimal
     final decimalTrailingZeroes =
-        Decimal.tryParse(resultAmountWithTrailingZeroes) ?? Decimal.zero;
+        Decimal.tryParse(resultAmountWithTrailingZeroes)!;
 
     final newScale = scaleForAmount(decimalTrailingZeroes, precision);
     final doubleTrailingZeroes = arg.useNumberFormatter

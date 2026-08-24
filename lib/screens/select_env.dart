@@ -21,7 +21,11 @@ class SelectEnv extends HookConsumerWidget {
         child: CustomScrollableContainer(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-            child: Container(
+            // ListTile (via RadioListTile) paints its background and ink on the
+            // nearest Material ancestor; a colored intermediate Container would
+            // hide them and trips a debug assertion since Flutter 3.44. Use a
+            // Material so the colour lives on the Material the tiles paint onto.
+            child: Material(
               color: Theme.of(context).scaffoldBackgroundColor,
               child: Column(
                 children: [

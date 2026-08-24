@@ -1,0 +1,117 @@
+---
+description: SideSwap project standards for writing and reviewing provider tests — what to test, what to delete, naming, coverage. Use when writing tests in test/providers/.
+globs: ["test/providers/**/*.dart"]
+alwaysApply: false
+---
+
+# SideSwap — Provider Test Standards
+
+## File conventions
+
+- Test file: `test/providers/<provider_file>_test.dart`
+- One test file per provider source file
+- Do NOT test generated files (`*.g.dart`, `*.freezed.dart`)
+- Import `../utils.dart` for `ProviderListener<T>`
+
+## What to test
+
+Test **behaviour**, not implementation details:
+
+- All conditional branches (`if`, `switch`, `?:`, `??`)
+- Data transformations and calculations
+- State change sequences (use `ProviderListener`)
+- Error paths and edge cases (null, empty, boundary values)
+- Side effects triggered by state changes
+
+## What NOT to test (delete or do not write)
+
+```dart
+// ❌ trivial state setter — no logic to verify
+test('setAmpId updates state', () {
+  notifier.setAmpId('x');
+  expect(state, 'x'); // the framework already guarantees this
+});
+
+// ❌ tautology
+test('returns true', () => expect(true, true));
+
+// ❌ duplicate of another test hitting the same branch
+test('setAmpId updates state to second value', () { ... });
+
+// ❌ only tests initial state with no logic in build()
+test('initial state is empty', () {
+  expect(container.read(myProvider), '');
+});
+```
+
+**Exception:** keep initial-state tests when `build()` contains logic
+(async loading, conditional initialisation, dependency reads).
+
+## Test grouping
+
+```dart
+void main() {
+  group('MyNotifier', () {
+    group('build', () { ... });          // initial state / async init
+    group('methodName', () { ... });     // one group per public method
+    group('derivedProvider', () { ... }); // computed/select providers
+  });
+}
+```
+
+## Test naming
+
+Describe the **behaviour and context**, not the method:
+
+```dart
+// ✅
+test('returns formatted amount with thousands separator when useNumberFormatter is true')
+test('emits negative sign when amount is below zero')
+test('falls back to asset precision when amount is below 1')
+
+// ❌
+test('amountToString works')
+test('test setAmpId')
+```
+
+## Table-driven tests for multi-branch functions
+
+Use a list of input/output pairs when a function has many independent branches:
+
+```dart
+final cases = [
+  (amount: Decimal.fromInt(1001), precision: 8, expected: 2),
+  (amount: Decimal.fromInt(101),  precision: 8, expected: 3),
+  (amount: Decimal.fromInt(11),   precision: 8, expected: 4),
+  (amount: Decimal.one,           precision: 8, expected: 5),
+  (amount: Decimal.zero,          precision: 8, expected: 8),
+];
+
+for (final c in cases) {
+  test('scaleForAmount returns ${c.expected} for amount ${c.amount}', () {
+    expect(sut.scaleForAmount(c.amount, c.precision), c.expected);
+  });
+}
+```
+
+## Coverage requirement
+
+Every provider must reach **100% line and branch coverage**.
+Verify with:
+
+```bash
+flutter test test/providers/<file>_test.dart --coverage
+dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib/providers/
+# Check: no DA:<n>,0 lines for lib/providers/<file>.dart in lcov.info
+```
+
+## Teardown
+
+Always dispose the container:
+
+```dart
+setUp(() {
+  container = ProviderContainer.test();
+  addTearDown(container.dispose);
+});
+```

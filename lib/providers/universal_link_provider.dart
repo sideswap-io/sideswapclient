@@ -75,9 +75,10 @@ class UniversalLink {
   final Ref ref;
   final WalletMainArguments walletMainArguments;
 
-  final _appLinks = AppLinks();
+  final AppLinks _appLinks;
 
-  UniversalLink(this.walletMainArguments, this.ref);
+  UniversalLink(this.walletMainArguments, this.ref, {AppLinks? appLinks})
+    : _appLinks = appLinks ?? AppLinks();
 
   bool _initialUriIsHandled = false;
   StreamSubscription<Uri>? uriLinkSubscription;
@@ -96,6 +97,7 @@ class UniversalLink {
       uriLinkSubscription?.cancel();
       uriLinkSubscription = _appLinks.uriLinkStream.listen(
         (Uri? uri) {
+          if (!ref.mounted) return;
           logger.d('UniversalLink::handleIncomingLinks: new incoming uri $uri');
           latestUri = uri;
           if (uri != null) {
@@ -116,6 +118,7 @@ class UniversalLink {
             ref
                 .read(universalLinkResultStateProvider.notifier)
                 .setState(linkResultState);
+            return;
           }
           logger.d('UniversalLink::handleIncomingLinks: empty uri');
         },
@@ -124,6 +127,7 @@ class UniversalLink {
           latestUri = null;
         },
       );
+      ref.onDispose(() => uriLinkSubscription?.cancel());
     }
   }
 

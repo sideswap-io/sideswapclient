@@ -12,11 +12,17 @@ part of 'notifications_provider.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$NotificationItemState {
+mixin _$NotificationItemState implements DiagnosticableTreeMixin {
 
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationItemState'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -28,7 +34,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationItemState()';
 }
 
@@ -174,7 +180,7 @@ return canceled();case _:
 /// @nodoc
 
 
-class NotificationItemStateEmpty implements NotificationItemState {
+class NotificationItemStateEmpty with DiagnosticableTreeMixin implements NotificationItemState {
   const NotificationItemStateEmpty();
   
 
@@ -182,6 +188,12 @@ class NotificationItemStateEmpty implements NotificationItemState {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationItemState.empty'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -193,7 +205,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationItemState.empty()';
 }
 
@@ -206,7 +218,7 @@ String toString() {
 /// @nodoc
 
 
-class NotificationItemStateCanceled implements NotificationItemState {
+class NotificationItemStateCanceled with DiagnosticableTreeMixin implements NotificationItemState {
   const NotificationItemStateCanceled();
   
 
@@ -214,6 +226,12 @@ class NotificationItemStateCanceled implements NotificationItemState {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationItemState.canceled'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -225,7 +243,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationItemState.canceled()';
 }
 
@@ -236,7 +254,7 @@ String toString() {
 
 
 /// @nodoc
-mixin _$NotificationType {
+mixin _$NotificationType implements DiagnosticableTreeMixin {
 
  String get reqId; String get origin; NotificationItemState get notificationItemState; DateTime get createdAt; Option<int> get ttlMilliseconds;
 /// Create a copy of NotificationType
@@ -246,6 +264,12 @@ mixin _$NotificationType {
 $NotificationTypeCopyWith<NotificationType> get copyWith => _$NotificationTypeCopyWithImpl<NotificationType>(this as NotificationType, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationType'))
+    ..add(DiagnosticsProperty('reqId', reqId))..add(DiagnosticsProperty('origin', origin))..add(DiagnosticsProperty('notificationItemState', notificationItemState))..add(DiagnosticsProperty('createdAt', createdAt))..add(DiagnosticsProperty('ttlMilliseconds', ttlMilliseconds));
+}
 
 @override
 bool operator ==(Object other) {
@@ -257,7 +281,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,reqId,origin,notificationItemState,createdAt,ttlMilliseconds);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationType(reqId: $reqId, origin: $origin, notificationItemState: $notificationItemState, createdAt: $createdAt, ttlMilliseconds: $ttlMilliseconds)';
 }
 
@@ -442,7 +466,7 @@ return signRequest(_that.sign,_that.reqId,_that.origin,_that.notificationItemSta
 /// @nodoc
 
 
-class NotificationTypeConnect implements NotificationType {
+class NotificationTypeConnect with DiagnosticableTreeMixin implements NotificationType {
   const NotificationTypeConnect(this.reqId, this.origin, this.notificationItemState, this.createdAt, this.ttlMilliseconds);
   
 
@@ -459,6 +483,12 @@ class NotificationTypeConnect implements NotificationType {
 $NotificationTypeConnectCopyWith<NotificationTypeConnect> get copyWith => _$NotificationTypeConnectCopyWithImpl<NotificationTypeConnect>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationType.connect'))
+    ..add(DiagnosticsProperty('reqId', reqId))..add(DiagnosticsProperty('origin', origin))..add(DiagnosticsProperty('notificationItemState', notificationItemState))..add(DiagnosticsProperty('createdAt', createdAt))..add(DiagnosticsProperty('ttlMilliseconds', ttlMilliseconds));
+}
 
 @override
 bool operator ==(Object other) {
@@ -470,7 +500,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,reqId,origin,notificationItemState,createdAt,ttlMilliseconds);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationType.connect(reqId: $reqId, origin: $origin, notificationItemState: $notificationItemState, createdAt: $createdAt, ttlMilliseconds: $ttlMilliseconds)';
 }
 
@@ -525,7 +555,7 @@ $NotificationItemStateCopyWith<$Res> get notificationItemState {
 /// @nodoc
 
 
-class NotificationTypeSignRequest implements NotificationType {
+class NotificationTypeSignRequest with DiagnosticableTreeMixin implements NotificationType {
   const NotificationTypeSignRequest(this.sign, this.reqId, this.origin, this.notificationItemState, this.createdAt, this.ttlMilliseconds);
   
 
@@ -543,6 +573,12 @@ class NotificationTypeSignRequest implements NotificationType {
 $NotificationTypeSignRequestCopyWith<NotificationTypeSignRequest> get copyWith => _$NotificationTypeSignRequestCopyWithImpl<NotificationTypeSignRequest>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationType.signRequest'))
+    ..add(DiagnosticsProperty('sign', sign))..add(DiagnosticsProperty('reqId', reqId))..add(DiagnosticsProperty('origin', origin))..add(DiagnosticsProperty('notificationItemState', notificationItemState))..add(DiagnosticsProperty('createdAt', createdAt))..add(DiagnosticsProperty('ttlMilliseconds', ttlMilliseconds));
+}
 
 @override
 bool operator ==(Object other) {
@@ -554,7 +590,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,sign,reqId,origin,notificationItemState,createdAt,ttlMilliseconds);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationType.signRequest(sign: $sign, reqId: $reqId, origin: $origin, notificationItemState: $notificationItemState, createdAt: $createdAt, ttlMilliseconds: $ttlMilliseconds)';
 }
 
@@ -608,7 +644,7 @@ $NotificationItemStateCopyWith<$Res> get notificationItemState {
 }
 
 /// @nodoc
-mixin _$NotificationData {
+mixin _$NotificationData implements DiagnosticableTreeMixin {
 
  int get id; NotificationType get type;
 /// Create a copy of NotificationData
@@ -618,6 +654,12 @@ mixin _$NotificationData {
 $NotificationDataCopyWith<NotificationData> get copyWith => _$NotificationDataCopyWithImpl<NotificationData>(this as NotificationData, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationData'))
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('type', type));
+}
 
 @override
 bool operator ==(Object other) {
@@ -629,7 +671,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,id,type);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationData(id: $id, type: $type)';
 }
 
@@ -805,7 +847,7 @@ return $default(_that.id,_that.type);case _:
 /// @nodoc
 
 
-class _NotificationData implements NotificationData {
+class _NotificationData with DiagnosticableTreeMixin implements NotificationData {
   const _NotificationData(this.id, this.type);
   
 
@@ -819,6 +861,12 @@ class _NotificationData implements NotificationData {
 _$NotificationDataCopyWith<_NotificationData> get copyWith => __$NotificationDataCopyWithImpl<_NotificationData>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationData'))
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('type', type));
+}
 
 @override
 bool operator ==(Object other) {
@@ -830,7 +878,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,id,type);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'NotificationData(id: $id, type: $type)';
 }
 

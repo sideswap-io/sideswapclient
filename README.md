@@ -3,7 +3,7 @@
 > **Cross‑platform, non‑custodial wallet and atomic swap marketplace for the Liquid Network**
 
 SideSwap Client is the official open‑source desktop & mobile application that lets you manage and atomically swap assets on Blockstream’s [**Liquid Network**](https://blockstream.com/liquid).\
-It is written in **Flutter (Dart)** with a high‑performance **Rust core** and relies on the [Green Development Kit (GDK)](https://github.com/Blockstream/gdk) for low‑level wallet functionality.
+It is written in **Flutter (Dart)** with a high‑performance **Rust core** and relies on the [Liquid Wallet Kit (LWK)](https://github.com/Blockstream/lwk) for low‑level wallet functionality.
 
 *Peer‑to‑peer swaps, peg‑in/peg‑out bridging, AMP token management, multi‑platform binaries, and a fully documented swap protocol—everything you need to settle assets on Liquid.*
 
@@ -85,7 +85,7 @@ See the [LICENSE](LICENSE) file for the full text.
 
 ## 🙏 Acknowledgements
 
-- [Blockstream GDK](https://github.com/Blockstream/gdk) for Liquid wallet primitives.
+- [Blockstream LWK](https://github.com/Blockstream/lwk) for Liquid wallet primitives.
 - The wider [Flutter](https://flutter.dev) and [Rust](https://www.rust-lang.org/) communities.
 
 ---

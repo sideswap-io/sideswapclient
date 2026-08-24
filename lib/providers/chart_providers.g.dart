@@ -10,7 +10,7 @@ part of 'chart_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ChartsSubscriptionFlagNotifier)
-const chartsSubscriptionFlagProvider =
+final chartsSubscriptionFlagProvider =
     ChartsSubscriptionFlagNotifierProvider._();
 
 final class ChartsSubscriptionFlagNotifierProvider
@@ -19,7 +19,7 @@ final class ChartsSubscriptionFlagNotifierProvider
           ChartsSubscriptionFlagNotifier,
           ChartsSubscriptionFlag
         > {
-  const ChartsSubscriptionFlagNotifierProvider._()
+  ChartsSubscriptionFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -54,8 +54,7 @@ abstract class _$ChartsSubscriptionFlagNotifier
   ChartsSubscriptionFlag build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<ChartsSubscriptionFlag, ChartsSubscriptionFlag>;
     final element =
@@ -66,16 +65,16 @@ abstract class _$ChartsSubscriptionFlagNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(ChartsNotifier)
-const chartsProvider = ChartsNotifierProvider._();
+final chartsProvider = ChartsNotifierProvider._();
 
 final class ChartsNotifierProvider
     extends $NotifierProvider<ChartsNotifier, Map<AssetPair, List<Candle>>> {
-  const ChartsNotifierProvider._()
+  ChartsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -109,8 +108,7 @@ abstract class _$ChartsNotifier
   Map<AssetPair, List<Candle>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<Map<AssetPair, List<Candle>>, Map<AssetPair, List<Candle>>>;
@@ -125,16 +123,16 @@ abstract class _$ChartsNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(chartsStats)
-const chartsStatsProvider = ChartsStatsProvider._();
+final chartsStatsProvider = ChartsStatsProvider._();
 
 final class ChartsStatsProvider extends $FunctionalProvider<Stats, Stats, Stats>
     with $Provider<Stats> {
-  const ChartsStatsProvider._()
+  ChartsStatsProvider._()
     : super(
         from: null,
         argument: null,
@@ -170,7 +168,7 @@ final class ChartsStatsProvider extends $FunctionalProvider<Stats, Stats, Stats>
 String _$chartsStatsHash() => r'ec6d9f2f7f0ac9e1995fc0d52d6a55b870205d9d';
 
 @ProviderFor(chartStatsRepository)
-const chartStatsRepositoryProvider = ChartStatsRepositoryFamily._();
+final chartStatsRepositoryProvider = ChartStatsRepositoryFamily._();
 
 final class ChartStatsRepositoryProvider
     extends
@@ -180,7 +178,7 @@ final class ChartStatsRepositoryProvider
           AbstractChartStatsRepository
         >
     with $Provider<AbstractChartStatsRepository> {
-  const ChartStatsRepositoryProvider._({
+  ChartStatsRepositoryProvider._({
     required ChartStatsRepositoryFamily super.from,
     required Asset super.argument,
   }) : super(
@@ -237,7 +235,7 @@ String _$chartStatsRepositoryHash() =>
 
 final class ChartStatsRepositoryFamily extends $Family
     with $FunctionalFamilyOverride<AbstractChartStatsRepository, Asset> {
-  const ChartStatsRepositoryFamily._()
+  ChartStatsRepositoryFamily._()
     : super(
         retry: null,
         name: r'chartStatsRepositoryProvider',

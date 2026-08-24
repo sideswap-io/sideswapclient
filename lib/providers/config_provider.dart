@@ -41,15 +41,14 @@ sealed class SideswapSettings with _$SideswapSettings {
     @Default(0) int networkPort,
     @Default(false) bool networkUseTLS,
     @Default(0) int knownNewReleaseBuild,
-    @Default(true) bool showAmpOnboarding,
+    @Default(false) bool showAmpOnboarding,
     NetworkSettingsModel? networkSettingsModel,
     @Default(false) bool hideTxChainingPromptValue,
-    @Default(false) bool hidePegInInfo,
-    @Default(false) bool hidePegOutInfo,
     ProxySettings? proxySettings,
     @Default(false) bool useProxy,
     String? defaultCurrency,
     StokrSettingsModel? stokrSettingsModel,
+    @Default({}) Map<String, bool> autosignDomains,
   }) = _SideswapSettings;
 
   factory SideswapSettings({
@@ -71,8 +70,6 @@ sealed class SideswapSettings with _$SideswapSettings {
     required bool showAmpOnboarding,
     NetworkSettingsModel? networkSettingsModel,
     required bool hideTxChainingPromptValue,
-    required bool hidePegInInfo,
-    required bool hidePegOutInfo,
     ProxySettings? proxySettings,
     required bool useProxy,
     String? defaultCurrency,
@@ -103,23 +100,24 @@ sealed class SideswapSettings with _$SideswapSettings {
   static const showAmpOnboardingField = 'show_amp_onboarding';
   static const networkSettingsModelField = 'network_settings_model';
   static const hideTxChainingPromptField = 'hide_tx_chaining_prompt';
-  static const hidePegInInfoField = 'hide_peg_in_info';
-  static const hidePegOutInfoField = 'hide_peg_out_info_new';
   static const proxyHostField = 'proxyHost';
   static const proxyPortField = 'proxyPort';
   static const useProxyField = 'useProxy';
   static const defaultCurrencyField = 'defaultCurrency';
   static const stokrSettingsModelField = 'stokrSettings';
+  static const autosignDomainsField = 'autosign_domains';
 }
 
 @riverpod
 class Configuration extends _$Configuration {
   @override
   SideswapSettings build() {
-    listenSelf((_, _) async {
+    final subscription = listenSelf((_, _) async {
+      if (!ref.mounted) return;
       final prefs = ref.read(sharedPreferencesProvider);
       await _saveSettings(prefs);
     });
+    ref.onDispose(() => subscription());
 
     final prefs = ref.watch(sharedPreferencesProvider);
 
@@ -147,12 +145,11 @@ class Configuration extends _$Configuration {
       showAmpOnboarding: _showAmpOnboarding(prefs),
       networkSettingsModel: _networkSettingsModel(prefs),
       hideTxChainingPromptValue: _hideTxChainingPromptValue(prefs),
-      hidePegInInfo: _hidePegInInfo(prefs),
-      hidePegOutInfo: _hidePegOutInfo(prefs),
       proxySettings: _proxySettings(prefs),
       useProxy: _useProxy(prefs),
       defaultCurrency: _defaultCurrency(prefs),
       stokrSettingsModel: _stokrSettings(prefs),
+      autosignDomains: _autosignDomains(prefs),
     );
   }
 
@@ -175,12 +172,11 @@ class Configuration extends _$Configuration {
     await _setShowAmpOnboarding(prefs, state.showAmpOnboarding);
     await _setNetworkSettingsModel(prefs, state.networkSettingsModel);
     await _setHideTxChainingPromptValue(prefs, state.hideTxChainingPromptValue);
-    await _setHidePegInInfo(prefs, state.hidePegInInfo);
-    await _setHidePegOutInfo(prefs, state.hidePegOutInfo);
     await _setProxySettings(prefs, state.proxySettings);
     await _setUseProxy(prefs, state.useProxy);
     await _setDefaultCurrency(prefs, state.defaultCurrency);
     await _setStokrSettings(prefs, state.stokrSettingsModel);
+    await _setAutosignDomains(prefs, state.autosignDomains);
   }
 
   bool isRegistered() {
@@ -275,14 +271,6 @@ class Configuration extends _$Configuration {
     );
   }
 
-  void setHidePegInInfo(bool hidePegInInfo) {
-    state = state.copyWith(hidePegInInfo: hidePegInInfo);
-  }
-
-  void setHidePegOutInfo(bool hidePegOutInfo) {
-    state = state.copyWith(hidePegOutInfo: hidePegOutInfo);
-  }
-
   void setProxySettings(ProxySettings? proxySettings) {
     state = state.copyWith(proxySettings: proxySettings);
   }
@@ -291,12 +279,22 @@ class Configuration extends _$Configuration {
     state = state.copyWith(useProxy: useProxy);
   }
 
+  void setAutosignForDomain(String domain, bool enabled) {
+    final next = Map<String, bool>.from(state.autosignDomains);
+    if (enabled) {
+      next[domain] = true;
+    } else {
+      next.remove(domain);
+    }
+    state = state.copyWith(autosignDomains: next);
+  }
+
   Future<void> deleteConfig() async {
     final currentEnv = state.env;
     state = SideswapSettings.empty(
       mnemonicEncrypted: Uint8List.fromList([]),
       env: currentEnv,
-      showAmpOnboarding: true,
+      showAmpOnboarding: false,
     );
 
     final prefs = ref.read(sharedPreferencesProvider);
@@ -577,7 +575,7 @@ class Configuration extends _$Configuration {
   }
 
   bool _showAmpOnboarding(SharedPreferences prefs) {
-    return prefs.getBool(SideswapSettings.showAmpOnboardingField) ?? true;
+    return prefs.getBool(SideswapSettings.showAmpOnboardingField) ?? false;
   }
 
   Future<void> _setNetworkSettingsModel(
@@ -662,6 +660,43 @@ class Configuration extends _$Configuration {
     return const StokrSettingsModel();
   }
 
+  Map<String, bool> _autosignDomains(SharedPreferences prefs) {
+    final encoded = prefs.getString(SideswapSettings.autosignDomainsField);
+    try {
+      return switch (encoded) {
+        final encodedJson? => () {
+            final decoded = jsonDecode(encodedJson);
+            if (decoded is! Map) return <String, bool>{};
+            return <String, bool>{
+              for (final e in decoded.entries)
+                if (e.value is bool) e.key as String: e.value as bool,
+            };
+          }(),
+        _ => <String, bool>{},
+      };
+    } catch (e) {
+      logger.w(e);
+      return {};
+    }
+  }
+
+  Future<void> _setAutosignDomains(
+    SharedPreferences prefs,
+    Map<String, bool> map,
+  ) async {
+    return await switch (map.isEmpty) {
+      true => () async {
+          await prefs.remove(SideswapSettings.autosignDomainsField);
+        }(),
+      _ => () async {
+          await prefs.setString(
+            SideswapSettings.autosignDomainsField,
+            jsonEncode(map),
+          );
+        }(),
+    };
+  }
+
   Future<void> _setHideTxChainingPromptValue(
     SharedPreferences prefs,
     bool value,
@@ -671,28 +706,6 @@ class Configuration extends _$Configuration {
 
   bool _hideTxChainingPromptValue(SharedPreferences prefs) {
     return prefs.getBool(SideswapSettings.hideTxChainingPromptField) ?? false;
-  }
-
-  Future<void> _setHidePegInInfo(
-    SharedPreferences prefs,
-    bool hidePegInInfo,
-  ) async {
-    await prefs.setBool(SideswapSettings.hidePegInInfoField, hidePegInInfo);
-  }
-
-  bool _hidePegInInfo(SharedPreferences prefs) {
-    return prefs.getBool(SideswapSettings.hidePegInInfoField) ?? false;
-  }
-
-  Future<void> _setHidePegOutInfo(
-    SharedPreferences prefs,
-    bool hidePegOutInfo,
-  ) async {
-    await prefs.setBool(SideswapSettings.hidePegOutInfoField, hidePegOutInfo);
-  }
-
-  bool _hidePegOutInfo(SharedPreferences prefs) {
-    return prefs.getBool(SideswapSettings.hidePegOutInfoField) ?? false;
   }
 
   Future<void> _setProxySettings(

@@ -1,17 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/desktop/home/widgets/d_export_csv_popup.dart';
-import 'package:sideswap/desktop/main/d_asset_info.dart';
-import 'package:sideswap/desktop/main/d_export_tx_success.dart';
-import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
-import 'package:sideswap/desktop/main/d_open_tx_import.dart';
-import 'package:sideswap/desktop/main/d_recv_address_dialog.dart';
-import 'package:sideswap/desktop/main/d_select_inputs_popup.dart';
-import 'package:sideswap/desktop/main/d_send_popup.dart';
-import 'package:sideswap/desktop/main/d_tx_popup.dart';
-import 'package:sideswap/desktop/main/d_view_tx_popup.dart';
-import 'package:sideswap/desktop/markets/widgets/d_accept_quote_error_dialog.dart';
-import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
+import 'package:sideswap/desktop/desktop_dialog_presenter.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
@@ -21,7 +10,7 @@ part 'desktop_dialog_providers.g.dart';
 
 @riverpod
 DesktopDialog desktopDialog(Ref ref) {
-  final context = ref.read(navigatorKeyProvider).currentContext!;
+  final context = ref.watch(navigatorKeyProvider).currentContext!;
   final currentTxPopupItemNotifier = ref.watch(
     currentTxPopupItemProvider.notifier,
   );
@@ -31,77 +20,36 @@ DesktopDialog desktopDialog(Ref ref) {
 class DesktopDialog {
   final CurrentTxPopupItemNotifier currentTxPopupItemNotifier;
   final BuildContext _context;
+  final DesktopDialogPresenter _presenter;
 
   DesktopDialog(
     this.currentTxPopupItemNotifier, {
-    required BuildContext context,
-  }) : _context = context;
-
-  static const _popupRouteName = '/desktopPopup';
+    required this._context,
+    DesktopDialogPresenter? presenter,
+  }) : _presenter = presenter ?? FlutterDesktopDialogPresenter();
 
   void showRecvAddress() {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DReceiveAddressDialog();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    _presenter.showRecvAddress(_context);
   }
 
   Future<void> showNeedRestartDialog() async {
-    await showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DNeedRestartPopupDialog();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    await _presenter.showNeedRestartDialog(_context);
   }
 
   void showGenerateAddress() {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DGenerateAddressPopup();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    _presenter.showGenerateAddress(_context);
   }
 
   void showSendTx() {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DSendPopup();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-      // Non-root navigator used so Jade status popup is visible
-      useRootNavigator: false,
-    );
+    _presenter.showSendTx(_context);
   }
 
   Future<T?> showExportCsv<T>() {
-    return showDialog<T>(
-      context: _context,
-      builder: (context) {
-        return const DExportCsvPopup();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-      useRootNavigator: false,
-    );
+    return _presenter.showExportCsv<T>(_context);
   }
 
   void showSelectInputs() {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DSelectInputsPopup();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-      // Non-root navigator used so Jade status popup is visible
-      useRootNavigator: false,
-    );
+    _presenter.showSelectInputs(_context);
   }
 
   Future<void> showTx(TransItem transItem, {required bool isPeg}) async {
@@ -115,44 +63,19 @@ class DesktopDialog {
           : transItem.tx.txid,
     );
 
-    await showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return isPeg ? DPegPopup() : DTxPopup();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    await _presenter.showTxDialog(_context, isPeg: isPeg);
   }
 
   Future<void> showAcceptQuoteErrorDialog() async {
-    await showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return DAcceptQuoteErrorDialog();
-      },
-      routeSettings: RouteSettings(name: quoteErrorRouteName),
-      useRootNavigator: false,
-    );
+    await _presenter.showAcceptQuoteErrorDialog(_context);
   }
 
   void openTxImport() {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DOpenTxImport();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    _presenter.openTxImport(_context);
   }
 
   Future<DialogReturnValue> openViewTx() async {
-    final result = await showDialog<DialogReturnValue>(
-      context: _context,
-      builder: (context) {
-        return const DViewTxPopup();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    final result = await _presenter.openViewTx(_context);
 
     return switch (result) {
       final result? => result,
@@ -161,31 +84,14 @@ class DesktopDialog {
   }
 
   Future<void> openExportTxSuccess() async {
-    await showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DExportTxSuccess();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    await _presenter.openExportTxSuccess(_context);
   }
 
   void showAssetInfoDialog(Asset asset) {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return DAssetInfo(asset: asset);
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
+    _presenter.showAssetInfoDialog(_context, asset);
   }
 
   void closePopups({String? popupRouteName}) {
-    Navigator.of(_context, rootNavigator: true).popUntil((route) {
-      return route.settings.name != (popupRouteName ?? _popupRouteName);
-    });
-    Navigator.of(_context, rootNavigator: false).popUntil((route) {
-      return route.settings.name != (popupRouteName ?? _popupRouteName);
-    });
+    _presenter.closePopups(_context, popupRouteName: popupRouteName);
   }
 }

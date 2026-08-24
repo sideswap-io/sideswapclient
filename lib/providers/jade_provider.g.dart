@@ -10,7 +10,7 @@ part of 'jade_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(JadeBluetoothPermissionStateNotifier)
-const jadeBluetoothPermissionStateProvider =
+final jadeBluetoothPermissionStateProvider =
     JadeBluetoothPermissionStateNotifierProvider._();
 
 final class JadeBluetoothPermissionStateNotifierProvider
@@ -19,7 +19,7 @@ final class JadeBluetoothPermissionStateNotifierProvider
           JadeBluetoothPermissionStateNotifier,
           JadeBluetoothPermissionState
         > {
-  const JadeBluetoothPermissionStateNotifierProvider._()
+  JadeBluetoothPermissionStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -56,8 +56,7 @@ abstract class _$JadeBluetoothPermissionStateNotifier
   JadeBluetoothPermissionState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<JadeBluetoothPermissionState, JadeBluetoothPermissionState>;
@@ -72,16 +71,16 @@ abstract class _$JadeBluetoothPermissionStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(jadeRescan)
-const jadeRescanProvider = JadeRescanProvider._();
+final jadeRescanProvider = JadeRescanProvider._();
 
 final class JadeRescanProvider extends $FunctionalProvider<void, void, void>
     with $Provider<void> {
-  const JadeRescanProvider._()
+  JadeRescanProvider._()
     : super(
         from: null,
         argument: null,
@@ -117,11 +116,11 @@ final class JadeRescanProvider extends $FunctionalProvider<void, void, void>
 String _$jadeRescanHash() => r'da73b6728860af9534ebff1d6d4c84175bc540f7';
 
 @ProviderFor(JadeDeviceNotifier)
-const jadeDeviceProvider = JadeDeviceNotifierProvider._();
+final jadeDeviceProvider = JadeDeviceNotifierProvider._();
 
 final class JadeDeviceNotifierProvider
     extends $NotifierProvider<JadeDeviceNotifier, JadeDevicesState> {
-  const JadeDeviceNotifierProvider._()
+  JadeDeviceNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -155,8 +154,7 @@ abstract class _$JadeDeviceNotifier extends $Notifier<JadeDevicesState> {
   JadeDevicesState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<JadeDevicesState, JadeDevicesState>;
     final element =
         ref.element
@@ -166,16 +164,16 @@ abstract class _$JadeDeviceNotifier extends $Notifier<JadeDevicesState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeStatusNotifier)
-const jadeStatusProvider = JadeStatusNotifierProvider._();
+final jadeStatusProvider = JadeStatusNotifierProvider._();
 
 final class JadeStatusNotifierProvider
     extends $NotifierProvider<JadeStatusNotifier, JadeStatus> {
-  const JadeStatusNotifierProvider._()
+  JadeStatusNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -209,8 +207,7 @@ abstract class _$JadeStatusNotifier extends $Notifier<JadeStatus> {
   JadeStatus build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<JadeStatus, JadeStatus>;
     final element =
         ref.element
@@ -220,12 +217,12 @@ abstract class _$JadeStatusNotifier extends $Notifier<JadeStatus> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeOnboardingRegistrationNotifier)
-const jadeOnboardingRegistrationProvider =
+final jadeOnboardingRegistrationProvider =
     JadeOnboardingRegistrationNotifierProvider._();
 
 final class JadeOnboardingRegistrationNotifierProvider
@@ -234,7 +231,7 @@ final class JadeOnboardingRegistrationNotifierProvider
           JadeOnboardingRegistrationNotifier,
           JadeOnboardingRegistrationState
         > {
-  const JadeOnboardingRegistrationNotifierProvider._()
+  JadeOnboardingRegistrationNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -273,8 +270,7 @@ abstract class _$JadeOnboardingRegistrationNotifier
   JadeOnboardingRegistrationState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -292,18 +288,18 @@ abstract class _$JadeOnboardingRegistrationNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(jadeRegistrationButtonEnabled)
-const jadeRegistrationButtonEnabledProvider =
+final jadeRegistrationButtonEnabledProvider =
     JadeRegistrationButtonEnabledProvider._();
 
 final class JadeRegistrationButtonEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const JadeRegistrationButtonEnabledProvider._()
+  JadeRegistrationButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -340,11 +336,11 @@ String _$jadeRegistrationButtonEnabledHash() =>
     r'5c31319cc46077842c10d85c0772b3d866f5d74e';
 
 @ProviderFor(isJadeWallet)
-const isJadeWalletProvider = IsJadeWalletProvider._();
+final isJadeWalletProvider = IsJadeWalletProvider._();
 
 final class IsJadeWalletProvider extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const IsJadeWalletProvider._()
+  IsJadeWalletProvider._()
     : super(
         from: null,
         argument: null,
@@ -380,11 +376,11 @@ final class IsJadeWalletProvider extends $FunctionalProvider<bool, bool, bool>
 String _$isJadeWalletHash() => r'f365756b4bcbe7b3823f16f1a733052aaaad5aaa';
 
 @ProviderFor(JadeInfoDialogNotifier)
-const jadeInfoDialogProvider = JadeInfoDialogNotifierProvider._();
+final jadeInfoDialogProvider = JadeInfoDialogNotifierProvider._();
 
 final class JadeInfoDialogNotifierProvider
     extends $NotifierProvider<JadeInfoDialogNotifier, DialogRoute<dynamic>?> {
-  const JadeInfoDialogNotifierProvider._()
+  JadeInfoDialogNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -419,8 +415,7 @@ abstract class _$JadeInfoDialogNotifier
   DialogRoute<dynamic>? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<DialogRoute<dynamic>?, DialogRoute<dynamic>?>;
     final element =
         ref.element
@@ -430,16 +425,16 @@ abstract class _$JadeInfoDialogNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeSelectedDevice)
-const jadeSelectedDeviceProvider = JadeSelectedDeviceProvider._();
+final jadeSelectedDeviceProvider = JadeSelectedDeviceProvider._();
 
 final class JadeSelectedDeviceProvider
     extends $NotifierProvider<JadeSelectedDevice, From_JadePorts_Port?> {
-  const JadeSelectedDeviceProvider._()
+  JadeSelectedDeviceProvider._()
     : super(
         from: null,
         argument: null,
@@ -473,8 +468,7 @@ abstract class _$JadeSelectedDevice extends $Notifier<From_JadePorts_Port?> {
   From_JadePorts_Port? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<From_JadePorts_Port?, From_JadePorts_Port?>;
     final element =
         ref.element
@@ -484,16 +478,16 @@ abstract class _$JadeSelectedDevice extends $Notifier<From_JadePorts_Port?> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeLockStateTimerNotifier)
-const jadeLockStateTimerProvider = JadeLockStateTimerNotifierProvider._();
+final jadeLockStateTimerProvider = JadeLockStateTimerNotifierProvider._();
 
 final class JadeLockStateTimerNotifierProvider
     extends $NotifierProvider<JadeLockStateTimerNotifier, void> {
-  const JadeLockStateTimerNotifierProvider._()
+  JadeLockStateTimerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -527,8 +521,7 @@ abstract class _$JadeLockStateTimerNotifier extends $Notifier<void> {
   void build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<void, void>;
     final element =
         ref.element
@@ -538,16 +531,16 @@ abstract class _$JadeLockStateTimerNotifier extends $Notifier<void> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, null);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeLockStateNotifier)
-const jadeLockStateProvider = JadeLockStateNotifierProvider._();
+final jadeLockStateProvider = JadeLockStateNotifierProvider._();
 
 final class JadeLockStateNotifierProvider
     extends $NotifierProvider<JadeLockStateNotifier, JadeLockState> {
-  const JadeLockStateNotifierProvider._()
+  JadeLockStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -581,8 +574,7 @@ abstract class _$JadeLockStateNotifier extends $Notifier<JadeLockState> {
   JadeLockState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<JadeLockState, JadeLockState>;
     final element =
         ref.element
@@ -592,12 +584,12 @@ abstract class _$JadeLockStateNotifier extends $Notifier<JadeLockState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(jadeLockRepository)
-const jadeLockRepositoryProvider = JadeLockRepositoryProvider._();
+final jadeLockRepositoryProvider = JadeLockRepositoryProvider._();
 
 final class JadeLockRepositoryProvider
     extends
@@ -607,7 +599,7 @@ final class JadeLockRepositoryProvider
           AbstractJadeLockRepository
         >
     with $Provider<AbstractJadeLockRepository> {
-  const JadeLockRepositoryProvider._()
+  JadeLockRepositoryProvider._()
     : super(
         from: null,
         argument: null,
@@ -645,11 +637,11 @@ String _$jadeLockRepositoryHash() =>
     r'de50940524641a7147fa9830f9b4037781cb7c69';
 
 @ProviderFor(JadeOneTimeAuthorization)
-const jadeOneTimeAuthorizationProvider = JadeOneTimeAuthorizationProvider._();
+final jadeOneTimeAuthorizationProvider = JadeOneTimeAuthorizationProvider._();
 
 final class JadeOneTimeAuthorizationProvider
     extends $NotifierProvider<JadeOneTimeAuthorization, bool> {
-  const JadeOneTimeAuthorizationProvider._()
+  JadeOneTimeAuthorizationProvider._()
     : super(
         from: null,
         argument: null,
@@ -683,8 +675,7 @@ abstract class _$JadeOneTimeAuthorization extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -694,17 +685,17 @@ abstract class _$JadeOneTimeAuthorization extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeAuthInProgressStateNotifier)
-const jadeAuthInProgressStateProvider =
+final jadeAuthInProgressStateProvider =
     JadeAuthInProgressStateNotifierProvider._();
 
 final class JadeAuthInProgressStateNotifierProvider
     extends $NotifierProvider<JadeAuthInProgressStateNotifier, bool> {
-  const JadeAuthInProgressStateNotifierProvider._()
+  JadeAuthInProgressStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -738,8 +729,7 @@ abstract class _$JadeAuthInProgressStateNotifier extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -749,12 +739,12 @@ abstract class _$JadeAuthInProgressStateNotifier extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(JadeVerifyAddressStateNotifier)
-const jadeVerifyAddressStateProvider =
+final jadeVerifyAddressStateProvider =
     JadeVerifyAddressStateNotifierProvider._();
 
 final class JadeVerifyAddressStateNotifierProvider
@@ -763,7 +753,7 @@ final class JadeVerifyAddressStateNotifierProvider
           JadeVerifyAddressStateNotifier,
           JadeVerifyAddressState
         > {
-  const JadeVerifyAddressStateNotifierProvider._()
+  JadeVerifyAddressStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -798,8 +788,7 @@ abstract class _$JadeVerifyAddressStateNotifier
   JadeVerifyAddressState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<JadeVerifyAddressState, JadeVerifyAddressState>;
     final element =
@@ -810,6 +799,6 @@ abstract class _$JadeVerifyAddressStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

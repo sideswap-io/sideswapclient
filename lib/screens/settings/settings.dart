@@ -21,6 +21,7 @@ import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_languages.dart';
 import 'package:sideswap/screens/settings/settings_logs.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
+import 'package:sideswap/screens/settings/widgets/export_descriptors_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
 
@@ -183,6 +184,10 @@ class Settings extends ConsumerWidget {
                           },
                         ),
                       ],
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: ExportDescriptorsButton(),
                     ),
                     if (FlavorConfig.enableNetworkSettings) ...[
                       Padding(

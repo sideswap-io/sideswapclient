@@ -10,11 +10,11 @@ part of 'quote_event_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(QuoteEventNotifier)
-const quoteEventProvider = QuoteEventNotifierProvider._();
+final quoteEventProvider = QuoteEventNotifierProvider._();
 
 final class QuoteEventNotifierProvider
     extends $NotifierProvider<QuoteEventNotifier, Option<From_Quote>> {
-  const QuoteEventNotifierProvider._()
+  QuoteEventNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$QuoteEventNotifier extends $Notifier<Option<From_Quote>> {
   Option<From_Quote> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<From_Quote>, Option<From_Quote>>;
     final element =
         ref.element
@@ -59,20 +58,20 @@ abstract class _$QuoteEventNotifier extends $Notifier<Option<From_Quote>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 /// Accept quote
 
 @ProviderFor(AcceptQuoteNotifier)
-const acceptQuoteProvider = AcceptQuoteNotifierProvider._();
+final acceptQuoteProvider = AcceptQuoteNotifierProvider._();
 
 /// Accept quote
 final class AcceptQuoteNotifierProvider
     extends $NotifierProvider<AcceptQuoteNotifier, Option<From_AcceptQuote>> {
   /// Accept quote
-  const AcceptQuoteNotifierProvider._()
+  AcceptQuoteNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -109,8 +108,7 @@ abstract class _$AcceptQuoteNotifier
   Option<From_AcceptQuote> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Option<From_AcceptQuote>, Option<From_AcceptQuote>>;
     final element =
@@ -121,12 +119,12 @@ abstract class _$AcceptQuoteNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PreviewOrderQuoteSuccessNotifier)
-const previewOrderQuoteSuccessProvider =
+final previewOrderQuoteSuccessProvider =
     PreviewOrderQuoteSuccessNotifierProvider._();
 
 final class PreviewOrderQuoteSuccessNotifierProvider
@@ -135,7 +133,7 @@ final class PreviewOrderQuoteSuccessNotifierProvider
           PreviewOrderQuoteSuccessNotifier,
           Option<QuoteSuccess>
         > {
-  const PreviewOrderQuoteSuccessNotifierProvider._()
+  PreviewOrderQuoteSuccessNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -171,8 +169,7 @@ abstract class _$PreviewOrderQuoteSuccessNotifier
   Option<QuoteSuccess> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<QuoteSuccess>, Option<QuoteSuccess>>;
     final element =
         ref.element
@@ -182,16 +179,16 @@ abstract class _$PreviewOrderQuoteSuccessNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(OrderTtlNotifier)
-const orderTtlProvider = OrderTtlNotifierProvider._();
+final orderTtlProvider = OrderTtlNotifierProvider._();
 
 final class OrderTtlNotifierProvider
     extends $NotifierProvider<OrderTtlNotifier, OrderTtlState> {
-  const OrderTtlNotifierProvider._()
+  OrderTtlNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -224,8 +221,7 @@ abstract class _$OrderTtlNotifier extends $Notifier<OrderTtlState> {
   OrderTtlState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<OrderTtlState, OrderTtlState>;
     final element =
         ref.element
@@ -235,15 +231,15 @@ abstract class _$OrderTtlNotifier extends $Notifier<OrderTtlState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(OrderSignTtl)
-const orderSignTtlProvider = OrderSignTtlProvider._();
+final orderSignTtlProvider = OrderSignTtlProvider._();
 
 final class OrderSignTtlProvider extends $NotifierProvider<OrderSignTtl, int> {
-  const OrderSignTtlProvider._()
+  OrderSignTtlProvider._()
     : super(
         from: null,
         argument: null,
@@ -270,14 +266,13 @@ final class OrderSignTtlProvider extends $NotifierProvider<OrderSignTtl, int> {
   }
 }
 
-String _$orderSignTtlHash() => r'e146678d2d7ce8ed39cb0b402a47bbbe93e1dba0';
+String _$orderSignTtlHash() => r'09befd158e9b7021dfdfcd10e7e932c218eb2798';
 
 abstract class _$OrderSignTtl extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -287,6 +282,6 @@ abstract class _$OrderSignTtl extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

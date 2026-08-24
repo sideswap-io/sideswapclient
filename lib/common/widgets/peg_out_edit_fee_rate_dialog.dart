@@ -114,13 +114,14 @@ class PegOutEditFeeRateDialogContent extends HookConsumerWidget {
       );
       final sliderValues = pegOutEditFeeRateHelper.sliderValues();
 
-      final minFeeStr = '${sliderValues.minFee} sats';
-      final maxFeeStr = '${sliderValues.maxFee} sats';
+      final minFeeStr = '${sliderValues.minFee.toStringAsFixed(2)} sats';
+      final maxFeeStr = '${sliderValues.maxFee.toStringAsFixed(2)} sats';
 
       final trackingRangeConverter = ref.watch(trackingRangeConverterProvider);
 
       final currentSliderFee = useState(sliderValues.currentFee);
-      final currentSliderFeeStr = '${currentSliderFee.value} sats';
+      final currentSliderFeeStr =
+          '${currentSliderFee.value.toStringAsFixed(2)} sats';
 
       final defaultFeeRate = pegOutEditFeeRateHelper.defaultFeeRate();
 
@@ -333,13 +334,14 @@ class DesktopPegOutEditFeeRateDialogContent extends HookConsumerWidget {
       );
       final sliderValues = pegOutEditFeeRateHelper.sliderValues();
 
-      final minFeeStr = '${sliderValues.minFee} sats';
-      final maxFeeStr = '${sliderValues.maxFee} sats';
+      final minFeeStr = '${sliderValues.minFee.toStringAsFixed(2)} sats';
+      final maxFeeStr = '${sliderValues.maxFee.toStringAsFixed(2)} sats';
 
       final trackingRangeConverter = ref.watch(trackingRangeConverterProvider);
 
       final currentSliderFee = useState(sliderValues.currentFee);
-      final currentSliderFeeStr = '${currentSliderFee.value} sats';
+      final currentSliderFeeStr =
+          '${currentSliderFee.value.toStringAsFixed(2)} sats';
 
       final feeRates = ref.watch(bitcoinFeeRatesProvider);
 
@@ -473,7 +475,7 @@ class DesktopPegOutEditFeeRateDialogContent extends HookConsumerWidget {
                                   height: 23,
                                   child: Center(
                                     child: Text(
-                                      '${distinctFeeRates[index]} sat',
+                                      '${distinctFeeRates[index].toStringAsFixed(2)} sat',
                                     ),
                                   ),
                                 ),

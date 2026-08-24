@@ -10,11 +10,11 @@ part of 'server_status_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PegInMinimumAmount)
-const pegInMinimumAmountProvider = PegInMinimumAmountProvider._();
+final pegInMinimumAmountProvider = PegInMinimumAmountProvider._();
 
 final class PegInMinimumAmountProvider
     extends $NotifierProvider<PegInMinimumAmount, int> {
-  const PegInMinimumAmountProvider._()
+  PegInMinimumAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$PegInMinimumAmount extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$PegInMinimumAmount extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PegInServerFeePercent)
-const pegInServerFeePercentProvider = PegInServerFeePercentProvider._();
+final pegInServerFeePercentProvider = PegInServerFeePercentProvider._();
 
 final class PegInServerFeePercentProvider
     extends $NotifierProvider<PegInServerFeePercent, double> {
-  const PegInServerFeePercentProvider._()
+  PegInServerFeePercentProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$PegInServerFeePercent extends $Notifier<double> {
   double build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<double, double>;
     final element =
         ref.element
@@ -113,16 +111,16 @@ abstract class _$PegInServerFeePercent extends $Notifier<double> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PegOutMinimumAmount)
-const pegOutMinimumAmountProvider = PegOutMinimumAmountProvider._();
+final pegOutMinimumAmountProvider = PegOutMinimumAmountProvider._();
 
 final class PegOutMinimumAmountProvider
     extends $NotifierProvider<PegOutMinimumAmount, int> {
-  const PegOutMinimumAmountProvider._()
+  PegOutMinimumAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -156,8 +154,7 @@ abstract class _$PegOutMinimumAmount extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -167,16 +164,16 @@ abstract class _$PegOutMinimumAmount extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PegOutServerFeePercent)
-const pegOutServerFeePercentProvider = PegOutServerFeePercentProvider._();
+final pegOutServerFeePercentProvider = PegOutServerFeePercentProvider._();
 
 final class PegOutServerFeePercentProvider
     extends $NotifierProvider<PegOutServerFeePercent, double> {
-  const PegOutServerFeePercentProvider._()
+  PegOutServerFeePercentProvider._()
     : super(
         from: null,
         argument: null,
@@ -210,8 +207,7 @@ abstract class _$PegOutServerFeePercent extends $Notifier<double> {
   double build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<double, double>;
     final element =
         ref.element
@@ -221,16 +217,16 @@ abstract class _$PegOutServerFeePercent extends $Notifier<double> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(BitcoinFeeRates)
-const bitcoinFeeRatesProvider = BitcoinFeeRatesProvider._();
+final bitcoinFeeRatesProvider = BitcoinFeeRatesProvider._();
 
 final class BitcoinFeeRatesProvider
     extends $NotifierProvider<BitcoinFeeRates, List<FeeRate>> {
-  const BitcoinFeeRatesProvider._()
+  BitcoinFeeRatesProvider._()
     : super(
         from: null,
         argument: null,
@@ -263,8 +259,7 @@ abstract class _$BitcoinFeeRates extends $Notifier<List<FeeRate>> {
   List<FeeRate> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<FeeRate>, List<FeeRate>>;
     final element =
         ref.element
@@ -274,6 +269,6 @@ abstract class _$BitcoinFeeRates extends $Notifier<List<FeeRate>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

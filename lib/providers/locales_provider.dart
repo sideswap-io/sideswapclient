@@ -1,9 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/providers/warmup_app_provider.dart';
 
 part 'locales_provider.g.dart';
 
@@ -38,36 +35,12 @@ List<Locale> supportedLocales() {
   return supportedLanguages().map((e) => Locale(e)).toList();
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class LocalesNotifier extends _$LocalesNotifier {
   @override
-  String build() {
-    final context = ref.watch(navigatorKeyProvider).currentContext;
-    if (context == null) {
-      return 'en';
-    }
+  String build() => 'en';
 
-    return context.locale.languageCode;
-  }
-
-  Future<void> setSelectedLang(String value) async {
-    final context = ref.read(navigatorKeyProvider).currentContext;
-    if (context == null) {
-      return;
-    }
-
-    final locale = Locale(value);
-    await context.setLocale(locale);
-
-    // Workaround for https://github.com/aissat/easy_localization/issues/370
-    Future.delayed(const Duration(milliseconds: 30), () {
-      state = locale.languageCode;
-    });
+  void setSelectedLang(String value) {
+    state = value;
   }
 }
-
-/// Testing part
-
-class LocalesNotifierMock extends _$LocalesNotifier
-    with Mock
-    implements LocalesNotifier {}

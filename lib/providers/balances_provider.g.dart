@@ -10,11 +10,11 @@ part of 'balances_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(BalancesNotifier)
-const balancesProvider = BalancesNotifierProvider._();
+final balancesProvider = BalancesNotifierProvider._();
 
 final class BalancesNotifierProvider
     extends $NotifierProvider<BalancesNotifier, Map<AccountAsset, int>> {
-  const BalancesNotifierProvider._()
+  BalancesNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$BalancesNotifier extends $Notifier<Map<AccountAsset, int>> {
   Map<AccountAsset, int> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Map<AccountAsset, int>, Map<AccountAsset, int>>;
     final element =
@@ -59,12 +58,12 @@ abstract class _$BalancesNotifier extends $Notifier<Map<AccountAsset, int>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(assetBalance)
-const assetBalanceProvider = AssetBalanceProvider._();
+final assetBalanceProvider = AssetBalanceProvider._();
 
 final class AssetBalanceProvider
     extends
@@ -74,7 +73,7 @@ final class AssetBalanceProvider
           Map<String, int>
         >
     with $Provider<Map<String, int>> {
-  const AssetBalanceProvider._()
+  AssetBalanceProvider._()
     : super(
         from: null,
         argument: null,
@@ -110,12 +109,12 @@ final class AssetBalanceProvider
 String _$assetBalanceHash() => r'9576cbdf3a4cea102bc46dae41fb7c78fcb8501e';
 
 @ProviderFor(outputsBalanceForAsset)
-const outputsBalanceForAssetProvider = OutputsBalanceForAssetFamily._();
+final outputsBalanceForAssetProvider = OutputsBalanceForAssetFamily._();
 
 final class OutputsBalanceForAssetProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const OutputsBalanceForAssetProvider._({
+  OutputsBalanceForAssetProvider._({
     required OutputsBalanceForAssetFamily super.from,
     required String super.argument,
   }) : super(
@@ -172,7 +171,7 @@ String _$outputsBalanceForAssetHash() =>
 
 final class OutputsBalanceForAssetFamily extends $Family
     with $FunctionalFamilyOverride<int, String> {
-  const OutputsBalanceForAssetFamily._()
+  OutputsBalanceForAssetFamily._()
     : super(
         retry: null,
         name: r'outputsBalanceForAssetProvider',
@@ -191,7 +190,7 @@ final class OutputsBalanceForAssetFamily extends $Family
 /// Inputs related providers
 
 @ProviderFor(selectedInputsBalanceForAsset)
-const selectedInputsBalanceForAssetProvider =
+final selectedInputsBalanceForAssetProvider =
     SelectedInputsBalanceForAssetFamily._();
 
 /// Inputs related providers
@@ -200,7 +199,7 @@ final class SelectedInputsBalanceForAssetProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
   /// Inputs related providers
-  const SelectedInputsBalanceForAssetProvider._({
+  SelectedInputsBalanceForAssetProvider._({
     required SelectedInputsBalanceForAssetFamily super.from,
     required String super.argument,
   }) : super(
@@ -259,7 +258,7 @@ String _$selectedInputsBalanceForAssetHash() =>
 
 final class SelectedInputsBalanceForAssetFamily extends $Family
     with $FunctionalFamilyOverride<int, String> {
-  const SelectedInputsBalanceForAssetFamily._()
+  SelectedInputsBalanceForAssetFamily._()
     : super(
         retry: null,
         name: r'selectedInputsBalanceForAssetProvider',
@@ -278,13 +277,13 @@ final class SelectedInputsBalanceForAssetFamily extends $Family
 }
 
 @ProviderFor(maxAvailableBalanceWithInputsForAsset)
-const maxAvailableBalanceWithInputsForAssetProvider =
+final maxAvailableBalanceWithInputsForAssetProvider =
     MaxAvailableBalanceWithInputsForAssetFamily._();
 
 final class MaxAvailableBalanceWithInputsForAssetProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const MaxAvailableBalanceWithInputsForAssetProvider._({
+  MaxAvailableBalanceWithInputsForAssetProvider._({
     required MaxAvailableBalanceWithInputsForAssetFamily super.from,
     required String super.argument,
   }) : super(
@@ -342,7 +341,7 @@ String _$maxAvailableBalanceWithInputsForAssetHash() =>
 
 final class MaxAvailableBalanceWithInputsForAssetFamily extends $Family
     with $FunctionalFamilyOverride<int, String> {
-  const MaxAvailableBalanceWithInputsForAssetFamily._()
+  MaxAvailableBalanceWithInputsForAssetFamily._()
     : super(
         retry: null,
         name: r'maxAvailableBalanceWithInputsForAssetProvider',
@@ -362,12 +361,12 @@ final class MaxAvailableBalanceWithInputsForAssetFamily extends $Family
 }
 
 @ProviderFor(balanceWithInputsForAsset)
-const balanceWithInputsForAssetProvider = BalanceWithInputsForAssetFamily._();
+final balanceWithInputsForAssetProvider = BalanceWithInputsForAssetFamily._();
 
 final class BalanceWithInputsForAssetProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const BalanceWithInputsForAssetProvider._({
+  BalanceWithInputsForAssetProvider._({
     required BalanceWithInputsForAssetFamily super.from,
     required String super.argument,
   }) : super(
@@ -424,7 +423,7 @@ String _$balanceWithInputsForAssetHash() =>
 
 final class BalanceWithInputsForAssetFamily extends $Family
     with $FunctionalFamilyOverride<int, String> {
-  const BalanceWithInputsForAssetFamily._()
+  BalanceWithInputsForAssetFamily._()
     : super(
         retry: null,
         name: r'balanceWithInputsForAssetProvider',
@@ -441,13 +440,13 @@ final class BalanceWithInputsForAssetFamily extends $Family
 }
 
 @ProviderFor(balanceStringWithInputsForAsset)
-const balanceStringWithInputsForAssetProvider =
+final balanceStringWithInputsForAssetProvider =
     BalanceStringWithInputsForAssetFamily._();
 
 final class BalanceStringWithInputsForAssetProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const BalanceStringWithInputsForAssetProvider._({
+  BalanceStringWithInputsForAssetProvider._({
     required BalanceStringWithInputsForAssetFamily super.from,
     required String super.argument,
   }) : super(
@@ -504,7 +503,7 @@ String _$balanceStringWithInputsForAssetHash() =>
 
 final class BalanceStringWithInputsForAssetFamily extends $Family
     with $FunctionalFamilyOverride<String, String> {
-  const BalanceStringWithInputsForAssetFamily._()
+  BalanceStringWithInputsForAssetFamily._()
     : super(
         retry: null,
         name: r'balanceStringWithInputsForAssetProvider',
@@ -521,12 +520,12 @@ final class BalanceStringWithInputsForAssetFamily extends $Family
 }
 
 @ProviderFor(balanceStringWithInputs)
-const balanceStringWithInputsProvider = BalanceStringWithInputsProvider._();
+final balanceStringWithInputsProvider = BalanceStringWithInputsProvider._();
 
 final class BalanceStringWithInputsProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const BalanceStringWithInputsProvider._()
+  BalanceStringWithInputsProvider._()
     : super(
         from: null,
         argument: null,
@@ -563,13 +562,13 @@ String _$balanceStringWithInputsHash() =>
     r'6dba141e287043a20cb8fc93a030d5e29e0f91c3';
 
 @ProviderFor(assetBalanceWithInputsInDefaultCurrency)
-const assetBalanceWithInputsInDefaultCurrencyProvider =
+final assetBalanceWithInputsInDefaultCurrencyProvider =
     AssetBalanceWithInputsInDefaultCurrencyFamily._();
 
 final class AssetBalanceWithInputsInDefaultCurrencyProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const AssetBalanceWithInputsInDefaultCurrencyProvider._({
+  AssetBalanceWithInputsInDefaultCurrencyProvider._({
     required AssetBalanceWithInputsInDefaultCurrencyFamily super.from,
     required String super.argument,
   }) : super(
@@ -627,7 +626,7 @@ String _$assetBalanceWithInputsInDefaultCurrencyHash() =>
 
 final class AssetBalanceWithInputsInDefaultCurrencyFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, String> {
-  const AssetBalanceWithInputsInDefaultCurrencyFamily._()
+  AssetBalanceWithInputsInDefaultCurrencyFamily._()
     : super(
         retry: null,
         name: r'assetBalanceWithInputsInDefaultCurrencyProvider',
@@ -647,13 +646,13 @@ final class AssetBalanceWithInputsInDefaultCurrencyFamily extends $Family
 }
 
 @ProviderFor(assetBalanceWithInputsInDefaultCurrencyString)
-const assetBalanceWithInputsInDefaultCurrencyStringProvider =
+final assetBalanceWithInputsInDefaultCurrencyStringProvider =
     AssetBalanceWithInputsInDefaultCurrencyStringFamily._();
 
 final class AssetBalanceWithInputsInDefaultCurrencyStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const AssetBalanceWithInputsInDefaultCurrencyStringProvider._({
+  AssetBalanceWithInputsInDefaultCurrencyStringProvider._({
     required AssetBalanceWithInputsInDefaultCurrencyStringFamily super.from,
     required String super.argument,
   }) : super(
@@ -711,7 +710,7 @@ String _$assetBalanceWithInputsInDefaultCurrencyStringHash() =>
 
 final class AssetBalanceWithInputsInDefaultCurrencyStringFamily extends $Family
     with $FunctionalFamilyOverride<String, String> {
-  const AssetBalanceWithInputsInDefaultCurrencyStringFamily._()
+  AssetBalanceWithInputsInDefaultCurrencyStringFamily._()
     : super(
         retry: null,
         name: r'assetBalanceWithInputsInDefaultCurrencyStringProvider',
@@ -733,7 +732,7 @@ final class AssetBalanceWithInputsInDefaultCurrencyStringFamily extends $Family
 /// Balance providers without inputs
 
 @ProviderFor(availableBalanceForAssetId)
-const availableBalanceForAssetIdProvider = AvailableBalanceForAssetIdFamily._();
+final availableBalanceForAssetIdProvider = AvailableBalanceForAssetIdFamily._();
 
 /// Balance providers without inputs
 
@@ -741,7 +740,7 @@ final class AvailableBalanceForAssetIdProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
   /// Balance providers without inputs
-  const AvailableBalanceForAssetIdProvider._({
+  AvailableBalanceForAssetIdProvider._({
     required AvailableBalanceForAssetIdFamily super.from,
     required String super.argument,
   }) : super(
@@ -800,7 +799,7 @@ String _$availableBalanceForAssetIdHash() =>
 
 final class AvailableBalanceForAssetIdFamily extends $Family
     with $FunctionalFamilyOverride<int, String> {
-  const AvailableBalanceForAssetIdFamily._()
+  AvailableBalanceForAssetIdFamily._()
     : super(
         retry: null,
         name: r'availableBalanceForAssetIdProvider',
@@ -819,12 +818,12 @@ final class AvailableBalanceForAssetIdFamily extends $Family
 }
 
 @ProviderFor(amountUsdInDefaultCurrency)
-const amountUsdInDefaultCurrencyProvider = AmountUsdInDefaultCurrencyFamily._();
+final amountUsdInDefaultCurrencyProvider = AmountUsdInDefaultCurrencyFamily._();
 
 final class AmountUsdInDefaultCurrencyProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const AmountUsdInDefaultCurrencyProvider._({
+  AmountUsdInDefaultCurrencyProvider._({
     required AmountUsdInDefaultCurrencyFamily super.from,
     required (String?, num) super.argument,
   }) : super(
@@ -881,7 +880,7 @@ String _$amountUsdInDefaultCurrencyHash() =>
 
 final class AmountUsdInDefaultCurrencyFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, (String?, num)> {
-  const AmountUsdInDefaultCurrencyFamily._()
+  AmountUsdInDefaultCurrencyFamily._()
     : super(
         retry: null,
         name: r'amountUsdInDefaultCurrencyProvider',
@@ -901,12 +900,12 @@ final class AmountUsdInDefaultCurrencyFamily extends $Family
 }
 
 @ProviderFor(amountUsd)
-const amountUsdProvider = AmountUsdFamily._();
+final amountUsdProvider = AmountUsdFamily._();
 
 final class AmountUsdProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const AmountUsdProvider._({
+  AmountUsdProvider._({
     required AmountUsdFamily super.from,
     required (String?, num) super.argument,
   }) : super(
@@ -957,11 +956,11 @@ final class AmountUsdProvider
   }
 }
 
-String _$amountUsdHash() => r'ee38e7d7828c9f773ffdfb22a9fc7ed19e690836';
+String _$amountUsdHash() => r'83fdf76112790a1a9086650501bf38cb3696377e';
 
 final class AmountUsdFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, (String?, num)> {
-  const AmountUsdFamily._()
+  AmountUsdFamily._()
     : super(
         retry: null,
         name: r'amountUsdProvider',
@@ -978,12 +977,12 @@ final class AmountUsdFamily extends $Family
 }
 
 @ProviderFor(isAmountUsdAvailable)
-const isAmountUsdAvailableProvider = IsAmountUsdAvailableFamily._();
+final isAmountUsdAvailableProvider = IsAmountUsdAvailableFamily._();
 
 final class IsAmountUsdAvailableProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const IsAmountUsdAvailableProvider._({
+  IsAmountUsdAvailableProvider._({
     required IsAmountUsdAvailableFamily super.from,
     required String? super.argument,
   }) : super(
@@ -1039,7 +1038,7 @@ String _$isAmountUsdAvailableHash() =>
 
 final class IsAmountUsdAvailableFamily extends $Family
     with $FunctionalFamilyOverride<bool, String?> {
-  const IsAmountUsdAvailableFamily._()
+  IsAmountUsdAvailableFamily._()
     : super(
         retry: null,
         name: r'isAmountUsdAvailableProvider',
@@ -1056,12 +1055,12 @@ final class IsAmountUsdAvailableFamily extends $Family
 }
 
 @ProviderFor(defaultCurrencyConversion)
-const defaultCurrencyConversionProvider = DefaultCurrencyConversionFamily._();
+final defaultCurrencyConversionProvider = DefaultCurrencyConversionFamily._();
 
 final class DefaultCurrencyConversionProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const DefaultCurrencyConversionProvider._({
+  DefaultCurrencyConversionProvider._({
     required DefaultCurrencyConversionFamily super.from,
     required (String?, num) super.argument,
   }) : super(
@@ -1118,7 +1117,7 @@ String _$defaultCurrencyConversionHash() =>
 
 final class DefaultCurrencyConversionFamily extends $Family
     with $FunctionalFamilyOverride<String, (String?, num)> {
-  const DefaultCurrencyConversionFamily._()
+  DefaultCurrencyConversionFamily._()
     : super(
         retry: null,
         name: r'defaultCurrencyConversionProvider',
@@ -1138,13 +1137,13 @@ final class DefaultCurrencyConversionFamily extends $Family
 }
 
 @ProviderFor(defaultCurrencyConversionWithTicker)
-const defaultCurrencyConversionWithTickerProvider =
+final defaultCurrencyConversionWithTickerProvider =
     DefaultCurrencyConversionWithTickerFamily._();
 
 final class DefaultCurrencyConversionWithTickerProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const DefaultCurrencyConversionWithTickerProvider._({
+  DefaultCurrencyConversionWithTickerProvider._({
     required DefaultCurrencyConversionWithTickerFamily super.from,
     required (String?, num) super.argument,
   }) : super(
@@ -1202,7 +1201,7 @@ String _$defaultCurrencyConversionWithTickerHash() =>
 
 final class DefaultCurrencyConversionWithTickerFamily extends $Family
     with $FunctionalFamilyOverride<String, (String?, num)> {
-  const DefaultCurrencyConversionWithTickerFamily._()
+  DefaultCurrencyConversionWithTickerFamily._()
     : super(
         retry: null,
         name: r'defaultCurrencyConversionWithTickerProvider',
@@ -1224,13 +1223,13 @@ final class DefaultCurrencyConversionWithTickerFamily extends $Family
 }
 
 @ProviderFor(defaultCurrencyConversionFromString)
-const defaultCurrencyConversionFromStringProvider =
+final defaultCurrencyConversionFromStringProvider =
     DefaultCurrencyConversionFromStringFamily._();
 
 final class DefaultCurrencyConversionFromStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const DefaultCurrencyConversionFromStringProvider._({
+  DefaultCurrencyConversionFromStringProvider._({
     required DefaultCurrencyConversionFromStringFamily super.from,
     required (String?, String) super.argument,
   }) : super(
@@ -1288,7 +1287,7 @@ String _$defaultCurrencyConversionFromStringHash() =>
 
 final class DefaultCurrencyConversionFromStringFamily extends $Family
     with $FunctionalFamilyOverride<String, (String?, String)> {
-  const DefaultCurrencyConversionFromStringFamily._()
+  DefaultCurrencyConversionFromStringFamily._()
     : super(
         retry: null,
         name: r'defaultCurrencyConversionFromStringProvider',
@@ -1312,7 +1311,7 @@ final class DefaultCurrencyConversionFromStringFamily extends $Family
 /// Total LBTC ============
 
 @ProviderFor(assetsTotalLbtcBalance)
-const assetsTotalLbtcBalanceProvider = AssetsTotalLbtcBalanceFamily._();
+final assetsTotalLbtcBalanceProvider = AssetsTotalLbtcBalanceFamily._();
 
 /// Total LBTC ============
 
@@ -1320,7 +1319,7 @@ final class AssetsTotalLbtcBalanceProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
   /// Total LBTC ============
-  const AssetsTotalLbtcBalanceProvider._({
+  AssetsTotalLbtcBalanceProvider._({
     required AssetsTotalLbtcBalanceFamily super.from,
     required Iterable<Asset> super.argument,
   }) : super(
@@ -1379,7 +1378,7 @@ String _$assetsTotalLbtcBalanceHash() =>
 
 final class AssetsTotalLbtcBalanceFamily extends $Family
     with $FunctionalFamilyOverride<String, Iterable<Asset>> {
-  const AssetsTotalLbtcBalanceFamily._()
+  AssetsTotalLbtcBalanceFamily._()
     : super(
         retry: null,
         name: r'assetsTotalLbtcBalanceProvider',
@@ -1399,33 +1398,33 @@ final class AssetsTotalLbtcBalanceFamily extends $Family
 
 /// USD currency converters ============
 
-@ProviderFor(_assetsTotalUsdBalanceString)
-const _assetsTotalUsdBalanceStringProvider =
-    _AssetsTotalUsdBalanceStringFamily._();
+@ProviderFor(assetsTotalUsdBalanceString)
+final assetsTotalUsdBalanceStringProvider =
+    AssetsTotalUsdBalanceStringFamily._();
 
 /// USD currency converters ============
 
-final class _AssetsTotalUsdBalanceStringProvider
+final class AssetsTotalUsdBalanceStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
   /// USD currency converters ============
-  const _AssetsTotalUsdBalanceStringProvider._({
-    required _AssetsTotalUsdBalanceStringFamily super.from,
+  AssetsTotalUsdBalanceStringProvider._({
+    required AssetsTotalUsdBalanceStringFamily super.from,
     required Iterable<Asset> super.argument,
   }) : super(
          retry: null,
-         name: r'_assetsTotalUsdBalanceStringProvider',
+         name: r'assetsTotalUsdBalanceStringProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$_assetsTotalUsdBalanceStringHash();
+  String debugGetCreateSourceHash() => _$assetsTotalUsdBalanceStringHash();
 
   @override
   String toString() {
-    return r'_assetsTotalUsdBalanceStringProvider'
+    return r'assetsTotalUsdBalanceStringProvider'
         ''
         '($argument)';
   }
@@ -1438,7 +1437,7 @@ final class _AssetsTotalUsdBalanceStringProvider
   @override
   String create(Ref ref) {
     final argument = this.argument as Iterable<Asset>;
-    return _assetsTotalUsdBalanceString(ref, argument);
+    return assetsTotalUsdBalanceString(ref, argument);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -1451,7 +1450,7 @@ final class _AssetsTotalUsdBalanceStringProvider
 
   @override
   bool operator ==(Object other) {
-    return other is _AssetsTotalUsdBalanceStringProvider &&
+    return other is AssetsTotalUsdBalanceStringProvider &&
         other.argument == argument;
   }
 
@@ -1461,17 +1460,17 @@ final class _AssetsTotalUsdBalanceStringProvider
   }
 }
 
-String _$_assetsTotalUsdBalanceStringHash() =>
-    r'068b4d330301da9e7b9d8f1991800dc46ba08f16';
+String _$assetsTotalUsdBalanceStringHash() =>
+    r'cb9ed6d66d973eb8e7ba21cfa1d68d9eda6a0d36';
 
 /// USD currency converters ============
 
-final class _AssetsTotalUsdBalanceStringFamily extends $Family
+final class AssetsTotalUsdBalanceStringFamily extends $Family
     with $FunctionalFamilyOverride<String, Iterable<Asset>> {
-  const _AssetsTotalUsdBalanceStringFamily._()
+  AssetsTotalUsdBalanceStringFamily._()
     : super(
         retry: null,
-        name: r'_assetsTotalUsdBalanceStringProvider',
+        name: r'assetsTotalUsdBalanceStringProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
@@ -1479,20 +1478,20 @@ final class _AssetsTotalUsdBalanceStringFamily extends $Family
 
   /// USD currency converters ============
 
-  _AssetsTotalUsdBalanceStringProvider call(Iterable<Asset> assets) =>
-      _AssetsTotalUsdBalanceStringProvider._(argument: assets, from: this);
+  AssetsTotalUsdBalanceStringProvider call(Iterable<Asset> assets) =>
+      AssetsTotalUsdBalanceStringProvider._(argument: assets, from: this);
 
   @override
-  String toString() => r'_assetsTotalUsdBalanceStringProvider';
+  String toString() => r'assetsTotalUsdBalanceStringProvider';
 }
 
 @ProviderFor(_assetsTotalUsdBalance)
-const _assetsTotalUsdBalanceProvider = _AssetsTotalUsdBalanceFamily._();
+final _assetsTotalUsdBalanceProvider = _AssetsTotalUsdBalanceFamily._();
 
 final class _AssetsTotalUsdBalanceProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const _AssetsTotalUsdBalanceProvider._({
+  _AssetsTotalUsdBalanceProvider._({
     required _AssetsTotalUsdBalanceFamily super.from,
     required Iterable<Asset> super.argument,
   }) : super(
@@ -1545,11 +1544,11 @@ final class _AssetsTotalUsdBalanceProvider
 }
 
 String _$_assetsTotalUsdBalanceHash() =>
-    r'5917299bf7d2437a39861d495878b1dc712957bb';
+    r'1a47037c7077921432b002b241f14fbc8a3485d0';
 
 final class _AssetsTotalUsdBalanceFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, Iterable<Asset>> {
-  const _AssetsTotalUsdBalanceFamily._()
+  _AssetsTotalUsdBalanceFamily._()
     : super(
         retry: null,
         name: r'_assetsTotalUsdBalanceProvider',
@@ -1565,29 +1564,29 @@ final class _AssetsTotalUsdBalanceFamily extends $Family
   String toString() => r'_assetsTotalUsdBalanceProvider';
 }
 
-@ProviderFor(_assetBalanceInUsd)
-const _assetBalanceInUsdProvider = _AssetBalanceInUsdFamily._();
+@ProviderFor(assetBalanceInUsd)
+final assetBalanceInUsdProvider = AssetBalanceInUsdFamily._();
 
-final class _AssetBalanceInUsdProvider
+final class AssetBalanceInUsdProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const _AssetBalanceInUsdProvider._({
-    required _AssetBalanceInUsdFamily super.from,
+  AssetBalanceInUsdProvider._({
+    required AssetBalanceInUsdFamily super.from,
     required Asset super.argument,
   }) : super(
          retry: null,
-         name: r'_assetBalanceInUsdProvider',
+         name: r'assetBalanceInUsdProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$_assetBalanceInUsdHash();
+  String debugGetCreateSourceHash() => _$assetBalanceInUsdHash();
 
   @override
   String toString() {
-    return r'_assetBalanceInUsdProvider'
+    return r'assetBalanceInUsdProvider'
         ''
         '($argument)';
   }
@@ -1600,7 +1599,7 @@ final class _AssetBalanceInUsdProvider
   @override
   Decimal create(Ref ref) {
     final argument = this.argument as Asset;
-    return _assetBalanceInUsd(ref, argument);
+    return assetBalanceInUsd(ref, argument);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -1613,7 +1612,7 @@ final class _AssetBalanceInUsdProvider
 
   @override
   bool operator ==(Object other) {
-    return other is _AssetBalanceInUsdProvider && other.argument == argument;
+    return other is AssetBalanceInUsdProvider && other.argument == argument;
   }
 
   @override
@@ -1622,50 +1621,49 @@ final class _AssetBalanceInUsdProvider
   }
 }
 
-String _$_assetBalanceInUsdHash() =>
-    r'270151266d90076f37f0037b8e522df9967603b6';
+String _$assetBalanceInUsdHash() => r'6f6845f12c09b750ff696ce71ee2a4351a6b475b';
 
-final class _AssetBalanceInUsdFamily extends $Family
+final class AssetBalanceInUsdFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, Asset> {
-  const _AssetBalanceInUsdFamily._()
+  AssetBalanceInUsdFamily._()
     : super(
         retry: null,
-        name: r'_assetBalanceInUsdProvider',
+        name: r'assetBalanceInUsdProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  _AssetBalanceInUsdProvider call(Asset asset) =>
-      _AssetBalanceInUsdProvider._(argument: asset, from: this);
+  AssetBalanceInUsdProvider call(Asset asset) =>
+      AssetBalanceInUsdProvider._(argument: asset, from: this);
 
   @override
-  String toString() => r'_assetBalanceInUsdProvider';
+  String toString() => r'assetBalanceInUsdProvider';
 }
 
-@ProviderFor(_assetBalanceInUsdString)
-const _assetBalanceInUsdStringProvider = _AssetBalanceInUsdStringFamily._();
+@ProviderFor(assetBalanceInUsdString)
+final assetBalanceInUsdStringProvider = AssetBalanceInUsdStringFamily._();
 
-final class _AssetBalanceInUsdStringProvider
+final class AssetBalanceInUsdStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const _AssetBalanceInUsdStringProvider._({
-    required _AssetBalanceInUsdStringFamily super.from,
+  AssetBalanceInUsdStringProvider._({
+    required AssetBalanceInUsdStringFamily super.from,
     required Asset super.argument,
   }) : super(
          retry: null,
-         name: r'_assetBalanceInUsdStringProvider',
+         name: r'assetBalanceInUsdStringProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$_assetBalanceInUsdStringHash();
+  String debugGetCreateSourceHash() => _$assetBalanceInUsdStringHash();
 
   @override
   String toString() {
-    return r'_assetBalanceInUsdStringProvider'
+    return r'assetBalanceInUsdStringProvider'
         ''
         '($argument)';
   }
@@ -1678,7 +1676,7 @@ final class _AssetBalanceInUsdStringProvider
   @override
   String create(Ref ref) {
     final argument = this.argument as Asset;
-    return _assetBalanceInUsdString(ref, argument);
+    return assetBalanceInUsdString(ref, argument);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -1691,7 +1689,7 @@ final class _AssetBalanceInUsdStringProvider
 
   @override
   bool operator ==(Object other) {
-    return other is _AssetBalanceInUsdStringProvider &&
+    return other is AssetBalanceInUsdStringProvider &&
         other.argument == argument;
   }
 
@@ -1701,31 +1699,31 @@ final class _AssetBalanceInUsdStringProvider
   }
 }
 
-String _$_assetBalanceInUsdStringHash() =>
-    r'4917857463ca2aff9d1ad3f693daeccf4aa61e29';
+String _$assetBalanceInUsdStringHash() =>
+    r'b47bc5da72581d56d495aed0288f5cc25ae460d7';
 
-final class _AssetBalanceInUsdStringFamily extends $Family
+final class AssetBalanceInUsdStringFamily extends $Family
     with $FunctionalFamilyOverride<String, Asset> {
-  const _AssetBalanceInUsdStringFamily._()
+  AssetBalanceInUsdStringFamily._()
     : super(
         retry: null,
-        name: r'_assetBalanceInUsdStringProvider',
+        name: r'assetBalanceInUsdStringProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  _AssetBalanceInUsdStringProvider call(Asset asset) =>
-      _AssetBalanceInUsdStringProvider._(argument: asset, from: this);
+  AssetBalanceInUsdStringProvider call(Asset asset) =>
+      AssetBalanceInUsdStringProvider._(argument: asset, from: this);
 
   @override
-  String toString() => r'_assetBalanceInUsdStringProvider';
+  String toString() => r'assetBalanceInUsdStringProvider';
 }
 
 /// Default currency converters ============
 
 @ProviderFor(assetsTotalDefaultCurrencyBalanceString)
-const assetsTotalDefaultCurrencyBalanceStringProvider =
+final assetsTotalDefaultCurrencyBalanceStringProvider =
     AssetsTotalDefaultCurrencyBalanceStringFamily._();
 
 /// Default currency converters ============
@@ -1734,7 +1732,7 @@ final class AssetsTotalDefaultCurrencyBalanceStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
   /// Default currency converters ============
-  const AssetsTotalDefaultCurrencyBalanceStringProvider._({
+  AssetsTotalDefaultCurrencyBalanceStringProvider._({
     required AssetsTotalDefaultCurrencyBalanceStringFamily super.from,
     required Iterable<Asset> super.argument,
   }) : super(
@@ -1794,7 +1792,7 @@ String _$assetsTotalDefaultCurrencyBalanceStringHash() =>
 
 final class AssetsTotalDefaultCurrencyBalanceStringFamily extends $Family
     with $FunctionalFamilyOverride<String, Iterable<Asset>> {
-  const AssetsTotalDefaultCurrencyBalanceStringFamily._()
+  AssetsTotalDefaultCurrencyBalanceStringFamily._()
     : super(
         retry: null,
         name: r'assetsTotalDefaultCurrencyBalanceStringProvider',
@@ -1817,13 +1815,13 @@ final class AssetsTotalDefaultCurrencyBalanceStringFamily extends $Family
 }
 
 @ProviderFor(assetsTotalDefaultCurrencyBalance)
-const assetsTotalDefaultCurrencyBalanceProvider =
+final assetsTotalDefaultCurrencyBalanceProvider =
     AssetsTotalDefaultCurrencyBalanceFamily._();
 
 final class AssetsTotalDefaultCurrencyBalanceProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const AssetsTotalDefaultCurrencyBalanceProvider._({
+  AssetsTotalDefaultCurrencyBalanceProvider._({
     required AssetsTotalDefaultCurrencyBalanceFamily super.from,
     required Iterable<Asset> super.argument,
   }) : super(
@@ -1881,7 +1879,7 @@ String _$assetsTotalDefaultCurrencyBalanceHash() =>
 
 final class AssetsTotalDefaultCurrencyBalanceFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, Iterable<Asset>> {
-  const AssetsTotalDefaultCurrencyBalanceFamily._()
+  AssetsTotalDefaultCurrencyBalanceFamily._()
     : super(
         retry: null,
         name: r'assetsTotalDefaultCurrencyBalanceProvider',
@@ -1898,13 +1896,13 @@ final class AssetsTotalDefaultCurrencyBalanceFamily extends $Family
 }
 
 @ProviderFor(assetBalanceInDefaultCurrency)
-const assetBalanceInDefaultCurrencyProvider =
+final assetBalanceInDefaultCurrencyProvider =
     AssetBalanceInDefaultCurrencyFamily._();
 
 final class AssetBalanceInDefaultCurrencyProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const AssetBalanceInDefaultCurrencyProvider._({
+  AssetBalanceInDefaultCurrencyProvider._({
     required AssetBalanceInDefaultCurrencyFamily super.from,
     required Asset super.argument,
   }) : super(
@@ -1961,7 +1959,7 @@ String _$assetBalanceInDefaultCurrencyHash() =>
 
 final class AssetBalanceInDefaultCurrencyFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, Asset> {
-  const AssetBalanceInDefaultCurrencyFamily._()
+  AssetBalanceInDefaultCurrencyFamily._()
     : super(
         retry: null,
         name: r'assetBalanceInDefaultCurrencyProvider',
@@ -1978,13 +1976,13 @@ final class AssetBalanceInDefaultCurrencyFamily extends $Family
 }
 
 @ProviderFor(assetBalanceInDefaultCurrencyString)
-const assetBalanceInDefaultCurrencyStringProvider =
+final assetBalanceInDefaultCurrencyStringProvider =
     AssetBalanceInDefaultCurrencyStringFamily._();
 
 final class AssetBalanceInDefaultCurrencyStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const AssetBalanceInDefaultCurrencyStringProvider._({
+  AssetBalanceInDefaultCurrencyStringProvider._({
     required AssetBalanceInDefaultCurrencyStringFamily super.from,
     required Asset super.argument,
   }) : super(
@@ -2042,7 +2040,7 @@ String _$assetBalanceInDefaultCurrencyStringHash() =>
 
 final class AssetBalanceInDefaultCurrencyStringFamily extends $Family
     with $FunctionalFamilyOverride<String, Asset> {
-  const AssetBalanceInDefaultCurrencyStringFamily._()
+  AssetBalanceInDefaultCurrencyStringFamily._()
     : super(
         retry: null,
         name: r'assetBalanceInDefaultCurrencyStringProvider',
@@ -2064,7 +2062,7 @@ final class AssetBalanceInDefaultCurrencyStringFamily extends $Family
 /// Asset balance ============
 
 @ProviderFor(assetBalanceString)
-const assetBalanceStringProvider = AssetBalanceStringFamily._();
+final assetBalanceStringProvider = AssetBalanceStringFamily._();
 
 /// Asset balance ============
 
@@ -2072,7 +2070,7 @@ final class AssetBalanceStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
   /// Asset balance ============
-  const AssetBalanceStringProvider._({
+  AssetBalanceStringProvider._({
     required AssetBalanceStringFamily super.from,
     required Asset super.argument,
   }) : super(
@@ -2130,7 +2128,7 @@ String _$assetBalanceStringHash() =>
 
 final class AssetBalanceStringFamily extends $Family
     with $FunctionalFamilyOverride<String, Asset> {
-  const AssetBalanceStringFamily._()
+  AssetBalanceStringFamily._()
     : super(
         retry: null,
         name: r'assetBalanceStringProvider',
@@ -2149,12 +2147,12 @@ final class AssetBalanceStringFamily extends $Family
 }
 
 @ProviderFor(assetBalanceDecimal)
-const assetBalanceDecimalProvider = AssetBalanceDecimalFamily._();
+final assetBalanceDecimalProvider = AssetBalanceDecimalFamily._();
 
 final class AssetBalanceDecimalProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const AssetBalanceDecimalProvider._({
+  AssetBalanceDecimalProvider._({
     required AssetBalanceDecimalFamily super.from,
     required Asset super.argument,
   }) : super(
@@ -2210,7 +2208,7 @@ String _$assetBalanceDecimalHash() =>
 
 final class AssetBalanceDecimalFamily extends $Family
     with $FunctionalFamilyOverride<Decimal, Asset> {
-  const AssetBalanceDecimalFamily._()
+  AssetBalanceDecimalFamily._()
     : super(
         retry: null,
         name: r'assetBalanceDecimalProvider',
@@ -2227,12 +2225,12 @@ final class AssetBalanceDecimalFamily extends $Family
 }
 
 @ProviderFor(assetBalanceDouble)
-const assetBalanceDoubleProvider = AssetBalanceDoubleFamily._();
+final assetBalanceDoubleProvider = AssetBalanceDoubleFamily._();
 
 final class AssetBalanceDoubleProvider
     extends $FunctionalProvider<double, double, double>
     with $Provider<double> {
-  const AssetBalanceDoubleProvider._({
+  AssetBalanceDoubleProvider._({
     required AssetBalanceDoubleFamily super.from,
     required Asset super.argument,
   }) : super(
@@ -2288,7 +2286,7 @@ String _$assetBalanceDoubleHash() =>
 
 final class AssetBalanceDoubleFamily extends $Family
     with $FunctionalFamilyOverride<double, Asset> {
-  const AssetBalanceDoubleFamily._()
+  AssetBalanceDoubleFamily._()
     : super(
         retry: null,
         name: r'assetBalanceDoubleProvider',
@@ -2305,13 +2303,13 @@ final class AssetBalanceDoubleFamily extends $Family
 }
 
 @ProviderFor(availableBalanceForAssetIdAsString)
-const availableBalanceForAssetIdAsStringProvider =
+final availableBalanceForAssetIdAsStringProvider =
     AvailableBalanceForAssetIdAsStringFamily._();
 
 final class AvailableBalanceForAssetIdAsStringProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const AvailableBalanceForAssetIdAsStringProvider._({
+  AvailableBalanceForAssetIdAsStringProvider._({
     required AvailableBalanceForAssetIdAsStringFamily super.from,
     required String? super.argument,
   }) : super(
@@ -2369,7 +2367,7 @@ String _$availableBalanceForAssetIdAsStringHash() =>
 
 final class AvailableBalanceForAssetIdAsStringFamily extends $Family
     with $FunctionalFamilyOverride<String, String?> {
-  const AvailableBalanceForAssetIdAsStringFamily._()
+  AvailableBalanceForAssetIdAsStringFamily._()
     : super(
         retry: null,
         name: r'availableBalanceForAssetIdAsStringProvider',
@@ -2389,12 +2387,12 @@ final class AvailableBalanceForAssetIdAsStringFamily extends $Family
 }
 
 @ProviderFor(defaultCurrencyTicker)
-const defaultCurrencyTickerProvider = DefaultCurrencyTickerProvider._();
+final defaultCurrencyTickerProvider = DefaultCurrencyTickerProvider._();
 
 final class DefaultCurrencyTickerProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const DefaultCurrencyTickerProvider._()
+  DefaultCurrencyTickerProvider._()
     : super(
         from: null,
         argument: null,

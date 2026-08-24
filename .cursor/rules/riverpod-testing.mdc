@@ -1,0 +1,139 @@
+---
+description: Riverpod unit testing patterns — ProviderContainer.test, overrides, async, auto-dispose, mocking notifiers. Use when writing or reviewing tests for Riverpod providers.
+globs: ["test/**/*.dart", "lib/providers/**/*.dart"]
+alwaysApply: false
+---
+
+# Riverpod — Testing Patterns
+
+## Container setup
+
+Always use `ProviderContainer.test()` — never bare `ProviderContainer()`.
+One container per test; never share between tests.
+
+```dart
+test('description', () {
+  final container = ProviderContainer.test();
+  expect(container.read(myProvider), 'expected value');
+  addTearDown(container.dispose);
+});
+```
+
+## Auto-dispose providers — use listen, not read
+
+`container.read()` on an auto-dispose provider disposes it immediately after reading.
+Use `container.listen()` to keep it alive:
+
+```dart
+final subscription = container.listen<String>(myProvider, (_, __) {});
+expect(subscription.read(), 'expected value');
+```
+
+## Overriding dependencies
+
+Override at the container boundary — never mutate global state.
+
+```dart
+final container = ProviderContainer.test(
+  overrides: [
+    // Function provider
+    repositoryProvider.overrideWith((ref) => MockRepository()),
+    // Fixed value
+    configProvider.overrideWithValue(Config.test()),
+    // Family — single argument
+    userProvider('123').overrideWith((ref) => User(name: 'Test')),
+    // Family — all arguments
+    userProvider.overrideWith((ref, arg) => User(name: 'User $arg')),
+  ],
+);
+```
+
+## Mocking Notifiers
+
+**Subclass, do not implement.** The mock must extend the generated base class,
+not implement the public class. With code generation the mock usually needs to
+be in the same file as the Notifier (to access the private generated base).
+
+```dart
+// ✅ correct
+class MockCounterNotifier extends _$CounterNotifier {
+  @override
+  int build() => 0;
+}
+
+// ❌ wrong — breaks generated internals
+class MockCounterNotifier extends Mock implements CounterNotifier {}
+```
+
+Prefer mocking a *dependency* (repository, service) over mocking the Notifier itself.
+
+## Listening and verifying state changes
+
+Use `ProviderListener<T>` from `test/utils.dart` together with mocktail:
+
+```dart
+import '../utils.dart'; // ProviderListener<T>
+
+test('state changes correctly', () {
+  final container = ProviderContainer.test();
+  final listener = ProviderListener<String>();
+
+  container.listen(myProvider, listener.call, fireImmediately: true);
+
+  verifyInOrder([() => listener(null, 'initial')]);
+  verifyNoMoreInteractions(listener);
+
+  container.read(myProvider.notifier).doSomething();
+
+  verifyInOrder([() => listener('initial', 'updated')]);
+  verifyNoMoreInteractions(listener);
+});
+```
+
+## Async providers
+
+```dart
+// Await the future directly
+await expectLater(
+  container.read(myAsyncProvider.future),
+  completion('expected value'),
+);
+
+// Or read after settling
+await container.read(myAsyncProvider.future);
+expect(container.read(myAsyncProvider).value, 'expected value');
+```
+
+Use `FakeAsync` from `package:fake_async` when the provider uses `Timer` or `Duration`.
+
+## Widget tests
+
+Wrap under test in `ProviderScope`. Access the container via `tester.container()`.
+
+```dart
+testWidgets('description', (tester) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [myProvider.overrideWith((ref) => 'test value')],
+      child: const MyWidget(),
+    ),
+  );
+  final container = tester.container();
+  expect(container.read(myProvider), 'test value');
+});
+```
+
+## Mocking with mocktail
+
+```dart
+class MockMyService extends Mock implements MyService {}
+
+setUpAll(() {
+  registerFallbackValue(MyServiceRequest());
+});
+
+setUp(() {
+  final mock = MockMyService();
+  when(() => mock.fetch(any())).thenAnswer((_) async => 'result');
+});
+```

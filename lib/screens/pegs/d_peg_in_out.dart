@@ -6,10 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/peg_in_info_lines.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
-import 'package:sideswap/providers/server_status_providers.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -44,7 +44,7 @@ class DPegInOut extends HookConsumerWidget {
           children: [
             Container(
               width: 570,
-              height: 625,
+              height: 680,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.prussianBlue,
@@ -338,229 +338,13 @@ class DPegInAddressBox extends HookConsumerWidget {
   }
 }
 
-class DPegInDescription extends HookConsumerWidget {
+class DPegInDescription extends StatelessWidget {
   const DPegInDescription({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final swapType = ref.watch(swapTypeProvider);
-    final pegRepository = ref.watch(pegRepositoryProvider);
-
-    final pegInServerFeePercent = ref.watch(pegInServerFeePercentProvider);
-    final pegOutServerFeePercent = ref.watch(pegOutServerFeePercentProvider);
-
-    final serverPercent = swapType == const SwapType.pegIn()
-        ? pegInServerFeePercent
-        : pegOutServerFeePercent;
-
-    final percentConversion = 100 - serverPercent;
-    final conversionStr = percentConversion.toStringAsFixed(2);
-
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '•',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontSize: 13,
-                color: SideSwapColors.ceruleanFrost,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'PEGIN_1STLINE'.tr(),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 13,
-                  color: SideSwapColors.ceruleanFrost,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 11),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '•',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontSize: 13,
-                color: SideSwapColors.ceruleanFrost,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'PEGIN_2NDLINE'.tr(),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 13,
-                  color: SideSwapColors.ceruleanFrost,
-                ),
-              ),
-            ),
-          ],
-        ),
-        serverPercent == 0
-            ? const SizedBox()
-            : Column(
-                children: [
-                  const SizedBox(height: 11),
-                  Row(
-                    children: [
-                      Text(
-                        '•',
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontSize: 13,
-                              color: SideSwapColors.ceruleanFrost,
-                            ),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          'PEGIN_CONVERSION_RATE'.tr(args: [conversionStr]),
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                fontSize: 13,
-                                color: SideSwapColors.ceruleanFrost,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-        const SizedBox(height: 11),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '•',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontSize: 13,
-                color: SideSwapColors.ceruleanFrost,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: RichText(
-                text: TextSpan(
-                  text: 'PEGIN_LESS'.tr(),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontSize: 13,
-                    color: SideSwapColors.ceruleanFrost,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'PEGIN_LESS_AMOUNT'.tr(
-                        args: [pegRepository.pegInWalletBalance()],
-                      ),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.brightTurquoise,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'PEGIN_LESS_END'.tr(),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.ceruleanFrost,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '•',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontSize: 13,
-                color: SideSwapColors.ceruleanFrost,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: RichText(
-                text: TextSpan(
-                  text: 'PEGIN_GREATER'.tr(),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontSize: 13,
-                    color: SideSwapColors.ceruleanFrost,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'PEGIN_GREATER_AMOUNT'.tr(
-                        args: [pegRepository.pegInWalletBalance()],
-                      ),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.brightTurquoise,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'PEGIN_GREATER_END'.tr(),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.ceruleanFrost,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '•',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontSize: 13,
-                color: SideSwapColors.ceruleanFrost,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: RichText(
-                text: TextSpan(
-                  text: 'PEGIN_RELEASED'.tr(),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontSize: 13,
-                    color: SideSwapColors.ceruleanFrost,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'PEGIN_LESS_AMOUNT'.tr(
-                        args: [pegRepository.pegInWalletBalance()],
-                      ),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.brightTurquoise,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'PEGIN_RELEASED_END'.tr(),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontSize: 13,
-                        color: SideSwapColors.ceruleanFrost,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+  Widget build(BuildContext context) {
+    // The shared widget owns the conversion-rate rule (100 - peg-in server fee
+    // percent, hidden at zero); this caller only sets the desktop bullet gap.
+    return const PegInInfoLines(bulletSpacing: 11);
   }
 }
 

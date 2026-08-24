@@ -10,11 +10,11 @@ part of 'd_settings_view_backup.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(IsCopyEnabled)
-const isCopyEnabledProvider = IsCopyEnabledProvider._();
+final isCopyEnabledProvider = IsCopyEnabledProvider._();
 
 final class IsCopyEnabledProvider
     extends $NotifierProvider<IsCopyEnabled, bool> {
-  const IsCopyEnabledProvider._()
+  IsCopyEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$IsCopyEnabled extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$IsCopyEnabled extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

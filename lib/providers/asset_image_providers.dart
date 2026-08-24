@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/widgets/sideswap_cached_memory_image.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'asset_image_providers.g.dart';
@@ -86,8 +87,8 @@ class AssetImageRepository implements AbstractAssetImageRepository {
       return Uint8List(0);
     }
 
-    final iconData = assets[assetId]?.icon;
-    if (iconData == null) {
+    final iconData = assets[assetId]!.icon;
+    if (iconData.isEmpty) {
       return Uint8List(0);
     }
 

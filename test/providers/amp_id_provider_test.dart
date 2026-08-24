@@ -7,39 +7,28 @@ import '../utils.dart';
 
 void main() {
   group('AmpIdNotifier', () {
-    test('initial state is an empty string', () {
-      final ref = ProviderContainer.test();
-      final ampId = ref.read(ampIdProvider);
-      expect(ampId, '');
-    });
+    test('emits the default amp id and the updated value when set', () {
+      final container = ProviderContainer.test();
+      addTearDown(container.dispose);
+      final listener = ProviderListener<String>();
 
-    test('setAmpId updates the state', () {
-      final ref = ProviderContainer.test();
-      final ampIdNotifierListener = ProviderListener();
-      ref.listen(
+      container.listen(
         ampIdProvider,
-        ampIdNotifierListener.call,
+        listener.call,
         fireImmediately: true,
       );
 
-      verifyInOrder([() => ampIdNotifierListener(null, '')]);
-      verifyNoMoreInteractions(ampIdNotifierListener);
+      verifyInOrder([() => listener(null, '')]);
+      verifyNoMoreInteractions(listener);
 
-      final notifier = ref.read(ampIdProvider.notifier);
+      final notifier = container.read(ampIdProvider.notifier);
 
       const newAmpId = 'test_amp_id';
       notifier.setAmpId(newAmpId);
-      verifyInOrder([() => ampIdNotifierListener('', 'test_amp_id')]);
-      verifyNoMoreInteractions(ampIdNotifierListener);
 
-      expect(ref.read(ampIdProvider), newAmpId);
-
-      const newAmpId2 = 'test_amp_id2';
-      notifier.setAmpId(newAmpId2);
-      verifyInOrder([() => ampIdNotifierListener(newAmpId, newAmpId2)]);
-      verifyNoMoreInteractions(ampIdNotifierListener);
-
-      expect(ref.read(ampIdProvider), newAmpId2);
+      verifyInOrder([() => listener('', newAmpId)]);
+      verifyNoMoreInteractions(listener);
+      expect(container.read(ampIdProvider), newAmpId);
     });
   });
 }

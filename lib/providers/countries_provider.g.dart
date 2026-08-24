@@ -10,7 +10,7 @@ part of 'countries_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(countriesFuture)
-const countriesFutureProvider = CountriesFutureProvider._();
+final countriesFutureProvider = CountriesFutureProvider._();
 
 final class CountriesFutureProvider
     extends
@@ -22,7 +22,7 @@ final class CountriesFutureProvider
     with
         $FutureModifier<List<CountryCode>>,
         $FutureProvider<List<CountryCode>> {
-  const CountriesFutureProvider._()
+  CountriesFutureProvider._()
     : super(
         from: null,
         argument: null,
@@ -51,13 +51,13 @@ final class CountriesFutureProvider
 String _$countriesFutureHash() => r'89d3f7207c5e6ddcfc81ce65e71af5dde97a9f0d';
 
 @ProviderFor(DefaultSystemCountryAsyncNotifier)
-const defaultSystemCountryAsyncProvider =
+final defaultSystemCountryAsyncProvider =
     DefaultSystemCountryAsyncNotifierProvider._();
 
 final class DefaultSystemCountryAsyncNotifierProvider
     extends
         $AsyncNotifierProvider<DefaultSystemCountryAsyncNotifier, CountryCode> {
-  const DefaultSystemCountryAsyncNotifierProvider._()
+  DefaultSystemCountryAsyncNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -86,8 +86,7 @@ abstract class _$DefaultSystemCountryAsyncNotifier
   FutureOr<CountryCode> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<CountryCode>, CountryCode>;
     final element =
         ref.element
@@ -97,6 +96,6 @@ abstract class _$DefaultSystemCountryAsyncNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

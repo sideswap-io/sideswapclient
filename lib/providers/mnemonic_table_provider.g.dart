@@ -10,11 +10,11 @@ part of 'mnemonic_table_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(CurrentMnemonicIndexNotifier)
-const currentMnemonicIndexProvider = CurrentMnemonicIndexNotifierProvider._();
+final currentMnemonicIndexProvider = CurrentMnemonicIndexNotifierProvider._();
 
 final class CurrentMnemonicIndexNotifierProvider
     extends $NotifierProvider<CurrentMnemonicIndexNotifier, int> {
-  const CurrentMnemonicIndexNotifierProvider._()
+  CurrentMnemonicIndexNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$CurrentMnemonicIndexNotifier extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -59,12 +58,12 @@ abstract class _$CurrentMnemonicIndexNotifier extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(wordListFuture)
-const wordListFutureProvider = WordListFutureProvider._();
+final wordListFutureProvider = WordListFutureProvider._();
 
 final class WordListFutureProvider
     extends
@@ -74,7 +73,7 @@ final class WordListFutureProvider
           FutureOr<List<String>>
         >
     with $FutureModifier<List<String>>, $FutureProvider<List<String>> {
-  const WordListFutureProvider._()
+  WordListFutureProvider._()
     : super(
         from: null,
         argument: null,
@@ -100,14 +99,14 @@ final class WordListFutureProvider
   }
 }
 
-String _$wordListFutureHash() => r'fdf11f450abf94c6b4d72ebfbee516c506552f53';
+String _$wordListFutureHash() => r'5cbab2211b41a3434e8fe43c6517e021b2207e4d';
 
 @ProviderFor(MnemonicWordsCounterNotifier)
-const mnemonicWordsCounterProvider = MnemonicWordsCounterNotifierProvider._();
+final mnemonicWordsCounterProvider = MnemonicWordsCounterNotifierProvider._();
 
 final class MnemonicWordsCounterNotifierProvider
     extends $NotifierProvider<MnemonicWordsCounterNotifier, int> {
-  const MnemonicWordsCounterNotifierProvider._()
+  MnemonicWordsCounterNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -141,8 +140,7 @@ abstract class _$MnemonicWordsCounterNotifier extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -152,16 +150,16 @@ abstract class _$MnemonicWordsCounterNotifier extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MnemonicWordItemsNotifier)
-const mnemonicWordItemsProvider = MnemonicWordItemsNotifierProvider._();
+final mnemonicWordItemsProvider = MnemonicWordItemsNotifierProvider._();
 
 final class MnemonicWordItemsNotifierProvider
     extends $NotifierProvider<MnemonicWordItemsNotifier, Map<int, WordItem>> {
-  const MnemonicWordItemsNotifierProvider._()
+  MnemonicWordItemsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -189,15 +187,14 @@ final class MnemonicWordItemsNotifierProvider
 }
 
 String _$mnemonicWordItemsNotifierHash() =>
-    r'ca38839f4025cb815b31021b4075fe22ca64903f';
+    r'fb0f5377b2b4e2d30f5a6b9869dd9b15e3bed201';
 
 abstract class _$MnemonicWordItemsNotifier
     extends $Notifier<Map<int, WordItem>> {
   Map<int, WordItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Map<int, WordItem>, Map<int, WordItem>>;
     final element =
         ref.element
@@ -207,6 +204,6 @@ abstract class _$MnemonicWordItemsNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

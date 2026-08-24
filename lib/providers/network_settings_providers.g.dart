@@ -71,11 +71,11 @@ Map<String, dynamic> _$NetworkSettingsModelApplyToJson(
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(NetworkSettingsNotifier)
-const networkSettingsProvider = NetworkSettingsNotifierProvider._();
+final networkSettingsProvider = NetworkSettingsNotifierProvider._();
 
 final class NetworkSettingsNotifierProvider
     extends $NotifierProvider<NetworkSettingsNotifier, NetworkSettingsModel> {
-  const NetworkSettingsNotifierProvider._()
+  NetworkSettingsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -103,15 +103,14 @@ final class NetworkSettingsNotifierProvider
 }
 
 String _$networkSettingsNotifierHash() =>
-    r'bb968b4af2a3f8480940d3d41bf5c742e12f0076';
+    r'2dcdfc5bf8e98556588a2ceffa34232566c26bc9';
 
 abstract class _$NetworkSettingsNotifier
     extends $Notifier<NetworkSettingsModel> {
   NetworkSettingsModel build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<NetworkSettingsModel, NetworkSettingsModel>;
     final element =
         ref.element
@@ -121,17 +120,17 @@ abstract class _$NetworkSettingsNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(networkSettingsNeedSave)
-const networkSettingsNeedSaveProvider = NetworkSettingsNeedSaveProvider._();
+final networkSettingsNeedSaveProvider = NetworkSettingsNeedSaveProvider._();
 
 final class NetworkSettingsNeedSaveProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const NetworkSettingsNeedSaveProvider._()
+  NetworkSettingsNeedSaveProvider._()
     : super(
         from: null,
         argument: null,
@@ -168,13 +167,13 @@ String _$networkSettingsNeedSaveHash() =>
     r'775d14d5cf9195bd4f044266090f058e20b4284b';
 
 @ProviderFor(networkSettingsNeedRestart)
-const networkSettingsNeedRestartProvider =
+final networkSettingsNeedRestartProvider =
     NetworkSettingsNeedRestartProvider._();
 
 final class NetworkSettingsNeedRestartProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const NetworkSettingsNeedRestartProvider._()
+  NetworkSettingsNeedRestartProvider._()
     : super(
         from: null,
         argument: null,

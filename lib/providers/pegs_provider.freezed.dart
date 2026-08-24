@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PegSubscribedValues {
 
- int get pegInMinimumAmount; int get pegInWalletBalance; int get pegOutMinimumAmount; int get pegOutWalletBalance; double get pegOutNextBlockFeeRate;
+ int get pegInMinimumAmount; int get pegInWalletBalance; bool get pegInWalletBalanceLoaded; int get pegOutMinimumAmount; int get pegOutWalletBalance; double get pegOutNextBlockFeeRate;
 /// Create a copy of PegSubscribedValues
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $PegSubscribedValuesCopyWith<PegSubscribedValues> get copyWith => _$PegSubscribe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PegSubscribedValues&&(identical(other.pegInMinimumAmount, pegInMinimumAmount) || other.pegInMinimumAmount == pegInMinimumAmount)&&(identical(other.pegInWalletBalance, pegInWalletBalance) || other.pegInWalletBalance == pegInWalletBalance)&&(identical(other.pegOutMinimumAmount, pegOutMinimumAmount) || other.pegOutMinimumAmount == pegOutMinimumAmount)&&(identical(other.pegOutWalletBalance, pegOutWalletBalance) || other.pegOutWalletBalance == pegOutWalletBalance)&&(identical(other.pegOutNextBlockFeeRate, pegOutNextBlockFeeRate) || other.pegOutNextBlockFeeRate == pegOutNextBlockFeeRate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PegSubscribedValues&&(identical(other.pegInMinimumAmount, pegInMinimumAmount) || other.pegInMinimumAmount == pegInMinimumAmount)&&(identical(other.pegInWalletBalance, pegInWalletBalance) || other.pegInWalletBalance == pegInWalletBalance)&&(identical(other.pegInWalletBalanceLoaded, pegInWalletBalanceLoaded) || other.pegInWalletBalanceLoaded == pegInWalletBalanceLoaded)&&(identical(other.pegOutMinimumAmount, pegOutMinimumAmount) || other.pegOutMinimumAmount == pegOutMinimumAmount)&&(identical(other.pegOutWalletBalance, pegOutWalletBalance) || other.pegOutWalletBalance == pegOutWalletBalance)&&(identical(other.pegOutNextBlockFeeRate, pegOutNextBlockFeeRate) || other.pegOutNextBlockFeeRate == pegOutNextBlockFeeRate));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,pegInMinimumAmount,pegInWalletBalance,pegOutMinimumAmount,pegOutWalletBalance,pegOutNextBlockFeeRate);
+int get hashCode => Object.hash(runtimeType,pegInMinimumAmount,pegInWalletBalance,pegInWalletBalanceLoaded,pegOutMinimumAmount,pegOutWalletBalance,pegOutNextBlockFeeRate);
 
 @override
 String toString() {
-  return 'PegSubscribedValues(pegInMinimumAmount: $pegInMinimumAmount, pegInWalletBalance: $pegInWalletBalance, pegOutMinimumAmount: $pegOutMinimumAmount, pegOutWalletBalance: $pegOutWalletBalance, pegOutNextBlockFeeRate: $pegOutNextBlockFeeRate)';
+  return 'PegSubscribedValues(pegInMinimumAmount: $pegInMinimumAmount, pegInWalletBalance: $pegInWalletBalance, pegInWalletBalanceLoaded: $pegInWalletBalanceLoaded, pegOutMinimumAmount: $pegOutMinimumAmount, pegOutWalletBalance: $pegOutWalletBalance, pegOutNextBlockFeeRate: $pegOutNextBlockFeeRate)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $PegSubscribedValuesCopyWith<$Res>  {
   factory $PegSubscribedValuesCopyWith(PegSubscribedValues value, $Res Function(PegSubscribedValues) _then) = _$PegSubscribedValuesCopyWithImpl;
 @useResult
 $Res call({
- int pegInMinimumAmount, int pegInWalletBalance, int pegOutMinimumAmount, int pegOutWalletBalance, double pegOutNextBlockFeeRate
+ int pegInMinimumAmount, int pegInWalletBalance, bool pegInWalletBalanceLoaded, int pegOutMinimumAmount, int pegOutWalletBalance, double pegOutNextBlockFeeRate
 });
 
 
@@ -62,11 +62,12 @@ class _$PegSubscribedValuesCopyWithImpl<$Res>
 
 /// Create a copy of PegSubscribedValues
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? pegInMinimumAmount = null,Object? pegInWalletBalance = null,Object? pegOutMinimumAmount = null,Object? pegOutWalletBalance = null,Object? pegOutNextBlockFeeRate = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? pegInMinimumAmount = null,Object? pegInWalletBalance = null,Object? pegInWalletBalanceLoaded = null,Object? pegOutMinimumAmount = null,Object? pegOutWalletBalance = null,Object? pegOutNextBlockFeeRate = null,}) {
   return _then(_self.copyWith(
 pegInMinimumAmount: null == pegInMinimumAmount ? _self.pegInMinimumAmount : pegInMinimumAmount // ignore: cast_nullable_to_non_nullable
 as int,pegInWalletBalance: null == pegInWalletBalance ? _self.pegInWalletBalance : pegInWalletBalance // ignore: cast_nullable_to_non_nullable
-as int,pegOutMinimumAmount: null == pegOutMinimumAmount ? _self.pegOutMinimumAmount : pegOutMinimumAmount // ignore: cast_nullable_to_non_nullable
+as int,pegInWalletBalanceLoaded: null == pegInWalletBalanceLoaded ? _self.pegInWalletBalanceLoaded : pegInWalletBalanceLoaded // ignore: cast_nullable_to_non_nullable
+as bool,pegOutMinimumAmount: null == pegOutMinimumAmount ? _self.pegOutMinimumAmount : pegOutMinimumAmount // ignore: cast_nullable_to_non_nullable
 as int,pegOutWalletBalance: null == pegOutWalletBalance ? _self.pegOutWalletBalance : pegOutWalletBalance // ignore: cast_nullable_to_non_nullable
 as int,pegOutNextBlockFeeRate: null == pegOutNextBlockFeeRate ? _self.pegOutNextBlockFeeRate : pegOutNextBlockFeeRate // ignore: cast_nullable_to_non_nullable
 as double,
@@ -151,10 +152,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int pegInMinimumAmount,  int pegInWalletBalance,  int pegOutMinimumAmount,  int pegOutWalletBalance,  double pegOutNextBlockFeeRate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int pegInMinimumAmount,  int pegInWalletBalance,  bool pegInWalletBalanceLoaded,  int pegOutMinimumAmount,  int pegOutWalletBalance,  double pegOutNextBlockFeeRate)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PegSubscribedValues() when $default != null:
-return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegOutMinimumAmount,_that.pegOutWalletBalance,_that.pegOutNextBlockFeeRate);case _:
+return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegInWalletBalanceLoaded,_that.pegOutMinimumAmount,_that.pegOutWalletBalance,_that.pegOutNextBlockFeeRate);case _:
   return orElse();
 
 }
@@ -172,10 +173,10 @@ return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegOutMi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int pegInMinimumAmount,  int pegInWalletBalance,  int pegOutMinimumAmount,  int pegOutWalletBalance,  double pegOutNextBlockFeeRate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int pegInMinimumAmount,  int pegInWalletBalance,  bool pegInWalletBalanceLoaded,  int pegOutMinimumAmount,  int pegOutWalletBalance,  double pegOutNextBlockFeeRate)  $default,) {final _that = this;
 switch (_that) {
 case _PegSubscribedValues():
-return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegOutMinimumAmount,_that.pegOutWalletBalance,_that.pegOutNextBlockFeeRate);}
+return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegInWalletBalanceLoaded,_that.pegOutMinimumAmount,_that.pegOutWalletBalance,_that.pegOutNextBlockFeeRate);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -189,10 +190,10 @@ return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegOutMi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int pegInMinimumAmount,  int pegInWalletBalance,  int pegOutMinimumAmount,  int pegOutWalletBalance,  double pegOutNextBlockFeeRate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int pegInMinimumAmount,  int pegInWalletBalance,  bool pegInWalletBalanceLoaded,  int pegOutMinimumAmount,  int pegOutWalletBalance,  double pegOutNextBlockFeeRate)?  $default,) {final _that = this;
 switch (_that) {
 case _PegSubscribedValues() when $default != null:
-return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegOutMinimumAmount,_that.pegOutWalletBalance,_that.pegOutNextBlockFeeRate);case _:
+return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegInWalletBalanceLoaded,_that.pegOutMinimumAmount,_that.pegOutWalletBalance,_that.pegOutNextBlockFeeRate);case _:
   return null;
 
 }
@@ -204,11 +205,12 @@ return $default(_that.pegInMinimumAmount,_that.pegInWalletBalance,_that.pegOutMi
 
 
 class _PegSubscribedValues implements PegSubscribedValues {
-  const _PegSubscribedValues({this.pegInMinimumAmount = 0, this.pegInWalletBalance = 0, this.pegOutMinimumAmount = 0, this.pegOutWalletBalance = 0, this.pegOutNextBlockFeeRate = 0});
+  const _PegSubscribedValues({this.pegInMinimumAmount = 0, this.pegInWalletBalance = 0, this.pegInWalletBalanceLoaded = false, this.pegOutMinimumAmount = 0, this.pegOutWalletBalance = 0, this.pegOutNextBlockFeeRate = 0});
   
 
 @override@JsonKey() final  int pegInMinimumAmount;
 @override@JsonKey() final  int pegInWalletBalance;
+@override@JsonKey() final  bool pegInWalletBalanceLoaded;
 @override@JsonKey() final  int pegOutMinimumAmount;
 @override@JsonKey() final  int pegOutWalletBalance;
 @override@JsonKey() final  double pegOutNextBlockFeeRate;
@@ -223,16 +225,16 @@ _$PegSubscribedValuesCopyWith<_PegSubscribedValues> get copyWith => __$PegSubscr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PegSubscribedValues&&(identical(other.pegInMinimumAmount, pegInMinimumAmount) || other.pegInMinimumAmount == pegInMinimumAmount)&&(identical(other.pegInWalletBalance, pegInWalletBalance) || other.pegInWalletBalance == pegInWalletBalance)&&(identical(other.pegOutMinimumAmount, pegOutMinimumAmount) || other.pegOutMinimumAmount == pegOutMinimumAmount)&&(identical(other.pegOutWalletBalance, pegOutWalletBalance) || other.pegOutWalletBalance == pegOutWalletBalance)&&(identical(other.pegOutNextBlockFeeRate, pegOutNextBlockFeeRate) || other.pegOutNextBlockFeeRate == pegOutNextBlockFeeRate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PegSubscribedValues&&(identical(other.pegInMinimumAmount, pegInMinimumAmount) || other.pegInMinimumAmount == pegInMinimumAmount)&&(identical(other.pegInWalletBalance, pegInWalletBalance) || other.pegInWalletBalance == pegInWalletBalance)&&(identical(other.pegInWalletBalanceLoaded, pegInWalletBalanceLoaded) || other.pegInWalletBalanceLoaded == pegInWalletBalanceLoaded)&&(identical(other.pegOutMinimumAmount, pegOutMinimumAmount) || other.pegOutMinimumAmount == pegOutMinimumAmount)&&(identical(other.pegOutWalletBalance, pegOutWalletBalance) || other.pegOutWalletBalance == pegOutWalletBalance)&&(identical(other.pegOutNextBlockFeeRate, pegOutNextBlockFeeRate) || other.pegOutNextBlockFeeRate == pegOutNextBlockFeeRate));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,pegInMinimumAmount,pegInWalletBalance,pegOutMinimumAmount,pegOutWalletBalance,pegOutNextBlockFeeRate);
+int get hashCode => Object.hash(runtimeType,pegInMinimumAmount,pegInWalletBalance,pegInWalletBalanceLoaded,pegOutMinimumAmount,pegOutWalletBalance,pegOutNextBlockFeeRate);
 
 @override
 String toString() {
-  return 'PegSubscribedValues(pegInMinimumAmount: $pegInMinimumAmount, pegInWalletBalance: $pegInWalletBalance, pegOutMinimumAmount: $pegOutMinimumAmount, pegOutWalletBalance: $pegOutWalletBalance, pegOutNextBlockFeeRate: $pegOutNextBlockFeeRate)';
+  return 'PegSubscribedValues(pegInMinimumAmount: $pegInMinimumAmount, pegInWalletBalance: $pegInWalletBalance, pegInWalletBalanceLoaded: $pegInWalletBalanceLoaded, pegOutMinimumAmount: $pegOutMinimumAmount, pegOutWalletBalance: $pegOutWalletBalance, pegOutNextBlockFeeRate: $pegOutNextBlockFeeRate)';
 }
 
 
@@ -243,7 +245,7 @@ abstract mixin class _$PegSubscribedValuesCopyWith<$Res> implements $PegSubscrib
   factory _$PegSubscribedValuesCopyWith(_PegSubscribedValues value, $Res Function(_PegSubscribedValues) _then) = __$PegSubscribedValuesCopyWithImpl;
 @override @useResult
 $Res call({
- int pegInMinimumAmount, int pegInWalletBalance, int pegOutMinimumAmount, int pegOutWalletBalance, double pegOutNextBlockFeeRate
+ int pegInMinimumAmount, int pegInWalletBalance, bool pegInWalletBalanceLoaded, int pegOutMinimumAmount, int pegOutWalletBalance, double pegOutNextBlockFeeRate
 });
 
 
@@ -260,11 +262,12 @@ class __$PegSubscribedValuesCopyWithImpl<$Res>
 
 /// Create a copy of PegSubscribedValues
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? pegInMinimumAmount = null,Object? pegInWalletBalance = null,Object? pegOutMinimumAmount = null,Object? pegOutWalletBalance = null,Object? pegOutNextBlockFeeRate = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? pegInMinimumAmount = null,Object? pegInWalletBalance = null,Object? pegInWalletBalanceLoaded = null,Object? pegOutMinimumAmount = null,Object? pegOutWalletBalance = null,Object? pegOutNextBlockFeeRate = null,}) {
   return _then(_PegSubscribedValues(
 pegInMinimumAmount: null == pegInMinimumAmount ? _self.pegInMinimumAmount : pegInMinimumAmount // ignore: cast_nullable_to_non_nullable
 as int,pegInWalletBalance: null == pegInWalletBalance ? _self.pegInWalletBalance : pegInWalletBalance // ignore: cast_nullable_to_non_nullable
-as int,pegOutMinimumAmount: null == pegOutMinimumAmount ? _self.pegOutMinimumAmount : pegOutMinimumAmount // ignore: cast_nullable_to_non_nullable
+as int,pegInWalletBalanceLoaded: null == pegInWalletBalanceLoaded ? _self.pegInWalletBalanceLoaded : pegInWalletBalanceLoaded // ignore: cast_nullable_to_non_nullable
+as bool,pegOutMinimumAmount: null == pegOutMinimumAmount ? _self.pegOutMinimumAmount : pegOutMinimumAmount // ignore: cast_nullable_to_non_nullable
 as int,pegOutWalletBalance: null == pegOutWalletBalance ? _self.pegOutWalletBalance : pegOutWalletBalance // ignore: cast_nullable_to_non_nullable
 as int,pegOutNextBlockFeeRate: null == pegOutNextBlockFeeRate ? _self.pegOutNextBlockFeeRate : pegOutNextBlockFeeRate // ignore: cast_nullable_to_non_nullable
 as double,

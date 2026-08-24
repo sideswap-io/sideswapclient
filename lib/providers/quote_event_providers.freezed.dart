@@ -12,7 +12,7 @@ part of 'quote_event_providers.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$QuoteError {
+mixin _$QuoteError implements DiagnosticableTreeMixin {
 
  String get error; int get orderId;
 /// Create a copy of QuoteError
@@ -22,6 +22,12 @@ mixin _$QuoteError {
 $QuoteErrorCopyWith<QuoteError> get copyWith => _$QuoteErrorCopyWithImpl<QuoteError>(this as QuoteError, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'QuoteError'))
+    ..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('orderId', orderId));
+}
 
 @override
 bool operator ==(Object other) {
@@ -33,7 +39,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,error,orderId);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'QuoteError(error: $error, orderId: $orderId)';
 }
 
@@ -200,7 +206,7 @@ return $default(_that.error,_that.orderId);case _:
 /// @nodoc
 
 
-class _QuoteError implements QuoteError {
+class _QuoteError with DiagnosticableTreeMixin implements QuoteError {
   const _QuoteError({this.error = '', this.orderId = 0});
   
 
@@ -214,6 +220,12 @@ class _QuoteError implements QuoteError {
 _$QuoteErrorCopyWith<_QuoteError> get copyWith => __$QuoteErrorCopyWithImpl<_QuoteError>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'QuoteError'))
+    ..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('orderId', orderId));
+}
 
 @override
 bool operator ==(Object other) {
@@ -225,7 +237,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,error,orderId);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'QuoteError(error: $error, orderId: $orderId)';
 }
 
@@ -266,11 +278,17 @@ as int,
 }
 
 /// @nodoc
-mixin _$OrderTtlState {
+mixin _$OrderTtlState implements DiagnosticableTreeMixin {
 
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'OrderTtlState'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -282,7 +300,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'OrderTtlState()';
 }
 
@@ -428,7 +446,7 @@ return data(_that.seconds,_that.timestamp);case _:
 /// @nodoc
 
 
-class OrderTtlStateEmpty implements OrderTtlState {
+class OrderTtlStateEmpty with DiagnosticableTreeMixin implements OrderTtlState {
   const OrderTtlStateEmpty();
   
 
@@ -436,6 +454,12 @@ class OrderTtlStateEmpty implements OrderTtlState {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'OrderTtlState.empty'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -447,7 +471,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'OrderTtlState.empty()';
 }
 
@@ -460,7 +484,7 @@ String toString() {
 /// @nodoc
 
 
-class OrderTtlStateData implements OrderTtlState {
+class OrderTtlStateData with DiagnosticableTreeMixin implements OrderTtlState {
   const OrderTtlStateData({required this.seconds, required this.timestamp});
   
 
@@ -474,6 +498,12 @@ class OrderTtlStateData implements OrderTtlState {
 $OrderTtlStateDataCopyWith<OrderTtlStateData> get copyWith => _$OrderTtlStateDataCopyWithImpl<OrderTtlStateData>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'OrderTtlState.data'))
+    ..add(DiagnosticsProperty('seconds', seconds))..add(DiagnosticsProperty('timestamp', timestamp));
+}
 
 @override
 bool operator ==(Object other) {
@@ -485,7 +515,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,seconds,timestamp);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'OrderTtlState.data(seconds: $seconds, timestamp: $timestamp)';
 }
 

@@ -10,13 +10,13 @@ part of 'route_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(mobileRoutePage)
-const mobileRoutePageProvider = MobileRoutePageProvider._();
+final mobileRoutePageProvider = MobileRoutePageProvider._();
 
 final class MobileRoutePageProvider
     extends
         $FunctionalProvider<MobileRoutePage, MobileRoutePage, MobileRoutePage>
     with $Provider<MobileRoutePage> {
-  const MobileRoutePageProvider._()
+  MobileRoutePageProvider._()
     : super(
         from: null,
         argument: null,
@@ -52,7 +52,7 @@ final class MobileRoutePageProvider
 String _$mobileRoutePageHash() => r'9b178081c2e642b0629218bf1491b2c087ecba28';
 
 @ProviderFor(desktopRoutePage)
-const desktopRoutePageProvider = DesktopRoutePageProvider._();
+final desktopRoutePageProvider = DesktopRoutePageProvider._();
 
 final class DesktopRoutePageProvider
     extends
@@ -62,7 +62,7 @@ final class DesktopRoutePageProvider
           DesktopRoutePage
         >
     with $Provider<DesktopRoutePage> {
-  const DesktopRoutePageProvider._()
+  DesktopRoutePageProvider._()
     : super(
         from: null,
         argument: null,

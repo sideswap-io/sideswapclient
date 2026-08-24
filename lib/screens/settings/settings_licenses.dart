@@ -106,7 +106,7 @@ class SettingsLicenses extends HookConsumerWidget {
             ),
           );
 
-          if (packageName == kPackageGdk || packageName == kPackageSideswap) {
+          if (packageName == kPackageLwk || packageName == kPackageSideswap) {
             newLicenses.insert(0, widget);
           } else {
             newLicenses.add(widget);
@@ -134,91 +134,90 @@ class SettingsLicenses extends HookConsumerWidget {
       ),
       body: SafeArea(
         child: LayoutBuilder(
-          builder:
-              (context, constraints) => SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: constraints.maxWidth,
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: IntrinsicHeight(
-                    child: Center(
-                      child: Column(
-                        children: [
-                          const Text(
-                            'SideSwap',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              'VERSION: {}'.tr(args: [appVersion]),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              'Copyright © 2021 SideSwap',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              height: 100,
-                              child: ValueListenableBuilder(
-                                valueListenable: licenses,
-                                builder: (context, value, child) {
-                                  if (value.isEmpty) {
-                                    return const Padding(
-                                      padding: EdgeInsets.only(top: 16),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: EdgeInsets.only(top: 32),
-                                          child: SpinKitThreeBounce(
-                                            color: Colors.white,
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 16),
-                                    child: ListView.separated(
-                                      itemCount: value.length,
-                                      separatorBuilder:
-                                          (context, index) => const Divider(
-                                            color: SideSwapColors.chathamsBlue,
-                                          ),
-                                      itemBuilder: (context, index) {
-                                        return value.elementAt(index);
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: constraints.maxWidth,
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Center(
+                  child: Column(
+                    children: [
+                      const Text(
+                        'SideSwap',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'VERSION: {}'.tr(args: [appVersion]),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Copyright © 2021 SideSwap',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: SizedBox(
+                          height: 100,
+                          child: ValueListenableBuilder(
+                            valueListenable: licenses,
+                            builder: (context, value, child) {
+                              if (value.isEmpty) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(top: 16),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 32),
+                                      child: SpinKitThreeBounce(
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: ListView.separated(
+                                  itemCount: value.length,
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(
+                                        color: SideSwapColors.chathamsBlue,
+                                      ),
+                                  itemBuilder: (context, index) {
+                                    return value.elementAt(index);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+            ),
+          ),
         ),
       ),
     );

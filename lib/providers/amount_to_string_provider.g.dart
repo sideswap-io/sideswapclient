@@ -10,12 +10,12 @@ part of 'amount_to_string_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(amountToString)
-const amountToStringProvider = AmountToStringProvider._();
+final amountToStringProvider = AmountToStringProvider._();
 
 final class AmountToStringProvider
     extends $FunctionalProvider<AmountToString, AmountToString, AmountToString>
     with $Provider<AmountToString> {
-  const AmountToStringProvider._()
+  AmountToStringProvider._()
     : super(
         from: null,
         argument: null,

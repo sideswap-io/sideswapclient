@@ -10,7 +10,7 @@ part of 'endpoint_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(endpointServer)
-const endpointServerProvider = EndpointServerProvider._();
+final endpointServerProvider = EndpointServerProvider._();
 
 final class EndpointServerProvider
     extends
@@ -20,7 +20,7 @@ final class EndpointServerProvider
           EndpointServerImpl
         >
     with $Provider<EndpointServerImpl> {
-  const EndpointServerProvider._()
+  EndpointServerProvider._()
     : super(
         from: null,
         argument: null,
@@ -57,12 +57,12 @@ final class EndpointServerProvider
 String _$endpointServerHash() => r'95431c03fd364c95b735eb86a71031ff2578a3e8';
 
 @ProviderFor(EiCreateTransactionNotifier)
-const eiCreateTransactionProvider = EiCreateTransactionNotifierProvider._();
+final eiCreateTransactionProvider = EiCreateTransactionNotifierProvider._();
 
 final class EiCreateTransactionNotifierProvider
     extends
         $NotifierProvider<EiCreateTransactionNotifier, EICreateTransaction> {
-  const EiCreateTransactionNotifierProvider._()
+  EiCreateTransactionNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -97,8 +97,7 @@ abstract class _$EiCreateTransactionNotifier
   EICreateTransaction build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<EICreateTransaction, EICreateTransaction>;
     final element =
         ref.element
@@ -108,6 +107,6 @@ abstract class _$EiCreateTransactionNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

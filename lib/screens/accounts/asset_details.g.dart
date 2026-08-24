@@ -10,7 +10,7 @@ part of 'asset_details.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(heightPercentController)
-const heightPercentControllerProvider = HeightPercentControllerProvider._();
+final heightPercentControllerProvider = HeightPercentControllerProvider._();
 
 final class HeightPercentControllerProvider
     extends
@@ -20,7 +20,7 @@ final class HeightPercentControllerProvider
           StreamController<double>
         >
     with $Provider<StreamController<double>> {
-  const HeightPercentControllerProvider._()
+  HeightPercentControllerProvider._()
     : super(
         from: null,
         argument: null,
@@ -58,11 +58,11 @@ String _$heightPercentControllerHash() =>
     r'a20cd03b28517e880be9d7dd6b2567f1b66aeb7f';
 
 @ProviderFor(PanelPositionNotifier)
-const panelPositionProvider = PanelPositionNotifierProvider._();
+final panelPositionProvider = PanelPositionNotifierProvider._();
 
 final class PanelPositionNotifierProvider
     extends $NotifierProvider<PanelPositionNotifier, double> {
-  const PanelPositionNotifierProvider._()
+  PanelPositionNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -96,8 +96,7 @@ abstract class _$PanelPositionNotifier extends $Notifier<double> {
   double build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<double, double>;
     final element =
         ref.element
@@ -107,6 +106,6 @@ abstract class _$PanelPositionNotifier extends $Notifier<double> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

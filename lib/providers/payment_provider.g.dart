@@ -10,11 +10,11 @@ part of 'payment_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(CreateTxStateNotifier)
-const createTxStateProvider = CreateTxStateNotifierProvider._();
+final createTxStateProvider = CreateTxStateNotifierProvider._();
 
 final class CreateTxStateNotifierProvider
     extends $NotifierProvider<CreateTxStateNotifier, CreateTxState> {
-  const CreateTxStateNotifierProvider._()
+  CreateTxStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$CreateTxStateNotifier extends $Notifier<CreateTxState> {
   CreateTxState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<CreateTxState, CreateTxState>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$CreateTxStateNotifier extends $Notifier<CreateTxState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SendTxStateNotifier)
-const sendTxStateProvider = SendTxStateNotifierProvider._();
+final sendTxStateProvider = SendTxStateNotifierProvider._();
 
 final class SendTxStateNotifierProvider
     extends $NotifierProvider<SendTxStateNotifier, SendTxState> {
-  const SendTxStateNotifierProvider._()
+  SendTxStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$SendTxStateNotifier extends $Notifier<SendTxState> {
   SendTxState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<SendTxState, SendTxState>;
     final element =
         ref.element
@@ -113,17 +111,17 @@ abstract class _$SendTxStateNotifier extends $Notifier<SendTxState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PaymentSendAddressParsedNotifier)
-const paymentSendAddressParsedProvider =
+final paymentSendAddressParsedProvider =
     PaymentSendAddressParsedNotifierProvider._();
 
 final class PaymentSendAddressParsedNotifierProvider
     extends $NotifierProvider<PaymentSendAddressParsedNotifier, String> {
-  const PaymentSendAddressParsedNotifierProvider._()
+  PaymentSendAddressParsedNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -158,8 +156,7 @@ abstract class _$PaymentSendAddressParsedNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -169,17 +166,17 @@ abstract class _$PaymentSendAddressParsedNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PaymentSendAmountParsedNotifier)
-const paymentSendAmountParsedProvider =
+final paymentSendAmountParsedProvider =
     PaymentSendAmountParsedNotifierProvider._();
 
 final class PaymentSendAmountParsedNotifierProvider
     extends $NotifierProvider<PaymentSendAmountParsedNotifier, int> {
-  const PaymentSendAmountParsedNotifierProvider._()
+  PaymentSendAmountParsedNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -213,8 +210,7 @@ abstract class _$PaymentSendAmountParsedNotifier extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -224,12 +220,12 @@ abstract class _$PaymentSendAmountParsedNotifier extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PaymentAmountPageArgumentsNotifier)
-const paymentAmountPageArgumentsProvider =
+final paymentAmountPageArgumentsProvider =
     PaymentAmountPageArgumentsNotifierProvider._();
 
 final class PaymentAmountPageArgumentsNotifierProvider
@@ -238,7 +234,7 @@ final class PaymentAmountPageArgumentsNotifierProvider
           PaymentAmountPageArgumentsNotifier,
           PaymentAmountPageArguments
         > {
-  const PaymentAmountPageArgumentsNotifierProvider._()
+  PaymentAmountPageArgumentsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -275,8 +271,7 @@ abstract class _$PaymentAmountPageArgumentsNotifier
   PaymentAmountPageArguments build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<PaymentAmountPageArguments, PaymentAmountPageArguments>;
@@ -291,17 +286,17 @@ abstract class _$PaymentAmountPageArgumentsNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(paymentHelper)
-const paymentHelperProvider = PaymentHelperProvider._();
+final paymentHelperProvider = PaymentHelperProvider._();
 
 final class PaymentHelperProvider
     extends $FunctionalProvider<PaymentHelper, PaymentHelper, PaymentHelper>
     with $Provider<PaymentHelper> {
-  const PaymentHelperProvider._()
+  PaymentHelperProvider._()
     : super(
         from: null,
         argument: null,
@@ -337,13 +332,13 @@ final class PaymentHelperProvider
 String _$paymentHelperHash() => r'426240d4f895aeb427c51ffcc193d2d434cfb336';
 
 @ProviderFor(createdTxHelper)
-const createdTxHelperProvider = CreatedTxHelperFamily._();
+final createdTxHelperProvider = CreatedTxHelperFamily._();
 
 final class CreatedTxHelperProvider
     extends
         $FunctionalProvider<CreatedTxHelper, CreatedTxHelper, CreatedTxHelper>
     with $Provider<CreatedTxHelper> {
-  const CreatedTxHelperProvider._({
+  CreatedTxHelperProvider._({
     required CreatedTxHelperFamily super.from,
     required CreatedTx? super.argument,
   }) : super(
@@ -398,7 +393,7 @@ String _$createdTxHelperHash() => r'5e1957359493ac06e1d97fbf503ccab68712494f';
 
 final class CreatedTxHelperFamily extends $Family
     with $FunctionalFamilyOverride<CreatedTxHelper, CreatedTx?> {
-  const CreatedTxHelperFamily._()
+  CreatedTxHelperFamily._()
     : super(
         retry: null,
         name: r'createdTxHelperProvider',

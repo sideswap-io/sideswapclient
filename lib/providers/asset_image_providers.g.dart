@@ -10,7 +10,7 @@ part of 'asset_image_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(assetImageRepository)
-const assetImageRepositoryProvider = AssetImageRepositoryProvider._();
+final assetImageRepositoryProvider = AssetImageRepositoryProvider._();
 
 final class AssetImageRepositoryProvider
     extends
@@ -20,7 +20,7 @@ final class AssetImageRepositoryProvider
           AbstractAssetImageRepository
         >
     with $Provider<AbstractAssetImageRepository> {
-  const AssetImageRepositoryProvider._()
+  AssetImageRepositoryProvider._()
     : super(
         from: null,
         argument: null,

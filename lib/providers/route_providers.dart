@@ -29,6 +29,7 @@ import 'package:sideswap/desktop/settings/d_settings_logs.dart';
 import 'package:sideswap/desktop/settings/d_settings_network_access.dart';
 import 'package:sideswap/desktop/settings/d_settings_pin_success.dart';
 import 'package:sideswap/desktop/settings/d_settings_view_backup.dart';
+import 'package:sideswap/desktop/settings/d_wallet_descriptors.dart';
 import 'package:sideswap/desktop/stokr/d_stokr_country_restrictions_info_popup.dart';
 import 'package:sideswap/desktop/stokr/d_stokr_need_register_popup.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
@@ -78,6 +79,7 @@ import 'package:sideswap/screens/settings/settings_logs.dart';
 import 'package:sideswap/screens/settings/settings_network.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/settings_view_backup.dart';
+import 'package:sideswap/screens/settings/wallet_descriptors_screen.dart';
 import 'package:sideswap/screens/stokr/stokr_country_restrictions_info_popup.dart';
 import 'package:sideswap/screens/stokr/stokr_need_register_popup.dart';
 import 'package:sideswap/screens/swap/peg_in_address.dart';
@@ -107,6 +109,7 @@ class RouteName {
   static const String errorRoute = '/errorRoute';
   static const String settingsPage = '/settingsPage';
   static const String settingsBackup = '/settingsBackup';
+  static const String settingsDescriptors = '/settingsDescriptors';
   static const String settingsAboutUs = '/settingsAboutUs';
   static const String settingsNetwork = '/settingsNetwork';
   static const String settingsLogs = '/settingsLogs';
@@ -217,6 +220,10 @@ class MobileRoutePage {
         const MaterialPage<Widget>(child: Settings()),
         const MaterialPage<Widget>(child: SettingsViewBackup()),
       ],
+      Status.settingsDescriptors => [
+        const MaterialPage<Widget>(child: Settings()),
+        const MaterialPage<Widget>(child: WalletDescriptorsScreen()),
+      ],
       Status.settingsAboutUs => [
         const MaterialPage<Widget>(child: Settings()),
         const MaterialPage<Widget>(child: SettingsAboutUs()),
@@ -322,7 +329,6 @@ class DesktopRoutePage {
   });
 
   Future<void> mapStatus() async {
-    final context = ref.read(navigatorKeyProvider).currentContext!;
     final navigator = ref.read(navigatorKeyProvider).currentState!;
 
     (switch (status) {
@@ -412,12 +418,10 @@ class DesktopRoutePage {
           (route) => false,
         ),
       Status.registered => () async {
-        if (Navigator.canPop(context)) {
+        if (navigator.canPop()) {
           navigator.popUntil((route) => route.isFirst);
-          await navigator.pushReplacementNamed(RouteName.registered);
-        } else {
-          await navigator.pushReplacementNamed(RouteName.registered);
         }
+        await navigator.pushReplacementNamed(RouteName.registered);
       }(),
       Status.settingsPage => await navigator.pushNamedAndRemoveUntil(
         RouteName.settingsPage,
@@ -425,6 +429,10 @@ class DesktopRoutePage {
       ),
       Status.settingsBackup => await navigator.pushNamedAndRemoveUntil(
         RouteName.settingsBackup,
+        (route) => route.isFirst,
+      ),
+      Status.settingsDescriptors => await navigator.pushNamedAndRemoveUntil(
+        RouteName.settingsDescriptors,
         (route) => route.isFirst,
       ),
       Status.settingsAboutUs => await navigator.pushNamedAndRemoveUntil(
@@ -479,9 +487,7 @@ class DesktopRoutePage {
         RouteName.networkAccessOnboarding,
         (route) => false,
       ),
-      _ => () {
-        logger.w('Unhandled $status');
-      }(),
+      _ => logger.w('Unhandled $status'),
     });
   }
 
@@ -556,6 +562,10 @@ class DesktopRoutePage {
       ),
       RouteName.settingsBackup => RawDialogRoute<Widget>(
         pageBuilder: (_, _, _) => const DSettingsViewBackup(),
+        settings: settings,
+      ),
+      RouteName.settingsDescriptors => RawDialogRoute<Widget>(
+        pageBuilder: (_, _, _) => const DWalletDescriptors(),
         settings: settings,
       ),
       RouteName.settingsAboutUs => RawDialogRoute<Widget>(

@@ -480,39 +480,38 @@ class TransItemHelper {
 
   TxType txType() {
     if (transItem.whichItem() == TransItem_Item.peg) {
-      return switch (transItem.peg.isPegIn) {
-        true => TxType.pegIn,
-        _ => TxType.pegOut,
-      };
+      return transItem.peg.isPegIn ? TxType.pegIn : TxType.pegOut;
     }
 
     final tx = transItem.tx;
 
-    var anyPositive = false;
-    var anyNegative = false;
-    for (var balance in tx.balances) {
-      if (balance.amount > 0) {
-        anyPositive = true;
-      }
-      if (balance.amount < 0) {
-        anyNegative = true;
-      }
+    bool isNetworkFeeBalance(dynamic balance) =>
+        balance.assetId == liquidAssetId && balance.amount == -tx.networkFee;
+
+    // The network fee is not a sent balance for transaction classification.
+    final nonFeeBalances = tx.balances
+        .where((balance) => !isNetworkFeeBalance(balance))
+        .toList();
+
+    // A transaction containing only the network fee is internal.
+    if (nonFeeBalances.isEmpty && tx.balances.any(isNetworkFeeBalance)) {
+      return TxType.internal;
     }
-    if (tx.balances.length == 2 &&
+
+    final anyPositive = nonFeeBalances.any((balance) => balance.amount > 0);
+    final anyNegative = nonFeeBalances.any((balance) => balance.amount < 0);
+
+    if (nonFeeBalances.length == 2 &&
         anyPositive &&
         anyNegative &&
-        (tx.balances[0].assetId != tx.balances[1].assetId)) {
+        nonFeeBalances[0].assetId != nonFeeBalances[1].assetId) {
       return TxType.swap;
     }
 
-    if (tx.balances.length == 1 &&
-        tx.balances.first.amount == -tx.networkFee &&
-        tx.balances.first.assetId == liquidAssetId) {
-      return TxType.internal;
-    }
     if (anyPositive && !anyNegative) {
       return TxType.received;
     }
+
     if (anyNegative && !anyPositive) {
       return TxType.sent;
     }

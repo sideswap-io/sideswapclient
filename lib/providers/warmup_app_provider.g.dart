@@ -10,11 +10,11 @@ part of 'warmup_app_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(WarmupApp)
-const warmupAppProvider = WarmupAppProvider._();
+final warmupAppProvider = WarmupAppProvider._();
 
 final class WarmupAppProvider
     extends $AsyncNotifierProvider<WarmupApp, WarmupAppState> {
-  const WarmupAppProvider._()
+  WarmupAppProvider._()
     : super(
         from: null,
         argument: null,
@@ -33,14 +33,13 @@ final class WarmupAppProvider
   WarmupApp create() => WarmupApp();
 }
 
-String _$warmupAppHash() => r'a32bed3bfe321e319b28b8ebdd4c6a24ccfda8a8';
+String _$warmupAppHash() => r'3c3f150a50af4a950409102d17d5bf22805879e7';
 
 abstract class _$WarmupApp extends $AsyncNotifier<WarmupAppState> {
   FutureOr<WarmupAppState> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<WarmupAppState>, WarmupAppState>;
     final element =
         ref.element
@@ -50,12 +49,12 @@ abstract class _$WarmupApp extends $AsyncNotifier<WarmupAppState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(navigatorKey)
-const navigatorKeyProvider = NavigatorKeyProvider._();
+final navigatorKeyProvider = NavigatorKeyProvider._();
 
 final class NavigatorKeyProvider
     extends
@@ -65,7 +64,7 @@ final class NavigatorKeyProvider
           GlobalKey<NavigatorState>
         >
     with $Provider<GlobalKey<NavigatorState>> {
-  const NavigatorKeyProvider._()
+  NavigatorKeyProvider._()
     : super(
         from: null,
         argument: null,

@@ -98,7 +98,7 @@ _FCMPeg _$FCMPegFromJson(Map json) => _FCMPeg(
   txHash: json['tx_hash'] as String?,
   vout: (json['vout'] as num?)?.toInt(),
   createdAt: (json['created_at'] as num?)?.toInt(),
-  payoutTxId: json['payout_txid'] as String?,
+  payoutTxId: json['payout_tx_id'] as String?,
   payout: (json['payout'] as num?)?.toInt(),
 );
 
@@ -108,7 +108,7 @@ Map<String, dynamic> _$FCMPegToJson(_FCMPeg instance) => <String, dynamic>{
   'tx_hash': instance.txHash,
   'vout': instance.vout,
   'created_at': instance.createdAt,
-  'payout_txid': instance.payoutTxId,
+  'payout_tx_id': instance.payoutTxId,
   'payout': instance.payout,
 };
 

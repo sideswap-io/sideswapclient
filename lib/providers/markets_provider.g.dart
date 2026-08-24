@@ -10,12 +10,12 @@ part of 'markets_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(marketTypeName)
-const marketTypeNameProvider = MarketTypeNameFamily._();
+final marketTypeNameProvider = MarketTypeNameFamily._();
 
 final class MarketTypeNameProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const MarketTypeNameProvider._({
+  MarketTypeNameProvider._({
     required MarketTypeNameFamily super.from,
     required MarketType_ super.argument,
   }) : super(
@@ -66,11 +66,11 @@ final class MarketTypeNameProvider
   }
 }
 
-String _$marketTypeNameHash() => r'e217a3b36b49ccf77552080f23079cbad61eed5f';
+String _$marketTypeNameHash() => r'605d27bbf873e495c586426681aeca48d68b18f5';
 
 final class MarketTypeNameFamily extends $Family
     with $FunctionalFamilyOverride<String, MarketType_> {
-  const MarketTypeNameFamily._()
+  MarketTypeNameFamily._()
     : super(
         retry: null,
         name: r'marketTypeNameProvider',
@@ -87,12 +87,12 @@ final class MarketTypeNameFamily extends $Family
 }
 
 @ProviderFor(assetMarketType)
-const assetMarketTypeProvider = AssetMarketTypeFamily._();
+final assetMarketTypeProvider = AssetMarketTypeFamily._();
 
 final class AssetMarketTypeProvider
     extends $FunctionalProvider<MarketType_, MarketType_, MarketType_>
     with $Provider<MarketType_> {
-  const AssetMarketTypeProvider._({
+  AssetMarketTypeProvider._({
     required AssetMarketTypeFamily super.from,
     required Asset? super.argument,
   }) : super(
@@ -147,7 +147,7 @@ String _$assetMarketTypeHash() => r'1cd997dcaa8c150fb9334d0c1fc00d891e438583';
 
 final class AssetMarketTypeFamily extends $Family
     with $FunctionalFamilyOverride<MarketType_, Asset?> {
-  const AssetMarketTypeFamily._()
+  AssetMarketTypeFamily._()
     : super(
         retry: null,
         name: r'assetMarketTypeProvider',
@@ -164,11 +164,11 @@ final class AssetMarketTypeFamily extends $Family
 }
 
 @ProviderFor(TradeDirStateNotifier)
-const tradeDirStateProvider = TradeDirStateNotifierProvider._();
+final tradeDirStateProvider = TradeDirStateNotifierProvider._();
 
 final class TradeDirStateNotifierProvider
     extends $NotifierProvider<TradeDirStateNotifier, TradeDir> {
-  const TradeDirStateNotifierProvider._()
+  TradeDirStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -202,8 +202,7 @@ abstract class _$TradeDirStateNotifier extends $Notifier<TradeDir> {
   TradeDir build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<TradeDir, TradeDir>;
     final element =
         ref.element
@@ -213,20 +212,20 @@ abstract class _$TradeDirStateNotifier extends $Notifier<TradeDir> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 /// Market list
 
 @ProviderFor(MarketsNotifier)
-const marketsProvider = MarketsNotifierProvider._();
+final marketsProvider = MarketsNotifierProvider._();
 
 /// Market list
 final class MarketsNotifierProvider
     extends $NotifierProvider<MarketsNotifier, List<MarketInfo>> {
   /// Market list
-  const MarketsNotifierProvider._()
+  MarketsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -261,8 +260,7 @@ abstract class _$MarketsNotifier extends $Notifier<List<MarketInfo>> {
   List<MarketInfo> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<MarketInfo>, List<MarketInfo>>;
     final element =
         ref.element
@@ -272,12 +270,12 @@ abstract class _$MarketsNotifier extends $Notifier<List<MarketInfo>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketInfoByMarketType)
-const marketInfoByMarketTypeProvider = MarketInfoByMarketTypeFamily._();
+final marketInfoByMarketTypeProvider = MarketInfoByMarketTypeFamily._();
 
 final class MarketInfoByMarketTypeProvider
     extends
@@ -287,7 +285,7 @@ final class MarketInfoByMarketTypeProvider
           List<MarketInfo>
         >
     with $Provider<List<MarketInfo>> {
-  const MarketInfoByMarketTypeProvider._({
+  MarketInfoByMarketTypeProvider._({
     required MarketInfoByMarketTypeFamily super.from,
     required MarketType_ super.argument,
   }) : super(
@@ -344,7 +342,7 @@ String _$marketInfoByMarketTypeHash() =>
 
 final class MarketInfoByMarketTypeFamily extends $Family
     with $FunctionalFamilyOverride<List<MarketInfo>, MarketType_> {
-  const MarketInfoByMarketTypeFamily._()
+  MarketInfoByMarketTypeFamily._()
     : super(
         retry: null,
         name: r'marketInfoByMarketTypeProvider',
@@ -361,7 +359,7 @@ final class MarketInfoByMarketTypeFamily extends $Family
 }
 
 @ProviderFor(stableMarkets)
-const stableMarketsProvider = StableMarketsProvider._();
+final stableMarketsProvider = StableMarketsProvider._();
 
 final class StableMarketsProvider
     extends
@@ -371,7 +369,7 @@ final class StableMarketsProvider
           List<MarketInfo>
         >
     with $Provider<List<MarketInfo>> {
-  const StableMarketsProvider._()
+  StableMarketsProvider._()
     : super(
         from: null,
         argument: null,
@@ -407,12 +405,12 @@ final class StableMarketsProvider
 String _$stableMarketsHash() => r'f59ea4c91a3cac5c823dbb0c11fb44169092a73a';
 
 @ProviderFor(baseAssetByMarketInfo)
-const baseAssetByMarketInfoProvider = BaseAssetByMarketInfoFamily._();
+final baseAssetByMarketInfoProvider = BaseAssetByMarketInfoFamily._();
 
 final class BaseAssetByMarketInfoProvider
     extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
     with $Provider<Option<Asset>> {
-  const BaseAssetByMarketInfoProvider._({
+  BaseAssetByMarketInfoProvider._({
     required BaseAssetByMarketInfoFamily super.from,
     required MarketInfo super.argument,
   }) : super(
@@ -468,7 +466,7 @@ String _$baseAssetByMarketInfoHash() =>
 
 final class BaseAssetByMarketInfoFamily extends $Family
     with $FunctionalFamilyOverride<Option<Asset>, MarketInfo> {
-  const BaseAssetByMarketInfoFamily._()
+  BaseAssetByMarketInfoFamily._()
     : super(
         retry: null,
         name: r'baseAssetByMarketInfoProvider',
@@ -485,12 +483,12 @@ final class BaseAssetByMarketInfoFamily extends $Family
 }
 
 @ProviderFor(baseAssetIconByMarketInfo)
-const baseAssetIconByMarketInfoProvider = BaseAssetIconByMarketInfoFamily._();
+final baseAssetIconByMarketInfoProvider = BaseAssetIconByMarketInfoFamily._();
 
 final class BaseAssetIconByMarketInfoProvider
     extends $FunctionalProvider<Widget, Widget, Widget>
     with $Provider<Widget> {
-  const BaseAssetIconByMarketInfoProvider._({
+  BaseAssetIconByMarketInfoProvider._({
     required BaseAssetIconByMarketInfoFamily super.from,
     required MarketInfo super.argument,
   }) : super(
@@ -547,7 +545,7 @@ String _$baseAssetIconByMarketInfoHash() =>
 
 final class BaseAssetIconByMarketInfoFamily extends $Family
     with $FunctionalFamilyOverride<Widget, MarketInfo> {
-  const BaseAssetIconByMarketInfoFamily._()
+  BaseAssetIconByMarketInfoFamily._()
     : super(
         retry: null,
         name: r'baseAssetIconByMarketInfoProvider',
@@ -564,12 +562,12 @@ final class BaseAssetIconByMarketInfoFamily extends $Family
 }
 
 @ProviderFor(quoteAssetByMarketInfo)
-const quoteAssetByMarketInfoProvider = QuoteAssetByMarketInfoFamily._();
+final quoteAssetByMarketInfoProvider = QuoteAssetByMarketInfoFamily._();
 
 final class QuoteAssetByMarketInfoProvider
     extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
     with $Provider<Option<Asset>> {
-  const QuoteAssetByMarketInfoProvider._({
+  QuoteAssetByMarketInfoProvider._({
     required QuoteAssetByMarketInfoFamily super.from,
     required MarketInfo super.argument,
   }) : super(
@@ -626,7 +624,7 @@ String _$quoteAssetByMarketInfoHash() =>
 
 final class QuoteAssetByMarketInfoFamily extends $Family
     with $FunctionalFamilyOverride<Option<Asset>, MarketInfo> {
-  const QuoteAssetByMarketInfoFamily._()
+  QuoteAssetByMarketInfoFamily._()
     : super(
         retry: null,
         name: r'quoteAssetByMarketInfoProvider',
@@ -643,12 +641,12 @@ final class QuoteAssetByMarketInfoFamily extends $Family
 }
 
 @ProviderFor(quoteAssetIconByMarketInfo)
-const quoteAssetIconByMarketInfoProvider = QuoteAssetIconByMarketInfoFamily._();
+final quoteAssetIconByMarketInfoProvider = QuoteAssetIconByMarketInfoFamily._();
 
 final class QuoteAssetIconByMarketInfoProvider
     extends $FunctionalProvider<Widget, Widget, Widget>
     with $Provider<Widget> {
-  const QuoteAssetIconByMarketInfoProvider._({
+  QuoteAssetIconByMarketInfoProvider._({
     required QuoteAssetIconByMarketInfoFamily super.from,
     required MarketInfo super.argument,
   }) : super(
@@ -705,7 +703,7 @@ String _$quoteAssetIconByMarketInfoHash() =>
 
 final class QuoteAssetIconByMarketInfoFamily extends $Family
     with $FunctionalFamilyOverride<Widget, MarketInfo> {
-  const QuoteAssetIconByMarketInfoFamily._()
+  QuoteAssetIconByMarketInfoFamily._()
     : super(
         retry: null,
         name: r'quoteAssetIconByMarketInfoProvider',
@@ -724,7 +722,7 @@ final class QuoteAssetIconByMarketInfoFamily extends $Family
 /// Public orders
 
 @ProviderFor(MarketPublicOrdersNotifier)
-const marketPublicOrdersProvider = MarketPublicOrdersNotifierProvider._();
+final marketPublicOrdersProvider = MarketPublicOrdersNotifierProvider._();
 
 /// Public orders
 final class MarketPublicOrdersNotifierProvider
@@ -734,7 +732,7 @@ final class MarketPublicOrdersNotifierProvider
           Map<AssetPair, List<PublicOrder>>
         > {
   /// Public orders
-  const MarketPublicOrdersNotifierProvider._()
+  MarketPublicOrdersNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -773,8 +771,7 @@ abstract class _$MarketPublicOrdersNotifier
   Map<AssetPair, List<PublicOrder>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -792,12 +789,12 @@ abstract class _$MarketPublicOrdersNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(DebouncedMarketPublicOrders)
-const debouncedMarketPublicOrdersProvider =
+final debouncedMarketPublicOrdersProvider =
     DebouncedMarketPublicOrdersProvider._();
 
 final class DebouncedMarketPublicOrdersProvider
@@ -806,7 +803,7 @@ final class DebouncedMarketPublicOrdersProvider
           DebouncedMarketPublicOrders,
           Map<AssetPair, List<PublicOrder>>
         > {
-  const DebouncedMarketPublicOrdersProvider._()
+  DebouncedMarketPublicOrdersProvider._()
     : super(
         from: null,
         argument: null,
@@ -836,15 +833,14 @@ final class DebouncedMarketPublicOrdersProvider
 }
 
 String _$debouncedMarketPublicOrdersHash() =>
-    r'2fc71ede3573483064668cc49b0041ded4371921';
+    r'52344980487169c05d8402513596d9b1fb3311a3';
 
 abstract class _$DebouncedMarketPublicOrders
     extends $Notifier<Map<AssetPair, List<PublicOrder>>> {
   Map<AssetPair, List<PublicOrder>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -862,20 +858,20 @@ abstract class _$DebouncedMarketPublicOrders
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 /// Own orders
 
 @ProviderFor(MarketOwnOrdersNotifier)
-const marketOwnOrdersProvider = MarketOwnOrdersNotifierProvider._();
+final marketOwnOrdersProvider = MarketOwnOrdersNotifierProvider._();
 
 /// Own orders
 final class MarketOwnOrdersNotifierProvider
     extends $NotifierProvider<MarketOwnOrdersNotifier, List<OwnOrder>> {
   /// Own orders
-  const MarketOwnOrdersNotifierProvider._()
+  MarketOwnOrdersNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -911,8 +907,7 @@ abstract class _$MarketOwnOrdersNotifier extends $Notifier<List<OwnOrder>> {
   List<OwnOrder> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<OwnOrder>, List<OwnOrder>>;
     final element =
         ref.element
@@ -922,12 +917,12 @@ abstract class _$MarketOwnOrdersNotifier extends $Notifier<List<OwnOrder>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketUiOwnOrders)
-const marketUiOwnOrdersProvider = MarketUiOwnOrdersProvider._();
+final marketUiOwnOrdersProvider = MarketUiOwnOrdersProvider._();
 
 final class MarketUiOwnOrdersProvider
     extends
@@ -937,7 +932,7 @@ final class MarketUiOwnOrdersProvider
           List<UiOwnOrder>
         >
     with $Provider<List<UiOwnOrder>> {
-  const MarketUiOwnOrdersProvider._()
+  MarketUiOwnOrdersProvider._()
     : super(
         from: null,
         argument: null,
@@ -973,7 +968,7 @@ final class MarketUiOwnOrdersProvider
 String _$marketUiOwnOrdersHash() => r'b5ef1ffc39b91cb6e6674382d4e166339a216336';
 
 @ProviderFor(marketUiOwnOrderById)
-const marketUiOwnOrderByIdProvider = MarketUiOwnOrderByIdFamily._();
+final marketUiOwnOrderByIdProvider = MarketUiOwnOrderByIdFamily._();
 
 final class MarketUiOwnOrderByIdProvider
     extends
@@ -983,7 +978,7 @@ final class MarketUiOwnOrderByIdProvider
           Option<UiOwnOrder>
         >
     with $Provider<Option<UiOwnOrder>> {
-  const MarketUiOwnOrderByIdProvider._({
+  MarketUiOwnOrderByIdProvider._({
     required MarketUiOwnOrderByIdFamily super.from,
     required OrderId super.argument,
   }) : super(
@@ -1040,7 +1035,7 @@ String _$marketUiOwnOrderByIdHash() =>
 
 final class MarketUiOwnOrderByIdFamily extends $Family
     with $FunctionalFamilyOverride<Option<UiOwnOrder>, OrderId> {
-  const MarketUiOwnOrderByIdFamily._()
+  MarketUiOwnOrderByIdFamily._()
     : super(
         retry: null,
         name: r'marketUiOwnOrderByIdProvider',
@@ -1057,7 +1052,7 @@ final class MarketUiOwnOrderByIdFamily extends $Family
 }
 
 @ProviderFor(MarketSubscribedAssetPairNotifier)
-const marketSubscribedAssetPairProvider =
+final marketSubscribedAssetPairProvider =
     MarketSubscribedAssetPairNotifierProvider._();
 
 final class MarketSubscribedAssetPairNotifierProvider
@@ -1066,7 +1061,7 @@ final class MarketSubscribedAssetPairNotifierProvider
           MarketSubscribedAssetPairNotifier,
           Option<AssetPair>
         > {
-  const MarketSubscribedAssetPairNotifierProvider._()
+  MarketSubscribedAssetPairNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1103,8 +1098,7 @@ abstract class _$MarketSubscribedAssetPairNotifier
   Option<AssetPair> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<AssetPair>, Option<AssetPair>>;
     final element =
         ref.element
@@ -1114,12 +1108,12 @@ abstract class _$MarketSubscribedAssetPairNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(subscribedMarketInfo)
-const subscribedMarketInfoProvider = SubscribedMarketInfoProvider._();
+final subscribedMarketInfoProvider = SubscribedMarketInfoProvider._();
 
 final class SubscribedMarketInfoProvider
     extends
@@ -1129,7 +1123,7 @@ final class SubscribedMarketInfoProvider
           Option<MarketInfo>
         >
     with $Provider<Option<MarketInfo>> {
-  const SubscribedMarketInfoProvider._()
+  SubscribedMarketInfoProvider._()
     : super(
         from: null,
         argument: null,
@@ -1167,13 +1161,13 @@ String _$subscribedMarketInfoHash() =>
     r'f5cb44660e00c8d3a3e8384807f5e517965432c9';
 
 @ProviderFor(subscribedMarketProductName)
-const subscribedMarketProductNameProvider =
+final subscribedMarketProductNameProvider =
     SubscribedMarketProductNameProvider._();
 
 final class SubscribedMarketProductNameProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const SubscribedMarketProductNameProvider._()
+  SubscribedMarketProductNameProvider._()
     : super(
         from: null,
         argument: null,
@@ -1210,12 +1204,12 @@ String _$subscribedMarketProductNameHash() =>
     r'9c801467900b87fc082e0ffb8c2532423c8bea5d';
 
 @ProviderFor(marketSubscribedBaseAsset)
-const marketSubscribedBaseAssetProvider = MarketSubscribedBaseAssetProvider._();
+final marketSubscribedBaseAssetProvider = MarketSubscribedBaseAssetProvider._();
 
 final class MarketSubscribedBaseAssetProvider
     extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
     with $Provider<Option<Asset>> {
-  const MarketSubscribedBaseAssetProvider._()
+  MarketSubscribedBaseAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -1252,13 +1246,13 @@ String _$marketSubscribedBaseAssetHash() =>
     r'3c236c8986cec5dc9e5fd6fc70daa0e37ea6a3e3';
 
 @ProviderFor(marketSubscribedQuoteAsset)
-const marketSubscribedQuoteAssetProvider =
+final marketSubscribedQuoteAssetProvider =
     MarketSubscribedQuoteAssetProvider._();
 
 final class MarketSubscribedQuoteAssetProvider
     extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
     with $Provider<Option<Asset>> {
-  const MarketSubscribedQuoteAssetProvider._()
+  MarketSubscribedQuoteAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -1297,7 +1291,7 @@ String _$marketSubscribedQuoteAssetHash() =>
 /// Index price
 
 @ProviderFor(MarketPriceNotifier)
-const marketPriceProvider = MarketPriceNotifierProvider._();
+final marketPriceProvider = MarketPriceNotifierProvider._();
 
 /// Index price
 final class MarketPriceNotifierProvider
@@ -1307,7 +1301,7 @@ final class MarketPriceNotifierProvider
           Map<AssetPair, ({double indexPrice, double lastPrice})>
         > {
   /// Index price
-  const MarketPriceNotifierProvider._()
+  MarketPriceNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1349,8 +1343,7 @@ abstract class _$MarketPriceNotifier
   Map<AssetPair, ({double indexPrice, double lastPrice})> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -1368,12 +1361,12 @@ abstract class _$MarketPriceNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketSatoshiIndexPrice)
-const marketSatoshiIndexPriceProvider = MarketSatoshiIndexPriceProvider._();
+final marketSatoshiIndexPriceProvider = MarketSatoshiIndexPriceProvider._();
 
 final class MarketSatoshiIndexPriceProvider
     extends
@@ -1384,7 +1377,7 @@ final class MarketSatoshiIndexPriceProvider
         >
     with
         $Provider<Option<({Option<Asset> quoteAsset, int satoshiIndexPrice})>> {
-  const MarketSatoshiIndexPriceProvider._()
+  MarketSatoshiIndexPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -1426,7 +1419,7 @@ String _$marketSatoshiIndexPriceHash() =>
     r'bb0cf18d4dd75f35c0777855c4077edccc941e21';
 
 @ProviderFor(marketIndexPrice)
-const marketIndexPriceProvider = MarketIndexPriceProvider._();
+final marketIndexPriceProvider = MarketIndexPriceProvider._();
 
 final class MarketIndexPriceProvider
     extends
@@ -1436,7 +1429,7 @@ final class MarketIndexPriceProvider
           Option<({String indexPrice, Option<Asset> quoteAsset})>
         >
     with $Provider<Option<({String indexPrice, Option<Asset> quoteAsset})>> {
-  const MarketIndexPriceProvider._()
+  MarketIndexPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -1477,7 +1470,7 @@ final class MarketIndexPriceProvider
 String _$marketIndexPriceHash() => r'cbfca696b21a0a59f9f12a1870135f56c821d577';
 
 @ProviderFor(marketDecimalIndexPrice)
-const marketDecimalIndexPriceProvider = MarketDecimalIndexPriceProvider._();
+final marketDecimalIndexPriceProvider = MarketDecimalIndexPriceProvider._();
 
 final class MarketDecimalIndexPriceProvider
     extends
@@ -1490,7 +1483,7 @@ final class MarketDecimalIndexPriceProvider
         $Provider<
           Option<({Decimal decimalIndexPrice, Option<Asset> quoteAsset})>
         > {
-  const MarketDecimalIndexPriceProvider._()
+  MarketDecimalIndexPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -1536,7 +1529,7 @@ String _$marketDecimalIndexPriceHash() =>
     r'6b865d9b1218384c5719dad9619f08477351ce8a';
 
 @ProviderFor(marketSatoshiLastPrice)
-const marketSatoshiLastPriceProvider = MarketSatoshiLastPriceProvider._();
+final marketSatoshiLastPriceProvider = MarketSatoshiLastPriceProvider._();
 
 final class MarketSatoshiLastPriceProvider
     extends
@@ -1546,7 +1539,7 @@ final class MarketSatoshiLastPriceProvider
           Option<({Option<Asset> quoteAsset, int satoshiLastPrice})>
         >
     with $Provider<Option<({Option<Asset> quoteAsset, int satoshiLastPrice})>> {
-  const MarketSatoshiLastPriceProvider._()
+  MarketSatoshiLastPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -1588,7 +1581,7 @@ String _$marketSatoshiLastPriceHash() =>
     r'23b3a7a539522cc42e2be846a8cd016ca7db4fa4';
 
 @ProviderFor(marketLastPrice)
-const marketLastPriceProvider = MarketLastPriceProvider._();
+final marketLastPriceProvider = MarketLastPriceProvider._();
 
 final class MarketLastPriceProvider
     extends
@@ -1598,7 +1591,7 @@ final class MarketLastPriceProvider
           Option<({String lastPrice, Option<Asset> quoteAsset})>
         >
     with $Provider<Option<({String lastPrice, Option<Asset> quoteAsset})>> {
-  const MarketLastPriceProvider._()
+  MarketLastPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -1639,7 +1632,7 @@ final class MarketLastPriceProvider
 String _$marketLastPriceHash() => r'8964a0edb88edde640763529d7d14814214b74cd';
 
 @ProviderFor(marketDecimalLastPrice)
-const marketDecimalLastPriceProvider = MarketDecimalLastPriceProvider._();
+final marketDecimalLastPriceProvider = MarketDecimalLastPriceProvider._();
 
 final class MarketDecimalLastPriceProvider
     extends
@@ -1652,7 +1645,7 @@ final class MarketDecimalLastPriceProvider
         $Provider<
           Option<({Decimal decimalLastPrice, Option<Asset> quoteAsset})>
         > {
-  const MarketDecimalLastPriceProvider._()
+  MarketDecimalLastPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -1698,11 +1691,11 @@ String _$marketDecimalLastPriceHash() =>
     r'594a080f06343355b96cdbbb21da713b65e0d4d5';
 
 @ProviderFor(MarketSideStateNotifier)
-const marketSideStateProvider = MarketSideStateNotifierProvider._();
+final marketSideStateProvider = MarketSideStateNotifierProvider._();
 
 final class MarketSideStateNotifierProvider
     extends $NotifierProvider<MarketSideStateNotifier, MarketSideState> {
-  const MarketSideStateNotifierProvider._()
+  MarketSideStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1736,8 +1729,7 @@ abstract class _$MarketSideStateNotifier extends $Notifier<MarketSideState> {
   MarketSideState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<MarketSideState, MarketSideState>;
     final element =
         ref.element
@@ -1747,12 +1739,12 @@ abstract class _$MarketSideStateNotifier extends $Notifier<MarketSideState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketTypeSwitchStateNotifier)
-const marketTypeSwitchStateProvider = MarketTypeSwitchStateNotifierProvider._();
+final marketTypeSwitchStateProvider = MarketTypeSwitchStateNotifierProvider._();
 
 final class MarketTypeSwitchStateNotifierProvider
     extends
@@ -1760,7 +1752,7 @@ final class MarketTypeSwitchStateNotifierProvider
           MarketTypeSwitchStateNotifier,
           MarketTypeSwitchState
         > {
-  const MarketTypeSwitchStateNotifierProvider._()
+  MarketTypeSwitchStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1795,8 +1787,7 @@ abstract class _$MarketTypeSwitchStateNotifier
   MarketTypeSwitchState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<MarketTypeSwitchState, MarketTypeSwitchState>;
     final element =
         ref.element
@@ -1806,17 +1797,17 @@ abstract class _$MarketTypeSwitchStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketOrderAmountControllerNotifier)
-const marketOrderAmountControllerProvider =
+final marketOrderAmountControllerProvider =
     MarketOrderAmountControllerNotifierProvider._();
 
 final class MarketOrderAmountControllerNotifierProvider
     extends $NotifierProvider<MarketOrderAmountControllerNotifier, String> {
-  const MarketOrderAmountControllerNotifierProvider._()
+  MarketOrderAmountControllerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1852,8 +1843,7 @@ abstract class _$MarketOrderAmountControllerNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -1863,17 +1853,17 @@ abstract class _$MarketOrderAmountControllerNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketOrderAmount)
-const marketOrderAmountProvider = MarketOrderAmountProvider._();
+final marketOrderAmountProvider = MarketOrderAmountProvider._();
 
 final class MarketOrderAmountProvider
     extends $FunctionalProvider<OrderAmount, OrderAmount, OrderAmount>
     with $Provider<OrderAmount> {
-  const MarketOrderAmountProvider._()
+  MarketOrderAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -1909,13 +1899,13 @@ final class MarketOrderAmountProvider
 String _$marketOrderAmountHash() => r'2a9ccecd3317decf19396374e5657d551c599c74';
 
 @ProviderFor(marketOrderTradeButtonEnabled)
-const marketOrderTradeButtonEnabledProvider =
+final marketOrderTradeButtonEnabledProvider =
     MarketOrderTradeButtonEnabledProvider._();
 
 final class MarketOrderTradeButtonEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const MarketOrderTradeButtonEnabledProvider._()
+  MarketOrderTradeButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -1952,11 +1942,11 @@ String _$marketOrderTradeButtonEnabledHash() =>
     r'242fbcfc419bb086606e5d50cd70d5ed8d007e63';
 
 @ProviderFor(MarketQuoteNotifier)
-const marketQuoteProvider = MarketQuoteNotifierProvider._();
+final marketQuoteProvider = MarketQuoteNotifierProvider._();
 
 final class MarketQuoteNotifierProvider
     extends $NotifierProvider<MarketQuoteNotifier, Option<From_Quote>> {
-  const MarketQuoteNotifierProvider._()
+  MarketQuoteNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1990,8 +1980,7 @@ abstract class _$MarketQuoteNotifier extends $Notifier<Option<From_Quote>> {
   Option<From_Quote> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<From_Quote>, Option<From_Quote>>;
     final element =
         ref.element
@@ -2001,12 +1990,12 @@ abstract class _$MarketQuoteNotifier extends $Notifier<Option<From_Quote>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketQuoteError)
-const marketQuoteErrorProvider = MarketQuoteErrorProvider._();
+final marketQuoteErrorProvider = MarketQuoteErrorProvider._();
 
 final class MarketQuoteErrorProvider
     extends
@@ -2016,7 +2005,7 @@ final class MarketQuoteErrorProvider
           Option<QuoteError>
         >
     with $Provider<Option<QuoteError>> {
-  const MarketQuoteErrorProvider._()
+  MarketQuoteErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -2053,7 +2042,7 @@ final class MarketQuoteErrorProvider
 String _$marketQuoteErrorHash() => r'a31e51066f3e993b8e228573880377440dc90ea7';
 
 @ProviderFor(marketQuoteLowBalanceError)
-const marketQuoteLowBalanceErrorProvider =
+final marketQuoteLowBalanceErrorProvider =
     MarketQuoteLowBalanceErrorProvider._();
 
 final class MarketQuoteLowBalanceErrorProvider
@@ -2064,7 +2053,7 @@ final class MarketQuoteLowBalanceErrorProvider
           Option<QuoteLowBalance>
         >
     with $Provider<Option<QuoteLowBalance>> {
-  const MarketQuoteLowBalanceErrorProvider._()
+  MarketQuoteLowBalanceErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -2102,7 +2091,7 @@ String _$marketQuoteLowBalanceErrorHash() =>
     r'900b512d879f993d5832ad89c2656079e00c78d4';
 
 @ProviderFor(marketQuoteSuccess)
-const marketQuoteSuccessProvider = MarketQuoteSuccessProvider._();
+final marketQuoteSuccessProvider = MarketQuoteSuccessProvider._();
 
 final class MarketQuoteSuccessProvider
     extends
@@ -2112,7 +2101,7 @@ final class MarketQuoteSuccessProvider
           Option<QuoteSuccess>
         >
     with $Provider<Option<QuoteSuccess>> {
-  const MarketQuoteSuccessProvider._()
+  MarketQuoteSuccessProvider._()
     : super(
         from: null,
         argument: null,
@@ -2150,7 +2139,7 @@ String _$marketQuoteSuccessHash() =>
     r'4ed0415aaa27000c8e8c5df7a564385c7a88c13b';
 
 @ProviderFor(marketQuoteUnregisteredGaid)
-const marketQuoteUnregisteredGaidProvider =
+final marketQuoteUnregisteredGaidProvider =
     MarketQuoteUnregisteredGaidProvider._();
 
 final class MarketQuoteUnregisteredGaidProvider
@@ -2161,7 +2150,7 @@ final class MarketQuoteUnregisteredGaidProvider
           Option<QuoteUnregisteredGaid>
         >
     with $Provider<Option<QuoteUnregisteredGaid>> {
-  const MarketQuoteUnregisteredGaidProvider._()
+  MarketQuoteUnregisteredGaidProvider._()
     : super(
         from: null,
         argument: null,
@@ -2201,7 +2190,7 @@ String _$marketQuoteUnregisteredGaidHash() =>
     r'e5b065cad0a9490dc3c3e43df45ab8f4053b9c93';
 
 @ProviderFor(marketAcceptQuote)
-const marketAcceptQuoteProvider = MarketAcceptQuoteProvider._();
+final marketAcceptQuoteProvider = MarketAcceptQuoteProvider._();
 
 final class MarketAcceptQuoteProvider
     extends
@@ -2211,7 +2200,7 @@ final class MarketAcceptQuoteProvider
           Option<From_AcceptQuote>
         >
     with $Provider<Option<From_AcceptQuote>> {
-  const MarketAcceptQuoteProvider._()
+  MarketAcceptQuoteProvider._()
     : super(
         from: null,
         argument: null,
@@ -2248,12 +2237,12 @@ final class MarketAcceptQuoteProvider
 String _$marketAcceptQuoteHash() => r'76e795dbb9f0df51ed64db5cd37ded54185681ef';
 
 @ProviderFor(marketAcceptQuoteSuccess)
-const marketAcceptQuoteSuccessProvider = MarketAcceptQuoteSuccessProvider._();
+final marketAcceptQuoteSuccessProvider = MarketAcceptQuoteSuccessProvider._();
 
 final class MarketAcceptQuoteSuccessProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const MarketAcceptQuoteSuccessProvider._()
+  MarketAcceptQuoteSuccessProvider._()
     : super(
         from: null,
         argument: null,
@@ -2290,12 +2279,12 @@ String _$marketAcceptQuoteSuccessHash() =>
     r'b769333f4e8061062194f2acbe05ca2790d34b0d';
 
 @ProviderFor(marketAcceptQuoteError)
-const marketAcceptQuoteErrorProvider = MarketAcceptQuoteErrorProvider._();
+final marketAcceptQuoteErrorProvider = MarketAcceptQuoteErrorProvider._();
 
 final class MarketAcceptQuoteErrorProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const MarketAcceptQuoteErrorProvider._()
+  MarketAcceptQuoteErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -2332,11 +2321,11 @@ String _$marketAcceptQuoteErrorHash() =>
     r'18dc40ab4c6fd2f681571f6fd796e0744bdd9444';
 
 @ProviderFor(LimitTtlFlagNotifier)
-const limitTtlFlagProvider = LimitTtlFlagNotifierProvider._();
+final limitTtlFlagProvider = LimitTtlFlagNotifierProvider._();
 
 final class LimitTtlFlagNotifierProvider
     extends $NotifierProvider<LimitTtlFlagNotifier, LimitTtlFlag> {
-  const LimitTtlFlagNotifierProvider._()
+  LimitTtlFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2370,8 +2359,7 @@ abstract class _$LimitTtlFlagNotifier extends $Notifier<LimitTtlFlag> {
   LimitTtlFlag build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<LimitTtlFlag, LimitTtlFlag>;
     final element =
         ref.element
@@ -2381,17 +2369,17 @@ abstract class _$LimitTtlFlagNotifier extends $Notifier<LimitTtlFlag> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(LimitOrderAmountControllerNotifier)
-const limitOrderAmountControllerProvider =
+final limitOrderAmountControllerProvider =
     LimitOrderAmountControllerNotifierProvider._();
 
 final class LimitOrderAmountControllerNotifierProvider
     extends $NotifierProvider<LimitOrderAmountControllerNotifier, String> {
-  const LimitOrderAmountControllerNotifierProvider._()
+  LimitOrderAmountControllerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2427,8 +2415,7 @@ abstract class _$LimitOrderAmountControllerNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -2438,17 +2425,17 @@ abstract class _$LimitOrderAmountControllerNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(limitOrderAmount)
-const limitOrderAmountProvider = LimitOrderAmountProvider._();
+final limitOrderAmountProvider = LimitOrderAmountProvider._();
 
 final class LimitOrderAmountProvider
     extends $FunctionalProvider<OrderAmount, OrderAmount, OrderAmount>
     with $Provider<OrderAmount> {
-  const LimitOrderAmountProvider._()
+  LimitOrderAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -2484,12 +2471,12 @@ final class LimitOrderAmountProvider
 String _$limitOrderAmountHash() => r'73ee33dd68153df1fc5f8947ed5d5acdfca49f45';
 
 @ProviderFor(LimitOrderPriceControllerNotifier)
-const limitOrderPriceControllerProvider =
+final limitOrderPriceControllerProvider =
     LimitOrderPriceControllerNotifierProvider._();
 
 final class LimitOrderPriceControllerNotifierProvider
     extends $NotifierProvider<LimitOrderPriceControllerNotifier, String> {
-  const LimitOrderPriceControllerNotifierProvider._()
+  LimitOrderPriceControllerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2525,8 +2512,7 @@ abstract class _$LimitOrderPriceControllerNotifier extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -2536,17 +2522,17 @@ abstract class _$LimitOrderPriceControllerNotifier extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(limitOrderPrice)
-const limitOrderPriceProvider = LimitOrderPriceProvider._();
+final limitOrderPriceProvider = LimitOrderPriceProvider._();
 
 final class LimitOrderPriceProvider
     extends $FunctionalProvider<OrderAmount, OrderAmount, OrderAmount>
     with $Provider<OrderAmount> {
-  const LimitOrderPriceProvider._()
+  LimitOrderPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -2582,13 +2568,13 @@ final class LimitOrderPriceProvider
 String _$limitOrderPriceHash() => r'f3ec7265954605d89820b6f50ed5f6e6affcfc26';
 
 @ProviderFor(limitOrderTradeButtonEnabled)
-const limitOrderTradeButtonEnabledProvider =
+final limitOrderTradeButtonEnabledProvider =
     LimitOrderTradeButtonEnabledProvider._();
 
 final class LimitOrderTradeButtonEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LimitOrderTradeButtonEnabledProvider._()
+  LimitOrderTradeButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -2625,11 +2611,11 @@ String _$limitOrderTradeButtonEnabledHash() =>
     r'073c8543aa8894f54edd0e0d33c459cb038acf26';
 
 @ProviderFor(OrderSubmitNotifier)
-const orderSubmitProvider = OrderSubmitNotifierProvider._();
+final orderSubmitProvider = OrderSubmitNotifierProvider._();
 
 final class OrderSubmitNotifierProvider
     extends $NotifierProvider<OrderSubmitNotifier, Option<From_OrderSubmit>> {
-  const OrderSubmitNotifierProvider._()
+  OrderSubmitNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2664,8 +2650,7 @@ abstract class _$OrderSubmitNotifier
   Option<From_OrderSubmit> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Option<From_OrderSubmit>, Option<From_OrderSubmit>>;
     final element =
@@ -2676,16 +2661,16 @@ abstract class _$OrderSubmitNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(OrderSubmitSuccessNotifier)
-const orderSubmitSuccessProvider = OrderSubmitSuccessNotifierProvider._();
+final orderSubmitSuccessProvider = OrderSubmitSuccessNotifierProvider._();
 
 final class OrderSubmitSuccessNotifierProvider
     extends $NotifierProvider<OrderSubmitSuccessNotifier, Option<UiOwnOrder>> {
-  const OrderSubmitSuccessNotifierProvider._()
+  OrderSubmitSuccessNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2720,8 +2705,7 @@ abstract class _$OrderSubmitSuccessNotifier
   Option<UiOwnOrder> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<UiOwnOrder>, Option<UiOwnOrder>>;
     final element =
         ref.element
@@ -2731,16 +2715,16 @@ abstract class _$OrderSubmitSuccessNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(OrderSubmitErrorNotifier)
-const orderSubmitErrorProvider = OrderSubmitErrorNotifierProvider._();
+final orderSubmitErrorProvider = OrderSubmitErrorNotifierProvider._();
 
 final class OrderSubmitErrorNotifierProvider
     extends $NotifierProvider<OrderSubmitErrorNotifier, Option<String>> {
-  const OrderSubmitErrorNotifierProvider._()
+  OrderSubmitErrorNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2774,8 +2758,7 @@ abstract class _$OrderSubmitErrorNotifier extends $Notifier<Option<String>> {
   Option<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<String>, Option<String>>;
     final element =
         ref.element
@@ -2785,18 +2768,18 @@ abstract class _$OrderSubmitErrorNotifier extends $Notifier<Option<String>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(OrderSubmitUnregisteredGaidNotifier)
-const orderSubmitUnregisteredGaidProvider =
+final orderSubmitUnregisteredGaidProvider =
     OrderSubmitUnregisteredGaidNotifierProvider._();
 
 final class OrderSubmitUnregisteredGaidNotifierProvider
     extends
         $NotifierProvider<OrderSubmitUnregisteredGaidNotifier, Option<String>> {
-  const OrderSubmitUnregisteredGaidNotifierProvider._()
+  OrderSubmitUnregisteredGaidNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2833,8 +2816,7 @@ abstract class _$OrderSubmitUnregisteredGaidNotifier
   Option<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<String>, Option<String>>;
     final element =
         ref.element
@@ -2844,16 +2826,16 @@ abstract class _$OrderSubmitUnregisteredGaidNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketEditOrderErrorNotifier)
-const marketEditOrderErrorProvider = MarketEditOrderErrorNotifierProvider._();
+final marketEditOrderErrorProvider = MarketEditOrderErrorNotifierProvider._();
 
 final class MarketEditOrderErrorNotifierProvider
     extends $NotifierProvider<MarketEditOrderErrorNotifier, Option<String>> {
-  const MarketEditOrderErrorNotifierProvider._()
+  MarketEditOrderErrorNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2888,8 +2870,7 @@ abstract class _$MarketEditOrderErrorNotifier
   Option<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<String>, Option<String>>;
     final element =
         ref.element
@@ -2899,18 +2880,18 @@ abstract class _$MarketEditOrderErrorNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketEditDetailsOrderNotifier)
-const marketEditDetailsOrderProvider =
+final marketEditDetailsOrderProvider =
     MarketEditDetailsOrderNotifierProvider._();
 
 final class MarketEditDetailsOrderNotifierProvider
     extends
         $NotifierProvider<MarketEditDetailsOrderNotifier, Option<UiOwnOrder>> {
-  const MarketEditDetailsOrderNotifierProvider._()
+  MarketEditDetailsOrderNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -2945,8 +2926,7 @@ abstract class _$MarketEditDetailsOrderNotifier
   Option<UiOwnOrder> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<UiOwnOrder>, Option<UiOwnOrder>>;
     final element =
         ref.element
@@ -2956,17 +2936,17 @@ abstract class _$MarketEditDetailsOrderNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketEditOrderAmountControllerNotifier)
-const marketEditOrderAmountControllerProvider =
+final marketEditOrderAmountControllerProvider =
     MarketEditOrderAmountControllerNotifierProvider._();
 
 final class MarketEditOrderAmountControllerNotifierProvider
     extends $NotifierProvider<MarketEditOrderAmountControllerNotifier, String> {
-  const MarketEditOrderAmountControllerNotifierProvider._()
+  MarketEditOrderAmountControllerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3003,8 +2983,7 @@ abstract class _$MarketEditOrderAmountControllerNotifier
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -3014,12 +2993,12 @@ abstract class _$MarketEditOrderAmountControllerNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketEditOrderAmount)
-const marketEditOrderAmountProvider = MarketEditOrderAmountProvider._();
+final marketEditOrderAmountProvider = MarketEditOrderAmountProvider._();
 
 final class MarketEditOrderAmountProvider
     extends
@@ -3029,7 +3008,7 @@ final class MarketEditOrderAmountProvider
           Option<OrderAmount>
         >
     with $Provider<Option<OrderAmount>> {
-  const MarketEditOrderAmountProvider._()
+  MarketEditOrderAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -3067,12 +3046,12 @@ String _$marketEditOrderAmountHash() =>
     r'8c16eca0801196524ed8f18a90cfc9e1ae0d2e3a';
 
 @ProviderFor(MarketEditOrderPriceControllerNotifier)
-const marketEditOrderPriceControllerProvider =
+final marketEditOrderPriceControllerProvider =
     MarketEditOrderPriceControllerNotifierProvider._();
 
 final class MarketEditOrderPriceControllerNotifierProvider
     extends $NotifierProvider<MarketEditOrderPriceControllerNotifier, String> {
-  const MarketEditOrderPriceControllerNotifierProvider._()
+  MarketEditOrderPriceControllerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3109,8 +3088,7 @@ abstract class _$MarketEditOrderPriceControllerNotifier
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -3120,12 +3098,12 @@ abstract class _$MarketEditOrderPriceControllerNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketEditOrderPrice)
-const marketEditOrderPriceProvider = MarketEditOrderPriceProvider._();
+final marketEditOrderPriceProvider = MarketEditOrderPriceProvider._();
 
 final class MarketEditOrderPriceProvider
     extends
@@ -3135,7 +3113,7 @@ final class MarketEditOrderPriceProvider
           Option<OrderAmount>
         >
     with $Provider<Option<OrderAmount>> {
-  const MarketEditOrderPriceProvider._()
+  MarketEditOrderPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -3173,13 +3151,13 @@ String _$marketEditOrderPriceHash() =>
     r'409dc49952eca9cb4a18a885dff873c031018574';
 
 @ProviderFor(marketEditOrderAcceptEnabled)
-const marketEditOrderAcceptEnabledProvider =
+final marketEditOrderAcceptEnabledProvider =
     MarketEditOrderAcceptEnabledProvider._();
 
 final class MarketEditOrderAcceptEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const MarketEditOrderAcceptEnabledProvider._()
+  MarketEditOrderAcceptEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -3216,11 +3194,11 @@ String _$marketEditOrderAcceptEnabledHash() =>
     r'72e8749934d9b0efc4f5266e462ab109cd66ce4c';
 
 @ProviderFor(MarketLimitOrderTypeNotifier)
-const marketLimitOrderTypeProvider = MarketLimitOrderTypeNotifierProvider._();
+final marketLimitOrderTypeProvider = MarketLimitOrderTypeNotifierProvider._();
 
 final class MarketLimitOrderTypeNotifierProvider
     extends $NotifierProvider<MarketLimitOrderTypeNotifier, OrderType> {
-  const MarketLimitOrderTypeNotifierProvider._()
+  MarketLimitOrderTypeNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3254,8 +3232,7 @@ abstract class _$MarketLimitOrderTypeNotifier extends $Notifier<OrderType> {
   OrderType build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<OrderType, OrderType>;
     final element =
         ref.element
@@ -3265,16 +3242,16 @@ abstract class _$MarketLimitOrderTypeNotifier extends $Notifier<OrderType> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketLimitOfflineSwap)
-const marketLimitOfflineSwapProvider = MarketLimitOfflineSwapProvider._();
+final marketLimitOfflineSwapProvider = MarketLimitOfflineSwapProvider._();
 
 final class MarketLimitOfflineSwapProvider
     extends $NotifierProvider<MarketLimitOfflineSwap, OfflineSwapType> {
-  const MarketLimitOfflineSwapProvider._()
+  MarketLimitOfflineSwapProvider._()
     : super(
         from: null,
         argument: null,
@@ -3308,8 +3285,7 @@ abstract class _$MarketLimitOfflineSwap extends $Notifier<OfflineSwapType> {
   OfflineSwapType build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<OfflineSwapType, OfflineSwapType>;
     final element =
         ref.element
@@ -3319,17 +3295,17 @@ abstract class _$MarketLimitOfflineSwap extends $Notifier<OfflineSwapType> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(addressToShareByOrder)
-const addressToShareByOrderProvider = AddressToShareByOrderFamily._();
+final addressToShareByOrderProvider = AddressToShareByOrderFamily._();
 
 final class AddressToShareByOrderProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const AddressToShareByOrderProvider._({
+  AddressToShareByOrderProvider._({
     required AddressToShareByOrderFamily super.from,
     required UiOwnOrder super.argument,
   }) : super(
@@ -3385,7 +3361,7 @@ String _$addressToShareByOrderHash() =>
 
 final class AddressToShareByOrderFamily extends $Family
     with $FunctionalFamilyOverride<String, UiOwnOrder> {
-  const AddressToShareByOrderFamily._()
+  AddressToShareByOrderFamily._()
     : super(
         retry: null,
         name: r'addressToShareByOrderProvider',
@@ -3402,11 +3378,11 @@ final class AddressToShareByOrderFamily extends $Family
 }
 
 @ProviderFor(MarketHistoryTotal)
-const marketHistoryTotalProvider = MarketHistoryTotalProvider._();
+final marketHistoryTotalProvider = MarketHistoryTotalProvider._();
 
 final class MarketHistoryTotalProvider
     extends $NotifierProvider<MarketHistoryTotal, int> {
-  const MarketHistoryTotalProvider._()
+  MarketHistoryTotalProvider._()
     : super(
         from: null,
         argument: null,
@@ -3440,8 +3416,7 @@ abstract class _$MarketHistoryTotal extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -3451,16 +3426,16 @@ abstract class _$MarketHistoryTotal extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketHistoryOrderNotifier)
-const marketHistoryOrderProvider = MarketHistoryOrderNotifierProvider._();
+final marketHistoryOrderProvider = MarketHistoryOrderNotifierProvider._();
 
 final class MarketHistoryOrderNotifierProvider
     extends $NotifierProvider<MarketHistoryOrderNotifier, List<HistoryOrder>> {
-  const MarketHistoryOrderNotifierProvider._()
+  MarketHistoryOrderNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3495,8 +3470,7 @@ abstract class _$MarketHistoryOrderNotifier
   List<HistoryOrder> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<HistoryOrder>, List<HistoryOrder>>;
     final element =
         ref.element
@@ -3506,12 +3480,12 @@ abstract class _$MarketHistoryOrderNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketUiHistoryOrders)
-const marketUiHistoryOrdersProvider = MarketUiHistoryOrdersProvider._();
+final marketUiHistoryOrdersProvider = MarketUiHistoryOrdersProvider._();
 
 final class MarketUiHistoryOrdersProvider
     extends
@@ -3521,7 +3495,7 @@ final class MarketUiHistoryOrdersProvider
           List<UiHistoryOrder>
         >
     with $Provider<List<UiHistoryOrder>> {
-  const MarketUiHistoryOrdersProvider._()
+  MarketUiHistoryOrdersProvider._()
     : super(
         from: null,
         argument: null,
@@ -3559,12 +3533,12 @@ String _$marketUiHistoryOrdersHash() =>
     r'01abc7ba7e016476e6a044efa01b181541570091';
 
 @ProviderFor(orderExpireDescription)
-const orderExpireDescriptionProvider = OrderExpireDescriptionFamily._();
+final orderExpireDescriptionProvider = OrderExpireDescriptionFamily._();
 
 final class OrderExpireDescriptionProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const OrderExpireDescriptionProvider._({
+  OrderExpireDescriptionProvider._({
     required OrderExpireDescriptionFamily super.from,
     required Option<UiOwnOrder> super.argument,
   }) : super(
@@ -3621,7 +3595,7 @@ String _$orderExpireDescriptionHash() =>
 
 final class OrderExpireDescriptionFamily extends $Family
     with $FunctionalFamilyOverride<String, Option<UiOwnOrder>> {
-  const OrderExpireDescriptionFamily._()
+  OrderExpireDescriptionFamily._()
     : super(
         retry: null,
         name: r'orderExpireDescriptionProvider',
@@ -3638,12 +3612,12 @@ final class OrderExpireDescriptionFamily extends $Family
 }
 
 @ProviderFor(IndexPriceButtonAsyncNotifier)
-const indexPriceButtonAsyncProvider = IndexPriceButtonAsyncNotifierProvider._();
+final indexPriceButtonAsyncProvider = IndexPriceButtonAsyncNotifierProvider._();
 
 final class IndexPriceButtonAsyncNotifierProvider
     extends
         $NotifierProvider<IndexPriceButtonAsyncNotifier, AsyncValue<String>> {
-  const IndexPriceButtonAsyncNotifierProvider._()
+  IndexPriceButtonAsyncNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3678,8 +3652,7 @@ abstract class _$IndexPriceButtonAsyncNotifier
   AsyncValue<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<String>, AsyncValue<String>>;
     final element =
         ref.element
@@ -3689,17 +3662,17 @@ abstract class _$IndexPriceButtonAsyncNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketStartOrderNotifier)
-const marketStartOrderProvider = MarketStartOrderNotifierProvider._();
+final marketStartOrderProvider = MarketStartOrderNotifierProvider._();
 
 final class MarketStartOrderNotifierProvider
     extends
         $NotifierProvider<MarketStartOrderNotifier, Option<From_StartOrder>> {
-  const MarketStartOrderNotifierProvider._()
+  MarketStartOrderNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3734,8 +3707,7 @@ abstract class _$MarketStartOrderNotifier
   Option<From_StartOrder> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Option<From_StartOrder>, Option<From_StartOrder>>;
     final element =
@@ -3746,12 +3718,12 @@ abstract class _$MarketStartOrderNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(MarketStartOrderErrorNotifier)
-const marketStartOrderErrorProvider = MarketStartOrderErrorNotifierProvider._();
+final marketStartOrderErrorProvider = MarketStartOrderErrorNotifierProvider._();
 
 final class MarketStartOrderErrorNotifierProvider
     extends
@@ -3759,7 +3731,7 @@ final class MarketStartOrderErrorNotifierProvider
           MarketStartOrderErrorNotifier,
           Option<StartOrderError>
         > {
-  const MarketStartOrderErrorNotifierProvider._()
+  MarketStartOrderErrorNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -3794,8 +3766,7 @@ abstract class _$MarketStartOrderErrorNotifier
   Option<StartOrderError> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Option<StartOrderError>, Option<StartOrderError>>;
     final element =
@@ -3806,12 +3777,12 @@ abstract class _$MarketStartOrderErrorNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(marketStartOrderQuoteSuccess)
-const marketStartOrderQuoteSuccessProvider =
+final marketStartOrderQuoteSuccessProvider =
     MarketStartOrderQuoteSuccessProvider._();
 
 final class MarketStartOrderQuoteSuccessProvider
@@ -3822,7 +3793,7 @@ final class MarketStartOrderQuoteSuccessProvider
           Option<QuoteSuccess>
         >
     with $Provider<Option<QuoteSuccess>> {
-  const MarketStartOrderQuoteSuccessProvider._()
+  MarketStartOrderQuoteSuccessProvider._()
     : super(
         from: null,
         argument: null,
@@ -3860,7 +3831,7 @@ String _$marketStartOrderQuoteSuccessHash() =>
     r'c7a9f7d6f06baf5a259d8a5016c84e108c0eb710';
 
 @ProviderFor(marketStartOrderLowBalanceError)
-const marketStartOrderLowBalanceErrorProvider =
+final marketStartOrderLowBalanceErrorProvider =
     MarketStartOrderLowBalanceErrorProvider._();
 
 final class MarketStartOrderLowBalanceErrorProvider
@@ -3871,7 +3842,7 @@ final class MarketStartOrderLowBalanceErrorProvider
           Option<QuoteLowBalance>
         >
     with $Provider<Option<QuoteLowBalance>> {
-  const MarketStartOrderLowBalanceErrorProvider._()
+  MarketStartOrderLowBalanceErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -3909,7 +3880,7 @@ String _$marketStartOrderLowBalanceErrorHash() =>
     r'ea2ca97e48945b7dad24fe3e3d2e14c0126cdd05';
 
 @ProviderFor(marketStartOrderQuoteError)
-const marketStartOrderQuoteErrorProvider =
+final marketStartOrderQuoteErrorProvider =
     MarketStartOrderQuoteErrorProvider._();
 
 final class MarketStartOrderQuoteErrorProvider
@@ -3920,7 +3891,7 @@ final class MarketStartOrderQuoteErrorProvider
           Option<QuoteError>
         >
     with $Provider<Option<QuoteError>> {
-  const MarketStartOrderQuoteErrorProvider._()
+  MarketStartOrderQuoteErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -3958,7 +3929,7 @@ String _$marketStartOrderQuoteErrorHash() =>
     r'50058a66307e097918778796c7b17e9e8e517793';
 
 @ProviderFor(marketStartOrderUnregisteredGaid)
-const marketStartOrderUnregisteredGaidProvider =
+final marketStartOrderUnregisteredGaidProvider =
     MarketStartOrderUnregisteredGaidProvider._();
 
 final class MarketStartOrderUnregisteredGaidProvider
@@ -3969,7 +3940,7 @@ final class MarketStartOrderUnregisteredGaidProvider
           Option<QuoteUnregisteredGaid>
         >
     with $Provider<Option<QuoteUnregisteredGaid>> {
-  const MarketStartOrderUnregisteredGaidProvider._()
+  MarketStartOrderUnregisteredGaidProvider._()
     : super(
         from: null,
         argument: null,
@@ -4008,63 +3979,66 @@ final class MarketStartOrderUnregisteredGaidProvider
 String _$marketStartOrderUnregisteredGaidHash() =>
     r'230609ddf96ae465abaa46af6474c402d307477e';
 
-@ProviderFor(marketTradeRepository)
-const marketTradeRepositoryProvider = MarketTradeRepositoryProvider._();
+@ProviderFor(MarketTradeNotifier)
+final marketTradeProvider = MarketTradeNotifierProvider._();
 
-final class MarketTradeRepositoryProvider
-    extends
-        $FunctionalProvider<
-          AbstractMarketTradeRepository,
-          AbstractMarketTradeRepository,
-          AbstractMarketTradeRepository
-        >
-    with $Provider<AbstractMarketTradeRepository> {
-  const MarketTradeRepositoryProvider._()
+final class MarketTradeNotifierProvider
+    extends $NotifierProvider<MarketTradeNotifier, void> {
+  MarketTradeNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'marketTradeRepositoryProvider',
+        name: r'marketTradeProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$marketTradeRepositoryHash();
+  String debugGetCreateSourceHash() => _$marketTradeNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<AbstractMarketTradeRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  AbstractMarketTradeRepository create(Ref ref) {
-    return marketTradeRepository(ref);
-  }
+  MarketTradeNotifier create() => MarketTradeNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AbstractMarketTradeRepository value) {
+  Override overrideWithValue(void value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AbstractMarketTradeRepository>(
-        value,
-      ),
+      providerOverride: $SyncValueProvider<void>(value),
     );
   }
 }
 
-String _$marketTradeRepositoryHash() =>
-    r'dc3cf0dfe476b780fe5537aa2fb5d64f77206813';
+String _$marketTradeNotifierHash() =>
+    r'e39ebf2051bd8fcc41b08252601a92dd7ced7b11';
+
+abstract class _$MarketTradeNotifier extends $Notifier<void> {
+  void build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<void, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<void, void>,
+              void,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
 @ProviderFor(MarketMinimalAmountsNotfier)
-const marketMinimalAmountsNotfierProvider =
+final marketMinimalAmountsNotfierProvider =
     MarketMinimalAmountsNotfierProvider._();
 
 final class MarketMinimalAmountsNotfierProvider
     extends $NotifierProvider<MarketMinimalAmountsNotfier, Map<String, int>> {
-  const MarketMinimalAmountsNotfierProvider._()
+  MarketMinimalAmountsNotfierProvider._()
     : super(
         from: null,
         argument: null,
@@ -4099,8 +4073,7 @@ abstract class _$MarketMinimalAmountsNotfier
   Map<String, int> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Map<String, int>, Map<String, int>>;
     final element =
         ref.element
@@ -4110,17 +4083,17 @@ abstract class _$MarketMinimalAmountsNotfier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(limitFeeAsset)
-const limitFeeAssetProvider = LimitFeeAssetProvider._();
+final limitFeeAssetProvider = LimitFeeAssetProvider._();
 
 final class LimitFeeAssetProvider
     extends $FunctionalProvider<Option<Asset>, Option<Asset>, Option<Asset>>
     with $Provider<Option<Asset>> {
-  const LimitFeeAssetProvider._()
+  LimitFeeAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -4156,12 +4129,12 @@ final class LimitFeeAssetProvider
 String _$limitFeeAssetHash() => r'1a882be15d4d90369c2cc7e6bbf4817b026a4dc5';
 
 @ProviderFor(limitMinimumFeeAmount)
-const limitMinimumFeeAmountProvider = LimitMinimumFeeAmountProvider._();
+final limitMinimumFeeAmountProvider = LimitMinimumFeeAmountProvider._();
 
 final class LimitMinimumFeeAmountProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const LimitMinimumFeeAmountProvider._()
+  LimitMinimumFeeAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -4198,12 +4171,12 @@ String _$limitMinimumFeeAmountHash() =>
     r'b2e3574a7ef52cb36f9bc6eeb41b166e75152f2d';
 
 @ProviderFor(limitInsufficientAmount)
-const limitInsufficientAmountProvider = LimitInsufficientAmountProvider._();
+final limitInsufficientAmountProvider = LimitInsufficientAmountProvider._();
 
 final class LimitInsufficientAmountProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LimitInsufficientAmountProvider._()
+  LimitInsufficientAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -4240,12 +4213,12 @@ String _$limitInsufficientAmountHash() =>
     r'e170c0a04513a3fd2ebc840dcc1c68a96063c8b8';
 
 @ProviderFor(limitInsufficientPrice)
-const limitInsufficientPriceProvider = LimitInsufficientPriceProvider._();
+final limitInsufficientPriceProvider = LimitInsufficientPriceProvider._();
 
 final class LimitInsufficientPriceProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LimitInsufficientPriceProvider._()
+  LimitInsufficientPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -4282,12 +4255,12 @@ String _$limitInsufficientPriceHash() =>
     r'1d37576878ae5af25a154f3921c110570b8f6297';
 
 @ProviderFor(marketOrderButtonText)
-const marketOrderButtonTextProvider = MarketOrderButtonTextProvider._();
+final marketOrderButtonTextProvider = MarketOrderButtonTextProvider._();
 
 final class MarketOrderButtonTextProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const MarketOrderButtonTextProvider._()
+  MarketOrderButtonTextProvider._()
     : super(
         from: null,
         argument: null,
@@ -4326,7 +4299,7 @@ String _$marketOrderButtonTextHash() =>
 /// Aggregated volume
 
 @ProviderFor(marketLimitOrderAggregateVolume)
-const marketLimitOrderAggregateVolumeProvider =
+final marketLimitOrderAggregateVolumeProvider =
     MarketLimitOrderAggregateVolumeProvider._();
 
 /// Aggregated volume
@@ -4340,7 +4313,7 @@ final class MarketLimitOrderAggregateVolumeProvider
         >
     with $Provider<MarketOrderAggregateVolumeProvider> {
   /// Aggregated volume
-  const MarketLimitOrderAggregateVolumeProvider._()
+  MarketLimitOrderAggregateVolumeProvider._()
     : super(
         from: null,
         argument: null,
@@ -4380,13 +4353,13 @@ String _$marketLimitOrderAggregateVolumeHash() =>
     r'53e474a4ff006a6de8c4d044ff5b21b2711569a0';
 
 @ProviderFor(marketLimitOrderAggregatedVolumeWithTicker)
-const marketLimitOrderAggregatedVolumeWithTickerProvider =
+final marketLimitOrderAggregatedVolumeWithTickerProvider =
     MarketLimitOrderAggregatedVolumeWithTickerProvider._();
 
 final class MarketLimitOrderAggregatedVolumeWithTickerProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const MarketLimitOrderAggregatedVolumeWithTickerProvider._()
+  MarketLimitOrderAggregatedVolumeWithTickerProvider._()
     : super(
         from: null,
         argument: null,
@@ -4424,13 +4397,13 @@ String _$marketLimitOrderAggregatedVolumeWithTickerHash() =>
     r'b5d0e314dc4a2c2098e5644d11fb7ee4b9d18a90';
 
 @ProviderFor(marketLimitOrderAggregateVolumeTooHigh)
-const marketLimitOrderAggregateVolumeTooHighProvider =
+final marketLimitOrderAggregateVolumeTooHighProvider =
     MarketLimitOrderAggregateVolumeTooHighProvider._();
 
 final class MarketLimitOrderAggregateVolumeTooHighProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const MarketLimitOrderAggregateVolumeTooHighProvider._()
+  MarketLimitOrderAggregateVolumeTooHighProvider._()
     : super(
         from: null,
         argument: null,
@@ -4468,12 +4441,12 @@ String _$marketLimitOrderAggregateVolumeTooHighHash() =>
     r'389528403214c27b75e20b5b0296711f43e8dce0';
 
 @ProviderFor(marketLimitPriceBalance)
-const marketLimitPriceBalanceProvider = MarketLimitPriceBalanceProvider._();
+final marketLimitPriceBalanceProvider = MarketLimitPriceBalanceProvider._();
 
 final class MarketLimitPriceBalanceProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const MarketLimitPriceBalanceProvider._()
+  MarketLimitPriceBalanceProvider._()
     : super(
         from: null,
         argument: null,
@@ -4510,12 +4483,12 @@ String _$marketLimitPriceBalanceHash() =>
     r'498a8fd229eff17dd1cbf012b2eb3c565f317f37';
 
 @ProviderFor(marketLimitAmountBalance)
-const marketLimitAmountBalanceProvider = MarketLimitAmountBalanceProvider._();
+final marketLimitAmountBalanceProvider = MarketLimitAmountBalanceProvider._();
 
 final class MarketLimitAmountBalanceProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const MarketLimitAmountBalanceProvider._()
+  MarketLimitAmountBalanceProvider._()
     : super(
         from: null,
         argument: null,

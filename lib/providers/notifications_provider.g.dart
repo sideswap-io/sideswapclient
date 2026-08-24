@@ -10,11 +10,11 @@ part of 'notifications_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(Notifications)
-const notificationsProvider = NotificationsProvider._();
+final notificationsProvider = NotificationsProvider._();
 
 final class NotificationsProvider
     extends $NotifierProvider<Notifications, List<NotificationData>> {
-  const NotificationsProvider._()
+  NotificationsProvider._()
     : super(
         from: null,
         argument: null,
@@ -41,14 +41,13 @@ final class NotificationsProvider
   }
 }
 
-String _$notificationsHash() => r'4d954031c27a149895c25fb44d5b9043349c1d9d';
+String _$notificationsHash() => r'8c2ba6a18141ae2511a421949ea54199ab730565';
 
 abstract class _$Notifications extends $Notifier<List<NotificationData>> {
   List<NotificationData> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<List<NotificationData>, List<NotificationData>>;
     final element =
@@ -59,17 +58,17 @@ abstract class _$Notifications extends $Notifier<List<NotificationData>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(activeNotifications)
-const activeNotificationsProvider = ActiveNotificationsProvider._();
+final activeNotificationsProvider = ActiveNotificationsProvider._();
 
 final class ActiveNotificationsProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const ActiveNotificationsProvider._()
+  ActiveNotificationsProvider._()
     : super(
         from: null,
         argument: null,
@@ -106,11 +105,11 @@ String _$activeNotificationsHash() =>
     r'1c813c9007b18c0f03431457a8865220698728e2';
 
 @ProviderFor(ShowNotificationMenu)
-const showNotificationMenuProvider = ShowNotificationMenuProvider._();
+final showNotificationMenuProvider = ShowNotificationMenuProvider._();
 
 final class ShowNotificationMenuProvider
     extends $NotifierProvider<ShowNotificationMenu, Option<int>> {
-  const ShowNotificationMenuProvider._()
+  ShowNotificationMenuProvider._()
     : super(
         from: null,
         argument: null,
@@ -144,8 +143,7 @@ abstract class _$ShowNotificationMenu extends $Notifier<Option<int>> {
   Option<int> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<int>, Option<int>>;
     final element =
         ref.element
@@ -155,16 +153,16 @@ abstract class _$ShowNotificationMenu extends $Notifier<Option<int>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SignRequestNotificationTtl)
-const signRequestNotificationTtlProvider = SignRequestNotificationTtlFamily._();
+final signRequestNotificationTtlProvider = SignRequestNotificationTtlFamily._();
 
 final class SignRequestNotificationTtlProvider
     extends $NotifierProvider<SignRequestNotificationTtl, Option<int>> {
-  const SignRequestNotificationTtlProvider._({
+  SignRequestNotificationTtlProvider._({
     required SignRequestNotificationTtlFamily super.from,
     required int super.argument,
   }) : super(
@@ -210,7 +208,7 @@ final class SignRequestNotificationTtlProvider
 }
 
 String _$signRequestNotificationTtlHash() =>
-    r'1a176ec9237dae8f7728b40a8cb06d96dccdfe42';
+    r'8a5d38b39ae4a76e32362a7a7a1f1a8ac8163e50';
 
 final class SignRequestNotificationTtlFamily extends $Family
     with
@@ -221,7 +219,7 @@ final class SignRequestNotificationTtlFamily extends $Family
           Option<int>,
           int
         > {
-  const SignRequestNotificationTtlFamily._()
+  SignRequestNotificationTtlFamily._()
     : super(
         retry: null,
         name: r'signRequestNotificationTtlProvider',
@@ -247,8 +245,7 @@ abstract class _$SignRequestNotificationTtl extends $Notifier<Option<int>> {
   Option<int> build(int notificationId);
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(_$args);
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<int>, Option<int>>;
     final element =
         ref.element
@@ -258,6 +255,6 @@ abstract class _$SignRequestNotificationTtl extends $Notifier<Option<int>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, () => build(_$args));
   }
 }

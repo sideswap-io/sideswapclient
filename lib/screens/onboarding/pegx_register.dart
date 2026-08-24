@@ -21,8 +21,6 @@ class PegxRegister extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(pegxWebsocketClientProvider, (previous, next) {});
-
     ref.listen(pegxLoginStateProvider, (previous, next) async {
       await (switch (next) {
         PegxLoginStateLogin(requestId: String requestId) => () async {

@@ -64,10 +64,12 @@ class DSendPopup extends HookConsumerWidget {
 
     useEffect(() {
       // cleanup on startup
-      ref.invalidate(sendAssetIdProvider);
-      ref.invalidate(sendPopupSelectedAssetIdProvider);
-      ref.invalidate(sendPopupAmountProvider);
-      ref.invalidate(sendPopupAddressProvider);
+      Future.microtask(() {
+        ref.invalidate(sendAssetIdProvider);
+        ref.invalidate(sendPopupSelectedAssetIdProvider);
+        ref.invalidate(sendPopupAmountProvider);
+        ref.invalidate(sendPopupAddressProvider);
+      });
 
       return;
     }, const []);
@@ -84,6 +86,7 @@ class DSendPopupCreate extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(sendPopupParseAddressProvider, (previous, next) {});
     ref.listen(selectedInputsHelperProvider, (previous, next) {});
     ref.watch(outputsReaderProvider);
     final reviewButtonEnabled = ref.watch(sendPopupReviewButtonEnabledProvider);
@@ -223,6 +226,11 @@ class DSendPopupCreate extends HookConsumerWidget {
         (r) {
           if (r.amount > 0) {
             amountController.text = r.amount.toString();
+            if (assetIds.contains(r.assetId)) {
+              Future.microtask(() {
+                ref.read(sendAssetIdProvider.notifier).setSendAsset(r.assetId);
+              });
+            }
           }
         },
       );
@@ -294,7 +302,6 @@ class DSendPopupCreate extends HookConsumerWidget {
             const SizedBox(height: 8),
             Consumer(
               builder: (context, ref, child) {
-                final paymentHelper = ref.watch(paymentHelperProvider);
                 final balanceStr = ref.watch(balanceStringWithInputsProvider);
                 final selectedAssetId = ref.watch(
                   sendPopupSelectedAssetIdProvider,
@@ -314,9 +321,9 @@ class DSendPopupCreate extends HookConsumerWidget {
                   controller: amountController,
                   balance: balanceStr,
                   onSubmitted: (_) async {
-                    final errorMessage = paymentHelper.outputsPaymentSend(
-                      selectedInputs: selectedInputs,
-                    );
+                    final errorMessage = ref
+                        .read(paymentHelperProvider)
+                        .outputsPaymentSend(selectedInputs: selectedInputs);
                     if (errorMessage != null) {
                       final flushbar = Flushbar<void>(
                         messageText: Text(errorMessage),
@@ -471,7 +478,7 @@ class DSendPopupReview extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text('Address'.tr(), style: headerStyle),
-                      SizedBox(width: 214),
+                      SizedBox(width: 196),
                       Text('Amount'.tr(), style: headerStyle),
                     ],
                   ),

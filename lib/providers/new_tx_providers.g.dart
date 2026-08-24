@@ -10,11 +10,11 @@ part of 'new_tx_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(NewTxNotifier)
-const newTxProvider = NewTxNotifierProvider._();
+final newTxProvider = NewTxNotifierProvider._();
 
 final class NewTxNotifierProvider
     extends $NotifierProvider<NewTxNotifier, int> {
-  const NewTxNotifierProvider._()
+  NewTxNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$NewTxNotifier extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$NewTxNotifier extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

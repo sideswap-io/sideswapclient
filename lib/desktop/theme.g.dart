@@ -10,11 +10,11 @@ part of 'theme.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(DesktopAppThemeNotifier)
-const desktopAppThemeProvider = DesktopAppThemeNotifierProvider._();
+final desktopAppThemeProvider = DesktopAppThemeNotifierProvider._();
 
 final class DesktopAppThemeNotifierProvider
     extends $NotifierProvider<DesktopAppThemeNotifier, DesktopAppTheme> {
-  const DesktopAppThemeNotifierProvider._()
+  DesktopAppThemeNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$DesktopAppThemeNotifier extends $Notifier<DesktopAppTheme> {
   DesktopAppTheme build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<DesktopAppTheme, DesktopAppTheme>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$DesktopAppThemeNotifier extends $Notifier<DesktopAppTheme> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

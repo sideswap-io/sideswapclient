@@ -10,7 +10,7 @@ part of 'encryption_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(encryptionRepository)
-const encryptionRepositoryProvider = EncryptionRepositoryProvider._();
+final encryptionRepositoryProvider = EncryptionRepositoryProvider._();
 
 final class EncryptionRepositoryProvider
     extends
@@ -20,7 +20,7 @@ final class EncryptionRepositoryProvider
           AbstractEncryptionRepository
         >
     with $Provider<AbstractEncryptionRepository> {
-  const EncryptionRepositoryProvider._()
+  EncryptionRepositoryProvider._()
     : super(
         from: null,
         argument: null,

@@ -10,7 +10,7 @@ part of 'preview_order_dialog_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PreviewOrderDialogModifiersNotifier)
-const previewOrderDialogModifiersProvider =
+final previewOrderDialogModifiersProvider =
     PreviewOrderDialogModifiersNotifierProvider._();
 
 final class PreviewOrderDialogModifiersNotifierProvider
@@ -19,7 +19,7 @@ final class PreviewOrderDialogModifiersNotifierProvider
           PreviewOrderDialogModifiersNotifier,
           PreviewOrderDialogModifiers
         > {
-  const PreviewOrderDialogModifiersNotifierProvider._()
+  PreviewOrderDialogModifiersNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -56,8 +56,7 @@ abstract class _$PreviewOrderDialogModifiersNotifier
   PreviewOrderDialogModifiers build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<PreviewOrderDialogModifiers, PreviewOrderDialogModifiers>;
@@ -72,12 +71,12 @@ abstract class _$PreviewOrderDialogModifiersNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(previewOrderDialogAcceptState)
-const previewOrderDialogAcceptStateProvider =
+final previewOrderDialogAcceptStateProvider =
     PreviewOrderDialogAcceptStateProvider._();
 
 final class PreviewOrderDialogAcceptStateProvider
@@ -88,7 +87,7 @@ final class PreviewOrderDialogAcceptStateProvider
           PreviewOrderDialogAcceptState
         >
     with $Provider<PreviewOrderDialogAcceptState> {
-  const PreviewOrderDialogAcceptStateProvider._()
+  PreviewOrderDialogAcceptStateProvider._()
     : super(
         from: null,
         argument: null,

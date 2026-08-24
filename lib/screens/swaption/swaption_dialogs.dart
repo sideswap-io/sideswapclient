@@ -12,6 +12,7 @@ import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
+import 'package:sideswap/providers/notification_removal_reason.dart';
 import 'package:sideswap/providers/notifications_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -118,13 +119,13 @@ class SwaptionConnectDialog extends HookConsumerWidget {
         }
       });
 
-      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.of(context, rootNavigator: true).pop(false);
     }, [optionNotificationData.value]);
 
     final onAllow = useCallback(() {
       optionNotificationData.value.match(
         () {
-          Navigator.of(context, rootNavigator: true).pop();
+          Navigator.of(context, rootNavigator: true).pop(false);
         },
         (notificationData) async {
           final notification = notificationData.type as NotificationTypeConnect;
@@ -138,7 +139,7 @@ class SwaptionConnectDialog extends HookConsumerWidget {
           }
 
           if (context.mounted) {
-            Navigator.of(context, rootNavigator: true).pop();
+            Navigator.of(context, rootNavigator: true).pop(true);
           }
         },
       );
@@ -155,7 +156,10 @@ class SwaptionConnectDialog extends HookConsumerWidget {
             onClose(cancel: false);
             ref
                 .read(notificationsProvider.notifier)
-                .removeNotification(notificationId);
+                .removeNotification(
+                  notificationId,
+                  reason: NotificationRemovalReason.expired,
+                );
           });
         }
       });
@@ -183,7 +187,7 @@ class SwaptionConnectDialog extends HookConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Connect Wallet'.tr(),
+                      'Liquid Connect'.tr(),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -377,29 +381,25 @@ class SwaptionSignRequestDialog extends HookConsumerWidget {
         }
       });
 
-      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.of(context, rootNavigator: true).pop(false);
     }, [optionNotificationData.value]);
 
     final onAllow = useCallback(() {
       optionNotificationData.value.match(
         () {
-          Navigator.of(context, rootNavigator: true).pop();
+          Navigator.of(context, rootNavigator: true).pop(false);
         },
-        (notificationData) async {
+        (notificationData) {
           final notification =
               notificationData.type as NotificationTypeSignRequest;
-          if (await ref.read(walletProvider).isAuthenticated()) {
-            final msg = To();
-            msg.signerResponse = To_SignerResponse(
-              reqId: notification.reqId,
-              accept: true,
-            );
-            ref.read(walletProvider).sendMsg(msg);
-          }
+          final msg = To();
+          msg.signerResponse = To_SignerResponse(
+            reqId: notification.reqId,
+            accept: true,
+          );
+          ref.read(walletProvider).sendMsg(msg);
 
-          if (context.mounted) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+          Navigator.of(context, rootNavigator: true).pop(true);
         },
       );
     }, [optionNotificationData.value]);
@@ -415,7 +415,10 @@ class SwaptionSignRequestDialog extends HookConsumerWidget {
             onClose(cancel: false);
             ref
                 .read(notificationsProvider.notifier)
-                .removeNotification(notificationId);
+                .removeNotification(
+                  notificationId,
+                  reason: NotificationRemovalReason.expired,
+                );
           });
           return;
         }
@@ -444,7 +447,7 @@ class SwaptionSignRequestDialog extends HookConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Sign request'.tr(),
+                      'Liquid Connect: Signature Required'.tr(),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,

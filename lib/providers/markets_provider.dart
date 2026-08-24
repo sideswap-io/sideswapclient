@@ -10,7 +10,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/common/helpers.dart' show kCoin;
-import 'package:sideswap/desktop/markets/widgets/d_preview_order_dialog.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/ui_history_order.dart';
 import 'package:sideswap/models/ui_own_order.dart';
@@ -25,7 +24,6 @@ import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
-import 'package:sideswap/screens/markets/market_swap_page.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'markets_provider.freezed.dart';
@@ -33,12 +31,9 @@ part 'markets_provider.g.dart';
 
 @riverpod
 String marketTypeName(Ref ref, MarketType_ type) {
-  return switch (type) {
-    MarketType_.STABLECOIN => 'Stablecoins'.tr(),
-    MarketType_.AMP => 'AMP Listings'.tr(),
-    MarketType_.TOKEN => 'Token Market'.tr(),
-    MarketType_() => throw UnimplementedError(),
-  };
+  if (type == MarketType_.STABLECOIN) return 'Stablecoins'.tr();
+  if (type == MarketType_.AMP) return 'AMP Listings'.tr();
+  return 'Token Market'.tr();
 }
 
 @riverpod
@@ -1717,25 +1712,15 @@ Option<QuoteUnregisteredGaid> marketStartOrderUnregisteredGaid(Ref ref) {
   });
 }
 
-abstract class AbstractMarketTradeRepository {
-  Future<void> makeSwapTrade({
-    required BuildContext context,
-    required Option<QuoteSuccess> optionQuoteSuccess,
-    Option<PreviewOrderDialogModifiers> optionModifiers = const Option.none(),
-  });
-}
-
-class MarketTradeRepository implements AbstractMarketTradeRepository {
-  final Ref ref;
-
-  MarketTradeRepository({required this.ref});
-
+@riverpod
+class MarketTradeNotifier extends _$MarketTradeNotifier {
   @override
-  Future<void> makeSwapTrade({
-    required BuildContext context,
+  void build() {}
+
+  void prepareSwapTrade({
     required Option<QuoteSuccess> optionQuoteSuccess,
     Option<PreviewOrderDialogModifiers> optionModifiers = const Option.none(),
-  }) async {
+  }) {
     optionModifiers.match(
       () => ref.invalidate(previewOrderDialogModifiersProvider),
       (modifiers) => ref
@@ -1743,55 +1728,17 @@ class MarketTradeRepository implements AbstractMarketTradeRepository {
           .setState(modifiers),
     );
 
-    await optionQuoteSuccess.match(
-      () => () {},
-      (quoteSuccess) => () async {
-        ref
-            .read(previewOrderQuoteSuccessProvider.notifier)
-            .setState(quoteSuccess);
-
-        if (context.mounted) {
-          if (!context.mounted) {
-            return;
-          }
-
-          if (FlavorConfig.isDesktop) {
-            await showDialog<void>(
-              context: context,
-              builder: (context) {
-                return DPreviewOrderDialog();
-              },
-              routeSettings: RouteSettings(name: desktopOrderPreviewRouteName),
-              useRootNavigator: false,
-            );
-          } else {
-            await showDialog<void>(
-              context: context,
-              builder: (context) {
-                return MobileOrderPreviewDialog();
-              },
-              routeSettings: RouteSettings(name: mobileOrderPreviewRouteName),
-              useRootNavigator: false,
-            );
-          }
-
-          final isJadeWallet = ref.read(isJadeWalletProvider);
-
-          if (isJadeWallet) {
-            // cleanup on jade sign dialog close
-            return;
-          }
-
-          ref.invalidate(previewOrderQuoteSuccessProvider);
-        }
-      },
-    )();
+    optionQuoteSuccess.match(
+      () {},
+      (quoteSuccess) => ref
+          .read(previewOrderQuoteSuccessProvider.notifier)
+          .setState(quoteSuccess),
+    );
   }
-}
 
-@riverpod
-AbstractMarketTradeRepository marketTradeRepository(Ref ref) {
-  return MarketTradeRepository(ref: ref);
+  void cleanupAfterDialog() {
+    ref.invalidate(previewOrderQuoteSuccessProvider);
+  }
 }
 
 @Riverpod(keepAlive: true)
@@ -2030,9 +1977,10 @@ class MarketOrderAggregateVolumeProvider {
 
   Decimal asDecimal() {
     final multipliedInSat = amount * price * Decimal.fromInt(kCoin);
+    // tryParse always succeeds: toStringAsFixed(0..20) produces valid numeric strings,
+    // and precision > 20 throws RangeError before reaching tryParse
     final power =
-        Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
-        Decimal.zero;
+        Decimal.tryParse(pow(10, precision).toStringAsFixed(precision))!;
     final amountWithPrecision = (multipliedInSat / power).toDecimal();
 
     if (precision == 0) {

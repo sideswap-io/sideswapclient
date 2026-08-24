@@ -10,12 +10,12 @@ part of 'common_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(isAddrTypeValid)
-const isAddrTypeValidProvider = IsAddrTypeValidFamily._();
+final isAddrTypeValidProvider = IsAddrTypeValidFamily._();
 
 final class IsAddrTypeValidProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const IsAddrTypeValidProvider._({
+  IsAddrTypeValidProvider._({
     required IsAddrTypeValidFamily super.from,
     required (String, AddrType) super.argument,
   }) : super(
@@ -70,7 +70,7 @@ String _$isAddrTypeValidHash() => r'406cf7c3edbc038973a5cba2cb12b2cd9fc49335';
 
 final class IsAddrTypeValidFamily extends $Family
     with $FunctionalFamilyOverride<bool, (String, AddrType)> {
-  const IsAddrTypeValidFamily._()
+  IsAddrTypeValidFamily._()
     : super(
         retry: null,
         name: r'isAddrTypeValidProvider',

@@ -2,10 +2,8 @@ import 'dart:typed_data';
 
 import 'package:cached_memory_image/cached_memory_image.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -214,16 +212,19 @@ class AssetUtils {
 }
 
 @Riverpod(keepAlive: true)
-CacheManager cacheManager(Ref ref) {
+Config imageCacheConfig(Ref ref) {
   final key = 'imageCache';
-  return CacheManager(
-    Config(
-      key,
-      stalePeriod: const Duration(days: 30),
-      maxNrOfCacheObjects: 100,
-      fileService: HttpFileService(),
-    ),
+  return Config(
+    key,
+    stalePeriod: const Duration(days: 30),
+    maxNrOfCacheObjects: 100,
+    fileService: HttpFileService(),
   );
+}
+
+@Riverpod(keepAlive: true)
+CacheManager cacheManager(Ref ref) {
+  return CacheManager(ref.watch(imageCacheConfigProvider));
 }
 
 @Riverpod(keepAlive: true)
@@ -314,52 +315,6 @@ FutureOr<Uint8List?> imageBytesResizedFuture(
   return cachedFile.readAsBytes();
 }
 
-class SideswapCachedMemoryImage extends ConsumerWidget {
-  const SideswapCachedMemoryImage({
-    super.key,
-    required this.uniqueKey,
-    this.assetSvg,
-    this.base64,
-    required this.width,
-    required this.height,
-    // FilterQuality.medium - a bit lower resolution so scaled down png images looks slightly better than FilterQuality.high
-    // this value has no matter for svg images
-    this.filterQuality = FilterQuality.medium,
-  });
-
-  final String uniqueKey;
-  final String? assetSvg;
-  final String? base64;
-  final double width;
-  final double height;
-  final FilterQuality filterQuality;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final imageBytes = ref.watch(
-      imageBytesResizedFutureProvider(
-        uniqueKey: uniqueKey,
-        assetSvg: assetSvg,
-        base64: base64,
-        width: width,
-        height: height,
-      ),
-    );
-
-    return switch (imageBytes) {
-      AsyncData(hasValue: true, value: Uint8List bytes) when bytes.isNotEmpty =>
-        Image.memory(
-          bytes,
-          width: width,
-          height: height,
-          filterQuality: filterQuality,
-          isAntiAlias: true,
-        ),
-      AsyncLoading() => SizedBox(width: width, height: height),
-      _ => FittedBox(child: Icon(Icons.help, size: width)),
-    };
-  }
-}
 
 @Deprecated('Only for mobile app version, should not be used now')
 @Riverpod(keepAlive: true)

@@ -10,7 +10,7 @@ part of 'satoshi_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(satoshiRepository)
-const satoshiRepositoryProvider = SatoshiRepositoryProvider._();
+final satoshiRepositoryProvider = SatoshiRepositoryProvider._();
 
 final class SatoshiRepositoryProvider
     extends
@@ -20,7 +20,7 @@ final class SatoshiRepositoryProvider
           AbstractSatoshiRepository
         >
     with $Provider<AbstractSatoshiRepository> {
-  const SatoshiRepositoryProvider._()
+  SatoshiRepositoryProvider._()
     : super(
         from: null,
         argument: null,

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -16,10 +14,6 @@ class Env extends _$Env {
 
   void setEnv(int env) {
     ref.read(configurationProvider.notifier).setEnv(env);
-  }
-
-  void restart() {
-    exit(0);
   }
 
   bool isTestnet() {

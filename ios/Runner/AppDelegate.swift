@@ -27,7 +27,7 @@ public func dummyMethodToEnforceBundling() {
 }
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -36,15 +36,23 @@ public func dummyMethodToEnforceBundling() {
         signal(SIGPIPE, SIG_IGN)
 
         startBle()
-        
-        let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
-        let encryptionChannel = FlutterMethodChannel(name: "app.sideswap.io/encryption",
-                                                     binaryMessenger: controller.binaryMessenger)
 
+        if #available(iOS 10.0, *) {
+          UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+        }
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
+        let encryptionChannel = FlutterMethodChannel(
+            name: "app.sideswap.io/encryption",
+            binaryMessenger: engineBridge.applicationRegistrar.messenger()
+        )
         encryptionChannel.setMethodCallHandler({
             [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
-            // Note: this method is invoked on the UI thread.
-            switch call.method  {
+            switch call.method {
             case "canAuthenticate":
                 self?.canAuthenticate(result: result)
             case "encryptBiometric":
@@ -63,12 +71,6 @@ public func dummyMethodToEnforceBundling() {
                 result(FlutterMethodNotImplemented)
             }
         })
-
-        if #available(iOS 10.0, *) {
-          UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
-        }
-        GeneratedPluginRegistrant.register(with: self)
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     private func canAuthenticate(result: FlutterResult) {

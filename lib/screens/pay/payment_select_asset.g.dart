@@ -10,11 +10,11 @@ part of 'payment_select_asset.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PaymentAvailableAssets)
-const paymentAvailableAssetsProvider = PaymentAvailableAssetsProvider._();
+final paymentAvailableAssetsProvider = PaymentAvailableAssetsProvider._();
 
 final class PaymentAvailableAssetsProvider
     extends $NotifierProvider<PaymentAvailableAssets, Iterable<String>> {
-  const PaymentAvailableAssetsProvider._()
+  PaymentAvailableAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$PaymentAvailableAssets extends $Notifier<Iterable<String>> {
   Iterable<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Iterable<String>, Iterable<String>>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$PaymentAvailableAssets extends $Notifier<Iterable<String>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PaymentDisabledAssets)
-const paymentDisabledAssetsProvider = PaymentDisabledAssetsProvider._();
+final paymentDisabledAssetsProvider = PaymentDisabledAssetsProvider._();
 
 final class PaymentDisabledAssetsProvider
     extends $NotifierProvider<PaymentDisabledAssets, Iterable<String>> {
-  const PaymentDisabledAssetsProvider._()
+  PaymentDisabledAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$PaymentDisabledAssets extends $Notifier<Iterable<String>> {
   Iterable<String> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Iterable<String>, Iterable<String>>;
     final element =
         ref.element
@@ -113,17 +111,17 @@ abstract class _$PaymentDisabledAssets extends $Notifier<Iterable<String>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(paymentIsAssetDisabled)
-const paymentIsAssetDisabledProvider = PaymentIsAssetDisabledFamily._();
+final paymentIsAssetDisabledProvider = PaymentIsAssetDisabledFamily._();
 
 final class PaymentIsAssetDisabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const PaymentIsAssetDisabledProvider._({
+  PaymentIsAssetDisabledProvider._({
     required PaymentIsAssetDisabledFamily super.from,
     required String super.argument,
   }) : super(
@@ -180,7 +178,7 @@ String _$paymentIsAssetDisabledHash() =>
 
 final class PaymentIsAssetDisabledFamily extends $Family
     with $FunctionalFamilyOverride<bool, String> {
-  const PaymentIsAssetDisabledFamily._()
+  PaymentIsAssetDisabledFamily._()
     : super(
         retry: null,
         name: r'paymentIsAssetDisabledProvider',
@@ -197,7 +195,7 @@ final class PaymentIsAssetDisabledFamily extends $Family
 }
 
 @ProviderFor(paymentAvailableAssetsWithInputsFiltered)
-const paymentAvailableAssetsWithInputsFilteredProvider =
+final paymentAvailableAssetsWithInputsFilteredProvider =
     PaymentAvailableAssetsWithInputsFilteredProvider._();
 
 final class PaymentAvailableAssetsWithInputsFilteredProvider
@@ -208,7 +206,7 @@ final class PaymentAvailableAssetsWithInputsFilteredProvider
           Iterable<String>
         >
     with $Provider<Iterable<String>> {
-  const PaymentAvailableAssetsWithInputsFilteredProvider._()
+  PaymentAvailableAssetsWithInputsFilteredProvider._()
     : super(
         from: null,
         argument: null,

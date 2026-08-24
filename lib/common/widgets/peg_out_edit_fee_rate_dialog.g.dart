@@ -10,13 +10,13 @@ part of 'peg_out_edit_fee_rate_dialog.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PegOutEditFeeRateDialogTransItem)
-const pegOutEditFeeRateDialogTransItemProvider =
+final pegOutEditFeeRateDialogTransItemProvider =
     PegOutEditFeeRateDialogTransItemProvider._();
 
 final class PegOutEditFeeRateDialogTransItemProvider
     extends
         $NotifierProvider<PegOutEditFeeRateDialogTransItem, Option<TransItem>> {
-  const PegOutEditFeeRateDialogTransItemProvider._()
+  PegOutEditFeeRateDialogTransItemProvider._()
     : super(
         from: null,
         argument: null,
@@ -52,8 +52,7 @@ abstract class _$PegOutEditFeeRateDialogTransItem
   Option<TransItem> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<TransItem>, Option<TransItem>>;
     final element =
         ref.element
@@ -63,6 +62,6 @@ abstract class _$PegOutEditFeeRateDialogTransItem
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

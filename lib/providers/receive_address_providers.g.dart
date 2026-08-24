@@ -10,11 +10,11 @@ part of 'receive_address_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(CurrentReceiveAddress)
-const currentReceiveAddressProvider = CurrentReceiveAddressProvider._();
+final currentReceiveAddressProvider = CurrentReceiveAddressProvider._();
 
 final class CurrentReceiveAddressProvider
     extends $NotifierProvider<CurrentReceiveAddress, ReceiveAddress> {
-  const CurrentReceiveAddressProvider._()
+  CurrentReceiveAddressProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$CurrentReceiveAddress extends $Notifier<ReceiveAddress> {
   ReceiveAddress build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ReceiveAddress, ReceiveAddress>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$CurrentReceiveAddress extends $Notifier<ReceiveAddress> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(RegularAccountAddresses)
-const regularAccountAddressesProvider = RegularAccountAddressesProvider._();
+final regularAccountAddressesProvider = RegularAccountAddressesProvider._();
 
 final class RegularAccountAddressesProvider
     extends $NotifierProvider<RegularAccountAddresses, List<ReceiveAddress>> {
-  const RegularAccountAddressesProvider._()
+  RegularAccountAddressesProvider._()
     : super(
         from: null,
         argument: null,
@@ -103,8 +102,7 @@ abstract class _$RegularAccountAddresses
   List<ReceiveAddress> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<ReceiveAddress>, List<ReceiveAddress>>;
     final element =
         ref.element
@@ -114,6 +112,6 @@ abstract class _$RegularAccountAddresses
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

@@ -10,7 +10,7 @@ part of 'app_releases_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AppReleasesStateNotifier)
-const appReleasesStateProvider = AppReleasesStateNotifierProvider._();
+final appReleasesStateProvider = AppReleasesStateNotifierProvider._();
 
 final class AppReleasesStateNotifierProvider
     extends
@@ -18,7 +18,7 @@ final class AppReleasesStateNotifierProvider
           AppReleasesStateNotifier,
           AppReleasesModelState
         > {
-  const AppReleasesStateNotifierProvider._()
+  AppReleasesStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -45,8 +45,7 @@ abstract class _$AppReleasesStateNotifier
   FutureOr<AppReleasesModelState> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<AsyncValue<AppReleasesModelState>, AppReleasesModelState>;
@@ -61,17 +60,17 @@ abstract class _$AppReleasesStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(showNewReleaseFuture)
-const showNewReleaseFutureProvider = ShowNewReleaseFutureProvider._();
+final showNewReleaseFutureProvider = ShowNewReleaseFutureProvider._();
 
 final class ShowNewReleaseFutureProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
-  const ShowNewReleaseFutureProvider._()
+  ShowNewReleaseFutureProvider._()
     : super(
         from: null,
         argument: null,

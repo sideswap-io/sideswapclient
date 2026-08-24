@@ -10,7 +10,7 @@ part of 'exchange_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(exchangeSide)
-const exchangeSideProvider = ExchangeSideProvider._();
+final exchangeSideProvider = ExchangeSideProvider._();
 
 final class ExchangeSideProvider
     extends
@@ -20,7 +20,7 @@ final class ExchangeSideProvider
           Option<ExchangeSide>
         >
     with $Provider<Option<ExchangeSide>> {
-  const ExchangeSideProvider._()
+  ExchangeSideProvider._()
     : super(
         from: null,
         argument: null,
@@ -57,11 +57,11 @@ final class ExchangeSideProvider
 String _$exchangeSideHash() => r'aa4b82aadb0eeaf523d94d7010d6945d24bc9ddd';
 
 @ProviderFor(ExchangeCurrentEditAsset)
-const exchangeCurrentEditAssetProvider = ExchangeCurrentEditAssetProvider._();
+final exchangeCurrentEditAssetProvider = ExchangeCurrentEditAssetProvider._();
 
 final class ExchangeCurrentEditAssetProvider
     extends $NotifierProvider<ExchangeCurrentEditAsset, Option<Asset>> {
-  const ExchangeCurrentEditAssetProvider._()
+  ExchangeCurrentEditAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -95,8 +95,7 @@ abstract class _$ExchangeCurrentEditAsset extends $Notifier<Option<Asset>> {
   Option<Asset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<Asset>, Option<Asset>>;
     final element =
         ref.element
@@ -106,12 +105,12 @@ abstract class _$ExchangeCurrentEditAsset extends $Notifier<Option<Asset>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeAssetPair)
-const exchangeAssetPairProvider = ExchangeAssetPairProvider._();
+final exchangeAssetPairProvider = ExchangeAssetPairProvider._();
 
 final class ExchangeAssetPairProvider
     extends
@@ -121,7 +120,7 @@ final class ExchangeAssetPairProvider
           Option<AssetPair>
         >
     with $Provider<Option<AssetPair>> {
-  const ExchangeAssetPairProvider._()
+  ExchangeAssetPairProvider._()
     : super(
         from: null,
         argument: null,
@@ -158,7 +157,7 @@ final class ExchangeAssetPairProvider
 String _$exchangeAssetPairHash() => r'4992d1e3e771c9ab6ded705ab8998e14730693b2';
 
 @ProviderFor(exchangeMarketInfo)
-const exchangeMarketInfoProvider = ExchangeMarketInfoProvider._();
+final exchangeMarketInfoProvider = ExchangeMarketInfoProvider._();
 
 final class ExchangeMarketInfoProvider
     extends
@@ -168,7 +167,7 @@ final class ExchangeMarketInfoProvider
           Option<MarketInfo>
         >
     with $Provider<Option<MarketInfo>> {
-  const ExchangeMarketInfoProvider._()
+  ExchangeMarketInfoProvider._()
     : super(
         from: null,
         argument: null,
@@ -206,12 +205,12 @@ String _$exchangeMarketInfoHash() =>
     r'660fd641b50b1e1e287c85b65391aef3b4581cce';
 
 @ProviderFor(exchangeTopAssetList)
-const exchangeTopAssetListProvider = ExchangeTopAssetListProvider._();
+final exchangeTopAssetListProvider = ExchangeTopAssetListProvider._();
 
 final class ExchangeTopAssetListProvider
     extends $FunctionalProvider<List<Asset>, List<Asset>, List<Asset>>
     with $Provider<List<Asset>> {
-  const ExchangeTopAssetListProvider._()
+  ExchangeTopAssetListProvider._()
     : super(
         from: null,
         argument: null,
@@ -248,11 +247,11 @@ String _$exchangeTopAssetListHash() =>
     r'2bc47cd12c3690104b0930202e2ea1925850b22f';
 
 @ProviderFor(ExchangeTopAsset)
-const exchangeTopAssetProvider = ExchangeTopAssetProvider._();
+final exchangeTopAssetProvider = ExchangeTopAssetProvider._();
 
 final class ExchangeTopAssetProvider
     extends $NotifierProvider<ExchangeTopAsset, Option<Asset>> {
-  const ExchangeTopAssetProvider._()
+  ExchangeTopAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -285,8 +284,7 @@ abstract class _$ExchangeTopAsset extends $Notifier<Option<Asset>> {
   Option<Asset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<Asset>, Option<Asset>>;
     final element =
         ref.element
@@ -296,17 +294,17 @@ abstract class _$ExchangeTopAsset extends $Notifier<Option<Asset>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeBottomAssetList)
-const exchangeBottomAssetListProvider = ExchangeBottomAssetListProvider._();
+final exchangeBottomAssetListProvider = ExchangeBottomAssetListProvider._();
 
 final class ExchangeBottomAssetListProvider
     extends $FunctionalProvider<List<Asset>, List<Asset>, List<Asset>>
     with $Provider<List<Asset>> {
-  const ExchangeBottomAssetListProvider._()
+  ExchangeBottomAssetListProvider._()
     : super(
         from: null,
         argument: null,
@@ -343,11 +341,11 @@ String _$exchangeBottomAssetListHash() =>
     r'7073444a6a0776c4734d620ae8328734b325143d';
 
 @ProviderFor(ExchangeBottomAsset)
-const exchangeBottomAssetProvider = ExchangeBottomAssetProvider._();
+final exchangeBottomAssetProvider = ExchangeBottomAssetProvider._();
 
 final class ExchangeBottomAssetProvider
     extends $NotifierProvider<ExchangeBottomAsset, Option<Asset>> {
-  const ExchangeBottomAssetProvider._()
+  ExchangeBottomAssetProvider._()
     : super(
         from: null,
         argument: null,
@@ -381,8 +379,7 @@ abstract class _$ExchangeBottomAsset extends $Notifier<Option<Asset>> {
   Option<Asset> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<Asset>, Option<Asset>>;
     final element =
         ref.element
@@ -392,16 +389,16 @@ abstract class _$ExchangeBottomAsset extends $Notifier<Option<Asset>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(ExchangeTopAmount)
-const exchangeTopAmountProvider = ExchangeTopAmountProvider._();
+final exchangeTopAmountProvider = ExchangeTopAmountProvider._();
 
 final class ExchangeTopAmountProvider
     extends $NotifierProvider<ExchangeTopAmount, String> {
-  const ExchangeTopAmountProvider._()
+  ExchangeTopAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -434,8 +431,7 @@ abstract class _$ExchangeTopAmount extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -445,17 +441,17 @@ abstract class _$ExchangeTopAmount extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeTopSatoshiAmount)
-const exchangeTopSatoshiAmountProvider = ExchangeTopSatoshiAmountProvider._();
+final exchangeTopSatoshiAmountProvider = ExchangeTopSatoshiAmountProvider._();
 
 final class ExchangeTopSatoshiAmountProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const ExchangeTopSatoshiAmountProvider._()
+  ExchangeTopSatoshiAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -492,13 +488,13 @@ String _$exchangeTopSatoshiAmountHash() =>
     r'13d54e5b892c92c78eb4b44b7d7719c659e39a14';
 
 @ProviderFor(exchangeTopDebounceSatoshiAmount)
-const exchangeTopDebounceSatoshiAmountProvider =
+final exchangeTopDebounceSatoshiAmountProvider =
     ExchangeTopDebounceSatoshiAmountProvider._();
 
 final class ExchangeTopDebounceSatoshiAmountProvider
     extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
     with $FutureModifier<int>, $FutureProvider<int> {
-  const ExchangeTopDebounceSatoshiAmountProvider._()
+  ExchangeTopDebounceSatoshiAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -527,11 +523,11 @@ String _$exchangeTopDebounceSatoshiAmountHash() =>
     r'1b9531f37400e3a50bf9a3bd2a31a3ea46bd14ee';
 
 @ProviderFor(ExchangeBottomAmount)
-const exchangeBottomAmountProvider = ExchangeBottomAmountProvider._();
+final exchangeBottomAmountProvider = ExchangeBottomAmountProvider._();
 
 final class ExchangeBottomAmountProvider
     extends $NotifierProvider<ExchangeBottomAmount, String> {
-  const ExchangeBottomAmountProvider._()
+  ExchangeBottomAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -565,8 +561,7 @@ abstract class _$ExchangeBottomAmount extends $Notifier<String> {
   String build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
@@ -576,18 +571,18 @@ abstract class _$ExchangeBottomAmount extends $Notifier<String> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeBottomSatoshiAmount)
-const exchangeBottomSatoshiAmountProvider =
+final exchangeBottomSatoshiAmountProvider =
     ExchangeBottomSatoshiAmountProvider._();
 
 final class ExchangeBottomSatoshiAmountProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const ExchangeBottomSatoshiAmountProvider._()
+  ExchangeBottomSatoshiAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -624,13 +619,13 @@ String _$exchangeBottomSatoshiAmountHash() =>
     r'245e48555169e6cb2940a6e0bcac068800e1bc89';
 
 @ProviderFor(exchangeBottomDebounceSatoshiAmount)
-const exchangeBottomDebounceSatoshiAmountProvider =
+final exchangeBottomDebounceSatoshiAmountProvider =
     ExchangeBottomDebounceSatoshiAmountProvider._();
 
 final class ExchangeBottomDebounceSatoshiAmountProvider
     extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
     with $FutureModifier<int>, $FutureProvider<int> {
-  const ExchangeBottomDebounceSatoshiAmountProvider._()
+  ExchangeBottomDebounceSatoshiAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -662,13 +657,13 @@ String _$exchangeBottomDebounceSatoshiAmountHash() =>
 /// Exchange quotes
 
 @ProviderFor(ExchangeQuoteNotifier)
-const exchangeQuoteProvider = ExchangeQuoteNotifierProvider._();
+final exchangeQuoteProvider = ExchangeQuoteNotifierProvider._();
 
 /// Exchange quotes
 final class ExchangeQuoteNotifierProvider
     extends $NotifierProvider<ExchangeQuoteNotifier, Option<From_Quote>> {
   /// Exchange quotes
-  const ExchangeQuoteNotifierProvider._()
+  ExchangeQuoteNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -704,8 +699,7 @@ abstract class _$ExchangeQuoteNotifier extends $Notifier<Option<From_Quote>> {
   Option<From_Quote> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<From_Quote>, Option<From_Quote>>;
     final element =
         ref.element
@@ -715,17 +709,17 @@ abstract class _$ExchangeQuoteNotifier extends $Notifier<Option<From_Quote>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeSwapButtonText)
-const exchangeSwapButtonTextProvider = ExchangeSwapButtonTextProvider._();
+final exchangeSwapButtonTextProvider = ExchangeSwapButtonTextProvider._();
 
 final class ExchangeSwapButtonTextProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
-  const ExchangeSwapButtonTextProvider._()
+  ExchangeSwapButtonTextProvider._()
     : super(
         from: null,
         argument: null,
@@ -762,7 +756,7 @@ String _$exchangeSwapButtonTextHash() =>
     r'08565ef0e723679ce66922958b4fa5d2f1996217';
 
 @ProviderFor(exchangeQuoteError)
-const exchangeQuoteErrorProvider = ExchangeQuoteErrorProvider._();
+final exchangeQuoteErrorProvider = ExchangeQuoteErrorProvider._();
 
 final class ExchangeQuoteErrorProvider
     extends
@@ -772,7 +766,7 @@ final class ExchangeQuoteErrorProvider
           Option<QuoteError>
         >
     with $Provider<Option<QuoteError>> {
-  const ExchangeQuoteErrorProvider._()
+  ExchangeQuoteErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -807,16 +801,16 @@ final class ExchangeQuoteErrorProvider
 }
 
 String _$exchangeQuoteErrorHash() =>
-    r'a592a254996238b1cc8db72df58f7943c677a7aa';
+    r'4e6fb14da5ea3567c9d354da704a7d06328b8ec6';
 
 @ProviderFor(instantSwapTopDropdownError)
-const instantSwapTopDropdownErrorProvider =
+final instantSwapTopDropdownErrorProvider =
     InstantSwapTopDropdownErrorProvider._();
 
 final class InstantSwapTopDropdownErrorProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const InstantSwapTopDropdownErrorProvider._()
+  InstantSwapTopDropdownErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -853,11 +847,11 @@ String _$instantSwapTopDropdownErrorHash() =>
     r'e27144b3cbf56d9160d6dbb03a748ed1e866d8dd';
 
 @ProviderFor(ExchangeIndexPrice)
-const exchangeIndexPriceProvider = ExchangeIndexPriceProvider._();
+final exchangeIndexPriceProvider = ExchangeIndexPriceProvider._();
 
 final class ExchangeIndexPriceProvider
     extends $NotifierProvider<ExchangeIndexPrice, Option<QuoteIndexPrice>> {
-  const ExchangeIndexPriceProvider._()
+  ExchangeIndexPriceProvider._()
     : super(
         from: null,
         argument: null,
@@ -891,8 +885,7 @@ abstract class _$ExchangeIndexPrice extends $Notifier<Option<QuoteIndexPrice>> {
   Option<QuoteIndexPrice> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<Option<QuoteIndexPrice>, Option<QuoteIndexPrice>>;
     final element =
@@ -903,12 +896,12 @@ abstract class _$ExchangeIndexPrice extends $Notifier<Option<QuoteIndexPrice>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeLowBalanceError)
-const exchangeLowBalanceErrorProvider = ExchangeLowBalanceErrorProvider._();
+final exchangeLowBalanceErrorProvider = ExchangeLowBalanceErrorProvider._();
 
 final class ExchangeLowBalanceErrorProvider
     extends
@@ -918,7 +911,7 @@ final class ExchangeLowBalanceErrorProvider
           Option<QuoteLowBalance>
         >
     with $Provider<Option<QuoteLowBalance>> {
-  const ExchangeLowBalanceErrorProvider._()
+  ExchangeLowBalanceErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -956,7 +949,7 @@ String _$exchangeLowBalanceErrorHash() =>
     r'1358062c2208d6a2cab986f512ee9b8279f6ee95';
 
 @ProviderFor(exchangeQuoteSuccess)
-const exchangeQuoteSuccessProvider = ExchangeQuoteSuccessProvider._();
+final exchangeQuoteSuccessProvider = ExchangeQuoteSuccessProvider._();
 
 final class ExchangeQuoteSuccessProvider
     extends
@@ -966,7 +959,7 @@ final class ExchangeQuoteSuccessProvider
           Option<QuoteSuccess>
         >
     with $Provider<Option<QuoteSuccess>> {
-  const ExchangeQuoteSuccessProvider._()
+  ExchangeQuoteSuccessProvider._()
     : super(
         from: null,
         argument: null,
@@ -1004,12 +997,12 @@ String _$exchangeQuoteSuccessHash() =>
     r'4d31b84cc1ed72b34265708b225aa3f821001ff1';
 
 @ProviderFor(exchangeSwapButtonEnabled)
-const exchangeSwapButtonEnabledProvider = ExchangeSwapButtonEnabledProvider._();
+final exchangeSwapButtonEnabledProvider = ExchangeSwapButtonEnabledProvider._();
 
 final class ExchangeSwapButtonEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const ExchangeSwapButtonEnabledProvider._()
+  ExchangeSwapButtonEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -1046,7 +1039,7 @@ String _$exchangeSwapButtonEnabledHash() =>
     r'014042985d16b3e1050569b8e1065d30dff56360';
 
 @ProviderFor(ExchangeAccepQuoteStateNotifier)
-const exchangeAccepQuoteStateProvider =
+final exchangeAccepQuoteStateProvider =
     ExchangeAccepQuoteStateNotifierProvider._();
 
 final class ExchangeAccepQuoteStateNotifierProvider
@@ -1055,7 +1048,7 @@ final class ExchangeAccepQuoteStateNotifierProvider
           ExchangeAccepQuoteStateNotifier,
           ExchangeAcceptQuoteState
         > {
-  const ExchangeAccepQuoteStateNotifierProvider._()
+  ExchangeAccepQuoteStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1090,8 +1083,7 @@ abstract class _$ExchangeAccepQuoteStateNotifier
   ExchangeAcceptQuoteState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<ExchangeAcceptQuoteState, ExchangeAcceptQuoteState>;
     final element =
@@ -1102,12 +1094,12 @@ abstract class _$ExchangeAccepQuoteStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(exchangeAcceptQuote)
-const exchangeAcceptQuoteProvider = ExchangeAcceptQuoteProvider._();
+final exchangeAcceptQuoteProvider = ExchangeAcceptQuoteProvider._();
 
 final class ExchangeAcceptQuoteProvider
     extends
@@ -1117,7 +1109,7 @@ final class ExchangeAcceptQuoteProvider
           Option<From_AcceptQuote>
         >
     with $Provider<Option<From_AcceptQuote>> {
-  const ExchangeAcceptQuoteProvider._()
+  ExchangeAcceptQuoteProvider._()
     : super(
         from: null,
         argument: null,
@@ -1155,13 +1147,13 @@ String _$exchangeAcceptQuoteHash() =>
     r'2d9de1c021b9906a28993e4906b3d23ec369de84';
 
 @ProviderFor(exchangeAcceptQuoteSuccess)
-const exchangeAcceptQuoteSuccessProvider =
+final exchangeAcceptQuoteSuccessProvider =
     ExchangeAcceptQuoteSuccessProvider._();
 
 final class ExchangeAcceptQuoteSuccessProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const ExchangeAcceptQuoteSuccessProvider._()
+  ExchangeAcceptQuoteSuccessProvider._()
     : super(
         from: null,
         argument: null,
@@ -1198,12 +1190,12 @@ String _$exchangeAcceptQuoteSuccessHash() =>
     r'f11bc2d8a43e9eb914d357dacd0005d0f4fff056';
 
 @ProviderFor(exchangeAcceptQuoteError)
-const exchangeAcceptQuoteErrorProvider = ExchangeAcceptQuoteErrorProvider._();
+final exchangeAcceptQuoteErrorProvider = ExchangeAcceptQuoteErrorProvider._();
 
 final class ExchangeAcceptQuoteErrorProvider
     extends $FunctionalProvider<Option<String>, Option<String>, Option<String>>
     with $Provider<Option<String>> {
-  const ExchangeAcceptQuoteErrorProvider._()
+  ExchangeAcceptQuoteErrorProvider._()
     : super(
         from: null,
         argument: null,
@@ -1240,11 +1232,11 @@ String _$exchangeAcceptQuoteErrorHash() =>
     r'cafa891c5446866609ecc2cd2b3f0fc1f86717b8';
 
 @ProviderFor(InstantSwapStateNotifier)
-const instantSwapStateProvider = InstantSwapStateNotifierProvider._();
+final instantSwapStateProvider = InstantSwapStateNotifierProvider._();
 
 final class InstantSwapStateNotifierProvider
     extends $NotifierProvider<InstantSwapStateNotifier, InstantSwapState> {
-  const InstantSwapStateNotifierProvider._()
+  InstantSwapStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1278,8 +1270,7 @@ abstract class _$InstantSwapStateNotifier extends $Notifier<InstantSwapState> {
   InstantSwapState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<InstantSwapState, InstantSwapState>;
     final element =
         ref.element
@@ -1289,12 +1280,12 @@ abstract class _$InstantSwapStateNotifier extends $Notifier<InstantSwapState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(InstantSwapQuoteSuccessNotifier)
-const instantSwapQuoteSuccessProvider =
+final instantSwapQuoteSuccessProvider =
     InstantSwapQuoteSuccessNotifierProvider._();
 
 final class InstantSwapQuoteSuccessNotifierProvider
@@ -1303,7 +1294,7 @@ final class InstantSwapQuoteSuccessNotifierProvider
           InstantSwapQuoteSuccessNotifier,
           Option<QuoteSuccess>
         > {
-  const InstantSwapQuoteSuccessNotifierProvider._()
+  InstantSwapQuoteSuccessNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -1338,8 +1329,7 @@ abstract class _$InstantSwapQuoteSuccessNotifier
   Option<QuoteSuccess> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Option<QuoteSuccess>, Option<QuoteSuccess>>;
     final element =
         ref.element
@@ -1349,17 +1339,17 @@ abstract class _$InstantSwapQuoteSuccessNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(instantSwapDisabledAmount)
-const instantSwapDisabledAmountProvider = InstantSwapDisabledAmountProvider._();
+final instantSwapDisabledAmountProvider = InstantSwapDisabledAmountProvider._();
 
 final class InstantSwapDisabledAmountProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const InstantSwapDisabledAmountProvider._()
+  InstantSwapDisabledAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -1396,13 +1386,13 @@ String _$instantSwapDisabledAmountHash() =>
     r'3efac6cd116f2783ec4bd02f9e735bb80dd5befa';
 
 @ProviderFor(instantSwapDisabledDropdown)
-const instantSwapDisabledDropdownProvider =
+final instantSwapDisabledDropdownProvider =
     InstantSwapDisabledDropdownProvider._();
 
 final class InstantSwapDisabledDropdownProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const InstantSwapDisabledDropdownProvider._()
+  InstantSwapDisabledDropdownProvider._()
     : super(
         from: null,
         argument: null,

@@ -10,12 +10,12 @@ part of 'math_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(mathHelper)
-const mathHelperProvider = MathHelperProvider._();
+final mathHelperProvider = MathHelperProvider._();
 
 final class MathHelperProvider
     extends $FunctionalProvider<MathHelper, MathHelper, MathHelper>
     with $Provider<MathHelper> {
-  const MathHelperProvider._()
+  MathHelperProvider._()
     : super(
         from: null,
         argument: null,

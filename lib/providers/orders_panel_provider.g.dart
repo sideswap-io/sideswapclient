@@ -10,12 +10,12 @@ part of 'orders_panel_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(RequestOrderSortFlagNotifier)
-const requestOrderSortFlagProvider = RequestOrderSortFlagNotifierProvider._();
+final requestOrderSortFlagProvider = RequestOrderSortFlagNotifierProvider._();
 
 final class RequestOrderSortFlagNotifierProvider
     extends
         $NotifierProvider<RequestOrderSortFlagNotifier, RequestOrderSortFlag> {
-  const RequestOrderSortFlagNotifierProvider._()
+  RequestOrderSortFlagNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -50,8 +50,7 @@ abstract class _$RequestOrderSortFlagNotifier
   RequestOrderSortFlag build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<RequestOrderSortFlag, RequestOrderSortFlag>;
     final element =
         ref.element
@@ -61,12 +60,12 @@ abstract class _$RequestOrderSortFlagNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(internalUiOrders)
-const internalUiOrdersProvider = InternalUiOrdersProvider._();
+final internalUiOrdersProvider = InternalUiOrdersProvider._();
 
 final class InternalUiOrdersProvider
     extends
@@ -76,7 +75,7 @@ final class InternalUiOrdersProvider
           Iterable<InternalUiOrder>
         >
     with $Provider<Iterable<InternalUiOrder>> {
-  const InternalUiOrdersProvider._()
+  InternalUiOrdersProvider._()
     : super(
         from: null,
         argument: null,
@@ -113,12 +112,12 @@ final class InternalUiOrdersProvider
 String _$internalUiOrdersHash() => r'5dd8ee793c82f23338969303266c90a90437de92';
 
 @ProviderFor(maxOrderAmount)
-const maxOrderAmountProvider = MaxOrderAmountProvider._();
+final maxOrderAmountProvider = MaxOrderAmountProvider._();
 
 final class MaxOrderAmountProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const MaxOrderAmountProvider._()
+  MaxOrderAmountProvider._()
     : super(
         from: null,
         argument: null,
@@ -154,7 +153,7 @@ final class MaxOrderAmountProvider
 String _$maxOrderAmountHash() => r'8770516371abd8eb6549673fffc2342454aac366';
 
 @ProviderFor(ordersBids)
-const ordersBidsProvider = OrdersBidsProvider._();
+final ordersBidsProvider = OrdersBidsProvider._();
 
 final class OrdersBidsProvider
     extends
@@ -164,7 +163,7 @@ final class OrdersBidsProvider
           Iterable<InternalUiOrder>
         >
     with $Provider<Iterable<InternalUiOrder>> {
-  const OrdersBidsProvider._()
+  OrdersBidsProvider._()
     : super(
         from: null,
         argument: null,
@@ -201,7 +200,7 @@ final class OrdersBidsProvider
 String _$ordersBidsHash() => r'a36debc09ddfbbf6d4b79f863a098bafe531f8ed';
 
 @ProviderFor(ordersAsks)
-const ordersAsksProvider = OrdersAsksProvider._();
+final ordersAsksProvider = OrdersAsksProvider._();
 
 final class OrdersAsksProvider
     extends
@@ -211,7 +210,7 @@ final class OrdersAsksProvider
           Iterable<InternalUiOrder>
         >
     with $Provider<Iterable<InternalUiOrder>> {
-  const OrdersAsksProvider._()
+  OrdersAsksProvider._()
     : super(
         from: null,
         argument: null,
@@ -248,12 +247,12 @@ final class OrdersAsksProvider
 String _$ordersAsksHash() => r'a219b8095af5c092805bad910834c13d3af9184e';
 
 @ProviderFor(mapRange)
-const mapRangeProvider = MapRangeFamily._();
+final mapRangeProvider = MapRangeFamily._();
 
 final class MapRangeProvider
     extends $FunctionalProvider<Decimal, Decimal, Decimal>
     with $Provider<Decimal> {
-  const MapRangeProvider._({
+  MapRangeProvider._({
     required MapRangeFamily super.from,
     required (double, double, double, double, double) super.argument,
   }) : super(
@@ -319,7 +318,7 @@ final class MapRangeFamily extends $Family
           Decimal,
           (double, double, double, double, double)
         > {
-  const MapRangeFamily._()
+  MapRangeFamily._()
     : super(
         retry: null,
         name: r'mapRangeProvider',
@@ -344,7 +343,7 @@ final class MapRangeFamily extends $Family
 }
 
 @ProviderFor(ordersPanelBids)
-const ordersPanelBidsProvider = OrdersPanelBidsProvider._();
+final ordersPanelBidsProvider = OrdersPanelBidsProvider._();
 
 final class OrdersPanelBidsProvider
     extends
@@ -354,7 +353,7 @@ final class OrdersPanelBidsProvider
           Iterable<InternalUiOrder>
         >
     with $Provider<Iterable<InternalUiOrder>> {
-  const OrdersPanelBidsProvider._()
+  OrdersPanelBidsProvider._()
     : super(
         from: null,
         argument: null,
@@ -391,7 +390,7 @@ final class OrdersPanelBidsProvider
 String _$ordersPanelBidsHash() => r'c18640c79c6516de2ebd5bb474e779f93cc279b4';
 
 @ProviderFor(ordersPanelAsks)
-const ordersPanelAsksProvider = OrdersPanelAsksProvider._();
+final ordersPanelAsksProvider = OrdersPanelAsksProvider._();
 
 final class OrdersPanelAsksProvider
     extends
@@ -401,7 +400,7 @@ final class OrdersPanelAsksProvider
           Iterable<InternalUiOrder>
         >
     with $Provider<Iterable<InternalUiOrder>> {
-  const OrdersPanelAsksProvider._()
+  OrdersPanelAsksProvider._()
     : super(
         from: null,
         argument: null,

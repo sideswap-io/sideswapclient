@@ -189,10 +189,16 @@ class OptionsView extends StatelessWidget {
     super.key,
     required this.options,
     required this.onSelected,
+    this.textStyle,
+    this.constraints,
+    this.width = 200,
   });
 
   final Iterable<String> options;
   final AutocompleteOnSelected<String> onSelected;
+  final TextStyle? textStyle;
+  final BoxConstraints? constraints;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +208,9 @@ class OptionsView extends StatelessWidget {
         elevation: 4.0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 200, maxWidth: 200),
+          constraints:
+              constraints ??
+              const BoxConstraints(maxHeight: 200, maxWidth: 200),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SingleChildScrollView(
@@ -227,12 +235,12 @@ class OptionsView extends StatelessWidget {
                         }
                         return Container(
                           height: 54,
-                          width: 200,
+                          width: width,
                           color: highlight
                               ? SideSwapColors.navyBlue
                               : const Color(0xFF062d44),
                           padding: const EdgeInsets.all(16.0),
-                          child: Text(option),
+                          child: Text(option, style: textStyle),
                         );
                       },
                     ),

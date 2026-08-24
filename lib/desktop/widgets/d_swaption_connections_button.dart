@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
+import 'package:sideswap/providers/autosign_provider.dart';
 import 'package:sideswap/providers/swaption_session_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
@@ -240,7 +241,6 @@ class SwaptionConnectionsMenu extends HookConsumerWidget {
                                   }
                                 },
                                 child: SizedBox(
-                                  width: 100,
                                   height: 24,
                                   child: Center(
                                     child: Text(
@@ -273,18 +273,8 @@ class SwaptionConnectionsMenu extends HookConsumerWidget {
                             slivers: [
                               SliverList.builder(
                                 itemBuilder: (context, index) {
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SwaptionDomainItem(
-                                        swaptionSession:
-                                            swaptionSessions[index],
-                                      ),
-                                      index < swaptionSessions.length - 1
-                                          ? const SizedBox(height: 10)
-                                          : const SizedBox.shrink(),
-                                    ],
+                                  return SwaptionDomainItem(
+                                    swaptionSession: swaptionSessions[index],
                                   );
                                 },
                                 itemCount: swaptionSessions.length,
@@ -312,13 +302,36 @@ class SwaptionDomainItem extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Divider(color: SideSwapColors.blumine),
+        Divider(color: SideSwapColors.pewterBlue, height: 3, thickness: 1),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              swaptionSession.domain,
-              style: Theme.of(context).textTheme.titleSmall,
+            Row(
+              children: [
+                if (swaptionSession.isLocal)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.computer,
+                      size: 14,
+                      color: SideSwapColors.brightTurquoise,
+                    ),
+                  ),
+                Text(
+                  swaptionSession.domain,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                if (swaptionSession.isLocal)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Text(
+                      '[local]',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: SideSwapColors.brightTurquoise,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             IconButton(
               onPressed: () {
@@ -328,10 +341,37 @@ class SwaptionDomainItem extends ConsumerWidget {
                 );
                 ref.read(walletProvider).sendMsg(msg);
               },
-              icon: Icon(Icons.desktop_access_disabled_outlined, size: 18),
+              icon: Icon(Icons.link_off, size: 18),
             ),
           ],
         ),
+        if (swaptionSession.isLocal)
+          Row(
+            children: [
+              Checkbox(
+                value: ref.watch(
+                  autosignProvider.select(
+                    (m) => m[swaptionSession.domain] == true,
+                  ),
+                ),
+                onChanged: (v) async {
+                  if (v == true) {
+                    final ok =
+                        await ref.read(walletProvider).isAuthenticated();
+                    if (!ok) return;
+                  }
+                  ref.read(autosignProvider.notifier).setAutosign(
+                        swaptionSession.domain,
+                        v ?? false,
+                      );
+                },
+              ),
+              Text(
+                'Autosign'.tr(),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
       ],
     );
   }

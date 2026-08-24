@@ -10,12 +10,12 @@ part of 'token_market_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(TokenMarketNotifier)
-const tokenMarketProvider = TokenMarketNotifierProvider._();
+final tokenMarketProvider = TokenMarketNotifierProvider._();
 
 final class TokenMarketNotifierProvider
     extends
         $NotifierProvider<TokenMarketNotifier, Map<String, AssetDetailsData>> {
-  const TokenMarketNotifierProvider._()
+  TokenMarketNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -52,8 +52,7 @@ abstract class _$TokenMarketNotifier
   Map<String, AssetDetailsData> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -71,6 +70,6 @@ abstract class _$TokenMarketNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

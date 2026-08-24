@@ -5,12 +5,14 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:ffi/ffi.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/subjects.dart';
@@ -26,6 +28,7 @@ import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
+import 'package:sideswap/providers/autosign_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/chart_providers.dart';
@@ -56,6 +59,7 @@ import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/wallet_descriptors_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -239,6 +243,10 @@ class SideswapWallet {
     await _recvSubscription?.cancel();
     await _receivePortSubscription?.cancel();
 
+    // TODO(future-iteration): async listener on PublishSubject does not serialise messages —
+    // a second From can begin processing before the first await completes (e.g. two concurrent
+    // sign requests). Acceptable for current throughput; fix with asyncMap or a queue if
+    // concurrent signer handling becomes a real concern.
     _recvSubscription = _recvSubject.listen((value) async {
       try {
         await _recvMsg(value);
@@ -664,7 +672,7 @@ class SideswapWallet {
             .showNotification(
               from.localMessage.title,
               from.localMessage.body,
-              payload: from.localMessage.body,
+              styleInformation: BigTextStyleInformation(from.localMessage.body),
             );
         break;
       case From_Msg.jadePorts:
@@ -859,6 +867,14 @@ class SideswapWallet {
   }
 
   void openTxUrl(String txid, bool isLiquid, bool unblinded) {
+    // A peg that has not completed yet carries no txid, so callers can reach
+    // here with an empty string. There is nothing to link to, and forwarding it
+    // to the rust client aborts the whole app: process_blinded_values does
+    // `Txid::from_str(txid).expect("must be valid txid")`.
+    if (txid.isEmpty) {
+      return;
+    }
+
     if (!isLiquid || !unblinded) {
       final url = generateTxidUrl(
         txid,
@@ -1252,7 +1268,8 @@ class SideswapWallet {
       Status.settingsAboutUs ||
       Status.settingsNetwork ||
       Status.settingsLogs ||
-      Status.settingsCurrency => () {
+      Status.settingsCurrency ||
+      Status.settingsDescriptors => () {
         ref.read(pageStatusProvider.notifier).setStatus(Status.settingsPage);
         return false;
       }(),
@@ -1550,6 +1567,7 @@ class SideswapWallet {
     ref.invalidate(allPegsProvider);
     ref.invalidate(pegOrderFeesProvider);
     ref.invalidate(ampIdProvider);
+    ref.invalidate(walletDescriptorsProvider);
     ref.invalidate(jadeOnboardingRegistrationProvider);
     ref.invalidate(firstLaunchStateProvider);
     mnemonicRepository.clear();
@@ -1998,6 +2016,12 @@ class SideswapWallet {
         ref
             .read(firstLaunchStateProvider.notifier)
             .setFirstLaunchState(const FirstLaunchStateTypeEmpty());
+        ref
+            .read(walletDescriptorsProvider.notifier)
+            .setDescriptors(
+              login.success.nativeSegwitDescriptor,
+              login.success.nestedSegwitDescriptor,
+            );
       }(),
       From_Login_Result.notSet => () {
         ref
@@ -2229,7 +2253,53 @@ class SideswapWallet {
   }
 
   void _handleSignerRequest(From_SignerRequest signerRequest) {
-    ref.read(notificationsProvider.notifier).addNotification(signerRequest);
+    logger.d('[SideswapWallet][_handleSignerRequest]: $signerRequest');
+
+    if (signerRequest.hasConnect()) {
+      ref.read(notificationsProvider.notifier).addNotification(signerRequest);
+      return;
+    }
+
+    if (!signerRequest.hasSign()) {
+      return;
+    }
+
+    final sessions = ref.read(swaptionSessionProvider);
+    final originTrusted = sessions.any((s) => s.domain == signerRequest.origin);
+    if (!originTrusted) {
+      logger.w(
+        'Ignoring signer request: origin "${signerRequest.origin}" has no matching session',
+      );
+      return;
+    }
+
+    final autosign = ref
+        .read(autosignProvider.notifier)
+        .isAutosign(signerRequest.origin);
+    if (!autosign) {
+      ref.read(notificationsProvider.notifier).addNotification(signerRequest);
+      return;
+    }
+
+    final autosignFallthrough = isSignRequestWithinAutosignUsdLimit(
+      pricesUsd: ref.read(portfolioPricesProvider),
+      assets: ref.read(assetUtilsProvider).assets,
+      liquidAssetId: ref.read(liquidAssetIdStateProvider),
+      sign: signerRequest.sign,
+    );
+    if (autosignFallthrough != null) {
+      logger.w('Autosign fallthrough: ${autosignFallthrough.description}');
+      ref.read(notificationsProvider.notifier).addNotification(signerRequest);
+      return;
+    }
+
+    sendMsg(
+      To()
+        ..signerResponse = To_SignerResponse(
+          reqId: signerRequest.reqId,
+          accept: true,
+        ),
+    );
   }
 
   void _handleSignerReturn() async {
@@ -2251,6 +2321,17 @@ class SideswapWallet {
   }
 
   void _handleSessionRemoved(From_SessionRemoved sessionRemoved) {
+    // Clear autosign by domain while the session row still exists (lookup before list mutation).
+    final session = ref
+        .read(swaptionSessionProvider)
+        .firstWhereOrNull((s) => s.sessionId == sessionRemoved.sessionId);
+    if (session != null) {
+      ref.read(autosignProvider.notifier).removeAutosign(session.domain);
+    } else {
+      logger.w(
+        'Autosign cleanup skipped: session ${sessionRemoved.sessionId} not found in provider state',
+      );
+    }
     ref
         .read(swaptionSessionProvider.notifier)
         .removeSessions(sessionRemoved.sessionId);

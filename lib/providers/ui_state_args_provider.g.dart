@@ -10,11 +10,11 @@ part of 'ui_state_args_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(UiStateArgsNotifier)
-const uiStateArgsProvider = UiStateArgsNotifierProvider._();
+final uiStateArgsProvider = UiStateArgsNotifierProvider._();
 
 final class UiStateArgsNotifierProvider
     extends $NotifierProvider<UiStateArgsNotifier, WalletMainArguments> {
-  const UiStateArgsNotifierProvider._()
+  UiStateArgsNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$UiStateArgsNotifier extends $Notifier<WalletMainArguments> {
   WalletMainArguments build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<WalletMainArguments, WalletMainArguments>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$UiStateArgsNotifier extends $Notifier<WalletMainArguments> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

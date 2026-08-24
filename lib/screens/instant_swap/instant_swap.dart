@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -120,6 +121,41 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
 
         final topAssets = ref.watch(exchangeTopAssetListProvider);
 
+        final optionQuoteSuccess = ref.watch(exchangeQuoteSuccessProvider);
+        final enabled = ref.watch(exchangeSwapButtonEnabledProvider);
+        final exchangeQuoteNotifier = ref.watch(exchangeQuoteProvider.notifier);
+        final enterKeyPressedState = useState<bool>(false);
+
+        useEffect(() {
+          if (!enterKeyPressedState.value) {
+            return;
+          }
+
+          final quoteSuccess = optionQuoteSuccess.match(
+            () => null,
+            (quoteSuccess) => quoteSuccess,
+          );
+
+          if (quoteSuccess == null) {
+            return;
+          }
+
+          if (enabled) {
+            logger.d(
+              '[InstantSwapTopDropdownAmountTextField] accepting quote by enter key pressed',
+            );
+            Future.microtask(() {
+              exchangeQuoteNotifier.acceptQuote(
+                optionQuoteSuccess: optionQuoteSuccess,
+              );
+            });
+          }
+
+          enterKeyPressedState.value = false;
+
+          return;
+        }, [optionQuoteSuccess, enabled, enterKeyPressedState.value]);
+
         ref.listen(exchangeTopAmountProvider, (_, next) {
           if (next.isEmpty) {
             controller.clear();
@@ -146,6 +182,7 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
           if (optionCurrentEditAsset == optionTopAsset) {
             if (next == 0) {
               Future.microtask(() {
+                if (!context.mounted) return;
                 ref.read(exchangeQuoteProvider.notifier).stopQuotes();
                 ref
                     .read(exchangeQuoteProvider.notifier)
@@ -161,9 +198,10 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
                 );
 
                 if (topSatoshiAmount > topBalance) {
-                  Future.microtask(
-                    () => ref.invalidate(exchangeBottomAmountProvider),
-                  );
+                  Future.microtask(() {
+                    if (!context.mounted) return;
+                    ref.invalidate(exchangeBottomAmountProvider);
+                  });
                 }
 
                 ref.read(exchangeQuoteProvider.notifier).startSellQuotes(next);
@@ -295,6 +333,9 @@ class InstantSwapTopDropdownAmountTextField extends HookConsumerWidget {
               if (value.isEmpty) {
                 ref.invalidate(exchangeBottomAmountProvider);
               }
+            },
+            onSubmitted: (value) {
+              enterKeyPressedState.value = true;
             },
           ),
         );

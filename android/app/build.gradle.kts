@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services") apply false
 }
@@ -11,22 +10,25 @@ android {
     namespace = "io.sideswap"
     compileSdk = flutter.compileSdkVersion
 
+    // AGP 9 removed the global `android.defaults.buildfeatures.buildconfig` flag
+    // (default is now false); opt the app module back in per-module instead.
+    buildFeatures {
+        buildConfig = true
+    }
+
+    // JNA + the prebuilt .so files require extracted (not compressed-in-APK)
+    // native libs. AGP 9 forbids android:extractNativeLibs in the manifest;
+    // express the same intent here instead.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
-    kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/main/kotlin")
-            }
-        }
     }
 
     lint {
@@ -68,6 +70,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
 flutter {
     source = "../.."
 }
@@ -79,7 +87,7 @@ dependencies {
 
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-    implementation("net.java.dev.jna:jna:5.14.0@aar")
+    implementation("net.java.dev.jna:jna:5.17.0@aar")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     if (getGradle().getStartParameter().getTaskRequests().toString().contains("Full")) {

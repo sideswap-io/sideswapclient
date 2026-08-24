@@ -27,8 +27,9 @@ class SwapDeliverAmount extends HookConsumerWidget {
 
     final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
 
-    final assetBalance =
-        ref.watch(assetBalanceProvider)[swapDeliverAsset.assetId] ?? 0;
+    final assetBalance = ref.watch(
+      availableBalanceForAssetIdProvider(swapDeliverAsset.assetId),
+    );
     final precision = ref
         .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: swapDeliverAsset.assetId);

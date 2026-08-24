@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:decimal/decimal.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -457,11 +458,13 @@ class OrderTtlNotifier extends _$OrderTtlNotifier {
 
 @riverpod
 class OrderSignTtl extends _$OrderSignTtl {
+  void _onTick(Timer _) => updateState();
+
   @override
   int build() {
     ref.watch(orderTtlProvider);
 
-    final timer = Timer.periodic(Duration(seconds: 1), (_) => updateState());
+    final timer = Timer.periodic(Duration(seconds: 1), _onTick);
     ref.onDispose(() => timer.cancel());
 
     return updateState();

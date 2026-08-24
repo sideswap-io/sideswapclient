@@ -238,7 +238,6 @@ class OutputsCreator extends _$OutputsCreator {
           OutputsData(
             type: 'sideswap_app',
             version: '2',
-            timestamp: DateTime.now().millisecondsSinceEpoch,
             receivers: [
               OutputsReceiver(
                 address: address,
@@ -256,7 +255,6 @@ class OutputsCreator extends _$OutputsCreator {
         final outputs = OutputsData(
           type: 'sideswap_app',
           version: '2',
-          timestamp: DateTime.now().millisecondsSinceEpoch,
           receivers: receivers,
         );
         return Right<OutputsError, OutputsData>(outputs);
@@ -274,9 +272,15 @@ class OutputsCreator extends _$OutputsCreator {
       return false;
     }
 
+    // Stamp the export timestamp here (once, at save time) rather than in
+    // build(), so OutputsCreator does not emit a new value on every rebuild.
+    final stampedOutputs = currentOutputs.copyWith(
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+
     final fileName = switch (suggestedName) {
       final suggestedName? => '$suggestedName.json',
-      _ => 'SideSwap_${currentOutputs.timestamp.toString()}_unsigned.json',
+      _ => 'SideSwap_${stampedOutputs.timestamp.toString()}_unsigned.json',
     };
 
     final directory = await getApplicationDocumentsDirectory();
@@ -289,7 +293,7 @@ class OutputsCreator extends _$OutputsCreator {
       return false;
     }
 
-    final outputData = jsonEncode(currentOutputs.toJson());
+    final outputData = jsonEncode(stampedOutputs.toJson());
 
     final Uint8List fileData = Uint8List.fromList(outputData.codeUnits);
     const String mimeType = 'text/plain';

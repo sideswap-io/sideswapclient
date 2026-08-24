@@ -10,7 +10,7 @@ part of 'pin_keyboard_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(pinKeyboardHelper)
-const pinKeyboardHelperProvider = PinKeyboardHelperProvider._();
+final pinKeyboardHelperProvider = PinKeyboardHelperProvider._();
 
 final class PinKeyboardHelperProvider
     extends
@@ -20,7 +20,7 @@ final class PinKeyboardHelperProvider
           PinKeyboardHelper
         >
     with $Provider<PinKeyboardHelper> {
-  const PinKeyboardHelperProvider._()
+  PinKeyboardHelperProvider._()
     : super(
         from: null,
         argument: null,

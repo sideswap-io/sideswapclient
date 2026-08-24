@@ -819,7 +819,7 @@ $FCMDetailsCopyWith<$Res>? get details {
 /// @nodoc
 mixin _$FCMDetails {
 
- FCMTx? get tx;@JsonKey(name: 'peg_payout') FCMPeg? get pegPayout;@JsonKey(name: 'peg_detected') FCMPeg? get pegDetected;@JsonKey(name: 'order_cancelled') FCMOrderCancelled? get orderCancelled;
+ FCMTx? get tx; FCMPeg? get pegPayout; FCMPeg? get pegDetected; FCMOrderCancelled? get orderCancelled;
 /// Create a copy of FCMDetails
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -852,7 +852,7 @@ abstract mixin class $FCMDetailsCopyWith<$Res>  {
   factory $FCMDetailsCopyWith(FCMDetails value, $Res Function(FCMDetails) _then) = _$FCMDetailsCopyWithImpl;
 @useResult
 $Res call({
- FCMTx? tx,@JsonKey(name: 'peg_payout') FCMPeg? pegPayout,@JsonKey(name: 'peg_detected') FCMPeg? pegDetected,@JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled
+ FCMTx? tx, FCMPeg? pegPayout, FCMPeg? pegDetected, FCMOrderCancelled? orderCancelled
 });
 
 
@@ -1005,7 +1005,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMTx? tx, @JsonKey(name: 'peg_payout')  FCMPeg? pegPayout, @JsonKey(name: 'peg_detected')  FCMPeg? pegDetected, @JsonKey(name: 'order_cancelled')  FCMOrderCancelled? orderCancelled)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMTx? tx,  FCMPeg? pegPayout,  FCMPeg? pegDetected,  FCMOrderCancelled? orderCancelled)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FCMDetails() when $default != null:
 return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled);case _:
@@ -1026,7 +1026,7 @@ return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled)
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMTx? tx, @JsonKey(name: 'peg_payout')  FCMPeg? pegPayout, @JsonKey(name: 'peg_detected')  FCMPeg? pegDetected, @JsonKey(name: 'order_cancelled')  FCMOrderCancelled? orderCancelled)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMTx? tx,  FCMPeg? pegPayout,  FCMPeg? pegDetected,  FCMOrderCancelled? orderCancelled)  $default,) {final _that = this;
 switch (_that) {
 case _FCMDetails():
 return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled);}
@@ -1043,7 +1043,7 @@ return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled)
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMTx? tx, @JsonKey(name: 'peg_payout')  FCMPeg? pegPayout, @JsonKey(name: 'peg_detected')  FCMPeg? pegDetected, @JsonKey(name: 'order_cancelled')  FCMOrderCancelled? orderCancelled)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMTx? tx,  FCMPeg? pegPayout,  FCMPeg? pegDetected,  FCMOrderCancelled? orderCancelled)?  $default,) {final _that = this;
 switch (_that) {
 case _FCMDetails() when $default != null:
 return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled);case _:
@@ -1055,16 +1055,16 @@ return $default(_that.tx,_that.pegPayout,_that.pegDetected,_that.orderCancelled)
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class _FCMDetails implements FCMDetails {
-  const _FCMDetails({this.tx, @JsonKey(name: 'peg_payout') this.pegPayout, @JsonKey(name: 'peg_detected') this.pegDetected, @JsonKey(name: 'order_cancelled') this.orderCancelled});
+  const _FCMDetails({this.tx, this.pegPayout, this.pegDetected, this.orderCancelled});
   factory _FCMDetails.fromJson(Map<String, dynamic> json) => _$FCMDetailsFromJson(json);
 
 @override final  FCMTx? tx;
-@override@JsonKey(name: 'peg_payout') final  FCMPeg? pegPayout;
-@override@JsonKey(name: 'peg_detected') final  FCMPeg? pegDetected;
-@override@JsonKey(name: 'order_cancelled') final  FCMOrderCancelled? orderCancelled;
+@override final  FCMPeg? pegPayout;
+@override final  FCMPeg? pegDetected;
+@override final  FCMOrderCancelled? orderCancelled;
 
 /// Create a copy of FCMDetails
 /// with the given fields replaced by the non-null parameter values.
@@ -1099,7 +1099,7 @@ abstract mixin class _$FCMDetailsCopyWith<$Res> implements $FCMDetailsCopyWith<$
   factory _$FCMDetailsCopyWith(_FCMDetails value, $Res Function(_FCMDetails) _then) = __$FCMDetailsCopyWithImpl;
 @override @useResult
 $Res call({
- FCMTx? tx,@JsonKey(name: 'peg_payout') FCMPeg? pegPayout,@JsonKey(name: 'peg_detected') FCMPeg? pegDetected,@JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled
+ FCMTx? tx, FCMPeg? pegPayout, FCMPeg? pegDetected, FCMOrderCancelled? orderCancelled
 });
 
 
@@ -1181,7 +1181,7 @@ $FCMOrderCancelledCopyWith<$Res>? get orderCancelled {
 /// @nodoc
 mixin _$FCMTx {
 
-@JsonKey(name: 'tx_type') FCMTxType? get txType;@JsonKey(name: 'txid') String? get txId;
+ FCMTxType? get txType;@JsonKey(name: 'txid') String? get txId;
 /// Create a copy of FCMTx
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1214,7 +1214,7 @@ abstract mixin class $FCMTxCopyWith<$Res>  {
   factory $FCMTxCopyWith(FCMTx value, $Res Function(FCMTx) _then) = _$FCMTxCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'tx_type') FCMTxType? txType,@JsonKey(name: 'txid') String? txId
+ FCMTxType? txType,@JsonKey(name: 'txid') String? txId
 });
 
 
@@ -1317,7 +1317,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'tx_type')  FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FCMTx() when $default != null:
 return $default(_that.txType,_that.txId);case _:
@@ -1338,7 +1338,7 @@ return $default(_that.txType,_that.txId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'tx_type')  FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)  $default,) {final _that = this;
 switch (_that) {
 case _FCMTx():
 return $default(_that.txType,_that.txId);}
@@ -1355,7 +1355,7 @@ return $default(_that.txType,_that.txId);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'tx_type')  FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FCMTxType? txType, @JsonKey(name: 'txid')  String? txId)?  $default,) {final _that = this;
 switch (_that) {
 case _FCMTx() when $default != null:
 return $default(_that.txType,_that.txId);case _:
@@ -1367,13 +1367,13 @@ return $default(_that.txType,_that.txId);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class _FCMTx implements FCMTx {
-  const _FCMTx({@JsonKey(name: 'tx_type') this.txType, @JsonKey(name: 'txid') this.txId});
+  const _FCMTx({this.txType, @JsonKey(name: 'txid') this.txId});
   factory _FCMTx.fromJson(Map<String, dynamic> json) => _$FCMTxFromJson(json);
 
-@override@JsonKey(name: 'tx_type') final  FCMTxType? txType;
+@override final  FCMTxType? txType;
 @override@JsonKey(name: 'txid') final  String? txId;
 
 /// Create a copy of FCMTx
@@ -1409,7 +1409,7 @@ abstract mixin class _$FCMTxCopyWith<$Res> implements $FCMTxCopyWith<$Res> {
   factory _$FCMTxCopyWith(_FCMTx value, $Res Function(_FCMTx) _then) = __$FCMTxCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'tx_type') FCMTxType? txType,@JsonKey(name: 'txid') String? txId
+ FCMTxType? txType,@JsonKey(name: 'txid') String? txId
 });
 
 
@@ -1441,7 +1441,7 @@ as String?,
 /// @nodoc
 mixin _$FCMPeg {
 
-@JsonKey(name: 'order_id') String? get orderId;@JsonKey(name: 'peg_in') bool? get pegIn;@JsonKey(name: 'tx_hash') String? get txHash; int? get vout;@JsonKey(name: 'created_at') int? get createdAt;@JsonKey(name: 'payout_txid') String? get payoutTxId; int? get payout;
+ String? get orderId; bool? get pegIn; String? get txHash; int? get vout; int? get createdAt; String? get payoutTxId; int? get payout;
 /// Create a copy of FCMPeg
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1474,7 +1474,7 @@ abstract mixin class $FCMPegCopyWith<$Res>  {
   factory $FCMPegCopyWith(FCMPeg value, $Res Function(FCMPeg) _then) = _$FCMPegCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'order_id') String? orderId,@JsonKey(name: 'peg_in') bool? pegIn,@JsonKey(name: 'tx_hash') String? txHash, int? vout,@JsonKey(name: 'created_at') int? createdAt,@JsonKey(name: 'payout_txid') String? payoutTxId, int? payout
+ String? orderId, bool? pegIn, String? txHash, int? vout, int? createdAt, String? payoutTxId, int? payout
 });
 
 
@@ -1582,7 +1582,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId, @JsonKey(name: 'peg_in')  bool? pegIn, @JsonKey(name: 'tx_hash')  String? txHash,  int? vout, @JsonKey(name: 'created_at')  int? createdAt, @JsonKey(name: 'payout_txid')  String? payoutTxId,  int? payout)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? orderId,  bool? pegIn,  String? txHash,  int? vout,  int? createdAt,  String? payoutTxId,  int? payout)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FCMPeg() when $default != null:
 return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdAt,_that.payoutTxId,_that.payout);case _:
@@ -1603,7 +1603,7 @@ return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdA
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId, @JsonKey(name: 'peg_in')  bool? pegIn, @JsonKey(name: 'tx_hash')  String? txHash,  int? vout, @JsonKey(name: 'created_at')  int? createdAt, @JsonKey(name: 'payout_txid')  String? payoutTxId,  int? payout)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? orderId,  bool? pegIn,  String? txHash,  int? vout,  int? createdAt,  String? payoutTxId,  int? payout)  $default,) {final _that = this;
 switch (_that) {
 case _FCMPeg():
 return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdAt,_that.payoutTxId,_that.payout);}
@@ -1620,7 +1620,7 @@ return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdA
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'order_id')  String? orderId, @JsonKey(name: 'peg_in')  bool? pegIn, @JsonKey(name: 'tx_hash')  String? txHash,  int? vout, @JsonKey(name: 'created_at')  int? createdAt, @JsonKey(name: 'payout_txid')  String? payoutTxId,  int? payout)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? orderId,  bool? pegIn,  String? txHash,  int? vout,  int? createdAt,  String? payoutTxId,  int? payout)?  $default,) {final _that = this;
 switch (_that) {
 case _FCMPeg() when $default != null:
 return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdAt,_that.payoutTxId,_that.payout);case _:
@@ -1632,18 +1632,18 @@ return $default(_that.orderId,_that.pegIn,_that.txHash,_that.vout,_that.createdA
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class _FCMPeg implements FCMPeg {
-  const _FCMPeg({@JsonKey(name: 'order_id') this.orderId, @JsonKey(name: 'peg_in') this.pegIn, @JsonKey(name: 'tx_hash') this.txHash, this.vout, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'payout_txid') this.payoutTxId, this.payout});
+  const _FCMPeg({this.orderId, this.pegIn, this.txHash, this.vout, this.createdAt, this.payoutTxId, this.payout});
   factory _FCMPeg.fromJson(Map<String, dynamic> json) => _$FCMPegFromJson(json);
 
-@override@JsonKey(name: 'order_id') final  String? orderId;
-@override@JsonKey(name: 'peg_in') final  bool? pegIn;
-@override@JsonKey(name: 'tx_hash') final  String? txHash;
+@override final  String? orderId;
+@override final  bool? pegIn;
+@override final  String? txHash;
 @override final  int? vout;
-@override@JsonKey(name: 'created_at') final  int? createdAt;
-@override@JsonKey(name: 'payout_txid') final  String? payoutTxId;
+@override final  int? createdAt;
+@override final  String? payoutTxId;
 @override final  int? payout;
 
 /// Create a copy of FCMPeg
@@ -1679,7 +1679,7 @@ abstract mixin class _$FCMPegCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
   factory _$FCMPegCopyWith(_FCMPeg value, $Res Function(_FCMPeg) _then) = __$FCMPegCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'order_id') String? orderId,@JsonKey(name: 'peg_in') bool? pegIn,@JsonKey(name: 'tx_hash') String? txHash, int? vout,@JsonKey(name: 'created_at') int? createdAt,@JsonKey(name: 'payout_txid') String? payoutTxId, int? payout
+ String? orderId, bool? pegIn, String? txHash, int? vout, int? createdAt, String? payoutTxId, int? payout
 });
 
 
@@ -1716,7 +1716,7 @@ as int?,
 /// @nodoc
 mixin _$FCMOrderCancelled {
 
-@JsonKey(name: 'order_id') String? get orderId;
+ String? get orderId;
 /// Create a copy of FCMOrderCancelled
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1749,7 +1749,7 @@ abstract mixin class $FCMOrderCancelledCopyWith<$Res>  {
   factory $FCMOrderCancelledCopyWith(FCMOrderCancelled value, $Res Function(FCMOrderCancelled) _then) = _$FCMOrderCancelledCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'order_id') String? orderId
+ String? orderId
 });
 
 
@@ -1851,7 +1851,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? orderId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FCMOrderCancelled() when $default != null:
 return $default(_that.orderId);case _:
@@ -1872,7 +1872,7 @@ return $default(_that.orderId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'order_id')  String? orderId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? orderId)  $default,) {final _that = this;
 switch (_that) {
 case _FCMOrderCancelled():
 return $default(_that.orderId);}
@@ -1889,7 +1889,7 @@ return $default(_that.orderId);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'order_id')  String? orderId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? orderId)?  $default,) {final _that = this;
 switch (_that) {
 case _FCMOrderCancelled() when $default != null:
 return $default(_that.orderId);case _:
@@ -1901,13 +1901,13 @@ return $default(_that.orderId);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class _FCMOrderCancelled implements FCMOrderCancelled {
-  const _FCMOrderCancelled({@JsonKey(name: 'order_id') this.orderId});
+  const _FCMOrderCancelled({this.orderId});
   factory _FCMOrderCancelled.fromJson(Map<String, dynamic> json) => _$FCMOrderCancelledFromJson(json);
 
-@override@JsonKey(name: 'order_id') final  String? orderId;
+@override final  String? orderId;
 
 /// Create a copy of FCMOrderCancelled
 /// with the given fields replaced by the non-null parameter values.
@@ -1942,7 +1942,7 @@ abstract mixin class _$FCMOrderCancelledCopyWith<$Res> implements $FCMOrderCance
   factory _$FCMOrderCancelledCopyWith(_FCMOrderCancelled value, $Res Function(_FCMOrderCancelled) _then) = __$FCMOrderCancelledCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'order_id') String? orderId
+ String? orderId
 });
 
 

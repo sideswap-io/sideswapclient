@@ -1,11 +1,11 @@
 name: candlesticks
 description: A high-performance full featured candlesticks chart for all platforms.
-version: 2.1.0
+version: 2.1.1
 homepage: https://github.com/r-mzy47/candlesticks
 
 environment:
-  sdk: ^3.10.0
-  flutter: ^3.38.1
+  sdk: ^3.12.2
+  flutter: ^3.44.6
 
 dependencies:
   flutter:

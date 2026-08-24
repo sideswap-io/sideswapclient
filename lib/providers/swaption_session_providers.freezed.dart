@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SwaptionSession {
 
- String get sessionId; String get domain;
+ String get sessionId; String get domain; bool get isLocal;
 /// Create a copy of SwaptionSession
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SwaptionSessionCopyWith<SwaptionSession> get copyWith => _$SwaptionSessionCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwaptionSession&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.domain, domain) || other.domain == domain));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwaptionSession&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.domain, domain) || other.domain == domain)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,domain);
+int get hashCode => Object.hash(runtimeType,sessionId,domain,isLocal);
 
 @override
 String toString() {
-  return 'SwaptionSession(sessionId: $sessionId, domain: $domain)';
+  return 'SwaptionSession(sessionId: $sessionId, domain: $domain, isLocal: $isLocal)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SwaptionSessionCopyWith<$Res>  {
   factory $SwaptionSessionCopyWith(SwaptionSession value, $Res Function(SwaptionSession) _then) = _$SwaptionSessionCopyWithImpl;
 @useResult
 $Res call({
- String sessionId, String domain
+ String sessionId, String domain, bool isLocal
 });
 
 
@@ -65,11 +65,12 @@ class _$SwaptionSessionCopyWithImpl<$Res>
 
 /// Create a copy of SwaptionSession
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? domain = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? domain = null,Object? isLocal = null,}) {
   return _then(_self.copyWith(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,domain: null == domain ? _self.domain : domain // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isLocal: null == isLocal ? _self.isLocal : isLocal // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -151,10 +152,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sessionId,  String domain)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sessionId,  String domain,  bool isLocal)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SwaptionSession() when $default != null:
-return $default(_that.sessionId,_that.domain);case _:
+return $default(_that.sessionId,_that.domain,_that.isLocal);case _:
   return orElse();
 
 }
@@ -172,10 +173,10 @@ return $default(_that.sessionId,_that.domain);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sessionId,  String domain)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sessionId,  String domain,  bool isLocal)  $default,) {final _that = this;
 switch (_that) {
 case _SwaptionSession():
-return $default(_that.sessionId,_that.domain);}
+return $default(_that.sessionId,_that.domain,_that.isLocal);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -189,10 +190,10 @@ return $default(_that.sessionId,_that.domain);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sessionId,  String domain)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sessionId,  String domain,  bool isLocal)?  $default,) {final _that = this;
 switch (_that) {
 case _SwaptionSession() when $default != null:
-return $default(_that.sessionId,_that.domain);case _:
+return $default(_that.sessionId,_that.domain,_that.isLocal);case _:
   return null;
 
 }
@@ -204,11 +205,12 @@ return $default(_that.sessionId,_that.domain);case _:
 @JsonSerializable()
 
 class _SwaptionSession implements SwaptionSession {
-  const _SwaptionSession({required this.sessionId, required this.domain});
+  const _SwaptionSession({required this.sessionId, required this.domain, required this.isLocal});
   factory _SwaptionSession.fromJson(Map<String, dynamic> json) => _$SwaptionSessionFromJson(json);
 
 @override final  String sessionId;
 @override final  String domain;
+@override final  bool isLocal;
 
 /// Create a copy of SwaptionSession
 /// with the given fields replaced by the non-null parameter values.
@@ -223,16 +225,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwaptionSession&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.domain, domain) || other.domain == domain));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwaptionSession&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.domain, domain) || other.domain == domain)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,domain);
+int get hashCode => Object.hash(runtimeType,sessionId,domain,isLocal);
 
 @override
 String toString() {
-  return 'SwaptionSession(sessionId: $sessionId, domain: $domain)';
+  return 'SwaptionSession(sessionId: $sessionId, domain: $domain, isLocal: $isLocal)';
 }
 
 
@@ -243,7 +245,7 @@ abstract mixin class _$SwaptionSessionCopyWith<$Res> implements $SwaptionSession
   factory _$SwaptionSessionCopyWith(_SwaptionSession value, $Res Function(_SwaptionSession) _then) = __$SwaptionSessionCopyWithImpl;
 @override @useResult
 $Res call({
- String sessionId, String domain
+ String sessionId, String domain, bool isLocal
 });
 
 
@@ -260,11 +262,12 @@ class __$SwaptionSessionCopyWithImpl<$Res>
 
 /// Create a copy of SwaptionSession
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? domain = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? domain = null,Object? isLocal = null,}) {
   return _then(_SwaptionSession(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,domain: null == domain ? _self.domain : domain // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isLocal: null == isLocal ? _self.isLocal : isLocal // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

@@ -222,8 +222,8 @@ class JadeLockRepository implements AbstractJadeLockRepository {
   JadeLockRepository({
     required this.ref,
     required this.isJadeWallet,
-    JadeLockState lockState = const JadeLockState.locked(),
-  }) : _lockState = lockState;
+    this._lockState = const JadeLockState.locked(),
+  });
 
   @override
   JadeLockState get lockState => _lockState;

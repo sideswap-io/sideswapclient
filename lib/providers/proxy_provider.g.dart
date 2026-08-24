@@ -10,7 +10,7 @@ part of 'proxy_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ProxySettingsRepositoryNotifier)
-const proxySettingsRepositoryProvider =
+final proxySettingsRepositoryProvider =
     ProxySettingsRepositoryNotifierProvider._();
 
 final class ProxySettingsRepositoryNotifierProvider
@@ -19,7 +19,7 @@ final class ProxySettingsRepositoryNotifierProvider
           ProxySettingsRepositoryNotifier,
           AbstractProxySettingsRepository
         > {
-  const ProxySettingsRepositoryNotifierProvider._()
+  ProxySettingsRepositoryNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -56,8 +56,7 @@ abstract class _$ProxySettingsRepositoryNotifier
   AbstractProxySettingsRepository build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -75,6 +74,6 @@ abstract class _$ProxySettingsRepositoryNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

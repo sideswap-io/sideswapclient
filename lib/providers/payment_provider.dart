@@ -301,9 +301,7 @@ class CreatedTxHelper {
   final String? _serverFee;
   final CreatedTx? createdTx;
 
-  CreatedTxHelper({String? networkFee, String? serverFee, this.createdTx})
-    : _networkFee = networkFee,
-      _serverFee = serverFee;
+  CreatedTxHelper({this._networkFee, this._serverFee, this.createdTx});
 
   String feePerByte() {
     return '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';

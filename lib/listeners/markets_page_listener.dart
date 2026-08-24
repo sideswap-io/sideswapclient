@@ -8,6 +8,7 @@ import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/screens/markets/market_swap_dialog.dart';
 import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/quote_event_providers.dart';
@@ -249,7 +250,6 @@ class MarketsPageListener extends HookConsumerWidget {
       ],
     );
 
-    final marketTradeRepository = ref.watch(marketTradeRepositoryProvider);
     final optionStartOrderQuoteSuccess = ref.watch(
       marketStartOrderQuoteSuccessProvider,
     );
@@ -263,8 +263,8 @@ class MarketsPageListener extends HookConsumerWidget {
             return;
           }
 
-          await marketTradeRepository.makeSwapTrade(
-            context: context,
+          await showSwapTradeDialog(
+            context, ref,
             optionQuoteSuccess: optionStartOrderQuoteSuccess,
           );
 
@@ -274,7 +274,7 @@ class MarketsPageListener extends HookConsumerWidget {
       });
 
       return;
-    }, [optionStartOrderQuoteSuccess, marketTradeRepository]);
+    }, [optionStartOrderQuoteSuccess]);
 
     final optionStartOrderQuoteLowBalance = ref.watch(
       marketStartOrderLowBalanceErrorProvider,

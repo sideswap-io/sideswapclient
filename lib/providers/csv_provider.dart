@@ -1,25 +1,33 @@
 import 'dart:collection';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:csv/csv.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/screens/accounts/widgets/csv_io_impl.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'csv_provider.g.dart';
 part 'csv_provider.freezed.dart';
+
+typedef HelperFactory = TransItemHelper Function(TransItem);
+
+abstract class CsvPathResolver {
+  Future<String> resolve();
+}
+
+abstract class CsvFileIo {
+  Future<void> saveXFileTo(XFile file, String path);
+  Future<void> writeAndShare(String path, String content);
+}
 
 @riverpod
 CsvRepository csvRepository(Ref ref) {
@@ -28,24 +36,29 @@ CsvRepository csvRepository(Ref ref) {
   final amountToString = ref.watch(amountToStringProvider);
 
   return CsvRepository(
-    ref: ref,
     allTxs: allTxs,
     assets: assets,
     amountToString: amountToString,
+    helperFactory: (tx) => ref.read(transItemHelperProvider(tx)),
+    pathResolver: FlavorConfig.isDesktop
+        ? const DesktopCsvPathResolver()
+        : const MobileCsvPathResolver(),
   );
 }
 
 class CsvRepository {
-  final Ref ref;
   final Map<String, TransItem> allTxs;
   final Map<String, Asset> assets;
   final AmountToString amountToString;
+  final HelperFactory _helperFactory;
+  final CsvPathResolver _pathResolver;
 
   CsvRepository({
-    required this.ref,
     required this.allTxs,
     required this.assets,
     required this.amountToString,
+    required this._helperFactory,
+    required this._pathResolver,
   });
 
   Future<List<List<String>>> fetchData() async {
@@ -58,10 +71,8 @@ class CsvRepository {
       }
     }
 
-    // Keep only known assets where
     usedAssets.removeWhere((element) => !assets.containsKey(element));
 
-    // Header
     final line = <String>[];
     line.add("txid");
     line.add("type");
@@ -73,11 +84,10 @@ class CsvRepository {
     }
     result.add(line);
 
-    // Items
     var txsSorted = allTxs.values.toList();
     txsSorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     for (var transItem in txsSorted) {
-      final transItemHelper = ref.read(transItemHelperProvider(transItem));
+      final transItemHelper = _helperFactory(transItem);
       final txAmountStr = amountToString.amountToString(
         AmountToStringParameters(amount: transItem.tx.networkFee.toInt()),
       );
@@ -109,28 +119,10 @@ class CsvRepository {
 
   Future<String> fetchStringData() async {
     final data = await fetchData();
-    return const ListToCsvConverter().convert(data);
+    return csv.encode(data);
   }
 
-  Future<String> fetchOutputPath() async {
-    if (FlavorConfig.isDesktop) {
-      final defaultPath = await getApplicationDocumentsDirectory();
-      const defaultName = 'transactions.csv';
-      final saveLocation = await getSaveLocation(
-        initialDirectory: defaultPath.path,
-        suggestedName: defaultName,
-      );
-
-      if (saveLocation == null) {
-        return Future.error('Invalid path or canceled by user');
-      }
-
-      return saveLocation.path;
-    } else {
-      final dir = (await getTemporaryDirectory()).path;
-      return '$dir/data.csv';
-    }
-  }
+  Future<String> fetchOutputPath() => _pathResolver.resolve();
 }
 
 @freezed
@@ -142,6 +134,9 @@ sealed class CvsState with _$CvsState {
 @riverpod
 class CsvNotifier extends _$CsvNotifier {
   late CsvRepository _csvRepository;
+  final CsvFileIo _fileIo;
+
+  CsvNotifier({CsvFileIo? fileIo}) : _fileIo = fileIo ?? const RealCsvFileIo();
 
   @override
   FutureOr<CvsState> build() {
@@ -153,66 +148,35 @@ class CsvNotifier extends _$CsvNotifier {
     state = AsyncValue.loading();
     ref.notifyListeners();
 
-    final csvPath = await AsyncValue.guard(() async {
+    try {
       final path = await _csvRepository.fetchOutputPath();
-      return path;
-    });
-
-    await csvPath.when(
-      loading: () {
-        state = const AsyncValue.loading();
-      },
-      data: (value) async {
-        const defaultName = 'transactions.csv';
-        final csv = await _csvRepository.fetchStringData();
-        final data = Uint8List.fromList(csv.codeUnits);
-        final file = XFile.fromData(
-          data,
-          name: defaultName,
-          mimeType: 'text/plain',
-        );
-        await file.saveTo(value);
-
-        state = const AsyncValue.data(CvsState.success());
-      },
-      error: (error, stackTrace) {
-        logger.e(error);
-        logger.e(stackTrace);
-
-        state = AsyncValue.error(error, stackTrace);
-      },
-    );
+      final csv = await _csvRepository.fetchStringData();
+      final data = Uint8List.fromList(csv.codeUnits);
+      final file = XFile.fromData(
+        data,
+        name: 'transactions.csv',
+        mimeType: 'text/plain',
+      );
+      await _fileIo.saveXFileTo(file, path);
+      state = const AsyncValue.data(CvsState.success());
+    } catch (error, stackTrace) {
+      logger.e(error);
+      logger.e(stackTrace);
+      state = AsyncValue.error(error, stackTrace);
+    }
   }
 
-  Future<void> share(RenderBox? box) async {
-    final csvPath = await AsyncValue.guard(() async {
+  Future<void> share() async {
+    try {
       final path = await _csvRepository.fetchOutputPath();
-      return path;
-    });
-
-    await csvPath.when(
-      loading: () {
-        state = const AsyncValue.loading();
-      },
-      data: (value) async {
-        if (box == null) {
-          return;
-        }
-
-        final csv = await _csvRepository.fetchStringData();
-        await File(value).writeAsString(csv);
-        final filesToShare = [XFile(value, mimeType: 'text/csv')];
-        await SharePlus.instance.share(ShareParams(files: filesToShare));
-
-        state = const AsyncValue.data(CvsState.success());
-      },
-      error: (error, stackTrace) {
-        logger.e(error);
-        logger.e(stackTrace);
-
-        state = AsyncValue.error(error, stackTrace);
-      },
-    );
+      final csv = await _csvRepository.fetchStringData();
+      await _fileIo.writeAndShare(path, csv);
+      state = const AsyncValue.data(CvsState.success());
+    } catch (error, stackTrace) {
+      logger.e(error);
+      logger.e(stackTrace);
+      state = AsyncValue.error(error, stackTrace);
+    }
   }
 }
 

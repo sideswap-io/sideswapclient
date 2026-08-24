@@ -10,7 +10,7 @@ part of 'config_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(sharedPreferences)
-const sharedPreferencesProvider = SharedPreferencesProvider._();
+final sharedPreferencesProvider = SharedPreferencesProvider._();
 
 final class SharedPreferencesProvider
     extends
@@ -20,7 +20,7 @@ final class SharedPreferencesProvider
           SharedPreferences
         >
     with $Provider<SharedPreferences> {
-  const SharedPreferencesProvider._()
+  SharedPreferencesProvider._()
     : super(
         from: null,
         argument: null,
@@ -57,11 +57,11 @@ final class SharedPreferencesProvider
 String _$sharedPreferencesHash() => r'1a6250efdc19e86c923ceb598a77ff74d64378e6';
 
 @ProviderFor(Configuration)
-const configurationProvider = ConfigurationProvider._();
+final configurationProvider = ConfigurationProvider._();
 
 final class ConfigurationProvider
     extends $NotifierProvider<Configuration, SideswapSettings> {
-  const ConfigurationProvider._()
+  ConfigurationProvider._()
     : super(
         from: null,
         argument: null,
@@ -88,14 +88,13 @@ final class ConfigurationProvider
   }
 }
 
-String _$configurationHash() => r'ab4174980408b6819b092321198cc2f37fbe5464';
+String _$configurationHash() => r'07b26da2666d63c6365991091af7c3746f93bd26';
 
 abstract class _$Configuration extends $Notifier<SideswapSettings> {
   SideswapSettings build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<SideswapSettings, SideswapSettings>;
     final element =
         ref.element
@@ -105,6 +104,6 @@ abstract class _$Configuration extends $Notifier<SideswapSettings> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

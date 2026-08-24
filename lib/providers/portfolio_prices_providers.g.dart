@@ -10,11 +10,11 @@ part of 'portfolio_prices_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(RequestPortfolioPrices)
-const requestPortfolioPricesProvider = RequestPortfolioPricesProvider._();
+final requestPortfolioPricesProvider = RequestPortfolioPricesProvider._();
 
 final class RequestPortfolioPricesProvider
     extends $NotifierProvider<RequestPortfolioPrices, void> {
-  const RequestPortfolioPricesProvider._()
+  RequestPortfolioPricesProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$RequestPortfolioPrices extends $Notifier<void> {
   void build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<void, void>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$RequestPortfolioPrices extends $Notifier<void> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, null);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PortfolioPricesNotifier)
-const portfolioPricesProvider = PortfolioPricesNotifierProvider._();
+final portfolioPricesProvider = PortfolioPricesNotifierProvider._();
 
 final class PortfolioPricesNotifierProvider
     extends $NotifierProvider<PortfolioPricesNotifier, Map<String, double>> {
-  const PortfolioPricesNotifierProvider._()
+  PortfolioPricesNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -103,8 +102,7 @@ abstract class _$PortfolioPricesNotifier
   Map<String, double> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Map<String, double>, Map<String, double>>;
     final element =
         ref.element
@@ -114,6 +112,6 @@ abstract class _$PortfolioPricesNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

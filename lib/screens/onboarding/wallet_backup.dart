@@ -70,8 +70,7 @@ class WalletBackup extends HookConsumerWidget {
                     onCheckError: (_) {
                       return false;
                     },
-                    currentSelectedItem: -1,
-                    words: words,
+                    currentIndex: -1,
                   );
                 },
               ),

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -8,8 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/env_provider.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as status;
+import 'package:sideswap/providers/pegx_connection.dart';
 
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/pegx_model.dart';
@@ -70,92 +67,88 @@ class PegxRegisterFailedNotifier extends _$PegxRegisterFailedNotifier {
   }
 }
 
-@Riverpod(keepAlive: true)
-PegxWebsocketClient pegxWebsocketClient(Ref ref) {
-  final env = ref.watch(envProvider);
-  final client = PegxWebsocketClient(ref, env);
-
-  client.connectToSocket();
-
-  return client;
+/// Generates random Int64 in range [min, max).
+Int64 pegxRandomId({int min = 0, int? max}) {
+  max ??= Int64.MAX_VALUE.toInt();
+  if (min > max) {
+    throw ArgumentError(
+      'Value passed for `min` ($min) must be less than value passed for `max` ($max)',
+    );
+  }
+  final rng = math.Random();
+  return Int64((rng.nextDouble() * (max - min)).toInt() + min);
 }
 
-class PegxWebsocketClient {
+@Riverpod(keepAlive: true)
+PegxProtocolHandler pegxWebsocketClient(Ref ref) {
+  final env = ref.watch(envProvider);
+  return PegxProtocolHandler(ref, env);
+}
+
+class PegxProtocolHandler {
   final Ref ref;
   final int _env;
+  final PegxConnection _connection;
+  final Int64 Function() _idGenerator;
 
-  IOWebSocketChannel? _client;
-  bool _isConnected = false;
-  final _heartbeatInterval = 10;
-  final _reconnectIntervalMs = 5000;
-  int _reconnectCount = 120;
-  final _sendBuffer = Queue<Req>();
   Timer? _heartBeatTimer, _reconnectTimer;
+  int _reconnectCount = 120;
+  final int _heartbeatInterval = 10;
+  final int _reconnectIntervalMs = 5000;
 
   String? _token;
   String? _accountKey;
-
   Int64 _lastAddGaidId = Int64();
 
-  PegxWebsocketClient(this.ref, this._env);
+  PegxProtocolHandler(
+    this.ref,
+    this._env, {
+    PegxConnection? connection,
+    Int64 Function()? idGenerator,
+  }) : _connection = connection ?? PegxConnection(),
+       _idGenerator = idGenerator ?? pegxRandomId;
 
   // TODO (malcolmpl): disconnect from websocket when server serverLoginStateProvider change to ServerLoginStateLogout
   Future<void> connectToSocket() async {
-    if (!_isConnected) {
-      _lastAddGaidId = Int64();
-      final apiUrl = switch (_env) {
-        SIDESWAP_ENV_TESTNET || SIDESWAP_ENV_LOCAL_TESTNET => testnetPegxApiUrl,
-        _ => pegxApiUrl,
-      };
-
-      logger.d('Pegx API endpoint: $apiUrl');
-      await WebSocket.connect(apiUrl)
-          .then((ws) {
-            ws.pingInterval = Duration(seconds: _heartbeatInterval);
-            _client = IOWebSocketChannel(ws);
-            if (_client != null) {
-              _reconnectTimer?.cancel();
-              _listenToMessage();
-              _isConnected = true;
-              _startHeartBeatTimer();
-              while (_sendBuffer.isNotEmpty) {
-                Req buffer = _sendBuffer.first;
-                _sendBuffer.remove(buffer);
-                _send(buffer);
-              }
-            }
-          })
-          .onError((error, stackTrace) {
-            logger.e(error);
-            logger.e(stackTrace);
-            disconnect();
-            _reconnect();
-          });
+    if (_connection.isConnected) return;
+    _lastAddGaidId = Int64();
+    final apiUrl = switch (_env) {
+      SIDESWAP_ENV_TESTNET || SIDESWAP_ENV_LOCAL_TESTNET => testnetPegxApiUrl,
+      _ => pegxApiUrl,
+    };
+    logger.d('Pegx API endpoint: $apiUrl');
+    try {
+      await _connection.connect(apiUrl);
+      _reconnectTimer?.cancel();
+      _listenToMessage();
+      _connection.drainBuffer();
+      _startHeartBeatTimer();
+    } catch (error, stackTrace) {
+      logger.e(error);
+      logger.e(stackTrace);
+      disconnect();
+      unawaited(_reconnect());
     }
   }
 
   void _listenToMessage() {
-    _client?.stream.listen(
+    _connection.stream?.listen(
       (dynamic message) {
         final response = Res.fromBuffer(message as Uint8List);
-        // logger.d("Pegx RESPONSE: $response");
         switch (response.whichBody()) {
           case Res_Body.resp:
             handleResp(response.resp);
-            break;
           case Res_Body.notif:
             handleNotif(response.notif);
-            break;
           case Res_Body.error:
             handleError(response.error);
-            break;
           case Res_Body.notSet:
             break;
         }
       },
       onDone: () {
         disconnect();
-        _reconnect();
+        unawaited(_reconnect());
       },
     );
   }
@@ -293,15 +286,14 @@ class PegxWebsocketClient {
   }
 
   void disconnect() {
-    if (_isConnected) {
+    if (_connection.isConnected) {
       ref
           .read(pegxLoginStateProvider.notifier)
           .setState(const PegxLoginStateLoading());
       logger.d('Pegx disconnected.');
-      _client?.sink.close(status.normalClosure);
+      _connection.close();
       _heartBeatTimer?.cancel();
       _reconnectTimer?.cancel();
-      _isConnected = false;
     }
   }
 
@@ -310,31 +302,21 @@ class PegxWebsocketClient {
       Timer timer,
     ) {
       final buffer = Req(loadAssets: Req_LoadAssets());
-      _send(buffer);
+      _connection.send(buffer.writeToBuffer());
     });
-  }
-
-  void _send(Req buffer) {
-    if (_isConnected) {
-      logger.d('Pegx => $buffer');
-      _client?.sink.add(buffer.writeToBuffer());
-      return;
-    }
-
-    _sendBuffer.add(buffer);
   }
 
   void login() {
     final reqLogin = Req(
       loginOrRegister: Req_LoginOrRegister(),
-      id: _randomId(),
+      id: _idGenerator(),
     );
-    _send(reqLogin);
+    _connection.send(reqLogin.writeToBuffer());
   }
 
   void resume({String? token}) {
     final reqResume = Req(resume: Req_Resume(token: token));
-    _send(reqResume);
+    _connection.send(reqResume.writeToBuffer());
   }
 
   void addGaid() {
@@ -353,12 +335,12 @@ class PegxWebsocketClient {
       return;
     }
 
-    _lastAddGaidId = _randomId();
+    _lastAddGaidId = _idGenerator();
     final reqAddGaid = Req(
       addGaid: Req_AddGaid(gaid: ampId, accountKey: _accountKey),
       id: _lastAddGaidId,
     );
-    _send(reqAddGaid);
+    _connection.send(reqAddGaid.writeToBuffer());
   }
 
   void errorAndGoBack(String error) {
@@ -367,22 +349,5 @@ class PegxWebsocketClient {
     disconnect();
 
     ref.read(pageStatusProvider.notifier).setStatus(Status.ampRegister);
-  }
-
-  /// generates a random Int64 whose value falls between [min] (inclusive) and [max] (exclusive)
-  Int64 _randomId({int min = 0, int? max}) {
-    // -- force default even if `null` is explicitly passed
-    max ??= Int64.MAX_VALUE.toInt();
-
-    if (min > max) {
-      throw ArgumentError(
-        'Value passed for `min` ($min) must be less than value passed for `max` ($max)',
-      );
-    }
-
-    final rng = math.Random();
-    var multiplier = rng.nextDouble();
-
-    return Int64((multiplier * (max - min)).toInt() + min);
   }
 }

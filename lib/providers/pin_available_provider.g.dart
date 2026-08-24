@@ -10,11 +10,11 @@ part of 'pin_available_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(pinAvailable)
-const pinAvailableProvider = PinAvailableProvider._();
+final pinAvailableProvider = PinAvailableProvider._();
 
 final class PinAvailableProvider extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const PinAvailableProvider._()
+  PinAvailableProvider._()
     : super(
         from: null,
         argument: null,
@@ -50,11 +50,11 @@ final class PinAvailableProvider extends $FunctionalProvider<bool, bool, bool>
 String _$pinAvailableHash() => r'02ef428a6810afed4af4e2ed5aa509faae1d0439';
 
 @ProviderFor(isPinAvailable)
-const isPinAvailableProvider = IsPinAvailableProvider._();
+final isPinAvailableProvider = IsPinAvailableProvider._();
 
 final class IsPinAvailableProvider extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const IsPinAvailableProvider._()
+  IsPinAvailableProvider._()
     : super(
         from: null,
         argument: null,

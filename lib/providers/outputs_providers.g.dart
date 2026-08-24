@@ -52,7 +52,7 @@ Map<String, dynamic> _$OutputsReceiverToJson(_OutputsReceiver instance) =>
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(OutputsReaderNotifier)
-const outputsReaderProvider = OutputsReaderNotifierProvider._();
+final outputsReaderProvider = OutputsReaderNotifierProvider._();
 
 final class OutputsReaderNotifierProvider
     extends
@@ -60,7 +60,7 @@ final class OutputsReaderNotifierProvider
           OutputsReaderNotifier,
           Either<OutputsError, OutputsData>
         > {
-  const OutputsReaderNotifierProvider._()
+  OutputsReaderNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -97,8 +97,7 @@ abstract class _$OutputsReaderNotifier
   Either<OutputsError, OutputsData> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -116,17 +115,17 @@ abstract class _$OutputsReaderNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(OutputsCreator)
-const outputsCreatorProvider = OutputsCreatorProvider._();
+final outputsCreatorProvider = OutputsCreatorProvider._();
 
 final class OutputsCreatorProvider
     extends
         $NotifierProvider<OutputsCreator, Either<OutputsError, OutputsData>> {
-  const OutputsCreatorProvider._()
+  OutputsCreatorProvider._()
     : super(
         from: null,
         argument: null,
@@ -162,8 +161,7 @@ abstract class _$OutputsCreator
   Either<OutputsError, OutputsData> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
@@ -181,16 +179,16 @@ abstract class _$OutputsCreator
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(outputsDataLength)
-const outputsDataLengthProvider = OutputsDataLengthProvider._();
+final outputsDataLengthProvider = OutputsDataLengthProvider._();
 
 final class OutputsDataLengthProvider extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  const OutputsDataLengthProvider._()
+  OutputsDataLengthProvider._()
     : super(
         from: null,
         argument: null,

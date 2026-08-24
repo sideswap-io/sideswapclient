@@ -10,11 +10,11 @@ part of 'qrcode_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(QrCodeResultModelNotifier)
-const qrCodeResultModelProvider = QrCodeResultModelNotifierProvider._();
+final qrCodeResultModelProvider = QrCodeResultModelNotifierProvider._();
 
 final class QrCodeResultModelNotifierProvider
     extends $NotifierProvider<QrCodeResultModelNotifier, QrCodeResultModel> {
-  const QrCodeResultModelNotifierProvider._()
+  QrCodeResultModelNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$QrCodeResultModelNotifier
   QrCodeResultModel build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<QrCodeResultModel, QrCodeResultModel>;
     final element =
         ref.element
@@ -60,17 +59,17 @@ abstract class _$QrCodeResultModelNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(qrcodeHelper)
-const qrcodeHelperProvider = QrcodeHelperProvider._();
+final qrcodeHelperProvider = QrcodeHelperProvider._();
 
 final class QrcodeHelperProvider
     extends $FunctionalProvider<QrCodeHelper, QrCodeHelper, QrCodeHelper>
     with $Provider<QrCodeHelper> {
-  const QrcodeHelperProvider._()
+  QrcodeHelperProvider._()
     : super(
         from: null,
         argument: null,

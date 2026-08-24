@@ -23,6 +23,11 @@ sealed class PegSubscribedValues with _$PegSubscribedValues {
   const factory PegSubscribedValues({
     @Default(0) int pegInMinimumAmount,
     @Default(0) int pegInWalletBalance,
+    // Distinguishes "the server has sent the instant credit limit" from the
+    // zero default. Stays false until the balance actually arrives, so the
+    // peg-in copy can render nothing rather than claim a zero limit. See
+    // ADR-0001.
+    @Default(false) bool pegInWalletBalanceLoaded,
     @Default(0) int pegOutMinimumAmount,
     @Default(0) int pegOutWalletBalance,
     @Default(0) double pegOutNextBlockFeeRate,
@@ -34,6 +39,8 @@ abstract class AbstractPegRepository {
   String extractValue(int value);
   String pegInMinAmount();
   String pegInWalletBalance();
+  bool pegInWalletBalanceLoaded();
+  bool pegInInstantCreditAvailable();
   String pegOutMinAmount();
   String pegOutWalletBalance();
   String pegOutNextBlockFeeRate();
@@ -112,6 +119,23 @@ class PegRepository implements AbstractPegRepository {
   @override
   String pegInWalletBalance() {
     return extractValue(pegSubscribedValues.pegInWalletBalance);
+  }
+
+  /// Whether the server has sent the instant credit limit yet. Read the raw
+  /// readiness flag directly; the formatted balance cannot tell "not loaded"
+  /// apart from a genuine zero.
+  @override
+  bool pegInWalletBalanceLoaded() {
+    return pegSubscribedValues.pegInWalletBalanceLoaded;
+  }
+
+  /// Instant credit is available exactly when the limit is above zero. Derived
+  /// from the raw subscribed value, never from the locale-formatted string,
+  /// which renders zero as '0', '0.00', '0,00' or '' depending on locale and
+  /// whether the asset has loaded.
+  @override
+  bool pegInInstantCreditAvailable() {
+    return pegSubscribedValues.pegInWalletBalance > 0;
   }
 
   @override
@@ -232,6 +256,7 @@ class PegSubscribedValueNotifier extends _$PegSubscribedValueNotifier {
     if (subscribedValue.hasPegInWalletBalance()) {
       state = current.copyWith(
         pegInWalletBalance: subscribedValue.pegInWalletBalance.toInt(),
+        pegInWalletBalanceLoaded: true,
       );
     }
     if (subscribedValue.hasPegOutMinAmount()) {
@@ -359,7 +384,13 @@ class PegOutEditFeeRateHelper {
       final current = _parseCurrentFee(value, twoBlockFeeRate);
       return current < maxFee ? current : maxFee;
     });
-    return (minFee: minFee, maxFee: maxFee, currentFee: currentFee);
+
+    // round values to 2 decimal places and return as double
+    return (
+      minFee: double.parse(minFee.toStringAsFixed(2)),
+      maxFee: double.parse(maxFee.toStringAsFixed(2)),
+      currentFee: double.parse(currentFee.toStringAsFixed(2)),
+    );
   }
 
   /// Returns the current fee as a string for display.

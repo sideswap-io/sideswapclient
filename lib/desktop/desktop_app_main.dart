@@ -34,6 +34,17 @@ class DesktopApp extends HookConsumerWidget {
       return;
     }, const []);
 
+    final locale = context.locale.languageCode;
+    useEffect(() {
+      var cancelled = false;
+      Future.microtask(() {
+        if (!cancelled) {
+          ref.read(localesProvider.notifier).setSelectedLang(locale);
+        }
+      });
+      return () => cancelled = true;
+    }, [locale]);
+
     return Consumer(
       builder: (context, ref, _) {
         final desktopAppTheme = ref.watch(desktopAppThemeProvider);

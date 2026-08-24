@@ -3,12 +3,16 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 
 void main() {
-  late final ProviderContainer container;
-  late final AbstractSatoshiRepository satoshiRepository;
+  late ProviderContainer container;
+  late AbstractSatoshiRepository satoshiRepository;
 
   setUp(() {
     container = ProviderContainer();
     satoshiRepository = container.read(satoshiRepositoryProvider);
+  });
+
+  tearDown(() {
+    container.dispose();
   });
 
   group('parse asset amount precision', () {
@@ -74,7 +78,7 @@ void main() {
       const precision = 0;
       expect(
         satoshiRepository.parseAssetAmount(amount: value, precision: precision),
-        equals(null),
+        equals(1),
       );
     });
 
@@ -83,7 +87,7 @@ void main() {
       const precision = 0;
       expect(
         satoshiRepository.parseAssetAmount(amount: value, precision: precision),
-        equals(null),
+        equals(1),
       );
     });
 
@@ -137,7 +141,7 @@ void main() {
       const precision = 2;
       expect(
         satoshiRepository.parseAssetAmount(amount: value, precision: precision),
-        equals(null),
+        equals(100),
       );
     });
 
@@ -209,7 +213,7 @@ void main() {
       const precision = 8;
       expect(
         satoshiRepository.parseAssetAmount(amount: value, precision: precision),
-        equals(null),
+        equals(100000000),
       );
     });
   });

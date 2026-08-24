@@ -27,7 +27,7 @@ const String kEurxTicker = 'EURx';
 const String kUnknownTicker = '???';
 
 const String kPackageSideswap = 'sideswap';
-const String kPackageGdk = 'GDK';
+const String kPackageLwk = 'LWK';
 
 const int kOneMinute = 60;
 const int kTenMinutes = kOneMinute * 10;
@@ -262,6 +262,10 @@ Future<void> shareTxid(String txid) async {
 Future<void> shareAddress(String address) async {
   logger.d('Sharing address: $address');
   await SharePlus.instance.share(ShareParams(text: address));
+}
+
+Future<void> shareText(String text) async {
+  await SharePlus.instance.share(ShareParams(text: text));
 }
 
 enum CurrencyCharAlignment { begin, end }

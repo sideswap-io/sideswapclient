@@ -11,6 +11,7 @@ sealed class SwaptionSession with _$SwaptionSession {
   const factory SwaptionSession({
     required String sessionId,
     required String domain,
+    required bool isLocal,
   }) = _SwaptionSession;
 
   factory SwaptionSession.fromJson(Map<String, dynamic> json) =>
@@ -32,7 +33,11 @@ class SwaptionSessionNotifier extends _$SwaptionSessionNotifier {
     logger.d('SwaptionSessionNotifier::addSession: $session');
     state = [
       ...state,
-      SwaptionSession(sessionId: session.sessionId, domain: session.domain),
+      SwaptionSession(
+        sessionId: session.sessionId,
+        domain: session.domain,
+        isLocal: session.isLocal,
+      ),
     ];
   }
 
@@ -43,7 +48,13 @@ class SwaptionSessionNotifier extends _$SwaptionSessionNotifier {
 
   void replaceSessions(List<Session> sessions) {
     final newList = sessions
-        .map((e) => SwaptionSession(sessionId: e.sessionId, domain: e.domain))
+        .map(
+          (e) => SwaptionSession(
+            sessionId: e.sessionId,
+            domain: e.domain,
+            isLocal: e.isLocal,
+          ),
+        )
         .toList();
 
     logger.d('SwaptionSessionNotifier::replaceSessions: $newList');

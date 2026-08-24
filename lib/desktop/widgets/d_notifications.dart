@@ -14,12 +14,12 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/notification_removal_reason.dart';
 import 'package:sideswap/providers/notifications_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
-import 'package:window_manager/window_manager.dart';
 
 class DNotificationToolbarButton extends HookConsumerWidget {
   const DNotificationToolbarButton({super.key});
@@ -125,16 +125,11 @@ class DNotificationToolbarButton extends HookConsumerWidget {
       }
 
       if (activeNotifications && !expanded.value) {
-        Future.microtask(() async {
-          expanded.value = true;
-
-          if (notifications.isNotEmpty) {
-            await windowManager.restore();
-            await windowManager.show();
-            await windowManager.setAlwaysOnTop(true);
-            await windowManager.setAlwaysOnTop(false);
-          }
-        });
+        // Raising the window is not done here: a minimized window produces no
+        // frames, so this effect never runs in the case that matters. It lives
+        // at the request delivery boundary instead — see ADR-0004 and
+        // DesktopWindowService.
+        Future.microtask(() => expanded.value = true);
       }
 
       return;
@@ -297,7 +292,12 @@ class NotificationMenu extends HookConsumerWidget {
                             ? const SizedBox()
                             : DCustomTextBigButton(
                                 onPressed: () {
-                                  ref.invalidate(notificationsProvider);
+                                  // Through the notifier, not a bare
+                                  // invalidate: clearing the list has to give
+                                  // up the raise episode too.
+                                  ref
+                                      .read(notificationsProvider.notifier)
+                                      .clearAll();
                                 },
                                 child: SizedBox(
                                   width: 72,
@@ -443,12 +443,16 @@ class NotificationItemSignRequest extends HookConsumerWidget {
         return;
       }, const []);
 
+      // The reason is explicit rather than a `cancel` flag: rejecting and
+      // expiring differ both in whether a rejection is sent and in whether the
+      // window goes back. Putting the window back is the resolution boundary's
+      // job now, not this widget's — see ADR-0004.
       final cancelCallback = useCallback((
         String reqId,
         int notificationId, {
-        bool cancel = true,
+        required NotificationRemovalReason reason,
       }) {
-        if (cancel) {
+        if (reason == NotificationRemovalReason.rejectedByUser) {
           final msg = To();
           msg.signerResponse = To_SignerResponse(reqId: reqId, accept: false);
           ref.read(walletProvider).sendMsg(msg);
@@ -456,10 +460,7 @@ class NotificationItemSignRequest extends HookConsumerWidget {
 
         ref
             .read(notificationsProvider.notifier)
-            .removeNotification(notificationId);
-
-        // minimize window
-        windowManager.minimize();
+            .removeNotification(notificationId, reason: reason);
       }, [notificationId]);
 
       useEffect(() {
@@ -470,7 +471,11 @@ class NotificationItemSignRequest extends HookConsumerWidget {
         optionTtl.match(() {}, (ttl) {
           if (ttl <= 0) {
             Future.microtask(() {
-              cancelCallback(reqId, notificationId, cancel: false);
+              cancelCallback(
+                reqId,
+                notificationId,
+                reason: NotificationRemovalReason.expired,
+              );
             });
             return;
           }
@@ -522,7 +527,7 @@ class NotificationItemSignRequest extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Sign request'.tr(),
+                'Liquid Connect: Signature Required'.tr(),
                 style: defaultStyle.titleTextStyle ?? itemStyle.titleTextStyle,
               ),
               const SizedBox(height: 8),
@@ -574,7 +579,11 @@ class NotificationItemSignRequest extends HookConsumerWidget {
                       width: 160,
                       height: 34,
                       onPressed: () {
-                        cancelCallback(reqId, notificationId);
+                        cancelCallback(
+                          reqId,
+                          notificationId,
+                          reason: NotificationRemovalReason.rejectedByUser,
+                        );
 
                         onTap?.call();
                       },
@@ -595,10 +604,11 @@ class NotificationItemSignRequest extends HookConsumerWidget {
 
                           ref
                               .read(notificationsProvider.notifier)
-                              .removeNotification(notification.id);
-
-                          // minimize window
-                          await windowManager.minimize();
+                              .removeNotification(
+                                notification.id,
+                                reason:
+                                    NotificationRemovalReason.acceptedByUser,
+                              );
 
                           onTap?.call();
                         }
@@ -652,12 +662,16 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
         signRequestNotificationTtlProvider(notificationId),
       );
 
+      // The reason is explicit rather than a `cancel` flag: rejecting and
+      // expiring differ both in whether a rejection is sent and in whether the
+      // window goes back. Putting the window back is the resolution boundary's
+      // job now, not this widget's — see ADR-0004.
       final cancelCallback = useCallback((
         String reqId,
         int notificationId, {
-        bool cancel = true,
+        required NotificationRemovalReason reason,
       }) {
-        if (cancel) {
+        if (reason == NotificationRemovalReason.rejectedByUser) {
           final msg = To();
           msg.signerResponse = To_SignerResponse(reqId: reqId, accept: false);
           ref.read(walletProvider).sendMsg(msg);
@@ -665,10 +679,7 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
 
         ref
             .read(notificationsProvider.notifier)
-            .removeNotification(notificationId);
-
-        // minimize window
-        windowManager.minimize();
+            .removeNotification(notificationId, reason: reason);
       }, [notificationId]);
 
       useEffect(() {
@@ -679,7 +690,11 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
         optionTtl.match(() {}, (ttl) {
           if (ttl <= 0) {
             Future.microtask(() {
-              cancelCallback(reqId, notificationId, cancel: false);
+              cancelCallback(
+                reqId,
+                notificationId,
+                reason: NotificationRemovalReason.expired,
+              );
             });
             return;
           }
@@ -738,7 +753,7 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
                   ),
             )
           : NotificationItemConnectRequestStyle(
-              height: 318,
+              height: 358,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.indigo,
@@ -884,7 +899,11 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
                       width: 160,
                       height: 34,
                       onPressed: () {
-                        cancelCallback(reqId, notificationId);
+                        cancelCallback(
+                          reqId,
+                          notificationId,
+                          reason: NotificationRemovalReason.rejectedByUser,
+                        );
 
                         onTap?.call();
                       },
@@ -905,10 +924,11 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
 
                           ref
                               .read(notificationsProvider.notifier)
-                              .removeNotification(notification.id);
-
-                          // minimize window
-                          await windowManager.minimize();
+                              .removeNotification(
+                                notification.id,
+                                reason:
+                                    NotificationRemovalReason.acceptedByUser,
+                              );
 
                           onTap?.call();
                         }
@@ -1280,7 +1300,10 @@ class DNotificationSignPopup extends HookConsumerWidget {
 
           ref
               .read(notificationsProvider.notifier)
-              .removeNotification(notificationId);
+              .removeNotification(
+                notificationId,
+                reason: NotificationRemovalReason.acceptedByUser,
+              );
 
           if (context.mounted) {
             Navigator.of(context).pop();
@@ -1310,7 +1333,10 @@ class DNotificationSignPopup extends HookConsumerWidget {
 
           ref
               .read(notificationsProvider.notifier)
-              .removeNotification(notification.id);
+              .removeNotification(
+                notification.id,
+                reason: NotificationRemovalReason.rejectedByUser,
+              );
 
           Navigator.of(context).pop();
         },
@@ -1385,7 +1411,11 @@ class DNotificationSignPopup extends HookConsumerWidget {
 
                                 ref
                                     .read(notificationsProvider.notifier)
-                                    .removeNotification(notification.id);
+                                    .removeNotification(
+                                      notification.id,
+                                      reason: NotificationRemovalReason
+                                          .rejectedByUser,
+                                    );
 
                                 Navigator.of(context).pop();
                               },

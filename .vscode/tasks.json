@@ -2,6 +2,52 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Sideswap: cargo sideswap_client + copy .so to jniLibs (Android)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/android/sync_sideswap_client_so.ps1"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "showReuseMessage": false
+            }
+        },
+        {
+            "label": "Sideswap: cargo sideswap_client (desktop)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/windows/sync_sideswap_client_dll.ps1"
+            ],
+            "osx": {
+                "command": "${workspaceFolder}/tools/macos/sync_sideswap_client_dylib.sh",
+                "args": []
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "showReuseMessage": false
+            }
+        },
+        {
             "label": "Sideswap: README task",
             "type": "shell",
             "command": "echo To deploy please run vscode then SHIFT + P - Tasks: Run Task and choose task - Sideswap: deploy",

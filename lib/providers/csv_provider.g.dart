@@ -10,12 +10,12 @@ part of 'csv_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(csvRepository)
-const csvRepositoryProvider = CsvRepositoryProvider._();
+final csvRepositoryProvider = CsvRepositoryProvider._();
 
 final class CsvRepositoryProvider
     extends $FunctionalProvider<CsvRepository, CsvRepository, CsvRepository>
     with $Provider<CsvRepository> {
-  const CsvRepositoryProvider._()
+  CsvRepositoryProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,14 +48,14 @@ final class CsvRepositoryProvider
   }
 }
 
-String _$csvRepositoryHash() => r'3e04a7398ddfe17704bb4bb4d42aa99fb05609b5';
+String _$csvRepositoryHash() => r'29df674b5d24760e6868b51cfe1aac6ad6357011';
 
 @ProviderFor(CsvNotifier)
-const csvProvider = CsvNotifierProvider._();
+final csvProvider = CsvNotifierProvider._();
 
 final class CsvNotifierProvider
     extends $AsyncNotifierProvider<CsvNotifier, CvsState> {
-  const CsvNotifierProvider._()
+  CsvNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -74,14 +74,13 @@ final class CsvNotifierProvider
   CsvNotifier create() => CsvNotifier();
 }
 
-String _$csvNotifierHash() => r'3bbe56ecefa0b4254737ce10426c28eea7973f99';
+String _$csvNotifierHash() => r'5c598dbad13eae6b231970c24c1272d81169de1f';
 
 abstract class _$CsvNotifier extends $AsyncNotifier<CvsState> {
   FutureOr<CvsState> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<CvsState>, CvsState>;
     final element =
         ref.element
@@ -91,16 +90,16 @@ abstract class _$CsvNotifier extends $AsyncNotifier<CvsState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(ExportCsvStateNotifier)
-const exportCsvStateProvider = ExportCsvStateNotifierProvider._();
+final exportCsvStateProvider = ExportCsvStateNotifierProvider._();
 
 final class ExportCsvStateNotifierProvider
     extends $NotifierProvider<ExportCsvStateNotifier, ExportCsvState> {
-  const ExportCsvStateNotifierProvider._()
+  ExportCsvStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -134,8 +133,7 @@ abstract class _$ExportCsvStateNotifier extends $Notifier<ExportCsvState> {
   ExportCsvState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ExportCsvState, ExportCsvState>;
     final element =
         ref.element
@@ -145,6 +143,6 @@ abstract class _$ExportCsvStateNotifier extends $Notifier<ExportCsvState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

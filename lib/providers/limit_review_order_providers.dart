@@ -28,8 +28,7 @@ class MarketLimitTrackIndexPriceStateNotifier
 class TrackingValue {
   final double _trackingValue;
 
-  TrackingValue({required double trackingValue})
-    : _trackingValue = trackingValue;
+  TrackingValue({required this._trackingValue});
 
   double asDouble() {
     return _trackingValue;

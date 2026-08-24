@@ -21,8 +21,6 @@ class DAmpLogin extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(pegxWebsocketClientProvider, (previous, next) {});
-
     final pegxLoginState = ref.watch(pegxLoginStateProvider);
 
     useEffect(() {

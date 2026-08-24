@@ -10,12 +10,12 @@ part of 'payjoin_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(DeductFeeFromOutputEnabledNotifier)
-const deductFeeFromOutputEnabledProvider =
+final deductFeeFromOutputEnabledProvider =
     DeductFeeFromOutputEnabledNotifierProvider._();
 
 final class DeductFeeFromOutputEnabledNotifierProvider
     extends $NotifierProvider<DeductFeeFromOutputEnabledNotifier, bool> {
-  const DeductFeeFromOutputEnabledNotifierProvider._()
+  DeductFeeFromOutputEnabledNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -51,8 +51,7 @@ abstract class _$DeductFeeFromOutputEnabledNotifier extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -62,17 +61,17 @@ abstract class _$DeductFeeFromOutputEnabledNotifier extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PayjoinRadioButtonIndexNotifier)
-const payjoinRadioButtonIndexProvider =
+final payjoinRadioButtonIndexProvider =
     PayjoinRadioButtonIndexNotifierProvider._();
 
 final class PayjoinRadioButtonIndexNotifierProvider
     extends $NotifierProvider<PayjoinRadioButtonIndexNotifier, int> {
-  const PayjoinRadioButtonIndexNotifierProvider._()
+  PayjoinRadioButtonIndexNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -106,8 +105,7 @@ abstract class _$PayjoinRadioButtonIndexNotifier extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -117,16 +115,16 @@ abstract class _$PayjoinRadioButtonIndexNotifier extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(DeductFeeFromOutputNotifier)
-const deductFeeFromOutputProvider = DeductFeeFromOutputNotifierProvider._();
+final deductFeeFromOutputProvider = DeductFeeFromOutputNotifierProvider._();
 
 final class DeductFeeFromOutputNotifierProvider
     extends $NotifierProvider<DeductFeeFromOutputNotifier, bool> {
-  const DeductFeeFromOutputNotifierProvider._()
+  DeductFeeFromOutputNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -154,14 +152,13 @@ final class DeductFeeFromOutputNotifierProvider
 }
 
 String _$deductFeeFromOutputNotifierHash() =>
-    r'f49492c7a64016084f3e064c2a99d7423775d8e9';
+    r'5fc0f3946cdda1dcd09fe0b4252f9546b6ad9d70';
 
 abstract class _$DeductFeeFromOutputNotifier extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -171,17 +168,17 @@ abstract class _$DeductFeeFromOutputNotifier extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(liquidHaveBalance)
-const liquidHaveBalanceProvider = LiquidHaveBalanceProvider._();
+final liquidHaveBalanceProvider = LiquidHaveBalanceProvider._();
 
 final class LiquidHaveBalanceProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const LiquidHaveBalanceProvider._()
+  LiquidHaveBalanceProvider._()
     : super(
         from: null,
         argument: null,
@@ -217,11 +214,11 @@ final class LiquidHaveBalanceProvider
 String _$liquidHaveBalanceHash() => r'9605783c040969471fb26c50e1f58be54018d356';
 
 @ProviderFor(PayjoinFeeAssetNotifier)
-const payjoinFeeAssetProvider = PayjoinFeeAssetNotifierProvider._();
+final payjoinFeeAssetProvider = PayjoinFeeAssetNotifierProvider._();
 
 final class PayjoinFeeAssetNotifierProvider
     extends $NotifierProvider<PayjoinFeeAssetNotifier, Asset?> {
-  const PayjoinFeeAssetNotifierProvider._()
+  PayjoinFeeAssetNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -255,8 +252,7 @@ abstract class _$PayjoinFeeAssetNotifier extends $Notifier<Asset?> {
   Asset? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Asset?, Asset?>;
     final element =
         ref.element
@@ -266,17 +262,17 @@ abstract class _$PayjoinFeeAssetNotifier extends $Notifier<Asset?> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(payjoinAssets)
-const payjoinAssetsProvider = PayjoinAssetsProvider._();
+final payjoinAssetsProvider = PayjoinAssetsProvider._();
 
 final class PayjoinAssetsProvider
     extends $FunctionalProvider<List<Asset>, List<Asset>, List<Asset>>
     with $Provider<List<Asset>> {
-  const PayjoinAssetsProvider._()
+  PayjoinAssetsProvider._()
     : super(
         from: null,
         argument: null,
@@ -312,12 +308,12 @@ final class PayjoinAssetsProvider
 String _$payjoinAssetsHash() => r'e201d5b4ce34359125ba05422d8603892018f9bb';
 
 @ProviderFor(payjoinFeeAssets)
-const payjoinFeeAssetsProvider = PayjoinFeeAssetsProvider._();
+final payjoinFeeAssetsProvider = PayjoinFeeAssetsProvider._();
 
 final class PayjoinFeeAssetsProvider
     extends $FunctionalProvider<List<Asset>, List<Asset>, List<Asset>>
     with $Provider<List<Asset>> {
-  const PayjoinFeeAssetsProvider._()
+  PayjoinFeeAssetsProvider._()
     : super(
         from: null,
         argument: null,

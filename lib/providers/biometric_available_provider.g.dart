@@ -10,12 +10,12 @@ part of 'biometric_available_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(isBiometricEnabled)
-const isBiometricEnabledProvider = IsBiometricEnabledProvider._();
+final isBiometricEnabledProvider = IsBiometricEnabledProvider._();
 
 final class IsBiometricEnabledProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  const IsBiometricEnabledProvider._()
+  IsBiometricEnabledProvider._()
     : super(
         from: null,
         argument: null,
@@ -52,12 +52,12 @@ String _$isBiometricEnabledHash() =>
     r'bbcfc7e74f2fa3b3d2176bfd961284f698f3e899';
 
 @ProviderFor(isBiometricAvailable)
-const isBiometricAvailableProvider = IsBiometricAvailableProvider._();
+final isBiometricAvailableProvider = IsBiometricAvailableProvider._();
 
 final class IsBiometricAvailableProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
-  const IsBiometricAvailableProvider._()
+  IsBiometricAvailableProvider._()
     : super(
         from: null,
         argument: null,

@@ -10,11 +10,11 @@ part of 'select_env_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SelectEnvDialog)
-const selectEnvDialogProvider = SelectEnvDialogProvider._();
+final selectEnvDialogProvider = SelectEnvDialogProvider._();
 
 final class SelectEnvDialogProvider
     extends $NotifierProvider<SelectEnvDialog, bool> {
-  const SelectEnvDialogProvider._()
+  SelectEnvDialogProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$SelectEnvDialog extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -58,15 +57,15 @@ abstract class _$SelectEnvDialog extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SelectedEnv)
-const selectedEnvProvider = SelectedEnvProvider._();
+final selectedEnvProvider = SelectedEnvProvider._();
 
 final class SelectedEnvProvider extends $NotifierProvider<SelectedEnv, int> {
-  const SelectedEnvProvider._()
+  SelectedEnvProvider._()
     : super(
         from: null,
         argument: null,
@@ -99,8 +98,7 @@ abstract class _$SelectedEnv extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -110,15 +108,15 @@ abstract class _$SelectedEnv extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(SelectEnvTap)
-const selectEnvTapProvider = SelectEnvTapProvider._();
+final selectEnvTapProvider = SelectEnvTapProvider._();
 
 final class SelectEnvTapProvider extends $NotifierProvider<SelectEnvTap, int> {
-  const SelectEnvTapProvider._()
+  SelectEnvTapProvider._()
     : super(
         from: null,
         argument: null,
@@ -151,8 +149,7 @@ abstract class _$SelectEnvTap extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -162,6 +159,6 @@ abstract class _$SelectEnvTap extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

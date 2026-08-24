@@ -27,7 +27,10 @@ class InstantSwapListener extends HookConsumerWidget {
 
     ref.listen(exchangeTopSatoshiAmountProvider, (_, next) {
       if (next == 0) {
-        Future.microtask(() => ref.invalidate(exchangeQuoteErrorProvider));
+        Future.microtask(() {
+          if (!context.mounted) return;
+          ref.invalidate(exchangeQuoteErrorProvider);
+        });
       }
     });
 

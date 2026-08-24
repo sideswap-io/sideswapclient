@@ -10,11 +10,11 @@ part of 'network_access_tab_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(NetworkAccessTabNotifier)
-const networkAccessTabProvider = NetworkAccessTabNotifierProvider._();
+final networkAccessTabProvider = NetworkAccessTabNotifierProvider._();
 
 final class NetworkAccessTabNotifierProvider
     extends $NotifierProvider<NetworkAccessTabNotifier, NetworkAccessTabState> {
-  const NetworkAccessTabNotifierProvider._()
+  NetworkAccessTabNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$NetworkAccessTabNotifier
   NetworkAccessTabState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<NetworkAccessTabState, NetworkAccessTabState>;
     final element =
         ref.element
@@ -60,16 +59,16 @@ abstract class _$NetworkAccessTabNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(UseProxyNotifier)
-const useProxyProvider = UseProxyNotifierProvider._();
+final useProxyProvider = UseProxyNotifierProvider._();
 
 final class UseProxyNotifierProvider
     extends $NotifierProvider<UseProxyNotifier, bool> {
-  const UseProxyNotifierProvider._()
+  UseProxyNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$UseProxyNotifier extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -113,6 +111,6 @@ abstract class _$UseProxyNotifier extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

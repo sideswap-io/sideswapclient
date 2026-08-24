@@ -23,8 +23,7 @@ class CsvExportButton extends HookConsumerWidget {
         onTap: disabled
             ? null
             : () async {
-                final box = context.findRenderObject() as RenderBox?;
-                await ref.read(csvProvider.notifier).share(box);
+                await ref.read(csvProvider.notifier).share();
               },
         borderRadius: BorderRadius.circular(21),
         child: Container(

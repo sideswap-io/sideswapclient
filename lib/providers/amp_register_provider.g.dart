@@ -10,7 +10,7 @@ part of 'amp_register_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(stokrSecurities)
-const stokrSecuritiesProvider = StokrSecuritiesProvider._();
+final stokrSecuritiesProvider = StokrSecuritiesProvider._();
 
 final class StokrSecuritiesProvider
     extends
@@ -20,7 +20,7 @@ final class StokrSecuritiesProvider
           List<SecuritiesItem>
         >
     with $Provider<List<SecuritiesItem>> {
-  const StokrSecuritiesProvider._()
+  StokrSecuritiesProvider._()
     : super(
         from: null,
         argument: null,
@@ -57,7 +57,7 @@ final class StokrSecuritiesProvider
 String _$stokrSecuritiesHash() => r'f665b6c3afe8d60222d9fb1663cc0f07cf09d2a0';
 
 @ProviderFor(pegxSecurities)
-const pegxSecuritiesProvider = PegxSecuritiesProvider._();
+final pegxSecuritiesProvider = PegxSecuritiesProvider._();
 
 final class PegxSecuritiesProvider
     extends
@@ -67,7 +67,7 @@ final class PegxSecuritiesProvider
           List<SecuritiesItem>
         >
     with $Provider<List<SecuritiesItem>> {
-  const PegxSecuritiesProvider._()
+  PegxSecuritiesProvider._()
     : super(
         from: null,
         argument: null,
@@ -104,11 +104,11 @@ final class PegxSecuritiesProvider
 String _$pegxSecuritiesHash() => r'd31158c95ccd1b16afa223db032b4cc3a9f23c87';
 
 @ProviderFor(StokrGaidNotifier)
-const stokrGaidProvider = StokrGaidNotifierProvider._();
+final stokrGaidProvider = StokrGaidNotifierProvider._();
 
 final class StokrGaidNotifierProvider
     extends $NotifierProvider<StokrGaidNotifier, StokrGaidState> {
-  const StokrGaidNotifierProvider._()
+  StokrGaidNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -141,8 +141,7 @@ abstract class _$StokrGaidNotifier extends $Notifier<StokrGaidState> {
   StokrGaidState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<StokrGaidState, StokrGaidState>;
     final element =
         ref.element
@@ -152,12 +151,12 @@ abstract class _$StokrGaidNotifier extends $Notifier<StokrGaidState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(checkAmpStatus)
-const checkAmpStatusProvider = CheckAmpStatusProvider._();
+final checkAmpStatusProvider = CheckAmpStatusProvider._();
 
 final class CheckAmpStatusProvider
     extends
@@ -167,7 +166,7 @@ final class CheckAmpStatusProvider
           CheckAmpStatusImpl
         >
     with $Provider<CheckAmpStatusImpl> {
-  const CheckAmpStatusProvider._()
+  CheckAmpStatusProvider._()
     : super(
         from: null,
         argument: null,

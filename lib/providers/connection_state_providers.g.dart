@@ -10,11 +10,11 @@ part of 'connection_state_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ServerConnectionNotifier)
-const serverConnectionProvider = ServerConnectionNotifierProvider._();
+final serverConnectionProvider = ServerConnectionNotifierProvider._();
 
 final class ServerConnectionNotifierProvider
     extends $NotifierProvider<ServerConnectionNotifier, bool> {
-  const ServerConnectionNotifierProvider._()
+  ServerConnectionNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$ServerConnectionNotifier extends $Notifier<bool> {
   bool build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$ServerConnectionNotifier extends $Notifier<bool> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(ServerLoginNotifier)
-const serverLoginProvider = ServerLoginNotifierProvider._();
+final serverLoginProvider = ServerLoginNotifierProvider._();
 
 final class ServerLoginNotifierProvider
     extends $NotifierProvider<ServerLoginNotifier, ServerLoginState> {
-  const ServerLoginNotifierProvider._()
+  ServerLoginNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -102,8 +101,7 @@ abstract class _$ServerLoginNotifier extends $Notifier<ServerLoginState> {
   ServerLoginState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ServerLoginState, ServerLoginState>;
     final element =
         ref.element
@@ -113,6 +111,6 @@ abstract class _$ServerLoginNotifier extends $Notifier<ServerLoginState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

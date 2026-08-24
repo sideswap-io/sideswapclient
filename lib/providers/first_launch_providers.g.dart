@@ -10,11 +10,11 @@ part of 'first_launch_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(FirstLaunchStateNotifier)
-const firstLaunchStateProvider = FirstLaunchStateNotifierProvider._();
+final firstLaunchStateProvider = FirstLaunchStateNotifierProvider._();
 
 final class FirstLaunchStateNotifierProvider
     extends $NotifierProvider<FirstLaunchStateNotifier, FirstLaunchStateType> {
-  const FirstLaunchStateNotifierProvider._()
+  FirstLaunchStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$FirstLaunchStateNotifier
   FirstLaunchStateType build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<FirstLaunchStateType, FirstLaunchStateType>;
     final element =
         ref.element
@@ -60,6 +59,6 @@ abstract class _$FirstLaunchStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

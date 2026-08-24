@@ -9,13 +9,54 @@ part of 'licenses_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(assetBundle)
+final assetBundleProvider = AssetBundleProvider._();
+
+final class AssetBundleProvider
+    extends $FunctionalProvider<AssetBundle, AssetBundle, AssetBundle>
+    with $Provider<AssetBundle> {
+  AssetBundleProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'assetBundleProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$assetBundleHash();
+
+  @$internal
+  @override
+  $ProviderElement<AssetBundle> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AssetBundle create(Ref ref) {
+    return assetBundle(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AssetBundle value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AssetBundle>(value),
+    );
+  }
+}
+
+String _$assetBundleHash() => r'c8b3f8b421eb270854b13c74f343816c76c0617e';
+
 @ProviderFor(licensesLoaderFuture)
-const licensesLoaderFutureProvider = LicensesLoaderFutureProvider._();
+final licensesLoaderFutureProvider = LicensesLoaderFutureProvider._();
 
 final class LicensesLoaderFutureProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
-  const LicensesLoaderFutureProvider._()
+  LicensesLoaderFutureProvider._()
     : super(
         from: null,
         argument: null,
@@ -41,10 +82,10 @@ final class LicensesLoaderFutureProvider
 }
 
 String _$licensesLoaderFutureHash() =>
-    r'649d47303507c2009ee19395c4ec1550612b0373';
+    r'a41e0c70c2dca390f9979fe239e82bce46d342d2';
 
 @ProviderFor(licensesEntries)
-const licensesEntriesProvider = LicensesEntriesProvider._();
+final licensesEntriesProvider = LicensesEntriesProvider._();
 
 final class LicensesEntriesProvider
     extends
@@ -56,7 +97,7 @@ final class LicensesEntriesProvider
     with
         $FutureModifier<List<LicensesData>>,
         $FutureProvider<List<LicensesData>> {
-  const LicensesEntriesProvider._()
+  LicensesEntriesProvider._()
     : super(
         from: null,
         argument: null,
@@ -82,4 +123,4 @@ final class LicensesEntriesProvider
   }
 }
 
-String _$licensesEntriesHash() => r'24d3d37ae71ee70a55415d1e390797d897374a94';
+String _$licensesEntriesHash() => r'928d6965014ac9909c1d5cab1b6c6861d92658b6';

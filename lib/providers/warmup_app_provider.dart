@@ -37,11 +37,8 @@ class WarmupApp extends _$WarmupApp {
       if (!v1 || !v2 || !v3) {
         Error.throwWithStackTrace('WarmupApp failed', StackTrace.current);
       }
-    } on ParallelWaitError<(bool, bool, bool), (Object, Object, Object)> catch (
-      e,
-      st
-    ) {
-      Error.throwWithStackTrace(e.errors.$1, st);
+    } on ParallelWaitError<dynamic, dynamic> catch (e, st) {
+      Error.throwWithStackTrace(e, st);
     }
 
     ref.read(networkSettingsProvider.notifier).applySettings();
