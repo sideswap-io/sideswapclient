@@ -13,6 +13,7 @@ import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/common/windows_registry.dart';
 import 'package:sideswap/desktop/desktop_app_main.dart';
+import 'package:sideswap/desktop/desktop_window_size.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:args/args.dart';
@@ -89,16 +90,28 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
       });
     }
   } else {
-    // min app width is 1072 (for some reason 16px is cutted o_O)
-    appScreenSize = const Size(1088, 880);
+    // The screens are laid out for this window. On a screen whose work area
+    // (screen minus taskbar) is smaller, the window opens to fit the work
+    // area instead of ending up under the taskbar.
+    appScreenSize = desktopWindowSize;
 
-    // workaround for potato laptop resolution 1366x768
     final currentScreen = await window_size.getCurrentScreen();
-    if (currentScreen != null) {
-      if (currentScreen.frame.size.height < 880) {
-        // a bit lower app height - we don't want to reduce it more
-        appScreenSize = const Size(1088, 768);
+    if (currentScreen == null) {
+      logger.w('Current screen unknown, opening at $desktopWindowSize');
+    } else {
+      final workArea = logicalWorkArea(
+        currentScreen,
+        workAreaIsPhysical: Platform.isWindows,
+      );
+      if (workArea == null) {
+        logger.w(
+          'Unusable screen report '
+          '(frame ${currentScreen.frame}, visible ${currentScreen.visibleFrame}, '
+          'scale ${currentScreen.scaleFactor}), opening at $desktopWindowSize',
+        );
       }
+      appScreenSize = desktopWindowSizeFor(workArea);
+      logger.i('Work area $workArea, window $appScreenSize');
     }
 
     final windowOptions = WindowOptions(
