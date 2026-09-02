@@ -43,8 +43,10 @@ class DSelectInputsPopup extends HookConsumerWidget {
           Navigator.of(context).pop();
         },
       ),
-      content: SizedBox(
-        height: 712,
+      content: ConstrainedBox(
+        // Design height; the inputs list is flexible and absorbs a shorter
+        // window.
+        constraints: const BoxConstraints(maxHeight: 712),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -266,22 +266,29 @@ class MarketOrderPanel extends HookConsumerWidget {
             },
           ),
           Flexible(
-            child: Column(
-              children: [
-                MarketTypeSwitch(),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final marketTypeSwitchState = ref.watch(
-                      marketTypeSwitchStateProvider,
-                    );
+            // The order form is a fixed-height design; on a window shorter
+            // than it was laid out for it scrolls instead of overflowing the
+            // panel.
+            child: SingleChildScrollView(
+              primary: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MarketTypeSwitch(),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final marketTypeSwitchState = ref.watch(
+                        marketTypeSwitchStateProvider,
+                      );
 
-                    return switch (marketTypeSwitchState) {
-                      MarketTypeSwitchStateMarket() => MarketPanel(),
-                      _ => LimitPanel(),
-                    };
-                  },
-                ),
-              ],
+                      return switch (marketTypeSwitchState) {
+                        MarketTypeSwitchStateMarket() => MarketPanel(),
+                        _ => LimitPanel(),
+                      };
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],

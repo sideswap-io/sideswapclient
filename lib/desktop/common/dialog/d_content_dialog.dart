@@ -35,35 +35,51 @@ class DContentDialog extends ConsumerWidget {
       child: Container(
         constraints: constraints,
         decoration: style.decoration,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: style.padding ?? EdgeInsets.zero,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (title != null)
-                    Padding(
-                      padding: style.titlePadding ?? EdgeInsets.zero,
-                      child: DefaultTextStyle(
-                        style: style.titleStyle ?? const TextStyle(),
-                        child: title!,
-                      ),
+        child: LayoutBuilder(
+          builder: (context, box) {
+            // When the dialog's height is bounded (a window shorter than the
+            // dialog was designed for), the shortfall is handed to the
+            // content, which can then shrink or scroll, instead of the dialog
+            // overflowing. The loose fit keeps every dialog at its natural
+            // size where there is room.
+            Widget shrinkable(Widget child) => box.hasBoundedHeight
+                ? Flexible(fit: FlexFit.loose, child: child)
+                : child;
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                shrinkable(
+                  Padding(
+                    padding: style.padding ?? EdgeInsets.zero,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (title != null)
+                          Padding(
+                            padding: style.titlePadding ?? EdgeInsets.zero,
+                            child: DefaultTextStyle(
+                              style: style.titleStyle ?? const TextStyle(),
+                              child: title!,
+                            ),
+                          ),
+                        if (content != null)
+                          shrinkable(
+                            Padding(
+                              padding: style.bodyPadding ?? EdgeInsets.zero,
+                              child: DefaultTextStyle(
+                                style: style.bodyStyle ?? const TextStyle(),
+                                child: content!,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  if (content != null)
-                    Padding(
-                      padding: style.bodyPadding ?? EdgeInsets.zero,
-                      child: DefaultTextStyle(
-                        style: style.bodyStyle ?? const TextStyle(),
-                        child: content!,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            if (actions != null)
+                  ),
+                ),
+                if (actions != null)
               Container(
                 decoration: style.actionsDecoration,
                 padding: style.actionsPadding,
@@ -95,7 +111,9 @@ class DContentDialog extends ConsumerWidget {
                   }(),
                 ),
               ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

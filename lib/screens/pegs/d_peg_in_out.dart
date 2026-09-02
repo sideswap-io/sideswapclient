@@ -19,6 +19,7 @@ import 'package:sideswap/screens/swap/widgets/swap_deliver_amount.dart';
 import 'package:sideswap/screens/swap/widgets/swap_middle_icon.dart';
 import 'package:sideswap/screens/swap/widgets/swap_receive_amount.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DPegInOut extends HookConsumerWidget {
@@ -44,23 +45,26 @@ class DPegInOut extends HookConsumerWidget {
           children: [
             Container(
               width: 570,
-              height: 680,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.prussianBlue,
               ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 18),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 35),
-                    child: TopPegButtons(),
-                  ),
-                  const SizedBox(height: 24),
-                  swapType == SwapType.pegIn()
-                      ? Flexible(child: const DPegIn())
-                      : Flexible(child: const DPegOut()),
-                ],
+              child: DScrollWhenShort(
+                height: 680,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 35),
+                      child: TopPegButtons(),
+                    ),
+                    const SizedBox(height: 24),
+                    swapType == SwapType.pegIn()
+                        ? Flexible(child: const DPegIn())
+                        : Flexible(child: const DPegOut()),
+                  ],
+                ),
               ),
             ),
           ],

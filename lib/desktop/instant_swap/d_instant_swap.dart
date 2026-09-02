@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/screens/instant_swap/instant_swap.dart';
 
 class DInstantSwap extends StatelessWidget {
@@ -13,14 +14,16 @@ class DInstantSwap extends StatelessWidget {
         Column(
           children: [
             const SizedBox(height: 28),
-            Container(
-              width: 570,
-              height: 561,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: SideSwapColors.prussianBlue,
+            Flexible(
+              child: Container(
+                width: 570,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: SideSwapColors.prussianBlue,
+                ),
+                child: DScrollWhenShort(height: 561, child: InstantSwap()),
               ),
-              child: InstantSwap(),
             ),
           ],
         ),

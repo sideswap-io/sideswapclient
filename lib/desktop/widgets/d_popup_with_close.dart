@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 
 part 'd_popup_with_close.freezed.dart';
 
@@ -71,43 +72,52 @@ class DPopupWithCloseContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final closeButton = DIconButton(
+      icon: const Icon(Icons.close, color: SideSwapColors.freshAir, size: 18),
+      onPressed: switch (onClose) {
+        final onClose? => onClose,
+        _ => () {
+          Navigator.pop(context);
+        },
+      },
+    );
+
     return Center(
       child: Material(
         borderRadius: BorderRadius.circular(8),
         child: Container(
           width: width,
-          height: height,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: SideSwapColors.blumine,
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Stack(
-              alignment: alignment,
-              children: [
-                child,
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: DIconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: SideSwapColors.freshAir,
-                        size: 18,
-                      ),
-                      onPressed: switch (onClose) {
-                        final onClose? => onClose,
-                        _ => () {
-                          Navigator.pop(context);
-                        },
-                      },
+            child: switch (height) {
+              // A popup with a design height is laid out at that height and
+              // scrolls when the window is shorter, instead of clipping its
+              // bottom. The close button stays in the popup's corner.
+              final height? => Stack(
+                alignment: alignment,
+                children: [
+                  DScrollWhenShort(height: height, child: child),
+                  Positioned(top: 20, right: 20, child: closeButton),
+                ],
+              ),
+              _ => Stack(
+                alignment: alignment,
+                children: [
+                  child,
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: closeButton,
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            },
           ),
         ),
       ),
