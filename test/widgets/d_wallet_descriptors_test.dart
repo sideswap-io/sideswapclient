@@ -9,10 +9,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/widgets/middle_elipsis_text.dart';
 import 'package:sideswap/desktop/common/button/d_button.dart';
+import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/settings/d_wallet_descriptors.dart';
 import 'package:sideswap/models/wallet_descriptors.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_descriptors_provider.dart';
+
+import '../helpers/dialog_height_harness.dart';
 
 class _FakeWalletDescriptorsNotifier extends WalletDescriptorsNotifier {
   _FakeWalletDescriptorsNotifier(this._value);
@@ -49,9 +52,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     // Back the platform clipboard channel so copyToClipboard's Clipboard write
     // resolves without a missing-plugin error, and record what it writes.
-    TestDefaultBinaryMessengerBinding
-        .instance
-        .defaultBinaryMessenger
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
           if (call.method == 'Clipboard.setData') {
             clipboardWrites.add((call.arguments as Map)['text'] as String);
@@ -80,8 +81,9 @@ void main() {
     bool copyEnabled = true,
     SideswapWallet? wallet,
     TextDirection textDirection = TextDirection.ltr,
+    Size size = const Size(1200, 1200),
   }) => tester.runAsync(() async {
-    tester.view.physicalSize = const Size(1200, 1200);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -160,8 +162,14 @@ void main() {
 
       // The QR widgets and their keys are gone -- the desktop workflow is
       // copy/paste into LWK-style software, not a camera scan.
-      expect(find.byKey(const Key('qr_native_segwit_descriptor')), findsNothing);
-      expect(find.byKey(const Key('qr_nested_segwit_descriptor')), findsNothing);
+      expect(
+        find.byKey(const Key('qr_native_segwit_descriptor')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('qr_nested_segwit_descriptor')),
+        findsNothing,
+      );
 
       // Each preview is a MiddleEllipsisText carrying the exact descriptor --
       // the property, not the painted glyphs, is the full-string guarantee.
@@ -310,42 +318,7 @@ void main() {
       expect(clipboardWrites, [_nativeDescriptor]);
     });
 
-    testWidgets(
-      'a blur while the confirmation is open aborts the copy',
-      (tester) async {
-        await pumpDialog(
-          tester,
-          descriptors: const WalletDescriptors(
-            nativeSegwit: _nativeDescriptor,
-            nestedSegwit: _nestedDescriptor,
-          ),
-        );
-
-        // Focused: open the confirmation dialog.
-        await tester.runAsync(() async {
-          await tester.tap(find.byKey(_copyNativeKey));
-          await tester.pumpAndSettle();
-        });
-        expect(find.byKey(_confirmKey), findsOneWidget);
-
-        // The window loses focus while the confirmation is still open.
-        ProviderScope.containerOf(
-          tester.element(find.byType(DWalletDescriptors)),
-          listen: false,
-        ).read(descriptorCopyEnabledProvider.notifier).setEnabled(false);
-
-        // Accepting now must not reach the clipboard -- the focus re-check
-        // across the async gap short-circuits the copy.
-        await tester.runAsync(() async {
-          await tester.tap(find.byKey(_confirmKey));
-          await tester.pumpAndSettle();
-        });
-
-        expect(clipboardWrites, isEmpty);
-      },
-    );
-
-    testWidgets('both Copy buttons are disabled while the window is unfocused', (
+    testWidgets('a blur while the confirmation is open aborts the copy', (
       tester,
     ) async {
       await pumpDialog(
@@ -354,18 +327,53 @@ void main() {
           nativeSegwit: _nativeDescriptor,
           nestedSegwit: _nestedDescriptor,
         ),
-        copyEnabled: false,
       );
 
-      expect(
-        tester.widget<DButton>(find.byKey(_copyNativeKey)).onPressed,
-        isNull,
-      );
-      expect(
-        tester.widget<DButton>(find.byKey(_copyNestedKey)).onPressed,
-        isNull,
-      );
+      // Focused: open the confirmation dialog.
+      await tester.runAsync(() async {
+        await tester.tap(find.byKey(_copyNativeKey));
+        await tester.pumpAndSettle();
+      });
+      expect(find.byKey(_confirmKey), findsOneWidget);
+
+      // The window loses focus while the confirmation is still open.
+      ProviderScope.containerOf(
+        tester.element(find.byType(DWalletDescriptors)),
+        listen: false,
+      ).read(descriptorCopyEnabledProvider.notifier).setEnabled(false);
+
+      // Accepting now must not reach the clipboard -- the focus re-check
+      // across the async gap short-circuits the copy.
+      await tester.runAsync(() async {
+        await tester.tap(find.byKey(_confirmKey));
+        await tester.pumpAndSettle();
+      });
+
+      expect(clipboardWrites, isEmpty);
     });
+
+    testWidgets(
+      'both Copy buttons are disabled while the window is unfocused',
+      (tester) async {
+        await pumpDialog(
+          tester,
+          descriptors: const WalletDescriptors(
+            nativeSegwit: _nativeDescriptor,
+            nestedSegwit: _nestedDescriptor,
+          ),
+          copyEnabled: false,
+        );
+
+        expect(
+          tester.widget<DButton>(find.byKey(_copyNativeKey)).onPressed,
+          isNull,
+        );
+        expect(
+          tester.widget<DButton>(find.byKey(_copyNestedKey)).onPressed,
+          isNull,
+        );
+      },
+    );
 
     testWidgets('the Copy buttons are enabled while the window is focused', (
       tester,
@@ -520,14 +528,123 @@ void main() {
       expect(container.read(descriptorCopyEnabledProvider), isTrue);
 
       // 'blur' -> disabled.
-      container
-          .read(descriptorCopyEnabledProvider.notifier)
-          .setEnabled(false);
+      container.read(descriptorCopyEnabledProvider.notifier).setEnabled(false);
       expect(container.read(descriptorCopyEnabledProvider), isFalse);
 
       // 'focus' -> re-enabled.
       container.read(descriptorCopyEnabledProvider.notifier).setEnabled(true);
       expect(container.read(descriptorCopyEnabledProvider), isTrue);
+    });
+  });
+
+  group('height bound', () {
+    /// The height the removed `SizedBox` used to fix on the body. It now lives
+    /// once, inside the dialog's own `maxHeight`.
+    const bodyDesignHeight = 460.0;
+
+    const descriptors = WalletDescriptors(
+      nativeSegwit: _nativeDescriptor,
+      nestedSegwit: _nestedDescriptor,
+    );
+
+    /// The dialog's *own* scroll owner is the content's, not "the one
+    /// `Scrollable` in the tree".
+    final ownScrollView = find.descendant(
+      of: find.byType(DContentDialog),
+      matching: find.byType(SingleChildScrollView),
+    );
+
+    /// The body region the removed `SizedBox` used to size -- the scroll view
+    /// itself, which fills that box.
+    Size bodySize(WidgetTester tester) => tester.getSize(ownScrollView);
+
+    testWidgets('is declared on the dialog, and the body carries no height of '
+        'its own', (tester) async {
+      captureErrors();
+
+      await pumpDialog(tester, descriptors: descriptors, size: unbounded);
+
+      final constraints = tester
+          .widget<DContentDialog>(find.byType(DContentDialog))
+          .constraints;
+      expect(constraints.maxHeight, 647);
+      expect(constraints.maxWidth, 580);
+      expect(naturalHeight(tester), 647);
+      // The height is expressed once, on the dialog; the width still belongs
+      // to the body, which centres its 500 px column inside the 580 px dialog.
+      expect(bodySize(tester).height, bodyDesignHeight);
+      expect(bodySize(tester).width, 500);
+    });
+
+    testWidgets('at the design height the body keeps its design height and '
+        'the content owns the only scrollable', (tester) async {
+      captureErrors();
+
+      await pumpDialog(tester, descriptors: descriptors, size: designHeight);
+
+      // `ScrollOwner.child`: the wrapper adds no scroll view of its own, so
+      // the one match is the content's.
+      expect(ownScrollView, findsOneWidget);
+      expect(
+        tester.widget<SingleChildScrollView>(ownScrollView).controller,
+        isNotNull,
+      );
+      // The dialog's own scroll owner has nothing to scroll at the design
+      // height: both descriptor sections fit inside the body the bound leaves.
+      expect(firstExtentOf(tester, ownScrollView), 0);
+      expect(bodySize(tester).height, bodyDesignHeight);
+      expect(bodySize(tester).width, 500);
+    });
+
+    testWidgets('at the floor there is no vertical overflow and the actions '
+        'row is hit-testable and live', (tester) async {
+      final errors = captureErrors();
+      final wallet = _MockWallet();
+      when(wallet.goBack).thenReturn(true);
+
+      await pumpDialog(
+        tester,
+        descriptors: descriptors,
+        wallet: wallet,
+        size: floor,
+      );
+
+      // The body yields to the shorter window instead of overflowing. Its
+      // content still fits the reduced box, so there is nothing to scroll yet
+      // -- the case where there is is the next one.
+      expect(bodySize(tester).height, lessThan(bodyDesignHeight));
+      expect(firstExtentOf(tester, ownScrollView), 0);
+      // The action stays outside the scroll body...
+      expect(
+        find.descendant(of: ownScrollView, matching: find.text('BACK')),
+        findsNothing,
+      );
+      // ...and is reachable rather than merely present.
+      expect(find.text('BACK').hitTestable(), findsOneWidget);
+      await tester.runAsync(() async {
+        await tester.tap(find.text('BACK'));
+        await tester.pump();
+      });
+      verify(wallet.goBack).called(1);
+      expect(verticalOverflows(errors), isEmpty);
+    });
+
+    testWidgets('below the floor the content scrolls on its own scrollable '
+        'rather than overflowing', (tester) async {
+      final errors = captureErrors();
+
+      await pumpDialog(
+        tester,
+        descriptors: descriptors,
+        size: const Size(1072, 420),
+      );
+
+      // The bound has squeezed the body past its content, and the shortfall
+      // became scroll extent on the owner the content brought -- not on a
+      // second one the wrapper added.
+      expect(ownScrollView, findsOneWidget);
+      expect(firstExtentOf(tester, ownScrollView), greaterThan(0));
+      expect(verticalOverflows(errors), isEmpty);
     });
   });
 }

@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 
 class DPegxLoginDialog extends HookConsumerWidget {
   final Widget? content;
@@ -38,7 +39,13 @@ class DPegxLoginDialog extends HookConsumerWidget {
           ),
         ),
       ),
-      constraints: const BoxConstraints(maxWidth: 628),
+      // 484 is this dialog's measured natural height: the 44 px
+      // `DContentDialogTitle` inside `EdgeInsets.all(20)` over the 400 px body
+      // every call site passes. Below the 620 px floor already, so the bound
+      // changes nothing today -- it is what makes a taller body scroll instead
+      // of overflowing in silence. See ADR-0014 decision 8.
+      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 484),
+      scrollOwner: ScrollOwner.wrapper,
       content: content,
     );
   }

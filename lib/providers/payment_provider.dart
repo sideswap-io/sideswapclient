@@ -172,67 +172,6 @@ class PaymentHelper {
     };
   }
 
-  // TODO: (malcolmpl): low priority - remove this method after mobile app is updated
-  @Deprecated('Use outputsPaymentSend instead')
-  String? mobileOutputsPaymentSend({List<UtxosItem>? selectedInputs}) {
-    return switch (outputsData) {
-      Left(value: final l) => l.message,
-      Right(value: final r) => () {
-        if (r.receivers == null) {
-          return;
-        }
-
-        final addressAmounts = r.receivers!.map((e) {
-          return AddressAmount(
-            address: e.address,
-            amount: Int64(e.satoshi ?? 0),
-            assetId: e.assetId,
-          );
-        }).toList();
-
-        final utxos = selectedInputs?.map(
-          (selectedInput) =>
-              OutPoint(txid: selectedInput.txid, vout: selectedInput.vout),
-        );
-
-        // determine if we need to deduct fee from output
-        final index = ref.read(payjoinRadioButtonIndexProvider);
-        final assetId = r.receivers![index].assetId!;
-        final payjoinFeeAsset = ref.read(payjoinFeeAssetProvider);
-
-        var mobileDeductFeeFromOutput = false;
-
-        if (payjoinFeeAsset == null) {
-          logger.e('Fee asset is null');
-          return null;
-        }
-
-        final outputSatoshi = r.receivers![index].satoshi ?? 0;
-
-        final maxBalance = ref.watch(
-          availableBalanceForAssetIdProvider(assetId),
-        );
-        // substract small amount for fee
-        if (outputSatoshi > (maxBalance - 1000)) {
-          mobileDeductFeeFromOutput = true;
-        }
-
-        final createTx = CreateTx(
-          addressees: addressAmounts,
-          utxos: utxos,
-          deductFeeOutput: mobileDeductFeeFromOutput ? deductIndex : null,
-          feeAssetId: mobileDeductFeeFromOutput
-              ? assetId
-              : feeAsset?.assetId != liquidAssetId
-              ? feeAsset?.assetId
-              : null,
-        );
-
-        ref.read(walletProvider).createTx(createTx);
-      }(),
-    };
-  }
-
   void selectPaymentSend(
     String amount,
     Asset asset, {

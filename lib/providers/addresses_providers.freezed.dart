@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'addresses_providers.dart';
@@ -9,6 +9,7 @@ part of 'addresses_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -63,7 +64,7 @@ class _$UtxosItemCopyWithImpl<$Res>
 /// Create a copy of UtxosItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? txid = freezed,Object? vout = freezed,Object? assetId = freezed,Object? amount = freezed,Object? isInternal = freezed,Object? isConfidential = freezed,Object? account = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(UtxosItem(
 txid: freezed == txid ? _self.txid : txid // ignore: cast_nullable_to_non_nullable
 as String?,vout: freezed == vout ? _self.vout : vout // ignore: cast_nullable_to_non_nullable
 as int?,assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
@@ -332,7 +333,7 @@ class _$AddressesItemCopyWithImpl<$Res>
 /// Create a copy of AddressesItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? account = freezed,Object? address = freezed,Object? unconfidentialAddress = freezed,Object? index = freezed,Object? isInternal = freezed,Object? utxos = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(AddressesItem(
 account: freezed == account ? _self.account : account // ignore: cast_nullable_to_non_nullable
 as Account?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,unconfidentialAddress: freezed == unconfidentialAddress ? _self.unconfidentialAddress : unconfidentialAddress // ignore: cast_nullable_to_non_nullable
@@ -474,7 +475,7 @@ return $default(_that.account,_that.address,_that.unconfidentialAddress,_that.in
 
 
 class _AddressesItem implements AddressesItem {
-  const _AddressesItem({this.account, this.address, this.unconfidentialAddress, this.index, this.isInternal, final  List<UtxosItem>? utxos}): _utxos = utxos;
+  const _AddressesItem({this.account, this.address, this.unconfidentialAddress, this.index, this.isInternal,  List<UtxosItem>? utxos}): _utxos = utxos;
   
 
 @override final  Account? account;
@@ -606,7 +607,7 @@ class _$AddressesModelCopyWithImpl<$Res>
 /// Create a copy of AddressesModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? addresses = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(AddressesModel(
 addresses: freezed == addresses ? _self.addresses : addresses // ignore: cast_nullable_to_non_nullable
 as List<AddressesItem>?,
   ));
@@ -743,7 +744,7 @@ return $default(_that.addresses);case _:
 
 
 class _AddressesModel implements AddressesModel {
-  const _AddressesModel({final  List<AddressesItem>? addresses}): _addresses = addresses;
+  const _AddressesModel({ List<AddressesItem>? addresses}): _addresses = addresses;
   
 
  final  List<AddressesItem>? _addresses;
@@ -2616,7 +2617,7 @@ class _$InputListItemExpandedStateCopyWithImpl<$Res>
 /// Create a copy of InputListItemExpandedState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? hash = freezed,Object? expanded = null,}) {
-  return _then(_self.copyWith(
+  return _then(InputListItemExpandedState(
 hash: freezed == hash ? _self.hash : hash // ignore: cast_nullable_to_non_nullable
 as int?,expanded: null == expanded ? _self.expanded : expanded // ignore: cast_nullable_to_non_nullable
 as bool,

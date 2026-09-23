@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -10,12 +12,14 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
 import 'package:sideswap/desktop/widgets/d_notifications_style.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/notification_removal_reason.dart';
 import 'package:sideswap/providers/notifications_provider.dart';
+import 'package:sideswap/providers/signer_acceptance_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
@@ -64,8 +68,13 @@ class DNotificationToolbarButton extends HookConsumerWidget {
             offset: offset,
             animationController: animationController,
             heightFactor: heightFactor,
+            // Dismissal, not a toggle. The entry outlives the click by the
+            // length of the collapse animation, so its catcher is still there
+            // to take a second one — and a toggle would read that second click
+            // as "open again", which is the "sometimes I have to click twice"
+            // this panel was reported for.
             onTap: () {
-              expanded.value = !expanded.value;
+              expanded.value = false;
             },
           );
         },
@@ -121,7 +130,16 @@ class DNotificationToolbarButton extends HookConsumerWidget {
 
     useEffect(() {
       if (!activeNotifications && expanded.value) {
-        expanded.value = false;
+        // Through a microtask, like its sibling below and for the same
+        // reason: an effect body runs inside the rebuild that scheduled it,
+        // and a write to a hook's state from there is taken without a rebuild
+        // following it — measured, not deduced. The effect keyed on `expanded`
+        // therefore never runs, so the panel is left open with `expanded`
+        // already false, and every later dismissal writes the value the state
+        // already holds and is a no-op: the panel is unclosable, by a click
+        // outside it and by the toolbar button alike — the catcher takes that
+        // click before the button does.
+        Future.microtask(() => expanded.value = false);
       }
 
       if (activeNotifications && !expanded.value) {
@@ -137,7 +155,10 @@ class DNotificationToolbarButton extends HookConsumerWidget {
 
     useEffect(() {
       optionShowNotificationMenu.match(() {}, (notificationId) {
-        expanded.value = true;
+        // Deferred for the reason the two writes above are. Lost here it is
+        // the mirror image: the flag reads true with no overlay under it, and
+        // the panel the listener asked to be shown never opens.
+        Future.microtask(() => expanded.value = true);
         Future.microtask(() => ref.invalidate(showNotificationMenuProvider));
       });
       return;
@@ -187,6 +208,77 @@ class DNotificationToolbarButton extends HookConsumerWidget {
   }
 }
 
+/// Which of the two kinds of request an entry is.
+enum NotificationItemKind { sign, connect }
+
+NotificationItemKind notificationItemKind(NotificationType type) =>
+    switch (type) {
+      NotificationTypeSignRequest() => NotificationItemKind.sign,
+      NotificationTypeConnect() => NotificationItemKind.connect,
+    };
+
+/// The identity of a panel child: the request it shows, not the slot it sits in.
+///
+/// Not the notification id on its own. A request carrying both a connect and a
+/// sign payload is two entries under one id — `addNotification` increments the
+/// counter once and files both against it — and two siblings under one key are
+/// not an error the framework reports: `SliverMultiBoxAdaptorElement`
+/// resolves both to the same index, overwrites one entry with the other and
+/// ends the rebuild a child short, silently.
+Key notificationChildKey(NotificationData notification) =>
+    ValueKey((notification.id, notificationItemKind(notification.type)));
+
+/// What an item of [kind] lays itself out at, in logical pixels.
+///
+/// The two arguments are the only two things the height depends on, and they
+/// are taken apart because they come from different places. The **kind** is
+/// fixed for the widget doing the laying out; it must not be read off the
+/// entry the item looks up, because `getNotification` matches by id and the
+/// two entries of a dual-payload request share one — the connect item's lookup
+/// answers with the sign entry. The **state** is a live fact about the request
+/// and does come from that entry.
+///
+/// The single place that says what an item is worth in pixels: the panel makes
+/// room for its first item from this, and each item lays itself out at it.
+///
+/// Deliberately not a theme value. It was one, and the theme carried 189 and
+/// 286 while the items rendered 475 and 358 — the field was never read, and a
+/// style nothing honours is worse than no style at all.
+double notificationItemHeight(
+  NotificationItemKind kind,
+  NotificationItemState state,
+) => switch ((kind, state)) {
+  (NotificationItemKind.sign, NotificationItemStateCanceled()) => 110,
+  (NotificationItemKind.sign, _) => 475,
+  (NotificationItemKind.connect, NotificationItemStateCanceled()) => 182,
+  (NotificationItemKind.connect, _) => 358,
+};
+
+/// What [notification] lays itself out at, read from the entry itself.
+///
+/// Only sound where the entry in hand *is* the one being rendered — the panel
+/// reading its own list. An item must use [notificationItemHeight] with its
+/// own kind instead.
+double notificationEntryHeight(NotificationData notification) =>
+    notificationItemHeight(
+      notificationItemKind(notification.type),
+      notification.type.notificationItemState,
+    );
+
+const _panelWidth = 370.0;
+
+/// The panel with nothing in it. The empty item has no height of its own — it
+/// fills whatever box it is given — so this is a standalone number rather than
+/// an item plus [_panelChrome].
+const _emptyPanelHeight = 163.0;
+
+/// What the panel puts around its first item: the 28-high title row, the 10
+/// gap under it, and 10 of padding at each end.
+const _panelChrome = 58.0;
+
+/// The gap the list leaves under every item but the last.
+const _itemSpacing = 10.0;
+
 class NotificationMenu extends HookConsumerWidget {
   const NotificationMenu({
     super.key,
@@ -206,29 +298,30 @@ class NotificationMenu extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationsProvider);
-    final firstChildKey = useMemoized(() => GlobalKey());
 
-    // default size is the size of the empty notification menu
-    final size = useState(Size(370, 163));
+    // Derived from the first entry rather than measured off the first child.
+    // A measurement has to hang a key on a child, and a child that can be
+    // relocated cannot carry one: the key changes as the child moves, so the
+    // element is destroyed at exactly the moment it is being moved. The
+    // derivation is exact — an item's box is a constant of its kind and its
+    // state, which is what [notificationItemHeight] is.
+    final panelHeight = notifications.isEmpty
+        ? _emptyPanelHeight
+        : notificationEntryHeight(notifications.first) + _panelChrome;
 
-    final resizeCallback = useCallback(() {
-      if (firstChildKey.currentContext != null) {
-        final firstChildRenderBox =
-            firstChildKey.currentContext!.findRenderObject() as RenderBox;
-        size.value = Size(370, firstChildRenderBox.size.height + 58);
-      } else {
-        size.value = Size(370, 163);
-      }
-    }, [firstChildKey.currentContext, notifications]);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      resizeCallback();
-    });
-
-    useEffect(() {
-      resizeCallback();
-      return;
-    }, [firstChildKey.currentContext, notifications.length]);
+    // The panel hands the keyboard to one item and one only: whichever is
+    // first the first time it has anything to show. Everything arriving after
+    // that arrives into a panel the user is already working in, and takes
+    // nothing — the same rule as the item's own focus drop, seen from the
+    // other side.
+    //
+    // A latch rather than the list this build started with, because the panel
+    // can be opened with nothing pending and be given its first request
+    // afterwards; that request is still the one the panel opened on.
+    final autofocused = useRef<Key?>(null);
+    if (autofocused.value == null && notifications.isNotEmpty) {
+      autofocused.value = notificationChildKey(notifications.first);
+    }
 
     final notificationMenuStyle =
         style ?? Theme.of(context).extension<NotificationMenuStyle>()!;
@@ -247,13 +340,27 @@ class NotificationMenu extends HookConsumerWidget {
 
     return Stack(
       children: [
-        Positioned(child: GestureDetector(onTap: onTap)),
+        // Dismiss and swallow, both stated rather than inherited.
+        //
+        // `opaque` is the behavioural half: a childless GestureDetector
+        // defaults to `translucent` (`GestureDetector._defaultBehavior`), which
+        // lets the dismissing click carry on into whatever sits under the
+        // panel. `fill` changes nothing observable — the catcher already covers
+        // the stack under the tight constraints the overlay hands it — but it
+        // says so, instead of resting on how a childless proxy box happens to
+        // size itself, which is not a guarantee anything documents.
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+          ),
+        ),
         Positioned(
           top: offset.dy,
           left: offset.dx,
           child: SizedBox(
-            width: size.value.width,
-            height: size.value.height,
+            width: _panelWidth,
+            height: panelHeight,
             child: AnimatedBuilder(
               animation: animationController.view,
               builder: (context, child) {
@@ -284,9 +391,8 @@ class NotificationMenu extends HookConsumerWidget {
                       children: [
                         Text(
                           'Notifications'.tr(),
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(fontSize: 14),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontSize: 14),
                         ),
                         notifications.isEmpty
                             ? const SizedBox()
@@ -327,35 +433,56 @@ class NotificationMenu extends HookConsumerWidget {
                             slivers: [
                               SliverList.builder(
                                 itemBuilder: (context, index) {
+                                  final notification = notifications[index];
+                                  final childKey = notificationChildKey(
+                                    notification,
+                                  );
+                                  final autofocus =
+                                      childKey == autofocused.value;
+
                                   return Column(
+                                    key: childKey,
                                     children: [
-                                      notifications[index].type.map(
+                                      notification.type.map(
                                         signRequest: (signRequest) =>
                                             NotificationItemSignRequest(
-                                              key: index == 0
-                                                  ? firstChildKey
-                                                  : null,
-                                              notificationId:
-                                                  notifications[index].id,
+                                              notificationId: notification.id,
                                               signRequest: signRequest,
-                                              onTap: onTap,
+                                              autofocus: autofocus,
                                             ),
                                         connect: (connect) =>
                                             NotificationItemConnectRequest(
-                                              key: index == 0
-                                                  ? firstChildKey
-                                                  : null,
-                                              notificationId:
-                                                  notifications[index].id,
+                                              notificationId: notification.id,
                                               connect: connect,
-                                              onTap: onTap,
+                                              autofocus: autofocus,
                                             ),
                                       ),
                                       index < notifications.length - 1
-                                          ? const SizedBox(height: 10)
+                                          ? const SizedBox(height: _itemSpacing)
                                           : const SizedBox.shrink(),
                                     ],
                                   );
+                                },
+                                // Not optional next to the keys above: a
+                                // sliver relocates a keyed child only through
+                                // this callback, and a key without one is
+                                // worse than no key at all — every child is
+                                // deactivated on a list change instead of only
+                                // the ones that moved. Built from the list
+                                // read in this build rather than memoized,
+                                // because the delegate is rebuilt every time
+                                // and resolves keys through the new one.
+                                findChildIndexCallback: (key) {
+                                  final index = notifications.indexWhere(
+                                    (notification) =>
+                                        notificationChildKey(notification) ==
+                                        key,
+                                  );
+
+                                  // An entry that is gone: the sliver
+                                  // deactivates its child, which is what
+                                  // should happen.
+                                  return index < 0 ? null : index;
                                 },
                                 itemCount: notifications.length,
                               ),
@@ -385,9 +512,8 @@ class NotificationItemEmpty extends ConsumerWidget {
             children: [
               Text(
                 'No new notifications'.tr(),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: SideSwapColors.cornFlower,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: SideSwapColors.cornFlower),
               ),
             ],
           ),
@@ -402,13 +528,18 @@ class NotificationItemSignRequest extends HookConsumerWidget {
     super.key,
     required this.notificationId,
     required this.signRequest,
-    this.onTap,
+    this.autofocus = true,
     this.style,
   });
 
   final int notificationId;
   final NotificationTypeSignRequest signRequest;
-  final void Function()? onTap;
+
+  /// Whether this item may take the keyboard when it appears.
+  ///
+  /// Defaults to true: an item on its own is the only thing on screen, and
+  /// only the panel knows that one of several has already been granted it.
+  final bool autofocus;
   final NotificationItemSignRequestStyle? style;
 
   @override
@@ -421,13 +552,131 @@ class NotificationItemSignRequest extends HookConsumerWidget {
         .watch(notificationsProvider.notifier)
         .getNotification(notificationId);
 
+    // The request this element was given to render. Everything below answers
+    // for *this* request id and nothing else: an element repurposed to another
+    // request is rebuilt with a new one, so its busy state, its focus and its
+    // acceptance follow the request rather than the element.
+    final reqId = signRequest.reqId;
+
+    // Built lazily, but never collected once built. The panel shows one item
+    // at a time, so an arrival that puts two items above the one the user is
+    // on would otherwise take that one's element out from under them — and an
+    // element the list collects takes the focus node in it with it, whatever
+    // the sliver did to relocate it first. Keeping what is built is what makes
+    // the relocation worth anything; building everything up front is not, and
+    // a panel is not a feed.
+    useAutomaticKeepAlive();
+
     final acceptFocusNode = useFocusNode();
+
+    // A scope over this item's own subtree. Both focus rules below are answered
+    // against this node rather than against the controls, which is what keeps
+    // them independent of how any individual button manages its focus node.
+    // ADR-0009 decision 5.
+    final itemFocusScopeNode = useFocusScopeNode();
+
+    // Whether this item held the focus when the press was made, captured
+    // synchronously *before* the disable rather than tested after it: disabling
+    // a control unfocuses it in the same turn, so a rule phrased as "restore if
+    // focus is still inside this item" would refuse every restoration —
+    // including the one after a failed gate the user is left to retry.
+    final focusWasHere = useRef(false);
+
+    final previousReqId = useRef<String?>(null);
+
+    // Busy for *this* request id, read from the set the single-flight guard is
+    // kept in. The set lives in a `keepAlive` notifier, so it is unaffected by
+    // this element being unmounted, recreated or repurposed — which is ADR-0009
+    // decision 2 seen from the widget side. Declared above the `match` for the
+    // same reason the hooks are.
+    final acceptInFlight = ref.watch(
+      signerAcceptanceProvider.select((inFlight) => inFlight.contains(reqId)),
+    );
+
+    // Focus does not ride along to another request. When a prepend or a removal
+    // repurposes this element, any focus its subtree holds is dropped rather
+    // than handed to a request the user has not read — where a repeated Enter
+    // would reject it, or raise the gate for it. ADR-0009 decision 5.
+    useEffect(() {
+      final previous = previousReqId.value;
+      previousReqId.value = reqId;
+
+      if (previous == null || previous == reqId) {
+        return null;
+      }
+
+      // Whatever the previous request armed is abandoned with it. Clearing the
+      // capture is what stops the restoration below from landing on the
+      // arriving request: both effects run in the same synchronous build, and
+      // `unfocus` only marks the change for the next microtask — so the
+      // restoration would still read this scope as focused and hand the focus
+      // to a control the user has not read. This effect is declared first so
+      // that ordering holds.
+      focusWasHere.value = false;
+
+      if (itemFocusScopeNode.hasFocus) {
+        itemFocusScopeNode.unfocus();
+      }
+
+      return null;
+    }, [reqId]);
+
+    // Restores the focus the disable took, and only that. An effect rather than
+    // a listener, because a listener is called the moment the set changes —
+    // while the control is still disabled, and a disabled
+    // `FocusableActionDetector` refuses the focus it is offered. An effect runs
+    // after the rebuild that re-enables it.
+    //
+    // Nothing to restore unless this item held the focus when the press was
+    // made, and nothing to restore if something outside this item has claimed
+    // it since: a control the user tabbed to on another item is not this item's
+    // to take back. ADR-0009 decision 5.
+    useEffect(() {
+      if (acceptInFlight) {
+        return null;
+      }
+
+      if (!focusWasHere.value) {
+        return null;
+      }
+      focusWasHere.value = false;
+
+      // `hasPrimaryFocus`, not `hasFocus`: disabling the control hands the
+      // focus up to this scope node itself, so holding it *directly* is what
+      // "nothing has claimed it since" looks like. A control that holds it
+      // instead — Cancel on this very item, or a control on another one — is
+      // the user's choice and not this item's to take back.
+      if (!itemFocusScopeNode.hasPrimaryFocus) {
+        return null;
+      }
+
+      acceptFocusNode.requestFocus();
+
+      return null;
+    }, [acceptInFlight]);
+
+    // The item takes the keyboard when it appears, so the request it shows is
+    // answerable without reaching for the mouse — but only if it is the item
+    // the panel granted it to. An arrival into a panel the user is already
+    // working in takes nothing: a control the user has not read must not end
+    // up under the next Enter.
+    //
+    // Restoring the focus the disable takes is a separate rule and lives in
+    // the effect above: re-running this on the busy flag would fire it for
+    // every item whose attempt ends, including one the user has since tabbed
+    // away from.
+    useEffect(() {
+      if (autofocus) {
+        acceptFocusNode.requestFocus();
+      }
+
+      return null;
+    }, const []);
 
     return optionNotification.match(() => DPopupWithClose(child: SizedBox()), (
       notification,
     ) {
       final sign = (notification.type as NotificationTypeSignRequest).sign;
-      final reqId = notification.type.reqId;
       final origin = notification.type.origin;
       final balances = sign.balances;
       final recipients = sign.recipients;
@@ -436,12 +685,6 @@ class NotificationItemSignRequest extends HookConsumerWidget {
       final optionTtl = ref.watch(
         signRequestNotificationTtlProvider(notificationId),
       );
-
-      useEffect(() {
-        acceptFocusNode.requestFocus();
-
-        return;
-      }, const []);
 
       // The reason is explicit rather than a `cancel` flag: rejecting and
       // expiring differ both in whether a rejection is sent and in whether the
@@ -463,32 +706,10 @@ class NotificationItemSignRequest extends HookConsumerWidget {
             .removeNotification(notificationId, reason: reason);
       }, [notificationId]);
 
-      useEffect(() {
-        if (!context.mounted) {
-          return;
-        }
-
-        optionTtl.match(() {}, (ttl) {
-          if (ttl <= 0) {
-            Future.microtask(() {
-              cancelCallback(
-                reqId,
-                notificationId,
-                reason: NotificationRemovalReason.expired,
-              );
-            });
-            return;
-          }
-        });
-
-        return;
-      }, [optionTtl]);
-
       final defaultStyle =
           notification.type.notificationItemState ==
               NotificationItemState.canceled()
           ? NotificationItemSignRequestStyle(
-              height: 110,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.indigo,
@@ -503,7 +724,6 @@ class NotificationItemSignRequest extends HookConsumerWidget {
                   ),
             )
           : NotificationItemSignRequestStyle(
-              height: 475,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.indigo,
@@ -518,107 +738,115 @@ class NotificationItemSignRequest extends HookConsumerWidget {
                   ),
             );
 
-      return Container(
-        height: defaultStyle.height ?? itemStyle.height!,
-        decoration: defaultStyle.decoration ?? itemStyle.decoration,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Liquid Connect: Signature Required'.tr(),
-                style: defaultStyle.titleTextStyle ?? itemStyle.titleTextStyle,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                origin,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontSize: 13),
-              ),
-              if (notification.type.notificationItemState ==
-                  NotificationItemState.canceled()) ...[
-                const SizedBox(height: 10),
-                Divider(
-                  thickness: 0,
-                  height: 1,
-                  color: defaultStyle.dividerColor ?? itemStyle.dividerColor,
+      return FocusScope(
+        node: itemFocusScopeNode,
+        child: Container(
+          height: notificationItemHeight(
+            NotificationItemKind.sign,
+            notification.type.notificationItemState,
+          ),
+          decoration: defaultStyle.decoration ?? itemStyle.decoration,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Liquid Connect: Signature Required'.tr(),
+                  style:
+                      defaultStyle.titleTextStyle ?? itemStyle.titleTextStyle,
                 ),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: AlignmentGeometry.centerRight,
-                  child: Text(
-                    'Cancelled',
-                    style:
-                        defaultStyle.cancelledTextStyle ??
-                        itemStyle.cancelledTextStyle,
+                const SizedBox(height: 8),
+                Text(
+                  origin,
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(fontSize: 13),
+                ),
+                if (notification.type.notificationItemState ==
+                    NotificationItemState.canceled()) ...[
+                  const SizedBox(height: 10),
+                  Divider(
+                    thickness: 0,
+                    height: 1,
+                    color: defaultStyle.dividerColor ?? itemStyle.dividerColor,
                   ),
-                ),
-              ] else ...[
-                const SizedBox(height: 10),
-                DNotificationSignBalances(balances: balances),
-                const SizedBox(height: 8),
-                DNotificationsSignRecipients(recipients: recipients),
-                const SizedBox(height: 8),
-                DNotificationsNetworkFee(networkFee: networkFee),
-                const SizedBox(height: 8),
-                optionTtl.match(() => const SizedBox(), (ttl) {
-                  return Text(
-                    'Time-to-live: {} seconds'.plural(ttl, args: ['$ttl']),
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(fontSize: 13),
-                  );
-                }),
-                const SizedBox(height: 18),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    DCustomTextBigButton(
-                      width: 160,
-                      height: 34,
-                      onPressed: () {
-                        cancelCallback(
-                          reqId,
-                          notificationId,
-                          reason: NotificationRemovalReason.rejectedByUser,
-                        );
-
-                        onTap?.call();
-                      },
-                      child: Text('Cancel'.tr()),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: AlignmentGeometry.centerRight,
+                    child: Text(
+                      'Cancelled',
+                      style:
+                          defaultStyle.cancelledTextStyle ??
+                          itemStyle.cancelledTextStyle,
                     ),
-                    DCustomFilledBigButton(
-                      width: 160,
-                      height: 34,
-                      focusNode: acceptFocusNode,
-                      onPressed: () async {
-                        if (await ref.read(walletProvider).isAuthenticated()) {
-                          final msg = To();
-                          msg.signerResponse = To_SignerResponse(
-                            reqId: reqId,
-                            accept: true,
+                  ),
+                ] else ...[
+                  const SizedBox(height: 10),
+                  DNotificationSignBalances(balances: balances),
+                  const SizedBox(height: 8),
+                  DNotificationsSignRecipients(recipients: recipients),
+                  const SizedBox(height: 8),
+                  DNotificationsNetworkFee(networkFee: networkFee),
+                  const SizedBox(height: 8),
+                  optionTtl.match(() => const SizedBox(), (ttl) {
+                    return Text(
+                      'Time-to-live: {} seconds'.plural(ttl, args: ['$ttl']),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontSize: 13),
+                    );
+                  }),
+                  const SizedBox(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      DCustomTextBigButton(
+                        width: 160,
+                        height: 34,
+                        onPressed: () {
+                          cancelCallback(
+                            reqId,
+                            notificationId,
+                            reason: NotificationRemovalReason.rejectedByUser,
                           );
-                          ref.read(walletProvider).sendMsg(msg);
+                        },
+                        child: Text('Cancel'.tr()),
+                      ),
+                      DCustomFilledBigButton(
+                        width: 160,
+                        height: 34,
+                        focusNode: acceptFocusNode,
+                        onPressed: acceptInFlight
+                            ? null
+                            : () {
+                                // Captured before the ask, not tested after it:
+                                // the rebuild that disables this control takes
+                                // its focus away in the same turn.
+                                // ADR-0009 decision 5.
+                                focusWasHere.value =
+                                    itemFocusScopeNode.hasFocus;
 
-                          ref
-                              .read(notificationsProvider.notifier)
-                              .removeNotification(
-                                notification.id,
-                                reason:
-                                    NotificationRemovalReason.acceptedByUser,
-                              );
-
-                          onTap?.call();
-                        }
-                      },
-                      child: Text('Broadcast'.tr()),
-                    ),
-                  ],
-                ),
+                                // Unawaited by design. Once the gate is crossed
+                                // the widget is no longer a party to the outcome,
+                                // and an awaited result would put this element's
+                                // survival back on the acceptance path — which is
+                                // the defect this moved out of the widget.
+                                // ADR-0009 decision 2.
+                                unawaited(
+                                  ref
+                                      .read(signerAcceptanceProvider.notifier)
+                                      .accept(
+                                        notificationId: notificationId,
+                                        reqId: reqId,
+                                      ),
+                                );
+                              },
+                        child: Text('Broadcast'.tr()),
+                      ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       );
@@ -631,13 +859,18 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
     super.key,
     required this.notificationId,
     required this.connect,
-    this.onTap,
+    this.autofocus = true,
     this.style,
   });
 
   final int notificationId;
   final NotificationTypeConnect connect;
-  final void Function()? onTap;
+
+  /// Whether this item may take the keyboard when it appears.
+  ///
+  /// Defaults to true: an item on its own is the only thing on screen, and
+  /// only the panel knows that one of several has already been granted it.
+  final bool autofocus;
   final NotificationItemConnectRequestStyle? style;
 
   @override
@@ -650,12 +883,130 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
         .watch(notificationsProvider.notifier)
         .getNotification(notificationId);
 
+    // The request this element was given to render. Everything below answers
+    // for *this* request id and nothing else: an element repurposed to another
+    // request is rebuilt with a new one, so its busy state, its focus and its
+    // acceptance follow the request rather than the element.
+    final reqId = connect.reqId;
+
+    // Built lazily, but never collected once built. The panel shows one item
+    // at a time, so an arrival that puts two items above the one the user is
+    // on would otherwise take that one's element out from under them — and an
+    // element the list collects takes the focus node in it with it, whatever
+    // the sliver did to relocate it first. Keeping what is built is what makes
+    // the relocation worth anything; building everything up front is not, and
+    // a panel is not a feed.
+    useAutomaticKeepAlive();
+
     final acceptFocusNode = useFocusNode();
+
+    // A scope over this item's own subtree. Both focus rules below are answered
+    // against this node rather than against the controls, which is what keeps
+    // them independent of how any individual button manages its focus node.
+    // ADR-0009 decision 5.
+    final itemFocusScopeNode = useFocusScopeNode();
+
+    // Whether this item held the focus when the press was made, captured
+    // synchronously *before* the disable rather than tested after it: disabling
+    // a control unfocuses it in the same turn, so a rule phrased as "restore if
+    // focus is still inside this item" would refuse every restoration —
+    // including the one after a failed gate the user is left to retry.
+    final focusWasHere = useRef(false);
+
+    final previousReqId = useRef<String?>(null);
+
+    // Busy for *this* request id, read from the set the single-flight guard is
+    // kept in. The set lives in a `keepAlive` notifier, so it is unaffected by
+    // this element being unmounted, recreated or repurposed — which is ADR-0009
+    // decision 2 seen from the widget side. Declared above the `match` for the
+    // same reason the hooks are.
+    final acceptInFlight = ref.watch(
+      signerAcceptanceProvider.select((inFlight) => inFlight.contains(reqId)),
+    );
+
+    // Focus does not ride along to another request. When a prepend or a removal
+    // repurposes this element, any focus its subtree holds is dropped rather
+    // than handed to a request the user has not read — where a repeated Enter
+    // would reject it, or raise the gate for it. ADR-0009 decision 5.
+    useEffect(() {
+      final previous = previousReqId.value;
+      previousReqId.value = reqId;
+
+      if (previous == null || previous == reqId) {
+        return null;
+      }
+
+      // Whatever the previous request armed is abandoned with it. Clearing the
+      // capture is what stops the restoration below from landing on the
+      // arriving request: both effects run in the same synchronous build, and
+      // `unfocus` only marks the change for the next microtask — so the
+      // restoration would still read this scope as focused and hand the focus
+      // to a control the user has not read. This effect is declared first so
+      // that ordering holds.
+      focusWasHere.value = false;
+
+      if (itemFocusScopeNode.hasFocus) {
+        itemFocusScopeNode.unfocus();
+      }
+
+      return null;
+    }, [reqId]);
+
+    // Restores the focus the disable took, and only that. An effect rather than
+    // a listener, because a listener is called the moment the set changes —
+    // while the control is still disabled, and a disabled
+    // `FocusableActionDetector` refuses the focus it is offered. An effect runs
+    // after the rebuild that re-enables it.
+    //
+    // Nothing to restore unless this item held the focus when the press was
+    // made, and nothing to restore if something outside this item has claimed
+    // it since: a control the user tabbed to on another item is not this item's
+    // to take back. ADR-0009 decision 5.
+    useEffect(() {
+      if (acceptInFlight) {
+        return null;
+      }
+
+      if (!focusWasHere.value) {
+        return null;
+      }
+      focusWasHere.value = false;
+
+      // `hasPrimaryFocus`, not `hasFocus`: disabling the control hands the
+      // focus up to this scope node itself, so holding it *directly* is what
+      // "nothing has claimed it since" looks like. A control that holds it
+      // instead — Cancel on this very item, or a control on another one — is
+      // the user's choice and not this item's to take back.
+      if (!itemFocusScopeNode.hasPrimaryFocus) {
+        return null;
+      }
+
+      acceptFocusNode.requestFocus();
+
+      return null;
+    }, [acceptInFlight]);
+
+    // The item takes the keyboard when it appears, so the request it shows is
+    // answerable without reaching for the mouse — but only if it is the item
+    // the panel granted it to. An arrival into a panel the user is already
+    // working in takes nothing: a control the user has not read must not end
+    // up under the next Enter.
+    //
+    // Restoring the focus the disable takes is a separate rule and lives in
+    // the effect above: re-running this on the busy flag would fire it for
+    // every item whose attempt ends, including one the user has since tabbed
+    // away from.
+    useEffect(() {
+      if (autofocus) {
+        acceptFocusNode.requestFocus();
+      }
+
+      return null;
+    }, const []);
 
     return optionNotification.match(() => DPopupWithClose(child: SizedBox()), (
       notification,
     ) {
-      final reqId = notification.type.reqId;
       final origin = notification.type.origin;
 
       final optionTtl = ref.watch(
@@ -682,45 +1033,16 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
             .removeNotification(notificationId, reason: reason);
       }, [notificationId]);
 
-      useEffect(() {
-        if (!context.mounted) {
-          return;
-        }
-
-        optionTtl.match(() {}, (ttl) {
-          if (ttl <= 0) {
-            Future.microtask(() {
-              cancelCallback(
-                reqId,
-                notificationId,
-                reason: NotificationRemovalReason.expired,
-              );
-            });
-            return;
-          }
-          return;
-        });
-        return;
-      }, [optionTtl]);
-
-      useEffect(() {
-        acceptFocusNode.requestFocus();
-
-        return;
-      }, const []);
-
       final defaultStyle =
           notification.type.notificationItemState ==
               NotificationItemState.canceled()
           ? NotificationItemConnectRequestStyle(
-              height: 182,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.indigo.withValues(alpha: 0.5),
               ),
-              titleTextStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.5),
-              ),
+              titleTextStyle: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: Colors.white.withValues(alpha: 0.5)),
               dividerColor: SideSwapColors.blumine.withValues(alpha: 0.5),
               subtitleHeaderTextStyle: Theme.of(context).textTheme.labelLarge
                   ?.copyWith(
@@ -753,7 +1075,6 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
                   ),
             )
           : NotificationItemConnectRequestStyle(
-              height: 358,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.indigo,
@@ -784,161 +1105,169 @@ class NotificationItemConnectRequest extends HookConsumerWidget {
                   ),
             );
 
-      return Container(
-        height: defaultStyle.height ?? itemStyle.height!,
-        decoration: defaultStyle.decoration ?? itemStyle.decoration,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Connect request'.tr(),
-                style: defaultStyle.titleTextStyle ?? itemStyle.titleTextStyle,
-              ),
-              const SizedBox(height: 10),
-              Divider(
-                thickness: 0,
-                height: 1,
-                color: defaultStyle.dividerColor ?? itemStyle.dividerColor,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Site:'.tr(),
-                    style:
-                        defaultStyle.subtitleHeaderTextStyle ??
-                        itemStyle.subtitleHeaderTextStyle,
-                  ),
-                  Text(
-                    origin,
-                    style:
-                        defaultStyle.subtitleTextStyle ??
-                        itemStyle.subtitleTextStyle,
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Scope:'.tr(),
-                    style:
-                        defaultStyle.subtitleHeaderTextStyle ??
-                        itemStyle.subtitleHeaderTextStyle,
-                  ),
-                  Text(
-                    'read-only (watch-only)'.tr(),
-                    style:
-                        defaultStyle.subtitleTextStyle ??
-                        itemStyle.subtitleTextStyle,
-                  ),
-                ], // Add the appropriate scope information here
-              ),
-              const SizedBox(height: 10),
-              Divider(
-                thickness: 0,
-                height: 1,
-                color: defaultStyle.dividerColor ?? itemStyle.dividerColor,
-              ),
-              const SizedBox(height: 10),
-              if (notification.type.notificationItemState ==
-                  NotificationItemState.canceled()) ...[
-                Align(
-                  alignment: AlignmentGeometry.centerRight,
-                  child: Text(
-                    'Cancelled',
-                    style:
-                        defaultStyle.cancelledTextStyle ??
-                        itemStyle.cancelledTextStyle,
-                  ),
-                ),
-              ] else ...[
+      return FocusScope(
+        node: itemFocusScopeNode,
+        child: Container(
+          height: notificationItemHeight(
+            NotificationItemKind.connect,
+            notification.type.notificationItemState,
+          ),
+          decoration: defaultStyle.decoration ?? itemStyle.decoration,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  "This site can see balances, assets, and history for the accounts you share. It can't spend or sign."
-                      .tr(),
+                  'Connect request'.tr(),
                   style:
-                      defaultStyle.descriptionTextStyle ??
-                      itemStyle.descriptionTextStyle,
+                      defaultStyle.titleTextStyle ?? itemStyle.titleTextStyle,
                 ),
                 const SizedBox(height: 10),
-                RichText(
-                  text: TextSpan(
-                    text: 'Privacy note: '.tr(),
-                    style:
-                        defaultStyle.privacyHeaderTextStyle ??
-                        itemStyle.privacyHeaderTextStyle,
-                    children: [
-                      TextSpan(
-                        text:
-                            'Sharing watch-only access (descriptor/xpub and Liquid master blinding key) reveals your full past and future activity for the selected accounts to this site. Only connect to sites you trust.'
-                                .tr(),
-                        style:
-                            defaultStyle.privacyTextStyle ??
-                            itemStyle.privacyTextStyle,
-                      ),
-                    ],
-                  ),
+                Divider(
+                  thickness: 0,
+                  height: 1,
+                  color: defaultStyle.dividerColor ?? itemStyle.dividerColor,
                 ),
-                const SizedBox(height: 8),
-                optionTtl.match(() => const SizedBox(), (ttl) {
-                  return Text(
-                    'Time-to-live: {} seconds'.plural(ttl, args: ['$ttl']),
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(fontSize: 13),
-                  );
-                }),
-                const Spacer(),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    DCustomTextBigButton(
-                      width: 160,
-                      height: 34,
-                      onPressed: () {
-                        cancelCallback(
-                          reqId,
-                          notificationId,
-                          reason: NotificationRemovalReason.rejectedByUser,
-                        );
-
-                        onTap?.call();
-                      },
-                      child: Text('Cancel'.tr()),
+                    Text(
+                      'Site:'.tr(),
+                      style:
+                          defaultStyle.subtitleHeaderTextStyle ??
+                          itemStyle.subtitleHeaderTextStyle,
                     ),
-                    DCustomFilledBigButton(
-                      width: 160,
-                      height: 34,
-                      focusNode: acceptFocusNode,
-                      onPressed: () async {
-                        if (await ref.read(walletProvider).isAuthenticated()) {
-                          final msg = To();
-                          msg.signerResponse = To_SignerResponse(
-                            reqId: reqId,
-                            accept: true,
-                          );
-                          ref.read(walletProvider).sendMsg(msg);
-
-                          ref
-                              .read(notificationsProvider.notifier)
-                              .removeNotification(
-                                notification.id,
-                                reason:
-                                    NotificationRemovalReason.acceptedByUser,
-                              );
-
-                          onTap?.call();
-                        }
-                      },
-                      child: Text('Connect'.tr()),
+                    Text(
+                      origin,
+                      style:
+                          defaultStyle.subtitleTextStyle ??
+                          itemStyle.subtitleTextStyle,
                     ),
                   ],
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Scope:'.tr(),
+                      style:
+                          defaultStyle.subtitleHeaderTextStyle ??
+                          itemStyle.subtitleHeaderTextStyle,
+                    ),
+                    Text(
+                      'read-only (watch-only)'.tr(),
+                      style:
+                          defaultStyle.subtitleTextStyle ??
+                          itemStyle.subtitleTextStyle,
+                    ),
+                  ], // Add the appropriate scope information here
+                ),
+                const SizedBox(height: 10),
+                Divider(
+                  thickness: 0,
+                  height: 1,
+                  color: defaultStyle.dividerColor ?? itemStyle.dividerColor,
+                ),
+                const SizedBox(height: 10),
+                if (notification.type.notificationItemState ==
+                    NotificationItemState.canceled()) ...[
+                  Align(
+                    alignment: AlignmentGeometry.centerRight,
+                    child: Text(
+                      'Cancelled',
+                      style:
+                          defaultStyle.cancelledTextStyle ??
+                          itemStyle.cancelledTextStyle,
+                    ),
+                  ),
+                ] else ...[
+                  Text(
+                    "This site can see balances, assets, and history for the accounts you share. It can't spend or sign."
+                        .tr(),
+                    style:
+                        defaultStyle.descriptionTextStyle ??
+                        itemStyle.descriptionTextStyle,
+                  ),
+                  const SizedBox(height: 10),
+                  RichText(
+                    text: TextSpan(
+                      text: 'Privacy note: '.tr(),
+                      style:
+                          defaultStyle.privacyHeaderTextStyle ??
+                          itemStyle.privacyHeaderTextStyle,
+                      children: [
+                        TextSpan(
+                          text: 'Sharing watch-only access (descriptor/xpub and Liquid master blinding key) reveals your full past and future activity for the selected accounts to this site. Only connect to sites you trust.'
+                              .tr(),
+                          style:
+                              defaultStyle.privacyTextStyle ??
+                              itemStyle.privacyTextStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  optionTtl.match(() => const SizedBox(), (ttl) {
+                    return Text(
+                      'Time-to-live: {} seconds'.plural(ttl, args: ['$ttl']),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontSize: 13),
+                    );
+                  }),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      DCustomTextBigButton(
+                        width: 160,
+                        height: 34,
+                        onPressed: () {
+                          cancelCallback(
+                            reqId,
+                            notificationId,
+                            reason: NotificationRemovalReason.rejectedByUser,
+                          );
+                        },
+                        child: Text('Cancel'.tr()),
+                      ),
+                      DCustomFilledBigButton(
+                        width: 160,
+                        height: 34,
+                        focusNode: acceptFocusNode,
+                        onPressed: acceptInFlight
+                            ? null
+                            : () {
+                                // Captured before the ask, not tested after it:
+                                // the rebuild that disables this control takes
+                                // its focus away in the same turn.
+                                // ADR-0009 decision 5.
+                                focusWasHere.value =
+                                    itemFocusScopeNode.hasFocus;
+
+                                // Unawaited by design. Once the gate is crossed
+                                // the widget is no longer a party to the outcome,
+                                // and an awaited result would put this element's
+                                // survival back on the acceptance path — which is
+                                // the defect this moved out of the widget.
+                                // ADR-0009 decision 2.
+                                unawaited(
+                                  ref
+                                      .read(signerAcceptanceProvider.notifier)
+                                      .accept(
+                                        notificationId: notificationId,
+                                        reqId: reqId,
+                                      ),
+                                );
+                              },
+                        child: Text('Connect'.tr()),
+                      ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       );
@@ -1025,9 +1354,9 @@ class DNotificationSignBalances extends HookConsumerWidget {
                                   children: [
                                     Text(
                                       amountStr,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
                                     ),
                                     Row(
                                       children: [
@@ -1035,9 +1364,9 @@ class DNotificationSignBalances extends HookConsumerWidget {
                                         const SizedBox(width: 8),
                                         Text(
                                           ticker,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.titleSmall,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
                                         ),
                                       ],
                                     ),
@@ -1151,9 +1480,9 @@ class DNotificationsSignRecipients extends HookConsumerWidget {
                                         child: MiddleEllipsisText(
                                           text: recipient.address,
                                           textAlign: TextAlign.left,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.titleSmall,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
                                         ),
                                       ),
                                     ),
@@ -1162,9 +1491,9 @@ class DNotificationsSignRecipients extends HookConsumerWidget {
                                       children: [
                                         Text(
                                           amountStr,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.titleSmall,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
                                         ),
                                         const SizedBox(width: 8),
                                         assetIcon,
@@ -1326,6 +1655,10 @@ class DNotificationSignPopup extends HookConsumerWidget {
       return DPopupWithClose(
         width: 580,
         height: 605,
+        // The body flexes to the declared height through a `Spacer()`, so the
+        // wrapper supplies the `Flexible` half only. ADR-0014's floor sweep
+        // for this surface is #268.
+        scrollOwner: ScrollOwner.child,
         onClose: () {
           final msg = To();
           msg.signerResponse = To_SignerResponse(reqId: reqId, accept: false);
@@ -1351,9 +1684,8 @@ class DNotificationSignPopup extends HookConsumerWidget {
                   Center(
                     child: Text(
                       'Sign transaction'.tr(),
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.displaySmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1362,9 +1694,8 @@ class DNotificationSignPopup extends HookConsumerWidget {
                     child: RichText(
                       text: TextSpan(
                         text: 'Transaction generated on '.tr(),
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: SideSwapColors.halfBaked,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(color: SideSwapColors.halfBaked),
                         children: [
                           TextSpan(
                             text: origin,

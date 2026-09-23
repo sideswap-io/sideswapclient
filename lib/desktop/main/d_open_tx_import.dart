@@ -10,6 +10,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
@@ -97,6 +98,10 @@ class DOpenTxImport extends HookConsumerWidget {
     return DPopupWithClose(
       width: 580,
       height: 321,
+      // The body flexes to the declared height through a `Spacer()`, so the
+      // wrapper supplies the `Flexible` half only. ADR-0014's floor sweep for
+      // this surface is #268.
+      scrollOwner: ScrollOwner.child,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(

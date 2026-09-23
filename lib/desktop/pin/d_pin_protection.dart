@@ -44,11 +44,8 @@ class DPinProtection extends HookConsumerWidget {
       };
     }, [pinUnlockState]);
 
-    useEffect(() {
-      ref.read(pinProtectionHelperProvider).init();
-      return;
-    }, const []);
-
+    // PIN and error state are reset by the raise site, never from build here --
+    // see the note in `PinProtectionBody`.
     final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
 
     useEffect(() {
@@ -101,6 +98,11 @@ class DPinProtection extends HookConsumerWidget {
                       return Column(
                         children: [
                           DPinTextField(
+                            // The field is the only thing on this dialog the
+                            // user can type into, so it takes focus on open.
+                            // `DPinTextField` forwards the flag now instead of
+                            // hard-coding it, so this call site states it.
+                            autofocus: true,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(8),
@@ -111,7 +113,6 @@ class DPinProtection extends HookConsumerWidget {
                                 const PinProtectionState.waiting(),
                             error:
                                 pinProtectionState is PinProtectionStateError,
-                            errorMessage: '',
                             onChanged: (value) {
                               ref
                                   .read(pinKeyboardHelperProvider)
@@ -156,10 +157,18 @@ class DPinProtection extends HookConsumerWidget {
                         firstLaunchStateProvider,
                       );
                       final pinFieldState = ref.watch(pinFieldStateProvider);
+                      final pinProtectionState = ref.watch(
+                        pinProtectionStateProvider,
+                      );
 
                       return DPinKeyboard(
                         width: 260,
                         height: 206,
+                        // The keys are already inert while waiting; this stops
+                        // the appearance from lying. ADR-0013 decision 12.
+                        enabled:
+                            pinProtectionState !=
+                            const PinProtectionState.waiting(),
                         acceptType:
                             (firstLaunchState !=
                                 const FirstLaunchStateType.empty())

@@ -96,31 +96,30 @@ class UniversalLink {
       // the foreground or in the background.
       uriLinkSubscription?.cancel();
       uriLinkSubscription = _appLinks.uriLinkStream.listen(
-        (Uri? uri) {
-          if (!ref.mounted) return;
+        // `uriLinkStream` is a `Stream<Uri>`, so `uri` is never null and no
+        // mounted guard is needed either: the subscription is cancelled in
+        // ref.onDispose below.
+        (Uri uri) {
           logger.d('UniversalLink::handleIncomingLinks: new incoming uri $uri');
           latestUri = uri;
-          if (uri != null) {
-            // uri incoming too early, we need to store it for later use
-            final serverState = ref.read(serverLoginProvider);
-            if (serverState is! ServerLoginStateLogin) {
-              initialUri = uri;
-              logger.d(
-                'UniversalLink::handleIncomingLinks: storing initial uri for later use $uri',
-              );
-              return;
-            }
 
-            final linkResultState = handleAppUri(uri);
+          // uri incoming too early, we need to store it for later use
+          final serverState = ref.read(serverLoginProvider);
+          if (serverState is! ServerLoginStateLogin) {
+            initialUri = uri;
             logger.d(
-              'UniversalLink::handleIncomingLinks: link result state $linkResultState',
+              'UniversalLink::handleIncomingLinks: storing initial uri for later use $uri',
             );
-            ref
-                .read(universalLinkResultStateProvider.notifier)
-                .setState(linkResultState);
             return;
           }
-          logger.d('UniversalLink::handleIncomingLinks: empty uri');
+
+          final linkResultState = handleAppUri(uri);
+          logger.d(
+            'UniversalLink::handleIncomingLinks: link result state $linkResultState',
+          );
+          ref
+              .read(universalLinkResultStateProvider.notifier)
+              .setState(linkResultState);
         },
         onError: (Object err) {
           logger.e('UniversalLink::handleIncomingLinks: error $err');

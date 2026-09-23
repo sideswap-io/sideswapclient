@@ -46,8 +46,13 @@ void main() {
         if (gate != null)
           walletDescriptorsGateProvider.overrideWithValue(gate),
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: ExportDescriptorsButton()),
+      child: MaterialApp(
+        // NoSplash avoids Material's InkSparkle fragment shader, whose asset is
+        // unavailable under `--no-test-assets` (tools/coverage.dart) when the
+        // entry is tapped; the ripple is not under test. Without it this only
+        // passes in a checkout that happens to carry a stale `build/` bundle.
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        home: const Scaffold(body: ExportDescriptorsButton()),
       ),
     ),
   );

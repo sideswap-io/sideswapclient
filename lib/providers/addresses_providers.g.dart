@@ -801,7 +801,7 @@ final class SelectedInputsNotifierProvider
 }
 
 String _$selectedInputsNotifierHash() =>
-    r'264a90162e7d770a3c708f9c7c31c8781e6f4146';
+    r'd219554c1b62ab23ad176de0006289f5538b2471';
 
 abstract class _$SelectedInputsNotifier extends $Notifier<List<UtxosItem>> {
   List<UtxosItem> build();

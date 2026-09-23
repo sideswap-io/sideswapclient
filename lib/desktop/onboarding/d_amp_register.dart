@@ -90,83 +90,121 @@ class DAmpRegister extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                'Register your AMP ID to trade securities'.tr(),
-                style: textTheme.titleLarge,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 18),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [AmpIdPanel(width: 360, ampId: ampId)],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: SizedBox(
-                  width: 581,
-                  height: 333,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // The body scrolls; the action below it does not. ADR-0014
+              // decisions 8 and 11. Both halves decision 8 requires are here,
+              // and the tree shape never switches on a height threshold, so
+              // decision 10 holds too.
+              //
+              // The flex is tight where decision 8 writes `FlexFit.loose`, and
+              // the difference is this page's outer `Column`. Loose keeps the
+              // common case unchanged inside a wrapper whose column shrink-wraps
+              // its slots; this column fills the whole client area. Given a
+              // loose fit the body would take its natural height and the
+              // leftover would collapse *below* it, lifting the action block by
+              // the height of the gap the deleted `Spacer()` used to hold. A
+              // tight fit gives that leftover to the viewport instead, so the
+              // action block keeps the position it has today.
+              //
+              // The figures the tests read out -- viewport, body, scroll extent
+              // -- are block-font measurements under `--no-test-assets`. Treat
+              // them as a regression record, not as production geometry.
+              Expanded(
+                child: SingleChildScrollView(
+                  primary: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final stokrGaidState = ref.watch(stokrGaidProvider);
-
-                          return AmpServiceRegisterBox(
-                            boxLogo: 'assets/stokr_logo.svg',
-                            onPressed:
-                                (stokrGaidState ==
-                                    const StokrGaidStateUnregistered())
-                                ? () {
-                                    ref
-                                        .read(pageStatusProvider.notifier)
-                                        .setStatus(Status.stokrLogin);
-                                  }
-                                : null,
-                            items: stokrItems,
-                            registered:
-                                (stokrGaidState ==
-                                const StokrGaidStateRegistered()),
-                            loading:
-                                (stokrGaidState ==
-                                const StokrGaidStateLoading()),
-                          );
-                        },
+                      Text(
+                        'Register your AMP ID to trade securities'.tr(),
+                        style: textTheme.titleLarge,
                       ),
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final pegxGaidState = ref.watch(pegxGaidProvider);
-                          final env = ref.watch(envProvider);
-                          return AmpServiceRegisterBox(
-                            boxLogo: 'assets/pegx_logo.svg',
-                            onPressed:
-                                (pegxGaidState ==
-                                        const PegxGaidStateUnregistered()) ||
-                                    (env == SIDESWAP_ENV_TESTNET ||
-                                        env == SIDESWAP_ENV_LOCAL_TESTNET)
-                                ? () {
-                                    ref
-                                        .read(pegxLoginStateProvider.notifier)
-                                        .setState(
-                                          const PegxLoginStateLoginDialog(),
-                                        );
-                                  }
-                                : null,
-                            items: pegxItems,
-                            registered:
-                                (pegxGaidState ==
-                                const PegxGaidStateRegistered()),
-                            loading:
-                                (pegxGaidState == const PegxGaidStateLoading()),
-                          );
-                        },
+                      Padding(
+                        padding: const EdgeInsets.only(top: 18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [AmpIdPanel(width: 360, ampId: ampId)],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 32),
+                        child: SizedBox(
+                          width: 581,
+                          height: 333,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final stokrGaidState = ref.watch(
+                                    stokrGaidProvider,
+                                  );
+
+                                  return AmpServiceRegisterBox(
+                                    boxLogo: 'assets/stokr_logo.svg',
+                                    onPressed:
+                                        (stokrGaidState ==
+                                            const StokrGaidStateUnregistered())
+                                        ? () {
+                                            ref
+                                                .read(
+                                                  pageStatusProvider.notifier,
+                                                )
+                                                .setStatus(Status.stokrLogin);
+                                          }
+                                        : null,
+                                    items: stokrItems,
+                                    registered:
+                                        (stokrGaidState ==
+                                        const StokrGaidStateRegistered()),
+                                    loading:
+                                        (stokrGaidState ==
+                                        const StokrGaidStateLoading()),
+                                  );
+                                },
+                              ),
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final pegxGaidState = ref.watch(
+                                    pegxGaidProvider,
+                                  );
+                                  final env = ref.watch(envProvider);
+                                  return AmpServiceRegisterBox(
+                                    boxLogo: 'assets/pegx_logo.svg',
+                                    onPressed:
+                                        (pegxGaidState ==
+                                                const PegxGaidStateUnregistered()) ||
+                                            (env == SIDESWAP_ENV_TESTNET ||
+                                                env ==
+                                                    SIDESWAP_ENV_LOCAL_TESTNET)
+                                        ? () {
+                                            ref
+                                                .read(
+                                                  pegxLoginStateProvider
+                                                      .notifier,
+                                                )
+                                                .setState(
+                                                  const PegxLoginStateLoginDialog(),
+                                                );
+                                          }
+                                        : null,
+                                    items: pegxItems,
+                                    registered:
+                                        (pegxGaidState ==
+                                        const PegxGaidStateRegistered()),
+                                    loading:
+                                        (pegxGaidState ==
+                                        const PegxGaidStateLoading()),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const Spacer(),
               Consumer(
                 builder: (context, ref, child) {
                   final stokrGaidState = ref.watch(stokrGaidProvider);
@@ -199,9 +237,8 @@ class DAmpRegister extends HookConsumerWidget {
                       },
                       child: Text(
                         'NOT NOW'.tr(),
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: SideSwapColors.brightTurquoise,
-                        ),
+                        style: Theme.of(context).textTheme.labelLarge
+                            ?.copyWith(color: SideSwapColors.brightTurquoise),
                       ),
                     ),
                   };

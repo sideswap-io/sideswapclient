@@ -6,6 +6,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_network_access.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -31,6 +32,7 @@ class DNetworkAccessOnboarding extends ConsumerWidget {
       style: const DContentDialogThemeData().merge(defaultDialogTheme),
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 635),
       actions: const [DNetworkAccessOnboardingSaveOrBackButton()],
+      scrollOwner: ScrollOwner.wrapper,
     );
   }
 }

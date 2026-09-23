@@ -107,64 +107,105 @@ class DJadeImport extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 100),
-            SvgPicture.asset(
-              'assets/jade_front_idle.svg',
-              width: 178,
-              height: 91,
-            ),
-            const SizedBox(height: 32),
-            Consumer(
-              builder: (context, ref, child) {
-                final jadeDevicesState = ref.watch(jadeDeviceProvider);
-
-                return Column(
+            // The navigation row above stays pinned; everything below it
+            // scrolls. ADR-0014 decisions 8 and 10. Both halves decision 8
+            // requires are here -- the flex and the scroll view -- and the
+            // tree shape never switches on a height threshold, so decision 10
+            // holds. Decision 11 is not cited: it names four other pages
+            // (`DHome`, `DMarkets`, `DInstantSwap`, `DPegInOut`) and this one
+            // is not among them.
+            //
+            // The flex is tight where decision 8 writes `FlexFit.loose`,
+            // because this page's `Column` fills the whole client area rather
+            // than shrink-wrapping its slots. A loose fit would let the body
+            // take its natural height and collapse the leftover below it; a
+            // tight fit gives the leftover to the viewport, which is where the
+            // fixed spacers below hold it today. Nothing sits under the body,
+            // so the choice moves no control either way; the tight fit is what
+            // keeps the scroll region the full height of what is left.
+            //
+            // At the design height the body fits and the extent is zero, so no
+            // scrollbar and no scroll gesture appear. At the floor the default
+            // state -- no Jade connected, `Padding(top: 200)` above the
+            // spinner -- scrolls by what the `Column` used to overflow by.
+            //
+            // REGISTER is inside the scroll body, not pinned below it, and
+            // that is deliberate. The button belongs to `JadeDevice`, one card
+            // per connected device, so there is no single control to pin: two
+            // Jades render two REGISTERs. On desktop the device list is kept
+            // whole -- `JadeDeviceNotifier.setState` returns early for
+            // `FlavorConfig.isDesktop` (lib/providers/jade_provider.dart:61)
+            // where the mobile path collapses it to one -- so the multi-device
+            // case is reachable, and at the floor the second card's REGISTER
+            // sits below the fold. Before this change it was clipped by an
+            // overflow with no way to reach it at all; now it scrolls. Prior
+            // art records the same limitation for the register boxes of
+            // `DAmpRegister`. Pinning it would mean lifting the button out of
+            // `JadeDevice`, which `DSettingsJadeDevice` also mounts, and that
+            // is a different issue.
+            Expanded(
+              child: SingleChildScrollView(
+                primary: false,
+                child: Column(
                   children: [
-                    Text(
-                      switch (jadeDevicesState) {
-                        JadeDevicesStateAvailable() =>
-                          'Jade is ready to start'.tr(),
-                        _ => 'Please connect your Jade device'.tr(),
-                      },
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    const SizedBox(height: 100),
+                    SvgPicture.asset(
+                      'assets/jade_front_idle.svg',
+                      width: 178,
+                      height: 91,
                     ),
-                    switch (jadeDevicesState) {
-                      JadeDevicesStateAvailable() => const SizedBox(),
-                      _ => Text(
-                        'Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.'
-                            .tr(),
-                      ),
-                    },
-                    switch (jadeDevicesState) {
-                      JadeDevicesStateAvailable(
-                        devices: List<From_JadePorts_Port> devices,
-                      ) =>
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24),
-                          child: Column(
-                            children: devices
-                                .map(
-                                  (port) => JadeDevice(
-                                    key: ValueKey(port.port),
-                                    jadePort: JadePort(fromJadePortsPort: port),
-                                  ),
-                                )
-                                .toList(),
+                    const SizedBox(height: 32),
+                    Column(
+                      children: [
+                        Text(
+                          switch (jadeDevicesState) {
+                            JadeDevicesStateAvailable() =>
+                              'Jade is ready to start'.tr(),
+                            _ => 'Please connect your Jade device'.tr(),
+                          },
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      _ => const Padding(
-                        padding: EdgeInsets.only(top: 200),
-                        child: SpinKitFadingCircle(
-                          color: SideSwapColors.brightTurquoise,
-                        ),
-                      ),
-                    },
+                        switch (jadeDevicesState) {
+                          JadeDevicesStateAvailable() => const SizedBox(),
+                          _ => Text(
+                            'Before using Jade with Sideswap, you should stop Blockstream Green and any other programs that may be using it.'
+                                .tr(),
+                          ),
+                        },
+                        switch (jadeDevicesState) {
+                          JadeDevicesStateAvailable(
+                            devices: List<From_JadePorts_Port> devices,
+                          ) =>
+                            Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: Column(
+                                children: devices
+                                    .map(
+                                      (port) => JadeDevice(
+                                        key: ValueKey(port.port),
+                                        jadePort: JadePort(
+                                          fromJadePortsPort: port,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                          _ => const Padding(
+                            padding: EdgeInsets.only(top: 200),
+                            child: SpinKitFadingCircle(
+                              color: SideSwapColors.brightTurquoise,
+                            ),
+                          ),
+                        },
+                      ],
+                    ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
           ],
         ),

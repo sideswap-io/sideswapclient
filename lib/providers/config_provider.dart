@@ -6,8 +6,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/models/desktop_window_geometry.dart';
 import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/logging_shared_preferences.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 
 import 'package:sideswap/providers/proxy_provider.dart';
@@ -48,6 +50,7 @@ sealed class SideswapSettings with _$SideswapSettings {
     @Default(false) bool useProxy,
     String? defaultCurrency,
     StokrSettingsModel? stokrSettingsModel,
+    DesktopWindowGeometry? desktopWindowGeometry,
     @Default({}) Map<String, bool> autosignDomains,
   }) = _SideswapSettings;
 
@@ -74,6 +77,7 @@ sealed class SideswapSettings with _$SideswapSettings {
     required bool useProxy,
     String? defaultCurrency,
     StokrSettingsModel? stokrSettingsModel,
+    DesktopWindowGeometry? desktopWindowGeometry,
   }) {
     return _SideswapSettings(mnemonicEncrypted: Uint8List.fromList([]));
   }
@@ -106,6 +110,7 @@ sealed class SideswapSettings with _$SideswapSettings {
   static const defaultCurrencyField = 'defaultCurrency';
   static const stokrSettingsModelField = 'stokrSettings';
   static const autosignDomainsField = 'autosign_domains';
+  static const desktopWindowGeometryField = 'desktop_window_geometry';
 }
 
 @riverpod
@@ -113,7 +118,9 @@ class Configuration extends _$Configuration {
   @override
   SideswapSettings build() {
     final subscription = listenSelf((_, _) async {
-      if (!ref.mounted) return;
+      // No mounted guard: listenSelf fires synchronously on `state =` and the
+      // subscription is removed in ref.onDispose below, so the ref is always
+      // mounted here.
       final prefs = ref.read(sharedPreferencesProvider);
       await _saveSettings(prefs);
     });
@@ -150,33 +157,66 @@ class Configuration extends _$Configuration {
       defaultCurrency: _defaultCurrency(prefs),
       stokrSettingsModel: _stokrSettings(prefs),
       autosignDomains: _autosignDomains(prefs),
+      desktopWindowGeometry: _desktopWindowGeometry(prefs),
     );
   }
 
-  Future<void> _saveSettings(SharedPreferences prefs) async {
-    await _setMnemonicEncrypted(prefs, state.mnemonicEncrypted);
-    await _setJadeId(prefs, state.jadeId);
-    await _setLicenseAccepted(prefs, state.licenseAccepted);
-    await _setEnableEndpoint(prefs, state.enableEndpoint);
-    await _setUseBiometricProtection(prefs, state.useBiometricProtection);
-    await _setEnv(prefs, state.env);
-    await _setPhoneKey(prefs, state.phoneKey);
-    await _setPhoneNumber(prefs, state.phoneNumber);
-    await _setUsePinProtection(prefs, state.usePinProtection);
-    await _setPinData(prefs, state.pinDataState);
-    await _setSettingsNetworkType(prefs, state.settingsNetworkType);
-    await _setNetworkHost(prefs, state.networkHost);
-    await _setNetworkPort(prefs, state.networkPort);
-    await _setNetworkUseTLS(prefs, state.networkUseTLS);
-    await _setKnownNewReleaseBuild(prefs, state.knownNewReleaseBuild);
-    await _setShowAmpOnboarding(prefs, state.showAmpOnboarding);
-    await _setNetworkSettingsModel(prefs, state.networkSettingsModel);
-    await _setHideTxChainingPromptValue(prefs, state.hideTxChainingPromptValue);
-    await _setProxySettings(prefs, state.proxySettings);
-    await _setUseProxy(prefs, state.useProxy);
-    await _setDefaultCurrency(prefs, state.defaultCurrency);
-    await _setStokrSettings(prefs, state.stokrSettingsModel);
-    await _setAutosignDomains(prefs, state.autosignDomains);
+  Future<void> _pendingSave = Future<void>.value();
+
+  Future<void> _saveSettings(SharedPreferences prefs) {
+    // Snapshot before the first await. `state` throws once the notifier is
+    // disposed, and a save that has started must write one consistent set of
+    // values rather than stop half-way through the keys below.
+    final settings = state;
+    // Chain each save behind the previous one, so overlapping saves persist in
+    // state-change order and the newest snapshot always writes last.
+    _pendingSave = _pendingSave
+        .then(
+          // The decorator ends the round on a refused write, so no later key
+          // is written over a state the disk never reached. See ADR-0017.
+          (_) => _writeSettings(LoggingSharedPreferences(prefs), settings),
+        )
+        .catchError((Object error, StackTrace stackTrace) {
+          // Log and resolve. A rejected `_pendingSave` would kill every later
+          // round for the lifetime of the notifier, and the next round is the
+          // repair: it rewrites the whole snapshot in the same fixed order.
+          logger.e('The settings round failed', error, stackTrace);
+        });
+    return _pendingSave;
+  }
+
+  Future<void> _writeSettings(
+    SharedPreferences prefs,
+    SideswapSettings settings,
+  ) async {
+    await _setMnemonicEncrypted(prefs, settings.mnemonicEncrypted);
+    await _setJadeId(prefs, settings.jadeId);
+    await _setLicenseAccepted(prefs, settings.licenseAccepted);
+    await _setEnableEndpoint(prefs, settings.enableEndpoint);
+    await _setUseBiometricProtection(prefs, settings.useBiometricProtection);
+    await _setEnv(prefs, settings.env);
+    await _setPhoneKey(prefs, settings.phoneKey);
+    await _setPhoneNumber(prefs, settings.phoneNumber);
+    // Load-bearing order: the blob before the flag. Interrupted between the
+    // two, that leaves a fresh blob with protection still off, which is
+    // harmless. The reverse leaves protection on beside a stale blob, which is
+    // an unlock screen that waits for a reply nobody will send.
+    await _setPinData(prefs, settings.pinDataState);
+    await _setUsePinProtection(prefs, settings.usePinProtection);
+    await _setSettingsNetworkType(prefs, settings.settingsNetworkType);
+    await _setNetworkHost(prefs, settings.networkHost);
+    await _setNetworkPort(prefs, settings.networkPort);
+    await _setNetworkUseTLS(prefs, settings.networkUseTLS);
+    await _setKnownNewReleaseBuild(prefs, settings.knownNewReleaseBuild);
+    await _setShowAmpOnboarding(prefs, settings.showAmpOnboarding);
+    await _setNetworkSettingsModel(prefs, settings.networkSettingsModel);
+    await _setHideTxChainingPromptValue(prefs, settings.hideTxChainingPromptValue);
+    await _setProxySettings(prefs, settings.proxySettings);
+    await _setUseProxy(prefs, settings.useProxy);
+    await _setDefaultCurrency(prefs, settings.defaultCurrency);
+    await _setStokrSettings(prefs, settings.stokrSettingsModel);
+    await _setAutosignDomains(prefs, settings.autosignDomains);
+    await _setDesktopWindowGeometry(prefs, settings.desktopWindowGeometry);
   }
 
   bool isRegistered() {
@@ -186,7 +226,13 @@ class Configuration extends _$Configuration {
   }
 
   void setSettings(SideswapSettings sideswapSettings) {
-    state = sideswapSettings;
+    // The PIN record is not this setter's to move. It carries whatever the
+    // state already holds, so no caller can raise the flag or swap the blob
+    // through a wholesale replacement.
+    state = sideswapSettings.copyWith(
+      usePinProtection: state.usePinProtection,
+      pinDataState: state.pinDataState,
+    );
   }
 
   void setDefaultCurrency(String defaultCurrency) {
@@ -225,12 +271,54 @@ class Configuration extends _$Configuration {
     state = state.copyWith(phoneNumber: phoneNumber);
   }
 
-  void setUsePinProtection(bool usePinProtection) {
-    state = state.copyWith(usePinProtection: usePinProtection);
+  /// Turns PIN protection on. The blob, the flag and biometric-off travel in
+  /// one state change, so one persist round carries the whole transition and
+  /// the two halves of the PIN record cannot diverge.
+  void activatePinProtection(PinDataStateData pinData) {
+    // The store keeps a blob that is not whole as no blob at all, so raising
+    // the flag over one is the wallet-losing state. `PinHelper.onPinData`
+    // rejects these too and tells the user; this guard is what the notifier
+    // owes on its own, being the one entrance to the transition.
+    if (!pinData.isWhole) {
+      return;
+    }
+
+    state = state.copyWith(
+      pinDataState: pinData,
+      usePinProtection: true,
+      useBiometricProtection: false,
+    );
   }
 
-  void setPinData(PinDataStateData? pinData) {
-    state = state.copyWith(pinDataState: pinData);
+  /// Turns PIN protection off, in two persist rounds.
+  ///
+  /// One fixed key order cannot be safe in both directions: enabling wants
+  /// blob-then-flag, disabling wants flag-then-blob. So disabling takes two
+  /// state changes, and they belong to one operation rather than to a public
+  /// primitive a caller could invoke on its own — dropping the blob while the
+  /// flag still stands is the wallet-losing state.
+  ///
+  /// Round one stores the fallback mnemonic in the same state change that
+  /// drops the flag, and `_writeSettings` writes the mnemonic before the flag,
+  /// so no window exists in which neither credential opens the wallet.
+  /// Round two drops the blob, which nothing reads once the flag is off.
+  /// Interrupted between the rounds, the wallet is left protection-off beside
+  /// a blob nobody reads, which is harmless.
+  void deactivatePinProtection({required Uint8List mnemonicEncrypted}) {
+    state = state.copyWith(
+      mnemonicEncrypted: mnemonicEncrypted,
+      usePinProtection: false,
+    );
+    state = state.copyWith(pinDataState: null);
+  }
+
+  /// Turns biometric protection on. Registering a biometric credential drops
+  /// the PIN flag in the same state change, so the two never both stand.
+  void activateBiometricProtection() {
+    state = state.copyWith(
+      useBiometricProtection: true,
+      usePinProtection: false,
+    );
   }
 
   void setSettingsNetworkType(SettingsNetworkType settingsNetworkType) {
@@ -259,6 +347,10 @@ class Configuration extends _$Configuration {
 
   void setNetworkSettingsModel(NetworkSettingsModel? networkSettingsModel) {
     state = state.copyWith(networkSettingsModel: networkSettingsModel);
+  }
+
+  void setDesktopWindowGeometry(DesktopWindowGeometry? geometry) {
+    state = state.copyWith(desktopWindowGeometry: geometry);
   }
 
   void setStokrSettingsModel(StokrSettingsModel? stokrSettingsModel) {
@@ -291,10 +383,12 @@ class Configuration extends _$Configuration {
 
   Future<void> deleteConfig() async {
     final currentEnv = state.env;
+    final currentDesktopWindowGeometry = state.desktopWindowGeometry;
     state = SideswapSettings.empty(
       mnemonicEncrypted: Uint8List.fromList([]),
       env: currentEnv,
       showAmpOnboarding: false,
+      desktopWindowGeometry: currentDesktopWindowGeometry,
     );
 
     final prefs = ref.read(sharedPreferencesProvider);
@@ -431,15 +525,7 @@ class Configuration extends _$Configuration {
     );
 
     return switch (pinData) {
-      PinDataStateData(
-        salt: final salt,
-        encryptedData: final encryptedData,
-        pinIdentifier: final pinIdentifier,
-      )
-          when salt.isNotEmpty &&
-              encryptedData.isNotEmpty &&
-              pinIdentifier.isNotEmpty =>
-        pinData,
+      PinDataStateData() when pinData.isWhole => pinData,
       _ => const PinDataStateEmpty(),
     };
   }
@@ -468,12 +554,14 @@ class Configuration extends _$Configuration {
         pinIdentifier: final pinIdentifier,
         hmac: final pinHmac,
       )
-          when salt.isNotEmpty &&
-              encryptedData.isNotEmpty &&
-              pinIdentifier.isNotEmpty =>
+          when pinData.isWhole =>
         () async {
+          // Skip only an unchanged blob. `_writeSettings` re-runs every key on
+          // every settings change, so re-writing the same blob is waste; a
+          // *different* blob must be written, or the next app start loads the
+          // old one and the new PIN fails against it.
           final previousData = _pinData(prefs);
-          if (previousData is! PinDataStateEmpty) {
+          if (previousData == pinData) {
             return;
           }
           await prefs.setString(SideswapSettings.pinSaltField, salt);
@@ -620,6 +708,44 @@ class Configuration extends _$Configuration {
       settingsNetworkType: _settingsNetworkType(prefs),
       env: _env(prefs),
     );
+  }
+
+  Future<void> _setDesktopWindowGeometry(
+    SharedPreferences prefs,
+    DesktopWindowGeometry? geometry,
+  ) async {
+    return await switch (geometry) {
+      final geometry? => () async {
+        await prefs.setString(
+          SideswapSettings.desktopWindowGeometryField,
+          jsonEncode(geometry.toJson()),
+        );
+      }(),
+      _ => () async {
+        await prefs.remove(SideswapSettings.desktopWindowGeometryField);
+      }(),
+    };
+  }
+
+  /// The stored geometry, or null when nothing is stored and when the stored
+  /// text does not decode. A geometry the app cannot read is a hint it drops,
+  /// never a launch failure.
+  DesktopWindowGeometry? _desktopWindowGeometry(SharedPreferences prefs) {
+    final encoded = prefs.getString(
+      SideswapSettings.desktopWindowGeometryField,
+    );
+    if (encoded == null) {
+      return null;
+    }
+
+    try {
+      return DesktopWindowGeometry.fromJson(
+        jsonDecode(encoded) as Map<String, dynamic>,
+      );
+    } catch (e) {
+      logger.w(e);
+      return null;
+    }
   }
 
   Future<void> _setStokrSettings(

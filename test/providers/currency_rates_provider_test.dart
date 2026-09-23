@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -16,18 +15,14 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 
 import '../utils.dart';
 import '../helpers/fake_configuration.dart';
+import '../helpers/test_utils.dart';
 
 class MockWallet extends Mock implements SideswapWallet {}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
 
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     registerFallbackValue(ConversionRates(usdConversionRates: []));
     registerFallbackValue(To());
   });

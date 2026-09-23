@@ -1,0 +1,5 @@
+# Not upstream's -- added by SideSwap. This package is consumed only as a path
+# dependency, so the app's own lockfile governs resolution and a lockfile here is
+# churn. See UPSTREAM.md.
+/pubspec.lock
+/.dart_tool/

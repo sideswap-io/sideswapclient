@@ -26,47 +26,52 @@ class DReceiveAddressDialog extends HookConsumerWidget {
       return;
     }, [selectedAccountType]);
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 580,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: SideSwapColors.blumine,
-          ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 40,
-                  right: 40,
-                  top: 40,
-                  bottom: 10,
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Generate address'.tr(),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.displaySmall?.copyWith(fontSize: 20),
-                      ),
-                      const SizedBox(height: 8),
-                      switch (receiveAddress.recvAddress.isEmpty) {
-                        true => const SizedBox(
-                          width: 32,
-                          height: 100,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
+    // `Center` rather than a `MainAxisSize.min` column: the column let the card
+    // keep its natural 683 px whatever the window was, so at the supported
+    // floor of 620 px it overflowed. Under `Center` the card is bounded by the
+    // window, and the body below scrolls the shortfall. ADR-0014 decision 8.
+    return Center(
+      child: Container(
+        width: 580,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: SideSwapColors.blumine,
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 40,
+                right: 40,
+                top: 40,
+                bottom: 10,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Generate address'.tr(),
+                      style: Theme.of(context).textTheme.displaySmall
+                          ?.copyWith(fontSize: 20),
+                    ),
+                    const SizedBox(height: 8),
+                    switch (receiveAddress.recvAddress.isEmpty) {
+                      true => const SizedBox(
+                        width: 32,
+                        height: 100,
+                        child: Center(
+                          child: CircularProgressIndicator(color: Colors.white),
                         ),
-                        false => Flexible(
+                      ),
+                      // `Flexible` alone squeezed this column and clipped
+                      // the address silently; both halves are required, so
+                      // the body scrolls what the card cannot show. The
+                      // title above and the close button stay outside it.
+                      // ADR-0014 decisions 8 and 9.
+                      false => Flexible(
+                        child: SingleChildScrollView(
+                          primary: false,
                           child: Column(
                             children: [
                               Text(
@@ -84,31 +89,31 @@ class DReceiveAddressDialog extends HookConsumerWidget {
                             ],
                           ),
                         ),
-                      },
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: DIconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: SideSwapColors.freshAir,
-                      size: 18,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
+                      ),
                     },
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: DIconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: SideSwapColors.freshAir,
+                    size: 18,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

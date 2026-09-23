@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -10,6 +9,7 @@ import 'package:sideswap/common/widgets/tx_details.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
@@ -18,8 +18,15 @@ import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class DTxPopup extends HookConsumerWidget {
+/// What the popup shows while it has no transaction to show.
+///
+/// It carries a height because the card no longer declares one: an empty body
+/// would collapse the card to nothing and clip the close button away with it.
+const emptyTxPopupBody = SizedBox(height: 200);
+
+class DTxPopup extends ConsumerWidget {
   const DTxPopup({super.key});
 
   @override
@@ -28,14 +35,48 @@ class DTxPopup extends HookConsumerWidget {
 
     return DPopupWithClose(
       width: 634,
-      height: 660,
-      child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
+      // No declared height: see `d_asset_info.dart`. The pinned explorer band
+      // would otherwise float above the card's bottom edge.
+      scrollOwner: ScrollOwner.wrapper,
+      // Pinned below the body: the explorer links are what this popup is for,
+      // and they stay visible however short the window is. They resolve the
+      // transaction again because `actions` sits outside the body's closure.
+      actions: optionCurrentTxid.match(() => null, (txid) {
+        final transItem = ref.watch(allTxsProvider)[txid];
+        if (transItem == null) {
+          return null;
+        }
+        return Container(
+          color: SideSwapColors.chathamsBlue,
+          height: 138,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DPopupLinkButton(
+                  text: 'Link to explorer\n(blinded data)'.tr(),
+                  onPressed: () =>
+                      openTxidUrl(ref, transItem.tx.txid, true, false),
+                ),
+                const SizedBox(width: 10),
+                DPopupLinkButton(
+                  text: 'Link to explorer\n(unblinded data)'.tr(),
+                  onPressed: () =>
+                      openTxidUrl(ref, transItem.tx.txid, true, true),
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+      child: optionCurrentTxid.match(() => emptyTxPopupBody, (txid) {
         final allTxs = ref.watch(allTxsProvider);
 
         final transItem = allTxs[txid];
 
         if (transItem == null) {
-          return const SizedBox();
+          return emptyTxPopupBody;
         }
 
         final transItemHelper = ref.watch(transItemHelperProvider(transItem));
@@ -43,10 +84,6 @@ class DTxPopup extends HookConsumerWidget {
         final balances = transItemHelper.txBalances();
         final optionConfs = transItemHelper.txConfs();
         final txStatus = transItemHelper.txStatus();
-
-        final openTxCallback = useCallback(({bool unblinded = false}) {
-          openTxidUrl(ref, transItem.tx.txid, true, unblinded);
-        });
 
         final amountProvider = ref.watch(amountToStringProvider);
 
@@ -152,34 +189,29 @@ class DTxPopup extends HookConsumerWidget {
                 ],
               ),
             ),
-            const Spacer(),
-            Container(
-              color: SideSwapColors.chathamsBlue,
-              height: 138,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DPopupLinkButton(
-                      text: 'Link to explorer\n(blinded data)'.tr(),
-                      onPressed: () => openTxCallback(),
-                    ),
-                    const SizedBox(width: 10),
-                    DPopupLinkButton(
-                      text: 'Link to explorer\n(unblinded data)'.tr(),
-                      onPressed: () => openTxCallback(unblinded: true),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         );
       }),
     );
   }
 }
+
+/// The peg whose pay-in or pay-out txid is [txid].
+///
+/// Both the body and the pinned `actions` of [DPegPopup] need it, and `actions`
+/// is built outside the body's closure, so the lookup is shared rather than
+/// written twice.
+TransItem? _pegItemFor(WidgetRef ref, String txid) => ref
+    .watch(allPegsProvider)
+    .values
+    .map(
+      (item) => item.firstWhereOrNull(
+        (pegTransItem) =>
+            pegTransItem.peg.txidRecv == txid ||
+            pegTransItem.peg.txidSend == txid,
+      ),
+    )
+    .firstWhereOrNull((item) => item != null);
 
 class DPegPopup extends ConsumerWidget {
   const DPegPopup({super.key});
@@ -190,22 +222,52 @@ class DPegPopup extends ConsumerWidget {
 
     return DPopupWithClose(
       width: 634,
-      height: 660,
-      child: optionCurrentTxid.match(() => const SizedBox(), (txid) {
-        final allPegs = ref.watch(allPegsProvider);
-
-        final transItem = allPegs.values
-            .map(
-              (item) => item.firstWhereOrNull(
-                (pegTransItem) =>
-                    pegTransItem.peg.txidRecv == txid ||
-                    pegTransItem.peg.txidSend == txid,
+      // No declared height: see `d_asset_info.dart`. The pinned explorer band
+      // would otherwise float above the card's bottom edge.
+      scrollOwner: ScrollOwner.wrapper,
+      // Pinned below the body, resolved from the same providers the body
+      // reads, because `actions` sits outside the body's closure.
+      actions: optionCurrentTxid.match(() => null, (txid) {
+        final transItem = _pegItemFor(ref, txid);
+        if (transItem == null) {
+          return null;
+        }
+        return Container(
+          color: SideSwapColors.chathamsBlue,
+          height: 138,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DPopupLinkButton(
+                text: 'Link to explorer\n(pay-in)'.tr(),
+                onPressed: () => openTxidUrl(
+                  ref,
+                  transItem.peg.txidSend,
+                  !transItem.peg.isPegIn,
+                  false,
+                ),
               ),
-            )
-            .firstWhereOrNull((item) => item != null);
+              const SizedBox(width: 10),
+              DPopupLinkButton(
+                text: 'Link to explorer\n(pay-out)'.tr(),
+                onPressed: transItem.peg.hasTxidRecv()
+                    ? () => openTxidUrl(
+                        ref,
+                        transItem.peg.txidRecv,
+                        transItem.peg.isPegIn,
+                        true,
+                      )
+                    : null,
+              ),
+            ],
+          ),
+        );
+      }),
+      child: optionCurrentTxid.match(() => emptyTxPopupBody, (txid) {
+        final transItem = _pegItemFor(ref, txid);
 
         if (transItem == null) {
-          return const SizedBox();
+          return emptyTxPopupBody;
         }
 
         final typeName = transItem.peg.isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr();
@@ -254,37 +316,6 @@ class DPegPopup extends ConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            Container(
-              color: SideSwapColors.chathamsBlue,
-              height: 138,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  DPopupLinkButton(
-                    text: 'Link to explorer\n(pay-in)'.tr(),
-                    onPressed: () => openTxidUrl(
-                      ref,
-                      transItem.peg.txidSend,
-                      !transItem.peg.isPegIn,
-                      false,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  DPopupLinkButton(
-                    text: 'Link to explorer\n(pay-out)'.tr(),
-                    onPressed: transItem.peg.hasTxidRecv()
-                        ? () => openTxidUrl(
-                            ref,
-                            transItem.peg.txidRecv,
-                            transItem.peg.isPegIn,
-                            true,
-                          )
-                        : null,
                   ),
                 ],
               ),

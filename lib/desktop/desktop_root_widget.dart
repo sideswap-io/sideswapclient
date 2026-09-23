@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/desktop/desktop_window_geometry_listener.dart';
+import 'package:sideswap/desktop/desktop_window_minimum_listener.dart';
 import 'package:sideswap/desktop/home/listeners/conversion_rates_listener.dart';
 import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
 import 'package:sideswap/desktop/pin/d_pin_protection.dart';
@@ -41,6 +43,8 @@ class DesktopRootWidget extends HookConsumerWidget {
         bool showBackButton,
         PinKeyboardAcceptType iconType,
       ) async {
+        // Before the dialog is built, never from inside its build.
+        ref.read(pinProtectionHelperProvider).init();
         final ret = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -88,6 +92,8 @@ class DesktopRootWidget extends HookConsumerWidget {
         const JadeStatusListener(),
         const WarmupAppListener(),
         const NotificationsListener(),
+        const DesktopWindowMinimumListener(),
+        const DesktopWindowGeometryListener(),
         PopScope(
           canPop: false,
           child: Consumer(

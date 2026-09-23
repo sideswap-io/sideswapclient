@@ -272,9 +272,9 @@ class ProviderListener<T> extends Mock {
 Suppress logger output in tests:
 
 ```dart
-final container = ProviderContainer.test(
-  overrides: [
-    loggerProvider.overrideWith((ref) => Logger(output: NoOpLogOutput())),
-  ],
-);
+setUp(() {
+  logger = CustomLogger('SideSwap', output: NoOpLogOutput());
+});
 ```
+
+The project has no `loggerProvider`. `logger` is a global in `sideswap_logger.dart`.

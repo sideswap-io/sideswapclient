@@ -8,6 +8,87 @@ part of 'pin_setup_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// The one record that a setup attempt is in flight. ADR-0013 decisions 4
+/// and 14.
+///
+/// It is `keepAlive` and watches nothing on purpose. `_clearStates()`, leaving
+/// the screen and re-entering it must all leave an outstanding attempt
+/// outstanding, so that a reply can only belong to the attempt that is still
+/// held. Only a reply, or a send that never left, gives it back.
+
+@ProviderFor(PinSetupAttempt)
+final pinSetupAttemptProvider = PinSetupAttemptProvider._();
+
+/// The one record that a setup attempt is in flight. ADR-0013 decisions 4
+/// and 14.
+///
+/// It is `keepAlive` and watches nothing on purpose. `_clearStates()`, leaving
+/// the screen and re-entering it must all leave an outstanding attempt
+/// outstanding, so that a reply can only belong to the attempt that is still
+/// held. Only a reply, or a send that never left, gives it back.
+final class PinSetupAttemptProvider
+    extends $NotifierProvider<PinSetupAttempt, PinSetupAttemptState> {
+  /// The one record that a setup attempt is in flight. ADR-0013 decisions 4
+  /// and 14.
+  ///
+  /// It is `keepAlive` and watches nothing on purpose. `_clearStates()`, leaving
+  /// the screen and re-entering it must all leave an outstanding attempt
+  /// outstanding, so that a reply can only belong to the attempt that is still
+  /// held. Only a reply, or a send that never left, gives it back.
+  PinSetupAttemptProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pinSetupAttemptProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pinSetupAttemptHash();
+
+  @$internal
+  @override
+  PinSetupAttempt create() => PinSetupAttempt();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PinSetupAttemptState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PinSetupAttemptState>(value),
+    );
+  }
+}
+
+String _$pinSetupAttemptHash() => r'eb08c978198319ab882bc3c9d2092b75132b8e06';
+
+/// The one record that a setup attempt is in flight. ADR-0013 decisions 4
+/// and 14.
+///
+/// It is `keepAlive` and watches nothing on purpose. `_clearStates()`, leaving
+/// the screen and re-entering it must all leave an outstanding attempt
+/// outstanding, so that a reply can only belong to the attempt that is still
+/// held. Only a reply, or a send that never left, gives it back.
+
+abstract class _$PinSetupAttempt extends $Notifier<PinSetupAttemptState> {
+  PinSetupAttemptState build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<PinSetupAttemptState, PinSetupAttemptState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<PinSetupAttemptState, PinSetupAttemptState>,
+              PinSetupAttemptState,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
 @ProviderFor(PinDataNotifier)
 final pinDataProvider = PinDataNotifierProvider._();
@@ -377,11 +458,18 @@ abstract class _$SecondPinNotifier extends $Notifier<String> {
   }
 }
 
+/// Derived, with no setter. The field is open exactly while no setup attempt is
+/// outstanding. ADR-0013 decision 1.
+
 @ProviderFor(FirstPinEnabled)
 final firstPinEnabledProvider = FirstPinEnabledProvider._();
 
+/// Derived, with no setter. The field is open exactly while no setup attempt is
+/// outstanding. ADR-0013 decision 1.
 final class FirstPinEnabledProvider
     extends $NotifierProvider<FirstPinEnabled, bool> {
+  /// Derived, with no setter. The field is open exactly while no setup attempt is
+  /// outstanding. ADR-0013 decision 1.
   FirstPinEnabledProvider._()
     : super(
         from: null,
@@ -409,7 +497,10 @@ final class FirstPinEnabledProvider
   }
 }
 
-String _$firstPinEnabledHash() => r'1a3f9ec87e71d12d89134fec02ac33cada9a3bdb';
+String _$firstPinEnabledHash() => r'67f292b76266707b17020f7e0a03a12b7b8c58ca';
+
+/// Derived, with no setter. The field is open exactly while no setup attempt is
+/// outstanding. ADR-0013 decision 1.
 
 abstract class _$FirstPinEnabled extends $Notifier<bool> {
   bool build();
@@ -429,11 +520,21 @@ abstract class _$FirstPinEnabled extends $Notifier<bool> {
   }
 }
 
+/// Derived, with no setter. The confirm field is open while the first PIN is
+/// long enough for confirming it to mean anything, and no attempt is
+/// outstanding. ADR-0013 decisions 1 and 2.
+
 @ProviderFor(SecondPinEnabled)
 final secondPinEnabledProvider = SecondPinEnabledProvider._();
 
+/// Derived, with no setter. The confirm field is open while the first PIN is
+/// long enough for confirming it to mean anything, and no attempt is
+/// outstanding. ADR-0013 decisions 1 and 2.
 final class SecondPinEnabledProvider
     extends $NotifierProvider<SecondPinEnabled, bool> {
+  /// Derived, with no setter. The confirm field is open while the first PIN is
+  /// long enough for confirming it to mean anything, and no attempt is
+  /// outstanding. ADR-0013 decisions 1 and 2.
   SecondPinEnabledProvider._()
     : super(
         from: null,
@@ -461,7 +562,11 @@ final class SecondPinEnabledProvider
   }
 }
 
-String _$secondPinEnabledHash() => r'9325f821f2ad7f0167f9893f17b9dcdc94d58589';
+String _$secondPinEnabledHash() => r'7ec2c965bdf33d329bba202e1aeb42511b276c75';
+
+/// Derived, with no setter. The confirm field is open while the first PIN is
+/// long enough for confirming it to mean anything, and no attempt is
+/// outstanding. ADR-0013 decisions 1 and 2.
 
 abstract class _$SecondPinEnabled extends $Notifier<bool> {
   bool build();

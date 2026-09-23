@@ -4,7 +4,6 @@ import 'package:file_selector/file_selector.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -15,10 +14,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
+import '../helpers/test_utils.dart';
 
 class MockCsvRepository extends Mock implements CsvRepository {}
 
@@ -86,7 +82,7 @@ Balance _makeBalance(String assetId, int amount) {
 
 void main() {
   setUpAll(() {
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     registerFallbackValue(XFile.fromData(Uint8List(0), name: 'fallback'));
     registerFallbackValue(TransItem());
   });

@@ -8,7 +8,20 @@ val flavor: String by extra
 
 android {
     namespace = "io.sideswap"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android 14.0.0 compiles against 37, and Gradle refuses to
+    // build a plugin whose compileSdk exceeds the app's. Flutter 3.47 still defaults
+    // `flutter.compileSdkVersion` to 36, so pin it here until it catches up.
+    // targetSdk deliberately stays on the Flutter default — this is a compile-time
+    // bump, not an opt-in to Android 17 runtime behaviour.
+    //
+    // `compileSdkMinor` is not optional here: API 37 ships only as minor-versioned
+    // platforms (android-37.0, android-37.1), so `compileSdk = 37` alone resolves to
+    // the hash string `android-37`, which no longer exists, and Gradle fails with
+    // "Failed to find target with hash string 'android-37'". Minor 0 is deliberate --
+    // android-37.0 is the platform Gradle provisions by itself, so no build machine
+    // needs a manual `sdkmanager` step.
+    compileSdk = 37
+    compileSdkMinor = 0
 
     // AGP 9 removed the global `android.defaults.buildfeatures.buildconfig` flag
     // (default is now false); opt the app module back in per-module instead.
@@ -42,6 +55,23 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // A project-owned debug key, so a build from CI and a build from a
+            // developer machine sign identically and can replace each other on
+            // a device. Without it every runner generates a fresh key and every
+            // install needs an uninstall first.
+            //
+            // These credentials are the Android defaults and are not a secret:
+            // a debug key signs nothing that is distributed.
+            // See docs/adr/0015-github-actions-builds.md decision 8.
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {

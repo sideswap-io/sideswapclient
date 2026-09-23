@@ -241,6 +241,40 @@ void main() {
         expect(container.read(selectEnvTapProvider), 0);
         expect(container.read(selectEnvDialogProvider), true);
       });
+
+      test('counts eight taps taken from separate reads', () async {
+        final container = ProviderContainer.test();
+        addTearDown(container.dispose);
+        final listener = ProviderListener<bool>();
+        container.listen(
+          selectEnvDialogProvider,
+          listener.call,
+          fireImmediately: true,
+        );
+
+        for (var i = 0; i < 8; i++) {
+          container.read(selectEnvTapProvider.notifier).setTap();
+          await container.pump();
+        }
+
+        verifyInOrder([
+          () => listener(null, false),
+          () => listener(false, true),
+        ]);
+        verifyNoMoreInteractions(listener);
+        expect(container.read(selectEnvTapProvider), 0);
+      });
+
+      test('setTap tear-off stays usable after a pump', () async {
+        final container = ProviderContainer.test();
+        addTearDown(container.dispose);
+        final setTap = container.read(selectEnvTapProvider.notifier).setTap;
+
+        await container.pump();
+        setTap();
+
+        expect(container.read(selectEnvTapProvider), 1);
+      });
     });
   });
 }

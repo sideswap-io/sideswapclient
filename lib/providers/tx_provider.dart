@@ -143,11 +143,11 @@ class AllTxsNotifier extends _$AllTxsNotifier {
     });
 
     ref.listen(showTransactionProvider, (_, next) {
-      if (next.isNone()) {
+      final transItem = next.toNullable();
+      if (transItem == null) {
         return;
       }
 
-      final transItem = next.getOrElse(() => TransItem());
       state[transItem.tx.txid] = transItem;
     });
     ref.listen(newTxProvider, (_, _) {

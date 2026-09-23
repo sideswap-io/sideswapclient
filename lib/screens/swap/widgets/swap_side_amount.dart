@@ -124,6 +124,16 @@ class SwapSideAmount extends HookConsumerWidget {
       color: SideSwapColors.airSuperiorityBlue,
     );
 
+    // Created unconditionally so hook order never depends on which of these
+    // the caller supplied; a caller that supplies its own keeps owning it.
+    // ADR-0011 decision 5 for the amount node, which callers genuinely use
+    // both ways. #215 answered the same question for the address node: one of
+    // this widget's four callers supplies it and three do not, so it is
+    // decision 5 too, and the shape below is the one it prescribes.
+    final internalFocusNode = useFocusNode();
+    final internalReceiveAddressFocusNode = useFocusNode();
+    final internalAddressController = useTextEditingController();
+
     final optionAsset = useState(Option<Asset>.none());
     final dropdownAsset = ref.watch(assetFromAssetIdProvider(dropdownValue));
 
@@ -277,7 +287,7 @@ class SwapSideAmount extends HookConsumerWidget {
                   showError:
                       showInsufficientFunds || errorDescription.isNotEmpty,
                   controller: controller,
-                  focusNode: focusNode ?? FocusNode(),
+                  focusNode: focusNode ?? internalFocusNode,
                   dropdownValue: optionAsset.value.match(
                     () => '',
                     (asset) => asset.assetId,
@@ -334,10 +344,12 @@ class SwapSideAmount extends HookConsumerWidget {
                       labelGroupValue == const SwapWallet.extern()) ...[
                     Flexible(
                       child: ShareCopyScanTextFormField(
-                        focusNode: receiveAddressFocusNode ?? FocusNode(),
+                        focusNode:
+                            receiveAddressFocusNode ??
+                            internalReceiveAddressFocusNode,
                         errorText: addressErrorText,
                         controller:
-                            addressController ?? TextEditingController(),
+                            addressController ?? internalAddressController,
                         onChanged: onAddressChanged,
                         onPasteTap:
                             FlavorConfig.isDesktop && addressController != null

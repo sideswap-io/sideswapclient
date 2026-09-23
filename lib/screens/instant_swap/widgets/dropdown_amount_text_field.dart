@@ -18,7 +18,7 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 class DropdownAmountTextField extends HookConsumerWidget {
   const DropdownAmountTextField({
     this.controller,
-    this.focusNode,
+    required this.focusNode,
     required this.availableAssets,
     required this.selectedAssetId,
     this.label,
@@ -39,7 +39,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
   });
 
   final TextEditingController? controller;
-  final FocusNode? focusNode;
+  final FocusNode focusNode;
   final List<String> availableAssets;
   final String selectedAssetId;
   final Widget? label;
@@ -60,7 +60,6 @@ class DropdownAmountTextField extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasFocus = useState(false);
-    final textFieldFocusNode = focusNode ?? useFocusNode();
 
     final assetImageRepostory = ref.watch(assetImageRepositoryProvider);
     final optionAsset = ref.watch(assetFromAssetIdProvider(selectedAssetId));
@@ -70,7 +69,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
     }, [selectedAssetId, assetImageRepostory]);
 
     useEffect(() {
-      textFieldFocusNode.addListener(() {
+      void syncFocusState() {
         if (!context.mounted) {
           return;
         }
@@ -79,11 +78,14 @@ class DropdownAmountTextField extends HookConsumerWidget {
           return;
         }
 
-        hasFocus.value = textFieldFocusNode.hasFocus;
-      });
+        hasFocus.value = focusNode.hasFocus;
+      }
 
-      return;
-    }, const []);
+      focusNode.addListener(syncFocusState);
+      syncFocusState();
+
+      return () => focusNode.removeListener(syncFocusState);
+    }, [focusNode, disabledAmount]);
 
     final selectAssetCallback = useCallback(() async {
       final dialogRoute = switch (FlavorConfig.isDesktop) {
@@ -181,7 +183,7 @@ class DropdownAmountTextField extends HookConsumerWidget {
                   () => const SizedBox(),
                   (asset) => AmountTextField(
                     controller: controller,
-                    focusNode: textFieldFocusNode,
+                    focusNode: focusNode,
                     precision: asset.precision,
                     disabledAmount: disabledAmount,
                     onChanged: onChanged,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/screens/pay/payment_select_asset.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -34,6 +35,7 @@ class DPaymentSelectAsset extends HookConsumerWidget {
     return DPopupWithClose(
       width: 580,
       height: 710,
+      scrollOwner: ScrollOwner.child,
       child: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

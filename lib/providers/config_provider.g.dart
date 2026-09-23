@@ -88,7 +88,7 @@ final class ConfigurationProvider
   }
 }
 
-String _$configurationHash() => r'07b26da2666d63c6365991091af7c3746f93bd26';
+String _$configurationHash() => r'ab3be95104c39a87d94d6517de1cb38b97508b13';
 
 abstract class _$Configuration extends $Notifier<SideswapSettings> {
   SideswapSettings build();

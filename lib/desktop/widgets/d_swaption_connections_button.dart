@@ -54,8 +54,13 @@ class DSwaptionConnectionsButton extends HookConsumerWidget {
             offset: offset,
             animationController: animationController,
             heightFactor: heightFactor,
+            // Dismissal, not a toggle, for the reason `d_notifications.dart`
+            // states at its own call site: the entry outlives the click by the
+            // length of the collapse, so its catcher is still there to take a
+            // second one, and a toggle reads that second click as "open
+            // again".
             onTap: () {
-              expanded.value = !expanded.value;
+              expanded.value = false;
             },
           );
         },
@@ -110,11 +115,22 @@ class DSwaptionConnectionsButton extends HookConsumerWidget {
     }, [size]);
 
     useEffect(() {
-      if (swaptionSessions.isEmpty) {
-        expanded.value = false;
-        entry.value?.remove();
-        entry.value = null;
-        return;
+      if (swaptionSessions.isEmpty && expanded.value) {
+        // Through a microtask, like `d_notifications.dart` and for the reason
+        // it states: an effect body runs inside the rebuild that scheduled it,
+        // and a write to a hook's state from there is taken without a rebuild
+        // following it. Written inline, the effect keyed on `expanded` never
+        // runs, so `animationController.reverse()` is never called and the
+        // controller is left forward at 1.0 — the panel vanishes instead of
+        // collapsing, and the next open finds a controller that completes on
+        // the spot.
+        //
+        // The entry is not removed here. With the collapse restored, the
+        // status listener above retires it on `dismissed`, which is the one
+        // path that lets the animation finish. Removing it here as well took
+        // the panel off screen before the reverse could run, which is why the
+        // collapse was never seen.
+        Future.microtask(() => expanded.value = false);
       }
 
       return;
@@ -182,7 +198,18 @@ class SwaptionConnectionsMenu extends HookConsumerWidget {
 
     return Stack(
       children: [
-        Positioned(child: GestureDetector(onTap: onTap)),
+        // Dismiss and swallow, both stated rather than inherited — the same
+        // catcher `d_notifications.dart` carries, for the same reasons.
+        // `opaque` is the behavioural half: a childless GestureDetector
+        // defaults to `translucent`, which leaks the dismissing click's
+        // pointer into whatever sits under the panel. `fill` changes nothing
+        // observable — the catcher already covers the stack — but it says so.
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+          ),
+        ),
         Positioned(
           top: offset.dy,
           left: offset.dx,

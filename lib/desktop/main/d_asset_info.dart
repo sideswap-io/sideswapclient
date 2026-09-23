@@ -7,6 +7,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
@@ -71,9 +72,60 @@ class DAssetInfo extends HookConsumerWidget {
       isAmountUsdAvailableProvider(asset.assetId),
     );
 
+    // Pinned below the body: the Swap/Send row is what the popup is for, and
+    // it stays visible however short the window is.
+    final actions = Container(
+      height: 124,
+      color: SideSwapColors.chathamsBlue,
+      child: Column(
+        children: [
+          const SizedBox(height: 26),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomIconButton(
+                label: 'Swap'.tr(),
+                onTap: () {
+                  Navigator.pop(context);
+                  ref.read(swapHelperProvider).swapReset();
+                  final walletMainArguments = ref.read(uiStateArgsProvider);
+                  ref
+                      .read(uiStateArgsProvider.notifier)
+                      .setWalletMainArguments(
+                        walletMainArguments.fromIndexDesktop(1),
+                      );
+                  ref.read(swapHelperProvider).switchToSwaps();
+                },
+                icon: 'assets/asset_swap_arrows.svg',
+              ),
+              const SizedBox(width: 48),
+              CustomIconButton(
+                label: 'Send'.tr(),
+                onTap: () {
+                  ref.invalidate(createTxStateProvider);
+                  Navigator.pop(context);
+                  ref
+                      .read(sendAssetIdProvider.notifier)
+                      .setSendAsset(asset.assetId);
+
+                  ref.read(desktopDialogProvider).showSendTx();
+                },
+                icon: 'assets/top_right_arrow.svg',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
     return DPopupWithClose(
       width: 580,
-      height: 632,
+      // No declared height. The popup's column is `min`-sized, so a fixed
+      // height taller than body-plus-actions leaves the pinned bar floating
+      // above the card's bottom edge; the `Spacer()` that used to fill that
+      // space went with the bar. Sizing to content keeps the bar flush.
+      scrollOwner: ScrollOwner.wrapper,
+      actions: actions,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -237,52 +289,6 @@ class DAssetInfo extends HookConsumerWidget {
                         width: 22,
                         height: 22,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Container(
-            height: 124,
-            color: SideSwapColors.chathamsBlue,
-            child: Column(
-              children: [
-                const SizedBox(height: 26),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomIconButton(
-                      label: 'Swap'.tr(),
-                      onTap: () {
-                        Navigator.pop(context);
-                        ref.read(swapHelperProvider).swapReset();
-                        final walletMainArguments = ref.watch(
-                          uiStateArgsProvider,
-                        );
-                        ref
-                            .read(uiStateArgsProvider.notifier)
-                            .setWalletMainArguments(
-                              walletMainArguments.fromIndexDesktop(1),
-                            );
-                        ref.read(swapHelperProvider).switchToSwaps();
-                      },
-                      icon: 'assets/asset_swap_arrows.svg',
-                    ),
-                    const SizedBox(width: 48),
-                    CustomIconButton(
-                      label: 'Send'.tr(),
-                      onTap: () {
-                        ref.invalidate(createTxStateProvider);
-                        Navigator.pop(context);
-                        ref
-                            .read(sendAssetIdProvider.notifier)
-                            .setSendAsset(asset.assetId);
-
-                        ref.read(desktopDialogProvider).showSendTx();
-                      },
-                      icon: 'assets/top_right_arrow.svg',
                     ),
                   ],
                 ),

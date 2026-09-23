@@ -14,6 +14,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/onboarding/d_network_access_onboarding.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/listeners/launch_page_delete_wallet_listener.dart';
 import 'package:sideswap/models/connection_models.dart';
@@ -43,86 +44,7 @@ class DFirstLaunch extends HookConsumerWidget {
           useRootNavigator: false,
           barrierDismissible: false,
           context: ref.read(navigatorKeyProvider).currentContext!,
-          builder: (_) => DContentDialog(
-            constraints: const BoxConstraints(maxWidth: 628),
-            title: Center(child: Text('Select env'.tr())),
-            content: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Changes will take effect after application restart.'
-                            .tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ...envValues().map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final selectedEnv = ref.watch(selectedEnvProvider);
-
-                        return DRadioButton(
-                          checked: e == selectedEnv,
-                          semanticLabel: envName(e),
-                          content: Text(envName(e)),
-                          onChanged: (value) async {
-                            await ref
-                                .read(selectedEnvProvider.notifier)
-                                .setSelectedEnv(e);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              DCustomTextBigButton(
-                width: 266,
-                child: Consumer(
-                  builder: ((context, ref, _) {
-                    final env = ref.watch(envProvider);
-                    final selectedEnv = ref.watch(selectedEnvProvider);
-                    return env == selectedEnv
-                        ? Text('CLOSE'.tr())
-                        : Text('SWITCH AND EXIT'.tr());
-                  }),
-                ),
-                onPressed: () {
-                  final selectedEnv = ref.read(selectedEnvProvider);
-                  ref.read(envProvider.notifier).setEnv(selectedEnv);
-
-                  // and also reset network settings model
-                  ref
-                      .read(networkSettingsProvider.notifier)
-                      .setModel(const NetworkSettingsModelEmpty());
-
-                  exit(0);
-                },
-              ),
-              DCustomFilledBigButton(
-                child: Text('CANCEL'.tr()),
-                onPressed: () {
-                  Navigator.pop(context);
-                  ref.read(walletProvider).goBack();
-                },
-              ),
-            ],
-          ),
+          builder: (_) => const DSelectEnvDialog(),
         );
       }
     });
@@ -171,9 +93,8 @@ class DFirstLaunch extends HookConsumerWidget {
                       'Connection issues detected. Check your network connection and restart the app.'
                           .tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: SideSwapColors.bitterSweet,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(color: SideSwapColors.bitterSweet),
                     ),
                   ),
                 ],
@@ -364,6 +285,101 @@ class FirstLaunchClickableLogo extends StatelessWidget {
           child: SvgPicture.asset('assets/logo.svg', width: 110, height: 108),
         ),
       ),
+    );
+  }
+}
+
+/// The environment selector, shown from [DFirstLaunch] when the hidden logo
+/// tap sequence fires. It is its own widget rather than an inline
+/// `showDialog` builder so that its layout is reachable by a test without
+/// mounting the whole launch page.
+class DSelectEnvDialog extends ConsumerWidget {
+  const DSelectEnvDialog({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return DContentDialog(
+      // 329 is this dialog's measured natural height with the four
+      // environments a debug build offers -- the tallest realistic state, a
+      // release build offering two. See ADR-0014 decision 8.
+      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 329),
+      scrollOwner: ScrollOwner.wrapper,
+      title: Center(child: Text('Select env'.tr())),
+      content: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Changes will take effect after application restart.'.tr(),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...envValues().map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final selectedEnv = ref.watch(selectedEnvProvider);
+
+                  return DRadioButton(
+                    checked: e == selectedEnv,
+                    semanticLabel: envName(e),
+                    content: Text(envName(e)),
+                    onChanged: (value) async {
+                      await ref
+                          .read(selectedEnvProvider.notifier)
+                          .setSelectedEnv(e);
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        DCustomTextBigButton(
+          width: 266,
+          child: Consumer(
+            builder: ((context, ref, _) {
+              final env = ref.watch(envProvider);
+              final selectedEnv = ref.watch(selectedEnvProvider);
+              return env == selectedEnv
+                  ? Text('CLOSE'.tr())
+                  : Text('SWITCH AND EXIT'.tr());
+            }),
+          ),
+          onPressed: () {
+            final selectedEnv = ref.read(selectedEnvProvider);
+            ref.read(envProvider.notifier).setEnv(selectedEnv);
+
+            // and also reset network settings model
+            ref
+                .read(networkSettingsProvider.notifier)
+                .setModel(const NetworkSettingsModelEmpty());
+
+            exit(0);
+          },
+        ),
+        DCustomFilledBigButton(
+          child: Text('CANCEL'.tr()),
+          onPressed: () {
+            Navigator.pop(context);
+            ref.read(walletProvider).goBack();
+          },
+        ),
+      ],
     );
   }
 }

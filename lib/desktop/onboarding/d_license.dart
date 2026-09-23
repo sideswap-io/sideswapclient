@@ -4,6 +4,7 @@ import 'package:flutter_terms_viewer/flutter_terms_viewer.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/gpl_license.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -20,6 +21,7 @@ class DLicense extends ConsumerWidget {
         ref.read(walletProvider).goBack();
       },
       constraints: const BoxConstraints(maxWidth: 628, maxHeight: 752),
+      scrollOwner: ScrollOwner.child,
       title: Center(
         child: Text(
           'Terms and conditions'.tr(),
@@ -30,8 +32,12 @@ class DLicense extends ConsumerWidget {
           ),
         ),
       ),
-      content: SizedBox(
-        height: 550,
+      // Design height. The scrollable inside this box is this file's own
+      // `SingleChildScrollView` around the terms viewer -- ADR-0014 decision
+      // 9's `d_license.dart:48` -- so the box only needs permission to be
+      // shorter on a short window; the scroll view absorbs the shortfall.
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 550),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Material(

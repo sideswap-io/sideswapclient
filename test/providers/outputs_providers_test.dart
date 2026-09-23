@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -17,6 +16,8 @@ import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
+
+import '../helpers/test_utils.dart';
 
 class MockXFile extends Mock implements XFile {}
 
@@ -40,13 +41,6 @@ class MockAbstractSatoshiRepository extends Mock
     implements AbstractSatoshiRepository {}
 
 class MockAssetUtils extends Mock implements AssetUtils {}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {
-    // Suppress all logging
-  }
-}
 
 // Note: addTearDown works here via zone inheritance from the calling test() body.
 Future<void> _runSaveSuccessTest({
@@ -118,7 +112,7 @@ Future<void> _runSaveSuccessTest({
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     registerFallbackValue(OutputsReceiver());
   });
 
@@ -176,6 +170,21 @@ void main() {
           error: isA<OutputsErrorJsonFileSyntaxError>(),
           name: 'non-map JSON',
         ),
+        (
+          input: '{"type":"sideswap_app","version":"2"}',
+          error: isA<OutputsErrorFileStructureError>(),
+          name: 'absent receivers',
+        ),
+        (
+          input: '{"type":"sideswap_app","version":"2","receivers":null}',
+          error: isA<OutputsErrorFileStructureError>(),
+          name: 'null receivers',
+        ),
+        (
+          input: '{"type":"sideswap_app","version":"2","receivers":[]}',
+          error: isA<OutputsErrorFileStructureError>(),
+          name: 'empty receivers',
+        ),
       ];
 
       for (final c in errorCases) {
@@ -208,6 +217,12 @@ void main() {
               'asset_id': 'asset1',
               'satoshi': 1000,
               'account': 0,
+            },
+            {
+              'address': 'addr2',
+              'asset_id': 'asset2',
+              'satoshi': 2000,
+              'account': 0,
             }
           ],
         });
@@ -224,7 +239,7 @@ void main() {
           (r) {
             expect(r.type, 'sideswap_app');
             expect(r.version, '2');
-            expect(r.receivers, hasLength(1));
+            expect(r.receivers, hasLength(2));
           },
         );
       });
@@ -325,6 +340,14 @@ void main() {
           'type': 'sideswap_app',
           'version': '2',
           'timestamp': 1234567890,
+          'receivers': [
+            {
+              'address': 'addr1',
+              'asset_id': 'asset1',
+              'satoshi': 1000,
+              'account': 0,
+            }
+          ],
         });
 
         final mockFile = MockXFile();

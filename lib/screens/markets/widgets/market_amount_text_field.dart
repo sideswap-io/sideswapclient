@@ -26,6 +26,7 @@ class MarketAmountTextField extends HookConsumerWidget {
     required this.controller,
     this.autofocus = false,
     this.focusNode,
+    this.selectAllOnFocus,
     this.onEditingComplete,
     this.readonly = false,
     this.hintText = '0',
@@ -44,6 +45,10 @@ class MarketAmountTextField extends HookConsumerWidget {
   final bool showConversion;
   final bool autofocus;
   final FocusNode? focusNode;
+
+  /// Forwarded to `TextField` untouched — `null` keeps Flutter's per-platform
+  /// default. See ADR-0011's strategy 3: this widget owns nothing it forwards.
+  final bool? selectAllOnFocus;
   final VoidCallback? onEditingComplete;
   final bool readonly;
   final String hintText;
@@ -173,6 +178,7 @@ class MarketAmountTextField extends HookConsumerWidget {
                   DecimalTextInputFormatter(decimalRange: precision),
                 ],
                 autofocus: autofocus,
+                selectAllOnFocus: selectAllOnFocus,
                 onEditingComplete: onEditingComplete,
                 onChanged: onChanged,
                 focusNode: focusNode,

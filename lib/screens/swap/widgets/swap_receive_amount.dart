@@ -124,7 +124,7 @@ class SwapReceiveAmount extends HookConsumerWidget {
         ref
             .read(swapRecvAddressExternalProvider.notifier)
             .setState(swapAddressRecvController.text);
-        FocusScope.of(context).requestFocus(FocusNode());
+        FocusScope.of(context).unfocus();
       },
       onAddressChanged: (text) {
         ref.read(swapRecvAddressExternalProvider.notifier).setState(text);

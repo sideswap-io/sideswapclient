@@ -28,7 +28,7 @@ class SelectedEnv extends _$SelectedEnv {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class SelectEnvTap extends _$SelectEnvTap {
   @override
   int build() {

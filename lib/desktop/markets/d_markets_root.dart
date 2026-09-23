@@ -8,6 +8,16 @@ import 'package:sideswap/listeners/markets_page_listener.dart';
 import 'package:sideswap/providers/chart_providers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 
+/// The height the order column is asked for before the history panel yields
+/// any of its own: the market-type switch and the order form itself, which is
+/// what a user reads and fills in at this size.
+///
+/// This is what the history panel gives *up to*, not a floor the column is
+/// guaranteed. At the supported floor there is not enough page for both, the
+/// history panel stops at [kTxAndOrdersPanelMinHeight], and the order column
+/// takes what is left — more than it has today, and still less than this.
+const double _marketOrderColumnMinHeight = 380;
+
 class DMarkets extends HookConsumerWidget {
   const DMarkets({super.key});
 
@@ -24,31 +34,49 @@ class DMarkets extends HookConsumerWidget {
           offstage: showCharts,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      MarketOrderPanel(),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: OrdersView(
-                            onChartsPressed: () {
-                              ref
-                                  .read(chartsSubscriptionFlagProvider.notifier)
-                                  .subscribe();
-                            },
+            // The history panel is the one that yields: it is capped at what
+            // is left once the order column has its lower bound, so the two
+            // share the shortfall instead of the order column absorbing all
+            // of it. ADR-0014 decision 11.
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final txMaxHeight = txAndOrdersPanelMaxHeight(
+                  available: constraints.maxHeight,
+                  gap: kTxAndOrdersPanelGap,
+                  companionMinHeight: _marketOrderColumnMinHeight,
+                );
+                return Column(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const MarketOrderPanel(),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: OrdersView(
+                                onChartsPressed: () {
+                                  ref
+                                      .read(
+                                        chartsSubscriptionFlagProvider.notifier,
+                                      )
+                                      .subscribe();
+                                },
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const DTxAndOrdersPanel(onlyWorkingOrders: true),
-              ],
+                    ),
+                    const SizedBox(height: kTxAndOrdersPanelGap),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: txMaxHeight),
+                      child: const DTxAndOrdersPanel(onlyWorkingOrders: true),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

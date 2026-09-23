@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
@@ -8,16 +7,10 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
+import '../helpers/test_utils.dart';
 import '../utils.dart';
 
 class MockSideswapWallet extends Mock implements SideswapWallet {}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {
-    // Suppress all logging
-  }
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +18,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(To());
     // Suppress logging to prevent async errors from platform services
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
 
   group('AssetDetailsStats', () {

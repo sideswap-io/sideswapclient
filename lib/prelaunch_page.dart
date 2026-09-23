@@ -1,11 +1,7 @@
-import 'dart:math' as math show sin, pi;
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/pulsing_dots.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
@@ -23,16 +19,11 @@ class PreLaunchPage extends StatelessWidget {
   }
 }
 
-class PreLauchAnimation extends HookConsumerWidget {
+class PreLauchAnimation extends StatelessWidget {
   const PreLauchAnimation({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useAnimationController(
-      duration: const Duration(milliseconds: 1200),
-    )..repeat();
-    final delays = useMemoized(() => [.0, .25, .5, .75, 1.0]);
-    const counter = 5;
 
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Center(
@@ -60,52 +51,17 @@ class PreLauchAnimation extends HookConsumerWidget {
                 ),
               ),
             ),
-        Center(
+        const Center(
+          // The offset stays here, not in PulsingDots: this screen is a plain
+          // top-down column and WalletLocked stacks a shrinking gap, the logo
+          // and a second shrinking gap, so the two reach the same y through
+          // different arithmetic.
           child: Padding(
-            padding: const EdgeInsets.only(top: 241),
-            child: SizedBox(
-              width: 66,
-              height: 10,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ...List<Widget>.generate(
-                    counter,
-                    (i) => FadeTransition(
-                      opacity: DelayTween(
-                        begin: 0.2,
-                        end: 1.0,
-                        delay: delays[i],
-                      ).animate(controller),
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: SideSwapColors.brightTurquoise,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            padding: EdgeInsets.only(top: 241),
+            child: PulsingDots(),
           ),
         ),
       ],
     );
   }
-}
-
-class DelayTween extends Tween<double> {
-  DelayTween({super.begin, super.end, required this.delay});
-
-  final double delay;
-
-  @override
-  double lerp(double t) =>
-      super.lerp((math.sin((t - delay) * 2 * math.pi) + 1) / 2);
-
-  @override
-  double evaluate(Animation<double> animation) => lerp(animation.value);
 }

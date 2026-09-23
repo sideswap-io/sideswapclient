@@ -140,18 +140,48 @@ class PinSetup extends HookConsumerWidget {
                               final pinSetupState = ref.watch(
                                 pinSetupStateProvider,
                               );
-                              final errorMessage =
-                                  (pinSetupState is PinSetupStateError)
-                                  ? pinSetupState.message
-                                  : '';
+                              final attempt = ref.watch(
+                                pinSetupAttemptProvider,
+                              );
+                              final overdue =
+                                  attempt is PinSetupAttemptStateOutstanding &&
+                                  attempt.overdue;
 
-                              return PinTextField(
-                                enabled: secondPinEnabled,
-                                error: (pinSetupState is PinSetupStateError),
-                                errorMessage: errorMessage,
-                                pin: secondPin,
-                                focusNode: secondPinFocusNode,
-                                onTap: ref.read(pinHelperProvider).onTap,
+                              final message = switch (pinSetupState) {
+                                PinSetupStateError(:final message) => message,
+                                _ => '',
+                              };
+
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  PinTextField(
+                                    enabled: secondPinEnabled,
+                                    error: pinSetupState is PinSetupStateError,
+                                    errorMessage: message,
+                                    pin: secondPin,
+                                    focusNode: secondPinFocusNode,
+                                    onTap: ref.read(pinHelperProvider).onTap,
+                                  ),
+                                  // The threshold message is a recovery
+                                  // instruction, not a failure, so it sits
+                                  // outside the field's error box and leaves
+                                  // the border alone -- the same reading the
+                                  // desktop screen takes. ADR-0013 decisions
+                                  // 11 and 14.
+                                  if (overdue)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Text(
+                                        pinSetupTakingLongerKey.tr(),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.normal,
+                                          color: SideSwapColors.brightTurquoise,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               );
                             },
                           ),
@@ -170,7 +200,11 @@ class PinSetup extends HookConsumerWidget {
                               final pinFieldState = ref.watch(
                                 pinFieldStateProvider,
                               );
+                              final keyboardEnabled = ref.watch(
+                                firstPinEnabledProvider,
+                              );
                               return PinKeyboard(
+                                enabled: keyboardEnabled,
                                 acceptType:
                                     firstLaunchState !=
                                         const FirstLaunchStateTypeEmpty()

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'outputs_providers.dart';
@@ -9,6 +9,7 @@ part of 'outputs_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -66,7 +67,7 @@ class _$OutputsDataCopyWithImpl<$Res>
 /// Create a copy of OutputsData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? type = freezed,Object? version = freezed,Object? timestamp = freezed,Object? receivers = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(OutputsData(
 type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String?,version: freezed == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as String?,timestamp: freezed == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
@@ -206,7 +207,7 @@ return $default(_that.type,_that.version,_that.timestamp,_that.receivers);case _
 
 @JsonSerializable(explicitToJson: true, includeIfNull: false)
 class _OutputsData implements OutputsData {
-  const _OutputsData({this.type, this.version, this.timestamp, final  List<OutputsReceiver>? receivers}): _receivers = receivers;
+  const _OutputsData({this.type, this.version, this.timestamp,  List<OutputsReceiver>? receivers}): _receivers = receivers;
   factory _OutputsData.fromJson(Map<String, dynamic> json) => _$OutputsDataFromJson(json);
 
 @override final  String? type;
@@ -340,7 +341,7 @@ class _$OutputsReceiverCopyWithImpl<$Res>
 /// Create a copy of OutputsReceiver
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? address = freezed,Object? assetId = freezed,Object? satoshi = freezed,Object? comment = freezed,Object? account = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(OutputsReceiver(
 address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
 as String?,satoshi: freezed == satoshi ? _self.satoshi : satoshi // ignore: cast_nullable_to_non_nullable

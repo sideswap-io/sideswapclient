@@ -566,6 +566,13 @@ void main() {
       expect(subscription.read().value?.addresses?.single.account, Account.AMP_);
     });
 
+    test('ampAdressesModelAsync returns loading when amp data is not ready', () {
+      final container = createContainer(overrides: defaultOverrides());
+      final subscription = keepAlive(container, ampAdressesModelAsyncProvider);
+
+      expect(subscription.read(), const AsyncLoading<AddressesModel>());
+    });
+
     test('groupedAddressesAsync returns loading when both sources are loading', () {
       final container = createContainer(
         overrides: [

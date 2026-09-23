@@ -20,6 +20,7 @@ import 'package:sideswap/desktop/onboarding/widgets/d_addr_field.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
@@ -262,7 +263,9 @@ class DSendPopupCreate extends HookConsumerWidget {
 
     return DPopupWithClose(
       width: 580,
-      height: 710,
+      // No declared height: see `d_asset_info.dart`. The pinned row would
+      // otherwise float above the card's bottom edge.
+      scrollOwner: ScrollOwner.wrapper,
       onClose: () {
         ref
             .read(eiCreateTransactionProvider.notifier)
@@ -270,8 +273,62 @@ class DSendPopupCreate extends HookConsumerWidget {
         Navigator.of(context).pop();
         cleanupOnClose();
       },
+      // Pinned below the body: ADD MORE OUTPUTS and REVIEW are what finishes
+      // the task, and a user on a short window must not have to scroll to find
+      // them. The `Spacer()` that used to push them down goes with them -- the
+      // wrapper lays the body out unbounded, where a `Spacer` throws.
+      actions: Padding(
+        padding: const EdgeInsets.only(left: 40, right: 40, bottom: 40),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            DCustomButton(
+              width: 245,
+              height: 44,
+              onPressed: switch (addMoreOutputsButtonEnabled) {
+                AsyncLoading() => null,
+                _ => () {
+                  insertOutputs();
+                  amountController.text = '';
+                  addressController.text = '';
+                  addressFocusNode.requestFocus();
+                },
+              },
+              child: Text('Add more outputs'.tr().toUpperCase()),
+            ),
+            DCustomButton(
+              width: 245,
+              height: 44,
+              isFilled: true,
+              onPressed: switch (reviewButtonEnabled) {
+                AsyncLoading() => null,
+                _ => () async {
+                  insertOutputs();
+                  amountController.text = '';
+                  addressController.text = '';
+
+                  final errorMessage = ref
+                      .read(paymentHelperProvider)
+                      .outputsPaymentSend(selectedInputs: selectedInputs);
+
+                  if (errorMessage != null) {
+                    final flushbar = Flushbar<void>(
+                      messageText: Text(errorMessage),
+                      duration: const Duration(seconds: 5),
+                      backgroundColor: SideSwapColors.chathamsBlue,
+                    );
+                    await flushbar.show(context);
+                  }
+                },
+              },
+              child: Text('Review'.tr().toUpperCase()),
+            ),
+          ],
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(40.0),
+        // No bottom padding: the pinned actions row below carries it now.
+        padding: const EdgeInsets.only(left: 40, right: 40, top: 40),
         child: Column(
           children: [
             Text(
@@ -354,7 +411,6 @@ class DSendPopupCreate extends HookConsumerWidget {
               },
             ),
             const DSendPopupOutputs(),
-            const Spacer(),
             Consumer(
               builder: (context, ref, child) {
                 final outputsDataLength = ref.watch(outputsDataLengthProvider);
@@ -365,52 +421,6 @@ class DSendPopupCreate extends HookConsumerWidget {
               },
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DCustomButton(
-                  width: 245,
-                  height: 44,
-                  onPressed: switch (addMoreOutputsButtonEnabled) {
-                    AsyncLoading() => null,
-                    _ => () {
-                      insertOutputs();
-                      amountController.text = '';
-                      addressController.text = '';
-                      addressFocusNode.requestFocus();
-                    },
-                  },
-                  child: Text('Add more outputs'.tr().toUpperCase()),
-                ),
-                DCustomButton(
-                  width: 245,
-                  height: 44,
-                  isFilled: true,
-                  onPressed: switch (reviewButtonEnabled) {
-                    AsyncLoading() => null,
-                    _ => () async {
-                      insertOutputs();
-                      amountController.text = '';
-                      addressController.text = '';
-
-                      final errorMessage = ref
-                          .read(paymentHelperProvider)
-                          .outputsPaymentSend(selectedInputs: selectedInputs);
-
-                      if (errorMessage != null) {
-                        final flushbar = Flushbar<void>(
-                          messageText: Text(errorMessage),
-                          duration: const Duration(seconds: 5),
-                          backgroundColor: SideSwapColors.chathamsBlue,
-                        );
-                        await flushbar.show(context);
-                      }
-                    },
-                  },
-                  child: Text('Review'.tr().toUpperCase()),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -455,10 +465,123 @@ class DSendPopupReview extends ConsumerWidget {
     return DPopupWithClose(
       width: 580,
       height: 675,
+      // The embedded review-outputs list owns this surface's scrollable, so
+      // the wrapper supplies the `Flexible` half only.
+      scrollOwner: ScrollOwner.child,
       onClose: () {
         cleanupOnClose();
         Navigator.of(context).pop();
       },
+      // Pinned below the body, on the same band as the fee details it used to
+      // sit inside, so BACK / EXPORT TX / BROADCAST stay reachable however
+      // short the window is.
+      actions: Container(
+        color: SideSwapColors.chathamsBlue,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 40, right: 40, bottom: 40),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              DCustomButton(
+                width: 160,
+                height: 44,
+                onPressed: sendTxState == const SendTxStateEmpty()
+                    ? () {
+                        cleanupOnBack();
+                      }
+                    : null,
+                child: Text(
+                  'BACK'.tr(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    height: 0,
+                    letterSpacing: 0.28,
+                  ),
+                ),
+              ),
+              DCustomButton(
+                width: 160,
+                height: 44,
+                onPressed: sendTxState == const SendTxStateEmpty()
+                    ? () async {
+                        final result = await ref
+                            .read(desktopDialogProvider)
+                            .openViewTx();
+                        return switch (result) {
+                          DialogReturnValueAccepted() => () async {
+                            final navigator = Navigator.of(context);
+                            await ref
+                                .read(desktopDialogProvider)
+                                .openExportTxSuccess();
+                            navigator.pop();
+                          }(),
+                          _ => () {}(),
+                        };
+                      }
+                    : null,
+                child: Text(
+                  'EXPORT TX'.tr(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    height: 0,
+                    letterSpacing: 0.28,
+                  ),
+                ),
+              ),
+              DCustomButton(
+                width: 160,
+                height: 44,
+                autofocus: true,
+                isFilled: true,
+                onPressed: sendTxState == const SendTxStateEmpty()
+                    ? () async {
+                        if (await ref.read(walletProvider).isAuthenticated()) {
+                          if (createdTx != null) {
+                            ref
+                                .read(walletProvider)
+                                .assetSendConfirmCommon(createdTx);
+                          }
+                        }
+                      }
+                    : null,
+                child: Row(
+                  children: [
+                    const Spacer(),
+                    Text(
+                      'BROADCAST'.tr(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                        letterSpacing: 0.28,
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 4),
+                          switch (sendTxState) {
+                            SendTxStateSending() => const SpinKitCircle(
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                            _ => const SizedBox(),
+                          },
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       child: Column(
         children: [
           Expanded(
@@ -492,7 +615,8 @@ class DSendPopupReview extends ConsumerWidget {
           Container(
             color: SideSwapColors.chathamsBlue,
             child: Padding(
-              padding: const EdgeInsets.only(left: 40, right: 40, bottom: 40),
+              // No bottom padding: the pinned actions band below carries it.
+              padding: const EdgeInsets.only(left: 40, right: 40),
               child: Column(
                 children: [
                   const SizedBox(height: 16),
@@ -528,110 +652,6 @@ class DSendPopupReview extends ConsumerWidget {
                   RowTxDetail(
                     name: 'Number of outputs'.tr(),
                     value: createdTxHelper.outputCount(),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      DCustomButton(
-                        width: 160,
-                        height: 44,
-                        onPressed: sendTxState == const SendTxStateEmpty()
-                            ? () {
-                                cleanupOnBack();
-                              }
-                            : null,
-                        child: Text(
-                          'BACK'.tr(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w700,
-                            height: 0,
-                            letterSpacing: 0.28,
-                          ),
-                        ),
-                      ),
-                      DCustomButton(
-                        width: 160,
-                        height: 44,
-                        onPressed: sendTxState == const SendTxStateEmpty()
-                            ? () async {
-                                final result = await ref
-                                    .read(desktopDialogProvider)
-                                    .openViewTx();
-                                return switch (result) {
-                                  DialogReturnValueAccepted() => () async {
-                                    final navigator = Navigator.of(context);
-                                    await ref
-                                        .read(desktopDialogProvider)
-                                        .openExportTxSuccess();
-                                    navigator.pop();
-                                  }(),
-                                  _ => () {}(),
-                                };
-                              }
-                            : null,
-                        child: Text(
-                          'EXPORT TX'.tr(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w700,
-                            height: 0,
-                            letterSpacing: 0.28,
-                          ),
-                        ),
-                      ),
-                      DCustomButton(
-                        width: 160,
-                        height: 44,
-                        autofocus: true,
-                        isFilled: true,
-                        onPressed: sendTxState == const SendTxStateEmpty()
-                            ? () async {
-                                if (await ref
-                                    .read(walletProvider)
-                                    .isAuthenticated()) {
-                                  if (createdTx != null) {
-                                    ref
-                                        .read(walletProvider)
-                                        .assetSendConfirmCommon(createdTx);
-                                  }
-                                }
-                              }
-                            : null,
-                        child: Row(
-                          children: [
-                            const Spacer(),
-                            Text(
-                              'BROADCAST'.tr(),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w700,
-                                height: 0,
-                                letterSpacing: 0.28,
-                              ),
-                            ),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 4),
-                                  switch (sendTxState) {
-                                    SendTxStateSending() => const SpinKitCircle(
-                                      color: Colors.white,
-                                      size: 32,
-                                    ),
-                                    _ => const SizedBox(),
-                                  },
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),

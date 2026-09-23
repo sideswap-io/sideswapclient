@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 
 import 'package:sideswap/screens/background/background_painter.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -69,6 +70,10 @@ class SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
       return DPopupWithClose(
         width: 580,
         height: 605,
+        // [body] is opaque here, and the desktop branch wraps every
+        // `SideSwapScaffold` call site. `child` hands it the declared height
+        // whole, the way this popup always has.
+        scrollOwner: ScrollOwner.child,
         child: Padding(
           padding: const EdgeInsets.only(top: 40),
           child: widget.body!,

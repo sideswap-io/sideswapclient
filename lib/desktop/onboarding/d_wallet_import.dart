@@ -12,6 +12,7 @@ import 'package:sideswap/desktop/common/button/d_toggle_switch_button.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_text_box.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -101,7 +102,13 @@ class DWalletImport extends HookConsumerWidget {
           onClose: () {
             ref.read(walletProvider).goBack();
           },
-          constraints: const BoxConstraints(maxWidth: 628),
+          // 719 is this page's measured natural height in its tallest state:
+          // 24 words, where the body's own box is 540 rather than 350. The
+          // body box stays -- it is a real layout box that bounds the
+          // `Expanded` at the end of the column, not a height crutch for an
+          // unbounded dialog. See ADR-0014 decision 8.
+          constraints: const BoxConstraints(maxWidth: 628, maxHeight: 719),
+          scrollOwner: ScrollOwner.wrapper,
           title: Text(
             'Enter your recovery phrase'.tr(),
             style: const TextStyle(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:fake_async/fake_async.dart';
@@ -976,6 +977,61 @@ void main() {
         async.flushMicrotasks();
         expect(timerFired, greaterThanOrEqualTo(1));
       });
+    });
+  });
+
+  group('JadeLockRepository.refreshJadeLockState after a rebuild', () {
+    test('does not touch a disposed Ref when the provider rebuilds', () async {
+      final mockWallet = MockSideswapWallet();
+      final container = ProviderContainer.test(
+        overrides: [
+          isJadeWalletProvider.overrideWithValue(true),
+          walletProvider.overrideWithValue(mockWallet),
+          jadeLockStateProvider.overrideWithValue(const JadeLockState.locked()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final errors = <Object>[];
+      await runZonedGuarded(() async {
+        final repo = container.read(jadeLockRepositoryProvider);
+        repo.refreshJadeLockState();
+        container.invalidate(jadeLockRepositoryProvider);
+        // force the rebuild now, so the old element is disposed
+        container.read(jadeLockRepositoryProvider);
+        await Future.microtask(() {});
+        await Future.microtask(() {});
+      }, (error, _) => errors.add(error));
+
+      expect(errors, isEmpty);
+      verify(() => mockWallet.sendMsg(any())).called(1);
+    });
+
+    test('still sends the unlock message from a stale callback', () async {
+      final mockWallet = MockSideswapWallet();
+      final container = ProviderContainer.test(
+        overrides: [
+          isJadeWalletProvider.overrideWithValue(true),
+          walletProvider.overrideWithValue(mockWallet),
+          jadeLockStateProvider.overrideWithValue(const JadeLockState.locked()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final errors = <Object>[];
+      await runZonedGuarded(() async {
+        final repo = container.read(jadeLockRepositoryProvider);
+        container.invalidate(jadeLockRepositoryProvider);
+        // force the rebuild now, so the element behind repo is disposed
+        container.read(jadeLockRepositoryProvider);
+        // the widget kept the callback of the old repository
+        repo.refreshJadeLockState();
+        await Future.microtask(() {});
+        await Future.microtask(() {});
+      }, (error, _) => errors.add(error));
+
+      expect(errors, isEmpty);
+      verify(() => mockWallet.sendMsg(any())).called(1);
     });
   });
 

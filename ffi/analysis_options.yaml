@@ -9,6 +9,12 @@ analyzer:
     - .dart_tool/** # Exclude Dart tool-generated files
     - lib/**.g.dart
     - lib/**.freezed.dart
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
   errors:
     invalid_annotation_target: ignore
     collection_methods_unrelated_type: error

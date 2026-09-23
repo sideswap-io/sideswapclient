@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/assets_precache_provider.dart';
 import 'package:sideswap/providers/licenses_provider.dart';
@@ -10,10 +9,7 @@ import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
+import '../helpers/test_utils.dart';
 
 class _FakeNetworkSettingsNotifier extends NetworkSettingsNotifier {
   @override
@@ -57,7 +53,7 @@ ProviderContainer _makeContainer({
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
 
   group('WarmupApp', () {

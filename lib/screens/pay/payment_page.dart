@@ -85,12 +85,6 @@ class PaymentPage extends HookConsumerWidget {
     ref.listen<QrCodeResultModel>(qrCodeResultModelProvider, (_, next) {
       (switch (next) {
         QrCodeResultModelData() => () {
-          if (next.result?.outputsData != null) {
-            // go to the confirm transaction page directly
-            ref.invalidate(paymentAmountPageArgumentsProvider);
-            ref.read(paymentHelperProvider).outputsPaymentSend();
-            return;
-          }
           addressController.text = next.result?.address ?? '';
 
           final newErrorText = ref

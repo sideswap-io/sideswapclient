@@ -122,7 +122,7 @@ final class SelectEnvTapProvider extends $NotifierProvider<SelectEnvTap, int> {
         argument: null,
         retry: null,
         name: r'selectEnvTapProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -143,7 +143,7 @@ final class SelectEnvTapProvider extends $NotifierProvider<SelectEnvTap, int> {
   }
 }
 
-String _$selectEnvTapHash() => r'c462f87777d463d525987199fce13f310a91eca1';
+String _$selectEnvTapHash() => r'27c0bee1dda8d05251ebc39e75c9e99b16f3ffd6';
 
 abstract class _$SelectEnvTap extends $Notifier<int> {
   int build();

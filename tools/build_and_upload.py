@@ -15,6 +15,8 @@ import sys
 import zipfile
 from pathlib import Path
 
+from wsl_env import _load_env, win_path_to_wsl
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -27,15 +29,6 @@ SCRIPT_DIR = Path(__file__).parent
 REPO_ROOT = SCRIPT_DIR.parent
 
 RUST_PROJECT_DIR    = REPO_ROOT / ".." / "sideswap_rust"
-
-def _load_env(path: Path) -> None:
-    if not path.exists():
-        return
-    for line in path.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, v = line.split("=", 1)
-            os.environ.setdefault(k.strip(), v.strip())
 
 _load_env(SCRIPT_DIR / ".env")
 
@@ -63,13 +56,6 @@ def run(cmd: str, cwd: Path = REPO_ROOT) -> None:
     if result.returncode != 0:
         print(f"✗ Command failed (exit {result.returncode})")
         sys.exit(result.returncode)
-
-
-def win_path_to_wsl(path: Path) -> str:
-    resolved = path.resolve()
-    drive = resolved.drive.rstrip(":").lower()
-    rest = str(resolved)[len(resolved.drive):].replace("\\", "/")
-    return f"/mnt/{drive}{rest}"
 
 
 def build_rust() -> None:

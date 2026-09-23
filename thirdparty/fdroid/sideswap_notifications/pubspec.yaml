@@ -1,11 +1,11 @@
 name: sideswap_notifications
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.29
+version: 0.1.30
 
 environment:
-  sdk: ^3.12.2
-  flutter: ^3.44.6
+  sdk: ^3.13.0
+  flutter: ^3.47.0
 
 dependencies:
   flutter:

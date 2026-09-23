@@ -4,11 +4,11 @@ import 'dart:typed_data';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/models/desktop_window_geometry.dart';
 import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
@@ -17,6 +17,11 @@ import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/proxy_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_logger/custom_logger.dart';
+
+import '../helpers/fake_shared_preferences.dart';
+import '../helpers/settings_container.dart';
+import '../helpers/test_utils.dart';
+import '../utils.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -29,11 +34,6 @@ Future<void> _flushAsync() async {
 
 class MockNavigatorKey extends Mock {
   BuildContext? currentContext;
-}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
 }
 
 void _setupMockSharedPreferences(MockSharedPreferences mockPrefs) {
@@ -50,7 +50,7 @@ void main() {
     registerFallbackValue(
       SideswapSettings.empty(mnemonicEncrypted: Uint8List(0)),
     );
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
 
   group('Configuration', () {
@@ -135,30 +135,27 @@ void main() {
         },
       );
 
-      test(
-        'returns sideswap as default when network type is null and locale is not zh',
-        () {
-          final mockPrefs = MockSharedPreferences();
-          _setupMockSharedPreferences(mockPrefs);
-          final mockNavigatorKey = GlobalKey<NavigatorState>();
+      test('returns sideswap as default when network type is null and locale is not zh', () {
+        final mockPrefs = MockSharedPreferences();
+        _setupMockSharedPreferences(mockPrefs);
+        final mockNavigatorKey = GlobalKey<NavigatorState>();
 
-          when(() => mockPrefs.getString(any())).thenReturn(null);
-          when(() => mockPrefs.getBool(any())).thenReturn(false);
-          when(() => mockPrefs.getInt(any())).thenReturn(0);
+        when(() => mockPrefs.getString(any())).thenReturn(null);
+        when(() => mockPrefs.getBool(any())).thenReturn(false);
+        when(() => mockPrefs.getInt(any())).thenReturn(0);
 
-          final container = ProviderContainer(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(mockPrefs),
-              navigatorKeyProvider.overrideWithValue(mockNavigatorKey),
-              localesProvider.overrideWithValue('en'),
-            ],
-          );
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
+            navigatorKeyProvider.overrideWithValue(mockNavigatorKey),
+            localesProvider.overrideWithValue('en'),
+          ],
+        );
 
-          final settings = container.read(configurationProvider);
+        final settings = container.read(configurationProvider);
 
-          expect(settings.settingsNetworkType, SettingsNetworkType.sideswap);
-        },
-      );
+        expect(settings.settingsNetworkType, SettingsNetworkType.sideswap);
+      });
 
       test('decodes base64 mnemonic from preferences', () {
         final mockPrefs = MockSharedPreferences();
@@ -172,9 +169,8 @@ void main() {
         when(() => mockPrefs.getInt(any())).thenReturn(0);
 
         // Then specific overrides
-        when(
-          () => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField),
-        ).thenReturn(encoded);
+        when(() => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField))
+            .thenReturn(encoded);
 
         final container = ProviderContainer(
           overrides: [
@@ -226,46 +222,36 @@ void main() {
         expect(settings.networkSettingsModel, isA<NetworkSettingsModelEmpty>());
       });
 
-      test(
-        'returns NetworkSettingsModelEmpty on network settings JSON decode error',
-        () {
-          final mockPrefs = MockSharedPreferences();
-          _setupMockSharedPreferences(mockPrefs);
+      test('returns NetworkSettingsModelEmpty on network settings JSON decode error', () {
+        final mockPrefs = MockSharedPreferences();
+        _setupMockSharedPreferences(mockPrefs);
 
-          // Register any() FIRST, then specific overrides take precedence
-          when(() => mockPrefs.getString(any())).thenReturn(null);
-          when(() => mockPrefs.getBool(any())).thenReturn(false);
-          when(() => mockPrefs.getInt(any())).thenReturn(0);
-          when(
-            () =>
-                mockPrefs.getString(SideswapSettings.networkSettingsModelField),
-          ).thenReturn('invalid{{{');
-          // Provide a valid settingsNetworkType to cover notNullString? branch (line 519)
-          when(
-            () =>
-                mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
-          ).thenReturn(
-            EnumToString.convertToString(SettingsNetworkType.sideswap),
-          );
+        // Register any() FIRST, then specific overrides take precedence
+        when(() => mockPrefs.getString(any())).thenReturn(null);
+        when(() => mockPrefs.getBool(any())).thenReturn(false);
+        when(() => mockPrefs.getInt(any())).thenReturn(0);
+        when(
+          () => mockPrefs.getString(SideswapSettings.networkSettingsModelField),
+        ).thenReturn('invalid{{{');
+        // Provide a valid settingsNetworkType to cover notNullString? branch (line 519)
+        when(
+          () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
+        ).thenReturn(
+          EnumToString.convertToString(SettingsNetworkType.sideswap),
+        );
 
-          final container = ProviderContainer(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(mockPrefs),
-              navigatorKeyProvider.overrideWithValue(
-                GlobalKey<NavigatorState>(),
-              ),
-              localesProvider.overrideWithValue('en'),
-            ],
-          );
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
+            navigatorKeyProvider.overrideWithValue(GlobalKey<NavigatorState>()),
+            localesProvider.overrideWithValue('en'),
+          ],
+        );
 
-          final settings = container.read(configurationProvider);
+        final settings = container.read(configurationProvider);
 
-          expect(
-            settings.networkSettingsModel,
-            isA<NetworkSettingsModelEmpty>(),
-          );
-        },
-      );
+        expect(settings.networkSettingsModel, isA<NetworkSettingsModelEmpty>());
+      });
 
       test('reads stokr settings as JSON from preferences', () {
         final mockPrefs = MockSharedPreferences();
@@ -339,12 +325,10 @@ void main() {
         when(() => mockPrefs.getInt(any())).thenReturn(null);
 
         // Then specific overrides
-        when(
-          () => mockPrefs.getString(SideswapSettings.proxyHostField),
-        ).thenReturn('proxy.example.com');
-        when(
-          () => mockPrefs.getInt(SideswapSettings.proxyPortField),
-        ).thenReturn(3128);
+        when(() => mockPrefs.getString(SideswapSettings.proxyHostField))
+            .thenReturn('proxy.example.com');
+        when(() => mockPrefs.getInt(SideswapSettings.proxyPortField))
+            .thenReturn(3128);
         when(
           () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
         ).thenReturn(null);
@@ -367,12 +351,10 @@ void main() {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
 
-        when(
-          () => mockPrefs.getString(SideswapSettings.proxyHostField),
-        ).thenReturn(null);
-        when(
-          () => mockPrefs.getInt(SideswapSettings.proxyPortField),
-        ).thenReturn(null);
+        when(() => mockPrefs.getString(SideswapSettings.proxyHostField))
+            .thenReturn(null);
+        when(() => mockPrefs.getInt(SideswapSettings.proxyPortField))
+            .thenReturn(null);
         when(
           () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
         ).thenReturn(null);
@@ -403,18 +385,14 @@ void main() {
         when(() => mockPrefs.getInt(any())).thenReturn(null);
 
         // Then specific overrides
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinSaltField),
-        ).thenReturn('salt123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinEncryptedDataField),
-        ).thenReturn('encryptedData123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinIdentifierField),
-        ).thenReturn('pinId123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinHmacField),
-        ).thenReturn('hmac123');
+        when(() => mockPrefs.getString(SideswapSettings.pinSaltField))
+            .thenReturn('salt123');
+        when(() => mockPrefs.getString(SideswapSettings.pinEncryptedDataField))
+            .thenReturn('encryptedData123');
+        when(() => mockPrefs.getString(SideswapSettings.pinIdentifierField))
+            .thenReturn('pinId123');
+        when(() => mockPrefs.getString(SideswapSettings.pinHmacField))
+            .thenReturn('hmac123');
         when(
           () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
         ).thenReturn(null);
@@ -437,18 +415,14 @@ void main() {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
 
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinSaltField),
-        ).thenReturn('');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinEncryptedDataField),
-        ).thenReturn('encryptedData123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinIdentifierField),
-        ).thenReturn('pinId123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinHmacField),
-        ).thenReturn('hmac123');
+        when(() => mockPrefs.getString(SideswapSettings.pinSaltField))
+            .thenReturn('');
+        when(() => mockPrefs.getString(SideswapSettings.pinEncryptedDataField))
+            .thenReturn('encryptedData123');
+        when(() => mockPrefs.getString(SideswapSettings.pinIdentifierField))
+            .thenReturn('pinId123');
+        when(() => mockPrefs.getString(SideswapSettings.pinHmacField))
+            .thenReturn('hmac123');
         when(
           () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
         ).thenReturn(null);
@@ -473,18 +447,14 @@ void main() {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
 
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinSaltField),
-        ).thenReturn('salt123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinEncryptedDataField),
-        ).thenReturn('encryptedData123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinIdentifierField),
-        ).thenReturn('');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinHmacField),
-        ).thenReturn('hmac123');
+        when(() => mockPrefs.getString(SideswapSettings.pinSaltField))
+            .thenReturn('salt123');
+        when(() => mockPrefs.getString(SideswapSettings.pinEncryptedDataField))
+            .thenReturn('encryptedData123');
+        when(() => mockPrefs.getString(SideswapSettings.pinIdentifierField))
+            .thenReturn('');
+        when(() => mockPrefs.getString(SideswapSettings.pinHmacField))
+            .thenReturn('hmac123');
         when(
           () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
         ).thenReturn(null);
@@ -509,18 +479,14 @@ void main() {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
 
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinSaltField),
-        ).thenReturn('salt123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinEncryptedDataField),
-        ).thenReturn('');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinIdentifierField),
-        ).thenReturn('pinId123');
-        when(
-          () => mockPrefs.getString(SideswapSettings.pinHmacField),
-        ).thenReturn('hmac123');
+        when(() => mockPrefs.getString(SideswapSettings.pinSaltField))
+            .thenReturn('salt123');
+        when(() => mockPrefs.getString(SideswapSettings.pinEncryptedDataField))
+            .thenReturn('');
+        when(() => mockPrefs.getString(SideswapSettings.pinIdentifierField))
+            .thenReturn('pinId123');
+        when(() => mockPrefs.getString(SideswapSettings.pinHmacField))
+            .thenReturn('hmac123');
         when(
           () => mockPrefs.getString(SideswapSettings.settingsNetworkTypeField),
         ).thenReturn(null);
@@ -555,9 +521,8 @@ void main() {
         when(() => mockPrefs.getInt(any())).thenReturn(null);
 
         // Then specific overrides
-        when(
-          () => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField),
-        ).thenReturn(encoded);
+        when(() => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField))
+            .thenReturn(encoded);
 
         final container = ProviderContainer(
           overrides: [
@@ -577,9 +542,8 @@ void main() {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
 
-        when(
-          () => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField),
-        ).thenReturn(null);
+        when(() => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField))
+            .thenReturn(null);
         when(() => mockPrefs.getString(any())).thenReturn(null);
         when(() => mockPrefs.getBool(any())).thenReturn(false);
         when(() => mockPrefs.getInt(any())).thenReturn(0);
@@ -602,9 +566,8 @@ void main() {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
 
-        when(
-          () => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField),
-        ).thenReturn('');
+        when(() => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField))
+            .thenReturn('');
         when(() => mockPrefs.getString(any())).thenReturn(null);
         when(() => mockPrefs.getBool(any())).thenReturn(false);
         when(() => mockPrefs.getInt(any())).thenReturn(0);
@@ -1015,179 +978,6 @@ void main() {
       });
     });
 
-    group('setUsePinProtection', () {
-      test('updates usePinProtection in state', () async {
-        final mockPrefs = MockSharedPreferences();
-        _setupMockSharedPreferences(mockPrefs);
-        when(() => mockPrefs.getString(any())).thenReturn(null);
-        when(() => mockPrefs.getBool(any())).thenReturn(null);
-        when(() => mockPrefs.getInt(any())).thenReturn(null);
-
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(mockPrefs),
-            navigatorKeyProvider.overrideWithValue(GlobalKey<NavigatorState>()),
-            localesProvider.overrideWithValue('en'),
-          ],
-        );
-        addTearDown(container.dispose);
-
-        final notifier = container.read(configurationProvider.notifier);
-        await _flushAsync();
-        notifier.setUsePinProtection(true);
-        await _flushAsync();
-
-        expect(container.read(configurationProvider).usePinProtection, true);
-      });
-    });
-
-    group('setPinData', () {
-      test(
-        'updates pinDataState with valid PinDataStateData and writes to prefs when prefs empty',
-        () async {
-          final mockPrefs = MockSharedPreferences();
-          _setupMockSharedPreferences(mockPrefs);
-          when(() => mockPrefs.getString(any())).thenReturn(null);
-          when(() => mockPrefs.getBool(any())).thenReturn(null);
-          when(() => mockPrefs.getInt(any())).thenReturn(null);
-
-          final container = ProviderContainer(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(mockPrefs),
-              navigatorKeyProvider.overrideWithValue(
-                GlobalKey<NavigatorState>(),
-              ),
-              localesProvider.overrideWithValue('en'),
-            ],
-          );
-          addTearDown(container.dispose);
-
-          final notifier = container.read(configurationProvider.notifier);
-          await _flushAsync();
-          final pinData = PinDataStateData(
-            salt: 'salt123',
-            encryptedData: 'enc123',
-            pinIdentifier: 'id123',
-            hmac: 'hmac123',
-          );
-          notifier.setPinData(pinData);
-          await _flushAsync();
-
-          expect(
-            container.read(configurationProvider).pinDataState,
-            isA<PinDataStateData>(),
-          );
-          verify(
-            () => mockPrefs.setString(SideswapSettings.pinSaltField, 'salt123'),
-          ).called(greaterThanOrEqualTo(1));
-          verify(
-            () => mockPrefs.setString(
-              SideswapSettings.pinEncryptedDataField,
-              'enc123',
-            ),
-          ).called(greaterThanOrEqualTo(1));
-          verify(
-            () => mockPrefs.setString(
-              SideswapSettings.pinIdentifierField,
-              'id123',
-            ),
-          ).called(greaterThanOrEqualTo(1));
-        },
-      );
-
-      test(
-        'skips writing to prefs when valid pin data already exists in prefs',
-        () async {
-          final mockPrefs = MockSharedPreferences();
-          _setupMockSharedPreferences(mockPrefs);
-          // Set wildcard first, then specific stubs override (Mocktail: last wins)
-          when(() => mockPrefs.getString(any())).thenReturn(null);
-          when(() => mockPrefs.getBool(any())).thenReturn(null);
-          when(() => mockPrefs.getInt(any())).thenReturn(null);
-          // Prefs already has full pin data — set after wildcard so they take precedence
-          when(
-            () => mockPrefs.getString(SideswapSettings.pinSaltField),
-          ).thenReturn('existing-salt');
-          when(
-            () => mockPrefs.getString(SideswapSettings.pinEncryptedDataField),
-          ).thenReturn('existing-enc');
-          when(
-            () => mockPrefs.getString(SideswapSettings.pinIdentifierField),
-          ).thenReturn('existing-id');
-          when(
-            () => mockPrefs.getString(SideswapSettings.pinHmacField),
-          ).thenReturn('existing-hmac');
-
-          final container = ProviderContainer(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(mockPrefs),
-              navigatorKeyProvider.overrideWithValue(
-                GlobalKey<NavigatorState>(),
-              ),
-              localesProvider.overrideWithValue('en'),
-            ],
-          );
-          addTearDown(container.dispose);
-
-          final notifier = container.read(configurationProvider.notifier);
-          await _flushAsync();
-          final pinData = PinDataStateData(
-            salt: 'new-salt',
-            encryptedData: 'new-enc',
-            pinIdentifier: 'new-id',
-            hmac: 'new-hmac',
-          );
-          notifier.setPinData(pinData);
-          await _flushAsync();
-
-          expect(
-            container.read(configurationProvider).pinDataState,
-            isA<PinDataStateData>(),
-          );
-          // pin salt should NOT be written with 'new-salt' because prefs already has data
-          verifyNever(
-            () =>
-                mockPrefs.setString(SideswapSettings.pinSaltField, 'new-salt'),
-          );
-        },
-      );
-
-      test('clears prefs when pinData is null', () async {
-        final mockPrefs = MockSharedPreferences();
-        _setupMockSharedPreferences(mockPrefs);
-        when(() => mockPrefs.getString(any())).thenReturn(null);
-        when(() => mockPrefs.getBool(any())).thenReturn(null);
-        when(() => mockPrefs.getInt(any())).thenReturn(null);
-
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(mockPrefs),
-            navigatorKeyProvider.overrideWithValue(GlobalKey<NavigatorState>()),
-            localesProvider.overrideWithValue('en'),
-          ],
-        );
-        addTearDown(container.dispose);
-
-        final notifier = container.read(configurationProvider.notifier);
-        await _flushAsync();
-        notifier.setPinData(null);
-        await _flushAsync();
-
-        verify(
-          () => mockPrefs.remove(SideswapSettings.pinEncryptedDataField),
-        ).called(greaterThanOrEqualTo(1));
-        verify(
-          () => mockPrefs.remove(SideswapSettings.pinIdentifierField),
-        ).called(greaterThanOrEqualTo(1));
-        verify(
-          () => mockPrefs.remove(SideswapSettings.pinSaltField),
-        ).called(greaterThanOrEqualTo(1));
-        verify(
-          () => mockPrefs.remove(SideswapSettings.pinHmacField),
-        ).called(greaterThanOrEqualTo(1));
-      });
-    });
-
     group('setSettingsNetworkType', () {
       test('updates settingsNetworkType in state', () async {
         final mockPrefs = MockSharedPreferences();
@@ -1482,9 +1272,93 @@ void main() {
         notifier.setStokrSettingsModel(null);
         await _flushAsync();
 
-        verify(
-          () => mockPrefs.remove(SideswapSettings.stokrSettingsModelField),
-        ).called(greaterThanOrEqualTo(1));
+        verify(() => mockPrefs.remove(SideswapSettings.stokrSettingsModelField))
+            .called(greaterThanOrEqualTo(1));
+      });
+    });
+
+    group('_saveSettings after dispose', () {
+      test(
+        'finishes the pending save without reading the disposed state',
+        () async {
+          final mockPrefs = MockSharedPreferences();
+          _setupMockSharedPreferences(mockPrefs);
+          when(() => mockPrefs.getString(any())).thenReturn(null);
+          when(() => mockPrefs.getBool(any())).thenReturn(null);
+          when(() => mockPrefs.getInt(any())).thenReturn(null);
+
+          final container = ProviderContainer(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(mockPrefs),
+              navigatorKeyProvider.overrideWithValue(
+                GlobalKey<NavigatorState>(),
+              ),
+              localesProvider.overrideWithValue('en'),
+            ],
+          );
+          final notifier = container.read(configurationProvider.notifier);
+          await _flushAsync();
+          // Drop anything the build wrote, so the assertions below can only be
+          // satisfied by the save this test triggers.
+          clearInteractions(mockPrefs);
+
+          notifier.setHideTxChainingPromptValue(true);
+          container.dispose();
+          await _flushAsync();
+
+          // The save started before dispose and ran to completion: both the
+          // mutated key and the final write of the sequence
+          // (`_setAutosignDomains`, which clears the key for the empty default)
+          // reached SharedPreferences.
+          verify(
+            () => mockPrefs.setBool(
+              SideswapSettings.hideTxChainingPromptField,
+              true,
+            ),
+          ).called(greaterThanOrEqualTo(1));
+          verify(() => mockPrefs.remove(SideswapSettings.autosignDomainsField))
+              .called(greaterThanOrEqualTo(1));
+        },
+      );
+    });
+
+    group('_saveSettings serialization', () {
+      test('persists the newest state last when two saves overlap', () async {
+        final mockPrefs = MockSharedPreferences();
+        _setupMockSharedPreferences(mockPrefs);
+        when(() => mockPrefs.getString(any())).thenReturn(null);
+        when(() => mockPrefs.getBool(any())).thenReturn(null);
+        when(() => mockPrefs.getInt(any())).thenReturn(null);
+
+        final phoneKeys = <String>[];
+        when(() => mockPrefs.setString(SideswapSettings.phoneKeyField, any()))
+            .thenAnswer((inv) async {
+              phoneKeys.add(inv.positionalArguments[1] as String);
+              return true;
+            });
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
+            navigatorKeyProvider.overrideWithValue(GlobalKey<NavigatorState>()),
+            localesProvider.overrideWithValue('en'),
+          ],
+        );
+        addTearDown(container.dispose);
+        final notifier = container.read(configurationProvider.notifier);
+        await _flushAsync();
+        phoneKeys.clear();
+
+        // Both mutations land in one synchronous turn, so the second save is
+        // issued before the first has written anything.
+        notifier.setPhoneKey('older');
+        notifier.setPhoneKey('newer');
+        for (var i = 0; i < 500 && phoneKeys.length < 2; i++) {
+          await Future<void>.microtask(() {});
+        }
+
+        // Both saves ran, and the newer snapshot wrote last.
+        expect(phoneKeys, ['older', 'newer']);
       });
     });
 
@@ -1495,9 +1369,8 @@ void main() {
         when(() => mockPrefs.getString(any())).thenReturn(null);
         when(() => mockPrefs.getBool(any())).thenReturn(null);
         when(() => mockPrefs.getInt(any())).thenReturn(null);
-        when(
-          () => mockPrefs.getString(SideswapSettings.autosignDomainsField),
-        ).thenReturn('{"a.example":true,"b.example":false}');
+        when(() => mockPrefs.getString(SideswapSettings.autosignDomainsField))
+            .thenReturn('{"a.example":true,"b.example":false}');
 
         final container = ProviderContainer(
           overrides: [
@@ -1545,17 +1418,37 @@ void main() {
         await _flushAsync();
 
         expect(written, isNotNull);
-        expect(
-          jsonDecode(written!) as Map<String, dynamic>,
-          {'site.com': true},
-        );
+        expect(jsonDecode(written!) as Map<String, dynamic>, {
+          'site.com': true,
+        });
 
         notifier.setAutosignForDomain('site.com', false);
         await _flushAsync();
 
-        verify(
-          () => mockPrefs.remove(SideswapSettings.autosignDomainsField),
-        ).called(greaterThanOrEqualTo(1));
+        verify(() => mockPrefs.remove(SideswapSettings.autosignDomainsField))
+            .called(greaterThanOrEqualTo(1));
+      });
+
+      test('returns empty map when the stored JSON is not an object', () {
+        final mockPrefs = MockSharedPreferences();
+        _setupMockSharedPreferences(mockPrefs);
+        when(() => mockPrefs.getString(any())).thenReturn(null);
+        when(() => mockPrefs.getBool(any())).thenReturn(null);
+        when(() => mockPrefs.getInt(any())).thenReturn(null);
+        when(() => mockPrefs.getString(SideswapSettings.autosignDomainsField))
+            .thenReturn('["a.example"]');
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
+            navigatorKeyProvider.overrideWithValue(GlobalKey<NavigatorState>()),
+            localesProvider.overrideWithValue('en'),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final settings = container.read(configurationProvider);
+        expect(settings.autosignDomains, <String, bool>{});
       });
 
       test('returns empty map when JSON is malformed', () {
@@ -1564,16 +1457,13 @@ void main() {
         when(() => mockPrefs.getString(any())).thenReturn(null);
         when(() => mockPrefs.getBool(any())).thenReturn(null);
         when(() => mockPrefs.getInt(any())).thenReturn(null);
-        when(
-          () => mockPrefs.getString(SideswapSettings.autosignDomainsField),
-        ).thenReturn('not-valid-json{{{');
+        when(() => mockPrefs.getString(SideswapSettings.autosignDomainsField))
+            .thenReturn('not-valid-json{{{');
 
         final container = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(mockPrefs),
-            navigatorKeyProvider.overrideWithValue(
-              GlobalKey<NavigatorState>(),
-            ),
+            navigatorKeyProvider.overrideWithValue(GlobalKey<NavigatorState>()),
             localesProvider.overrideWithValue('en'),
           ],
         );
@@ -1697,9 +1587,8 @@ void main() {
       test('resets state preserving env and clears prefs', () async {
         final mockPrefs = MockSharedPreferences();
         _setupMockSharedPreferences(mockPrefs);
-        when(
-          () => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField),
-        ).thenReturn(base64.encode(Uint8List.fromList([1, 2, 3])));
+        when(() => mockPrefs.getString(SideswapSettings.mnemonicEncryptedField))
+            .thenReturn(base64.encode(Uint8List.fromList([1, 2, 3])));
         when(() => mockPrefs.getString(any())).thenReturn(null);
         when(() => mockPrefs.getBool(any())).thenReturn(null);
         when(() => mockPrefs.getInt(any())).thenReturn(null);
@@ -1774,6 +1663,503 @@ void main() {
           );
         },
       );
+    });
+  });
+
+  group('PIN record', () {
+    late FakeSharedPreferences prefs;
+
+    setUp(() {
+      prefs = FakeSharedPreferences();
+    });
+
+    const blobA = PinDataStateData(
+      salt: 'salt-a',
+      encryptedData: 'enc-a',
+      pinIdentifier: 'id-a',
+      hmac: 'hmac-a',
+    );
+
+    const blobB = PinDataStateData(
+      salt: 'salt-b',
+      encryptedData: 'enc-b',
+      pinIdentifier: 'id-b',
+      hmac: 'hmac-b',
+    );
+
+    /// A store holding [blob], as an earlier run of the app would have left it.
+    FakeSharedPreferences storeHolding(
+      PinDataStateData blob, {
+      bool usePinProtection = true,
+    }) {
+      return FakeSharedPreferences({
+        SideswapSettings.pinSaltField: blob.salt,
+        SideswapSettings.pinEncryptedDataField: blob.encryptedData,
+        SideswapSettings.pinIdentifierField: blob.pinIdentifier,
+        SideswapSettings.pinHmacField: blob.hmac,
+        SideswapSettings.usePinProtectionField: usePinProtection,
+      });
+    }
+
+    ProviderListener<SideswapSettings> listenerOn(ProviderContainer container) {
+      final listener = ProviderListener<SideswapSettings>();
+      container.listen(configurationProvider, listener.call);
+      return listener;
+    }
+
+    /// The state the listener saw, failing if it saw more than one. A
+    /// `ProviderListener` captures a `(previous, next)` pair per call, so two
+    /// captured values are one call.
+    SideswapSettings onlyStateChange(
+      ProviderListener<SideswapSettings> listener,
+    ) {
+      final captured = verify(
+        () => listener(captureAny(), captureAny()),
+      ).captured;
+      expect(captured.length, 2, reason: 'exactly one state change');
+      return captured[1] as SideswapSettings;
+    }
+
+    test(
+      'activating emits one state change carrying the blob, the flag and biometric off',
+      () async {
+        final container = settingsContainer(prefs);
+        final listener = listenerOn(container);
+
+        container
+            .read(configurationProvider.notifier)
+            .activatePinProtection(blobA);
+        await prefs.settle();
+
+        final next = onlyStateChange(listener);
+        expect(next.pinDataState, blobA);
+        expect(next.usePinProtection, true);
+        expect(next.useBiometricProtection, false);
+      },
+    );
+
+    test('activating stores a blob that survives a rebuild', () async {
+      final container = settingsContainer(prefs);
+      container
+          .read(configurationProvider.notifier)
+          .activatePinProtection(blobA);
+      await prefs.settle();
+
+      final reloaded = reloadSettings(prefs);
+
+      expect(reloaded.usePinProtection, true);
+      expect(reloaded.pinDataState, blobA);
+    });
+
+    test('a new blob replaces a stored one', () async {
+      final seeded = storeHolding(blobA);
+
+      settingsContainer(seeded)
+          .read(configurationProvider.notifier)
+          .activatePinProtection(blobB);
+      await seeded.settle();
+
+      final reloaded = reloadSettings(seeded);
+
+      expect(reloaded.pinDataState, blobB);
+      expect(reloaded.usePinProtection, true);
+    });
+
+    test('an unchanged blob is not re-written', () async {
+      final container = settingsContainer(prefs);
+      container
+          .read(configurationProvider.notifier)
+          .activatePinProtection(blobA);
+      await prefs.settle();
+
+      const pinKeys = [
+        SideswapSettings.pinSaltField,
+        SideswapSettings.pinEncryptedDataField,
+        SideswapSettings.pinIdentifierField,
+        SideswapSettings.pinHmacField,
+      ];
+      final writesAfterActivating = {
+        for (final key in pinKeys) key: prefs.writeCount(key),
+      };
+
+      container.read(configurationProvider.notifier).setJadeId('jade-1');
+      await prefs.settle();
+
+      expect(
+        {for (final key in pinKeys) key: prefs.writeCount(key)},
+        writesAfterActivating,
+      );
+      expect(reloadSettings(prefs).pinDataState, blobA);
+    });
+
+    test('a blob differing only in its hmac is written', () async {
+      final seeded = storeHolding(blobA);
+      final rekeyed = blobA.copyWith(hmac: 'hmac-other');
+
+      settingsContainer(seeded)
+          .read(configurationProvider.notifier)
+          .activatePinProtection(rekeyed);
+      await seeded.settle();
+
+      expect(reloadSettings(seeded).pinDataState, rekeyed);
+    });
+
+    test(
+      'a write interrupted at the flag leaves the fresh blob, not the stale one',
+      () async {
+        // The flag already stands, which is the only starting state where a
+        // raised flag is a hazard: whatever the interruption leaves, the blob
+        // under that flag must be the fresh one.
+        final seeded = storeHolding(blobA);
+        // Let the round that the initial build fires finish first, so the
+        // stall lands inside the enable round and nowhere else.
+        final notifier = settingsContainer(
+          seeded,
+        ).read(configurationProvider.notifier);
+        await seeded.settle();
+
+        seeded.hangOn(SideswapSettings.usePinProtectionField);
+        notifier.activatePinProtection(blobB);
+        await seeded.reachedHangKey;
+
+        final reloaded = reloadSettings(seeded);
+
+        expect(
+          reloaded.pinDataState,
+          blobB,
+          reason: 'the flag stands over the stale blob',
+        );
+      },
+    );
+
+    test(
+      'deactivating drops the flag with the mnemonic first, then the blob',
+      () async {
+        final container = settingsContainer(prefs);
+        final notifier = container.read(configurationProvider.notifier);
+        notifier.activatePinProtection(blobA);
+        await prefs.settle();
+
+        final listener = listenerOn(container);
+        final mnemonicEncrypted = Uint8List.fromList([1, 2, 3]);
+
+        notifier.deactivatePinProtection(mnemonicEncrypted: mnemonicEncrypted);
+        await prefs.settle();
+
+        // Two state changes, in this order. `ProviderListener` captures a
+        // `(previous, next)` pair per call, so four captured values are two.
+        final captured = verify(
+          () => listener(captureAny(), captureAny()),
+        ).captured;
+        expect(captured.length, 4, reason: 'exactly two state changes');
+
+        final roundOne = captured[1] as SideswapSettings;
+        expect(roundOne.usePinProtection, false);
+        expect(roundOne.mnemonicEncrypted, mnemonicEncrypted);
+        expect(
+          roundOne.pinDataState,
+          blobA,
+          reason: 'the blob goes in the second round, not this one',
+        );
+
+        final roundTwo = captured[3] as SideswapSettings;
+        expect(roundTwo.pinDataState, isNull);
+      },
+    );
+
+    test('deactivating removes every PIN key', () async {
+      final container = settingsContainer(prefs);
+      final notifier = container.read(configurationProvider.notifier);
+      notifier.activatePinProtection(blobA);
+      await prefs.settle();
+
+      notifier.deactivatePinProtection(
+        mnemonicEncrypted: Uint8List.fromList([1, 2, 3]),
+      );
+      await prefs.settle();
+
+      expect(
+        prefs.snapshot.keys,
+        isNot(contains(SideswapSettings.pinSaltField)),
+      );
+      expect(
+        prefs.snapshot.keys,
+        isNot(contains(SideswapSettings.pinEncryptedDataField)),
+      );
+      expect(
+        prefs.snapshot.keys,
+        isNot(contains(SideswapSettings.pinIdentifierField)),
+      );
+      expect(
+        prefs.snapshot.keys,
+        isNot(contains(SideswapSettings.pinHmacField)),
+      );
+
+      expect(reloadSettings(prefs).pinDataState, isA<PinDataStateEmpty>());
+    });
+
+    test(
+      'activating biometric protection emits one state change that drops the PIN flag',
+      () async {
+        final container = settingsContainer(prefs);
+        final notifier = container.read(configurationProvider.notifier);
+        notifier.activatePinProtection(blobA);
+        await prefs.settle();
+
+        final listener = listenerOn(container);
+
+        notifier.activateBiometricProtection();
+        await prefs.settle();
+
+        onlyStateChange(listener);
+
+        final reloaded = reloadSettings(prefs);
+        expect(reloaded.useBiometricProtection, true);
+        expect(reloaded.usePinProtection, false);
+      },
+    );
+
+    // The state to fear is one state: `usePinProtection == true` beside a blob
+    // that is missing or stale, because `sendDecryptPin` then returns without
+    // sending and the unlock screen waits for a reply nobody will send.
+    //
+    // Three members of `Configuration` write `usePinProtection`
+    // (`activatePinProtection`, `deactivatePinProtection`,
+    // `activateBiometricProtection`), and two more replace the whole state
+    // (`setSettings`, `deleteConfig`). This drives all five and asserts the
+    // invariant against what a restart would load, after every step.
+    test('no sequence ends with the flag raised over a missing blob', () async {
+      /// Persists, then holds the invariant against what a restart would load.
+      /// [whileFlagStands] is the blob that must be the one loaded if PIN
+      /// protection is on, or null if it must be off — identity, not mere
+      /// presence, because a stale blob is as fatal as a missing one.
+      Future<SideswapSettings> checkpoint(
+        String step,
+        PinDataStateData? whileFlagStands,
+      ) async {
+        await prefs.settle();
+        final reloaded = reloadSettings(prefs);
+        if (reloaded.usePinProtection) {
+          expect(
+            reloaded.pinDataState,
+            whileFlagStands,
+            reason: 'after $step: the flag stands over the wrong blob',
+          );
+        }
+        return reloaded;
+      }
+
+      final container = settingsContainer(prefs);
+      final notifier = container.read(configurationProvider.notifier);
+
+      notifier.activatePinProtection(blobA);
+      await checkpoint('activatePinProtection(A)', blobA);
+
+      notifier.deactivatePinProtection(
+        mnemonicEncrypted: Uint8List.fromList([1]),
+      );
+      await checkpoint('deactivatePinProtection', null);
+
+      notifier.activatePinProtection(blobB);
+      final afterSecondEnable = await checkpoint('activatePinProtection(B)', blobB);
+      expect(
+        afterSecondEnable.pinDataState,
+        blobB,
+        reason: 'the second PIN is the one that unlocks the wallet',
+      );
+
+      notifier.setSettings(
+        container.read(configurationProvider).copyWith(jadeId: 'jade-2'),
+      );
+      await checkpoint('setSettings', blobB);
+
+      notifier.activateBiometricProtection();
+      await checkpoint('activateBiometricProtection', null);
+
+      notifier.activatePinProtection(blobA);
+      await checkpoint('activatePinProtection(A) again', blobA);
+
+      await notifier.deleteConfig();
+      final afterDelete = await checkpoint('deleteConfig', null);
+      expect(afterDelete.usePinProtection, false);
+      expect(afterDelete.pinDataState, isA<PinDataStateEmpty>());
+    });
+
+    test('deactivating clears the blob as well, in a second round', () async {
+      final container = settingsContainer(prefs);
+      final notifier = container.read(configurationProvider.notifier);
+      notifier.activatePinProtection(blobA);
+      await prefs.settle();
+
+      notifier.deactivatePinProtection(
+        mnemonicEncrypted: Uint8List.fromList([1, 2, 3]),
+      );
+      await prefs.settle();
+
+      final reloaded = reloadSettings(prefs);
+      expect(reloaded.usePinProtection, false);
+      expect(reloaded.pinDataState, isA<PinDataStateEmpty>());
+      expect(reloaded.mnemonicEncrypted, Uint8List.fromList([1, 2, 3]));
+    });
+
+    test(
+      'a write interrupted between the two disable rounds keeps the flag down',
+      () async {
+        final container = settingsContainer(prefs);
+        final notifier = container.read(configurationProvider.notifier);
+        notifier.activatePinProtection(blobA);
+        await prefs.settle();
+
+        // The second round's first act is removing a blob key. Stalling there
+        // leaves round one landed and round two not started.
+        prefs.hangOn(SideswapSettings.pinEncryptedDataField);
+        notifier.deactivatePinProtection(
+          mnemonicEncrypted: Uint8List.fromList([1, 2, 3]),
+        );
+        await prefs.reachedHangKey;
+
+        final reloaded = reloadSettings(prefs);
+        expect(
+          reloaded.usePinProtection,
+          false,
+          reason: 'the blob went before the flag did',
+        );
+        expect(reloaded.mnemonicEncrypted, Uint8List.fromList([1, 2, 3]));
+      },
+    );
+
+    // The three fields the configuration requires. A blob missing any of them
+    // is stored as no blob at all, so activating on one would raise the flag
+    // over nothing. `PinHelper.onPinData` rejects these too, and reports the
+    // failure to the user; this is the guarantee the notifier owes on its own.
+    for (final (field, blob) in [
+      ('salt', blobA.copyWith(salt: '')),
+      ('encryptedData', blobA.copyWith(encryptedData: '')),
+      ('pinIdentifier', blobA.copyWith(pinIdentifier: '')),
+    ]) {
+      test('activating on a blob with no $field raises no flag', () async {
+        final container = settingsContainer(prefs);
+        container
+            .read(configurationProvider.notifier)
+            .activatePinProtection(blob);
+        await prefs.settle();
+
+        expect(container.read(configurationProvider).usePinProtection, false);
+        expect(reloadSettings(prefs).usePinProtection, false);
+      });
+    }
+
+    test('setSettings cannot raise the flag or move the blob', () async {
+      final container = settingsContainer(prefs);
+      final notifier = container.read(configurationProvider.notifier);
+      await prefs.settle();
+
+      notifier.setSettings(
+        container.read(configurationProvider).copyWith(
+          usePinProtection: true,
+          pinDataState: null,
+        ),
+      );
+      await prefs.settle();
+
+      expect(container.read(configurationProvider).usePinProtection, false);
+      expect(reloadSettings(prefs).usePinProtection, false);
+    });
+
+    test('setSettings cannot replace the blob under a raised flag', () async {
+      final container = settingsContainer(prefs);
+      final notifier = container.read(configurationProvider.notifier);
+      notifier.activatePinProtection(blobA);
+      await prefs.settle();
+
+      notifier.setSettings(
+        container.read(configurationProvider).copyWith(pinDataState: blobB),
+      );
+      await prefs.settle();
+
+      expect(reloadSettings(prefs).pinDataState, blobA);
+    });
+  });
+
+  group('desktop window geometry', () {
+    late FakeSharedPreferences prefs;
+
+    setUp(() {
+      prefs = FakeSharedPreferences();
+    });
+
+    const geometry = DesktopWindowGeometry(
+      left: 100,
+      top: 200,
+      width: 1088,
+      height: 880,
+      maximized: true,
+      displayId: 'display-1',
+    );
+
+    test('no stored value gives null', () {
+      final settings = settingsContainer(prefs).read(configurationProvider);
+
+      expect(settings.desktopWindowGeometry, isNull);
+    });
+
+    test('round trip preserves the geometry', () async {
+      final container = settingsContainer(prefs);
+
+      container
+          .read(configurationProvider.notifier)
+          .setDesktopWindowGeometry(geometry);
+      await prefs.settle();
+
+      expect(
+        container.read(configurationProvider).desktopWindowGeometry,
+        geometry,
+      );
+      expect(reloadSettings(prefs).desktopWindowGeometry, geometry);
+    });
+
+    test('clearing removes the stored key', () async {
+      final notifier = settingsContainer(
+        prefs,
+      ).read(configurationProvider.notifier);
+
+      notifier.setDesktopWindowGeometry(geometry);
+      await prefs.settle();
+
+      notifier.setDesktopWindowGeometry(null);
+      await prefs.settle();
+
+      expect(
+        prefs.snapshot.containsKey(
+          SideswapSettings.desktopWindowGeometryField,
+        ),
+        false,
+      );
+    });
+
+    test('corrupt stored text gives null', () {
+      final seeded = FakeSharedPreferences({
+        SideswapSettings.desktopWindowGeometryField: 'not json',
+      });
+
+      final settings = settingsContainer(seeded).read(configurationProvider);
+
+      expect(settings.desktopWindowGeometry, isNull);
+    });
+
+    test('deleteConfig keeps the geometry', () async {
+      final container = settingsContainer(prefs);
+      final notifier = container.read(configurationProvider.notifier);
+
+      notifier.setDesktopWindowGeometry(geometry);
+      await prefs.settle();
+
+      await notifier.deleteConfig();
+      await prefs.settle();
+
+      final settings = container.read(configurationProvider);
+      expect(settings.desktopWindowGeometry, geometry);
+      expect(settings.mnemonicEncrypted.isEmpty, true);
     });
   });
 }

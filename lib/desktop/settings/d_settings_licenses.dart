@@ -12,6 +12,7 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/licenses_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -180,44 +181,49 @@ class DSettingsLicenses extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 467,
-                  child: ValueListenableBuilder(
-                    valueListenable: licenses,
-                    builder: (context, List<Widget> licenses, _) {
-                      if (licenses.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.only(top: 16),
-                          child: Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 32),
-                              child: SpinKitThreeBounce(
-                                color: Colors.white,
-                                size: 24,
+                // Design height; the licence list scrolls itself, so the box
+                // only needs permission to be shorter on a short window.
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 467),
+                    child: ValueListenableBuilder(
+                      valueListenable: licenses,
+                      builder: (context, List<Widget> licenses, _) {
+                        if (licenses.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 16),
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 32),
+                                child: SpinKitThreeBounce(
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
                               ),
+                            ),
+                          );
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: controller,
+                            child: ListView.separated(
+                              controller: controller,
+                              itemCount: licenses.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(
+                                    color: SideSwapColors.chathamsBlue,
+                                  ),
+                              itemBuilder: (context, index) {
+                                return licenses.elementAt(index);
+                              },
                             ),
                           ),
                         );
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Scrollbar(
-                          thumbVisibility: true,
-                          controller: controller,
-                          child: ListView.separated(
-                            controller: controller,
-                            itemCount: licenses.length,
-                            separatorBuilder: (context, index) => const Divider(
-                              color: SideSwapColors.chathamsBlue,
-                            ),
-                            itemBuilder: (context, index) {
-                              return licenses.elementAt(index);
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -237,6 +243,7 @@ class DSettingsLicenses extends HookConsumerWidget {
         ],
         style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 696),
+        scrollOwner: ScrollOwner.child,
       ),
     );
   }

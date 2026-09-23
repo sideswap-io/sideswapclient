@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/providers/page_storage_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 
 void main() {
   group('PageStorageKeyData', () {
@@ -160,6 +161,80 @@ void main() {
         expect(decoded.length, greaterThan(0));
         expect(decoded.length, lessThanOrEqualTo(16)); // 10 bytes encodes to up to 14 chars, padded to 16
       });
+    });
+  });
+
+  group('pageStorageBucket', () {
+    late ProviderContainer container;
+
+    setUp(() {
+      container = ProviderContainer.test();
+    });
+
+    test('returns the same bucket while the navigation item is unchanged', () {
+      final first = container.read(pageStorageBucketProvider);
+
+      container
+          .read(uiStateArgsProvider.notifier)
+          .setWalletMainArguments(
+            WalletMainArguments(
+              currentIndex: 4,
+              navigationItemEnum: WalletMainNavigationItemEnum.home,
+              arguments: 'anything',
+            ),
+          );
+
+      final second = container.read(pageStorageBucketProvider);
+
+      expect(identical(first, second), isTrue);
+    });
+
+    test('returns a new bucket after the navigation item changes', () {
+      final first = container.read(pageStorageBucketProvider);
+
+      container
+          .read(uiStateArgsProvider.notifier)
+          .setWalletMainArguments(
+            WalletMainArguments(
+              currentIndex: 5,
+              navigationItemEnum: WalletMainNavigationItemEnum.addresses,
+            ),
+          );
+
+      final second = container.read(pageStorageBucketProvider);
+
+      expect(identical(first, second), isFalse);
+    });
+
+    test('keeps the bucket after its last listener goes away', () async {
+      final subscription = container.listen(
+        pageStorageBucketProvider,
+        (_, _) {},
+      );
+      final first = container.read(pageStorageBucketProvider);
+
+      subscription.close();
+      // Riverpod only *schedules* a disposal, on a zero-duration timer, so a
+      // read on the same event-loop turn returns the old instance whether the
+      // provider is kept alive or not. Give the timer its turn, or this
+      // asserts nothing.
+      await Future<void>.delayed(Duration.zero);
+
+      final second = container.read(pageStorageBucketProvider);
+
+      expect(identical(first, second), isTrue);
+    });
+
+    test('gives every container its own bucket', () {
+      final other = ProviderContainer.test();
+
+      expect(
+        identical(
+          container.read(pageStorageBucketProvider),
+          other.read(pageStorageBucketProvider),
+        ),
+        isFalse,
+      );
     });
   });
 }

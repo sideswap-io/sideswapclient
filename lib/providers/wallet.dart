@@ -572,7 +572,8 @@ class SideswapWallet {
             pinIdentifier: data.pinIdentifier,
             hmac: data.hmac,
           );
-          ref.read(configurationProvider.notifier).setPinData(pinData);
+          // The blob and the flag are stored together, by onPinData. Writing
+          // the blob here as well is what let the two halves diverge.
           ref.read(pinHelperProvider).onPinData(pinData);
         }
         break;
@@ -1040,15 +1041,6 @@ class SideswapWallet {
     return await _registerWallet(true);
   }
 
-  Future<bool> walletPinEnable() async {
-    if (await _registerWallet(false)) {
-      ref.read(pinHelperProvider).enablePinProtection();
-      return true;
-    }
-
-    return false;
-  }
-
   Future<bool> walletBiometricSkip() async {
     return await _registerWallet(false);
   }
@@ -1069,8 +1061,7 @@ class SideswapWallet {
       if (ref.read(configurationProvider).mnemonicEncrypted.isEmpty) {
         return false;
       }
-      ref.read(configurationProvider.notifier).setUseBiometricProtection(true);
-      ref.read(configurationProvider.notifier).setUsePinProtection(false);
+      ref.read(configurationProvider.notifier).activateBiometricProtection();
     } else {
       ref
           .read(configurationProvider.notifier)
@@ -1796,14 +1787,19 @@ class SideswapWallet {
     if (ret) {
       final pinDecryptedData = ref.read(pinDecryptedDataProvider);
       if (pinDecryptedData.success) {
-        // turn off pin and save encrypted mnemonic
-        ref.read(configurationProvider.notifier).setUsePinProtection(false);
+        final mnemonicEncrypted = await _encryption.encryptFallback(
+          pinDecryptedData.mnemonic,
+        );
+        // Should not happen, something is very wrong. Keep PIN protection
+        // standing rather than leave the wallet with no credential at all,
+        // and say so: the desktop caller draws a success screen on `true`.
+        if (mnemonicEncrypted.isEmpty) {
+          return false;
+        }
 
         ref
             .read(configurationProvider.notifier)
-            .setMnemonicEncrypted(
-              await _encryption.encryptFallback(pinDecryptedData.mnemonic),
-            );
+            .deactivatePinProtection(mnemonicEncrypted: mnemonicEncrypted);
       }
     }
 

@@ -53,14 +53,20 @@ class DHoverButton extends StatefulWidget {
 }
 
 class DHoverButtonState extends State<DHoverButton> {
-  late FocusNode node;
+  /// The node this state created, and the only node it may ever dispose. A
+  /// caller's node is never assigned here, so no disposal path can reach it.
+  FocusNode? _internalNode;
+
+  /// The node currently in effect, resolved on every read so that a node
+  /// supplied after mount is adopted rather than ignored.
+  FocusNode get node =>
+      widget.focusNode ?? (_internalNode ??= _createFocusNode());
 
   late Map<Type, Action<Intent>> _actionMap;
 
   @override
   void initState() {
     super.initState();
-    node = widget.focusNode ?? _createFocusNode();
     void handleActionTap() async {
       if (!enabled) return;
       setState(() => _pressing = true);
@@ -106,14 +112,57 @@ class DHoverButtonState extends State<DHoverButton> {
   }
 
   @override
+  void didUpdateWidget(DHoverButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focusNode == oldWidget.focusNode) return;
+    // The focus highlight is cached here but reported by the
+    // `FocusableActionDetector` the node change is about to discard, and a
+    // detaching focus node notifies nobody on its way out — so left alone this
+    // flag would go on describing a node the button no longer answers for.
+    //
+    // Only this flag. `_hovering` is re-reported by the replacement
+    // `MouseRegion` in both directions, so clearing it here would only blank the
+    // hover highlight for the swap frame; `_pressing` belongs to the gesture
+    // layer, which sits outside the key and survives the swap, so clearing it
+    // would release a press whose pointer is still down.
+    setState(() => _shouldShowFocus = false);
+  }
+
+  @override
   void dispose() {
-    if (widget.focusNode == null) node.dispose();
+    _internalNode?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget w = GestureDetector(
+    Widget w = FocusableActionDetector(
+      // Keyed on the node so that swapping it rebuilds the detector's state:
+      // `FocusableActionDetector` gates focus reporting on a cached `_focused`
+      // that survives a node swap, so a reused state would stay convinced it is
+      // focused and never report focus through the adopted node again. The key
+      // never changes for a button whose node is stable.
+      //
+      // The gesture layer is deliberately kept *outside* this key: rebuilding
+      // the detector tears down everything beneath it, and a gesture layer torn
+      // down mid-gesture drops the recognizers' pointer routes — swallowing a
+      // tap in flight and leaving a long press with no end event.
+      key: ValueKey(node),
+      mouseCursor: widget.cursor ?? MouseCursor.defer,
+      focusNode: node,
+      autofocus: widget.autofocus,
+      enabled: enabled,
+      actions: _actionMap,
+      onFocusChange: widget.onFocusChange,
+      onShowFocusHighlight: (v) {
+        if (mounted) setState(() => _shouldShowFocus = v);
+      },
+      onShowHoverHighlight: (v) {
+        if (mounted) setState(() => _hovering = v);
+      },
+      child: widget.builder(context, states),
+    );
+    w = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: widget.onPressed,
       onTapDown: (_) {
@@ -142,21 +191,6 @@ class DHoverButtonState extends State<DHoverButton> {
       onHorizontalDragStart: widget.onHorizontalDragStart,
       onHorizontalDragUpdate: widget.onHorizontalDragUpdate,
       onHorizontalDragEnd: widget.onHorizontalDragEnd,
-      child: widget.builder(context, states),
-    );
-    w = FocusableActionDetector(
-      mouseCursor: widget.cursor ?? MouseCursor.defer,
-      focusNode: node,
-      autofocus: widget.autofocus,
-      enabled: enabled,
-      actions: _actionMap,
-      onFocusChange: widget.onFocusChange,
-      onShowFocusHighlight: (v) {
-        if (mounted) setState(() => _shouldShowFocus = v);
-      },
-      onShowHoverHighlight: (v) {
-        if (mounted) setState(() => _hovering = v);
-      },
       child: w,
     );
     w = MergeSemantics(

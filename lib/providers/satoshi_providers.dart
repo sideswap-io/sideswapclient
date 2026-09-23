@@ -45,11 +45,9 @@ class SatoshiRepository implements AbstractSatoshiRepository {
 
     // cut to precision if original precision is too big
     final fixedAmount = newAmount.toStringAsFixed(precision);
-    final fixedAmountDec = Decimal.tryParse(fixedAmount);
-
-    if (fixedAmountDec == null) {
-      return null;
-    }
+    // `precision` is range-checked above and `toStringAsFixed` emits a plain
+    // decimal literal, so this always parses.
+    final fixedAmountDec = Decimal.parse(fixedAmount);
 
     final amountDec =
         fixedAmountDec * Decimal.fromInt(pow(10, precision).toInt());

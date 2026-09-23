@@ -16,6 +16,7 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_descriptors_provider.dart';
 import 'package:sideswap/screens/settings/wallet_descriptors_screen.dart';
@@ -201,7 +202,10 @@ class _DWalletDescriptorsState extends ConsumerState<DWalletDescriptors>
               content: Center(
                 child: SizedBox(
                   width: 500,
-                  height: 460,
+                  // The body fills whatever the dialog's own `maxHeight`
+                  // leaves it: the height is recorded once, on the dialog,
+                  // instead of a second time here.
+                  height: double.infinity,
                   child: Scrollbar(
                     thumbVisibility: true,
                     controller: scrollController,
@@ -260,7 +264,17 @@ class _DWalletDescriptorsState extends ConsumerState<DWalletDescriptors>
                 ),
               ],
               style: const DContentDialogThemeData().merge(defaultDialogTheme),
-              constraints: const BoxConstraints(maxWidth: 580),
+              // 647 is this dialog's measured natural height: the 460 px body
+              // the removed `SizedBox` used to fix, plus the title and actions
+              // chrome. The height is now recorded once, here, and the body
+              // takes the room the bound leaves it -- the 500 px width stays
+              // on the body, which centres its column inside the 580 px
+              // dialog. See ADR-0014 decision 8.
+              constraints: const BoxConstraints(maxWidth: 580, maxHeight: 647),
+              // The body already owns a `Scrollbar` over a
+              // `SingleChildScrollView`; the wrapper must not nest a second
+              // owner inside it. See ADR-0014 decision 9.
+              scrollOwner: ScrollOwner.child,
             ),
           ),
         ),

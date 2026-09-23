@@ -11,22 +11,19 @@ import 'package:sideswap/listeners/jade_status_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/proxy_settings_listener.dart';
 import 'package:sideswap/listeners/send_asset_listener.dart';
+import 'package:sideswap/listeners/server_login_error_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/swaption_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/universal_link_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
-import 'package:sideswap/models/connection_models.dart';
-import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/route_providers.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
-import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -107,6 +104,24 @@ class MyApp extends HookConsumerWidget {
   }
 }
 
+/// Hands a system back gesture down to the nested navigator.
+///
+/// The root [PopScope] sits on the root route, and the navigator below owns
+/// its own routes, so a screen inside that navigator never sees the gesture.
+/// Forward it only while the stack below cannot pop: then [NavigatorState
+/// .maybePop] reaches that screen's handler without removing a page the
+/// pages list still holds.
+void handleRootPopInvoked(bool didPop, GlobalKey<NavigatorState> navigatorKey) {
+  if (didPop) {
+    return;
+  }
+
+  final navigator = navigatorKey.currentState;
+  if (navigator != null && !navigator.canPop()) {
+    navigator.maybePop();
+  }
+}
+
 class MyPopupPage<T> extends Page<T> {
   const MyPopupPage({required this.child});
 
@@ -153,6 +168,8 @@ class RootWidget extends HookConsumerWidget {
         bool backButton,
         PinKeyboardAcceptType iconType,
       ) async {
+        // Before the dialog is built, never from inside its build.
+        ref.read(pinProtectionHelperProvider).init();
         final ret = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -171,25 +188,10 @@ class RootWidget extends HookConsumerWidget {
     }, const []);
 
     final navigatorKey = ref.watch(navigatorKeyProvider);
-    final serverLoginState = ref.watch(serverLoginProvider);
-
-    useEffect(() {
-      (switch (serverLoginState) {
-        ServerLoginStateError(message: String msg) => Future.microtask(
-          () async {
-            await ref.read(utilsProvider).showErrorDialog(msg);
-            ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
-            ref.invalidate(serverLoginProvider);
-          },
-        ),
-        _ => () {}(),
-      });
-
-      return;
-    }, [serverLoginState]);
 
     return Stack(
       children: [
+        const ServerLoginErrorListener(),
         const AppLifecycleWalletListener(),
         const ProxySettingsListener(),
         const SendAssetIdListener(),
@@ -204,6 +206,8 @@ class RootWidget extends HookConsumerWidget {
         const UniversalLinkListener(),
         PopScope(
           canPop: false,
+          onPopInvokedWithResult: (didPop, result) =>
+              handleRootPopInvoked(didPop, navigatorKey),
           child: Consumer(
             builder: (context, ref, child) {
               final mobileRoutePage = ref.watch(mobileRoutePageProvider);

@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 
 class SideSwapPopupPage extends ConsumerWidget {
@@ -20,6 +21,13 @@ class SideSwapPopupPage extends ConsumerWidget {
   final bool hideBack;
   final VoidCallback? onBack;
 
+  /// Which widget owns this surface's scrollable.
+  ///
+  /// Forwarded to the [DContentDialog] below, which is this page's whole
+  /// layout. The page deliberately adds no scroll view of its own: that
+  /// would nest a second owner inside the dialog's and swallow the wheel.
+  final ScrollOwner scrollOwner;
+
   const SideSwapPopupPage({
     super.key,
     this.title,
@@ -35,6 +43,7 @@ class SideSwapPopupPage extends ConsumerWidget {
     this.onEnterKey,
     this.hideBack = true,
     this.onBack,
+    this.scrollOwner = ScrollOwner.wrapper,
   });
 
   @override
@@ -75,6 +84,7 @@ class SideSwapPopupPage extends ConsumerWidget {
                   ),
                 ),
             constraints: constraints,
+            scrollOwner: scrollOwner,
           ),
           if (foregroundContent != null) ...[foregroundContent!],
         ],

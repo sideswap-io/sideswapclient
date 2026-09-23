@@ -634,7 +634,7 @@ final class JadeLockRepositoryProvider
 }
 
 String _$jadeLockRepositoryHash() =>
-    r'de50940524641a7147fa9830f9b4037781cb7c69';
+    r'e149427e4e1797f56d1407bbe30ac2a2f41df317';
 
 @ProviderFor(JadeOneTimeAuthorization)
 final jadeOneTimeAuthorizationProvider = JadeOneTimeAuthorizationProvider._();

@@ -36,20 +36,32 @@ Future<void> main(List<String> args) async {
     '--test-randomize-ordering-seed=random',
     '--no-test-assets',
     '--coverage',
+    '--branch-coverage',
   ], fatal: false);
 
-  // Forward slashes on every platform: perl-based lcov on Windows and the
-  // lcov.info records themselves both use `/`.
+  // Forward slashes on every platform: perl-based lcov on Windows takes `/`
+  // arguments fine.
   const info = 'coverage/lcov.info';
   const html = 'coverage/html';
   const index = 'coverage/html/index.html';
 
-  // The glob is passed as a single argv entry so no shell expands it.
+  // The glob is passed as a single argv entry so no shell expands it, and it
+  // deliberately carries no path separator: lcov turns a `/` in the pattern
+  // into a regex that demands a literal `/`, but `flutter test --coverage`
+  // writes `SF:` records with the host separator — `lib\foo.g.dart` on
+  // Windows. A `**/*.g.dart` glob therefore matches nothing there and every
+  // generated file is silently counted against the 100% provider gate.
+  // `*.g.dart` is separator-free, so it matches on all three platforms.
   await _run(lcov.executable, [
     ...lcov.prefixArgs,
+    // lcov 1.x drops BRDA records from every operation unless branch coverage
+    // is switched on explicitly, so `--remove` would strip the branch data the
+    // test run just produced.
+    '--rc',
+    'lcov_branch_coverage=1',
     '--remove',
     info,
-    '**/*.g.dart',
+    '*.g.dart',
     '-o',
     info,
     // `flutter test --coverage` emits no FN/FNDA records, which lcov 2.x
@@ -57,8 +69,14 @@ Future<void> main(List<String> args) async {
     // does not exist in lcov 1.x, hence the version gate.
     if (_majorVersion(lcov) >= 2) ...['--ignore-errors', 'empty'],
   ]);
+  _verifyGeneratedFilesRemoved(info);
+  _verifyBranchRecordsSurvived(info);
   await _run(genhtml.executable, [
     ...genhtml.prefixArgs,
+    // Same switch on the rendering side: without it genhtml omits the branch
+    // column even when the tracefile carries BRDA records.
+    '--rc',
+    'genhtml_branch_coverage=1',
     info,
     '-o',
     html,
@@ -80,6 +98,51 @@ Future<void> main(List<String> args) async {
     stderr.writeln('Some tests failed (flutter test exit code $testExitCode).');
     exit(testExitCode);
   }
+}
+
+/// Fails loudly when generated sources survived the `--remove` pass. They would
+/// otherwise be counted against the 100% provider gate in docs/TESTING.md,
+/// which reads as a coverage regression in hand-written code that does not
+/// exist. This silently held for the `**/*.g.dart` glob it replaced, so the
+/// check is the point rather than a formality.
+void _verifyGeneratedFilesRemoved(String path) {
+  final file = File(path);
+  if (!file.existsSync()) {
+    stderr.writeln('$path not found — did `flutter test --coverage` run?');
+    exit(70);
+  }
+  final survivors = file
+      .readAsLinesSync()
+      .where((line) => line.startsWith('SF:') && line.endsWith('.g.dart'))
+      .toList();
+  if (survivors.isEmpty) {
+    return;
+  }
+  stderr.writeln(
+    '${survivors.length} generated file(s) survived `lcov --remove`, '
+    'e.g. ${survivors.first}',
+  );
+  exit(70);
+}
+
+/// Fails loudly when the branch records the test run produced did not survive
+/// `lcov --remove`. lcov 1.x silently discards BRDA records unless
+/// `lcov_branch_coverage=1` is set, and the resulting report looks healthy
+/// while carrying no branch figure at all. Existence is all this checks; the
+/// figure itself is a review criterion, not a threshold the tool enforces.
+void _verifyBranchRecordsSurvived(String path) {
+  final hasBranchRecords = File(path)
+      .readAsLinesSync()
+      .any((line) => line.startsWith('BRDA:'));
+  if (hasBranchRecords) {
+    return;
+  }
+  stderr.writeln(
+    'No BRDA records in $path — branch coverage was lost. Check that '
+    '`flutter test --branch-coverage` ran and that `lcov --remove` was given '
+    '`--rc lcov_branch_coverage=1`.',
+  );
+  exit(70);
 }
 
 /// A resolved external tool: the executable to launch plus any leading

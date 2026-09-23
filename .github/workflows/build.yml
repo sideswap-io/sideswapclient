@@ -1,0 +1,375 @@
+name: Build
+
+# Produces a Windows release archive and a debug APK, and attaches both to a
+# `build-<n>` prerelease. See docs/adr/0015-github-actions-builds.md.
+#
+# The native libraries are built once per pinned rust commit and stored as a
+# `rust-libs-<sha>` prerelease. A run whose pin already has a bundle skips the
+# expensive job entirely.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Which artifacts to build
+        type: choice
+        options:
+          - both
+          - windows
+          - android
+        default: both
+
+permissions:
+  contents: write
+
+env:
+  # Quoted on purpose. Unquoted, YAML reads 36.0 as a number and the download
+  # URL becomes v36, which does not exist.
+  FLUTTER_VERSION: "3.47.2"
+  PROTOC_VERSION: "36.0"
+  PROTOC_PLUGIN_VERSION: "25.0.0"
+  NDK_VERSION: "28.2.13676358"
+  KEPT_BUILDS: 5
+
+jobs:
+  prepare:
+    name: Gate, pin and open the build prerelease
+    runs-on: ubuntu-latest
+    outputs:
+      rust_sha: ${{ steps.pin.outputs.rust_sha }}
+      bundle_tag: ${{ steps.pin.outputs.bundle_tag }}
+      bundle_ready: ${{ steps.pin.outputs.bundle_ready }}
+      version_name: ${{ steps.pin.outputs.version_name }}
+      build_number: ${{ steps.pin.outputs.build_number }}
+      build_tag: build-${{ steps.pin.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read the pin and the version
+        id: pin
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rust_sha="$(tr -d '[:space:]' < rust.sha)"
+          if [ ${#rust_sha} -ne 40 ]; then
+            echo "rust.sha must hold one full 40-character SHA, got '${rust_sha}'" >&2
+            exit 1
+          fi
+          version_name="$(sed -n '3s/^version: \([^+]*\)+.*/\1/p' pubspec.yaml)"
+          if [ -z "$version_name" ]; then
+            echo "could not read the version name from pubspec.yaml line 3" >&2
+            exit 1
+          fi
+          # One counter shared with tools/build_local_release.py: the highest
+          # number any release carries, from either source, plus one. It is not
+          # github.run_number, because a package built on a developer machine
+          # would then be able to outrank a later CI package and Android would
+          # refuse the install. See ADR-0015 decision 7.
+          tags="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName --jq '.[].tagName')"
+          highest="$(echo "$tags" | grep -E '^(build|local)-[0-9]+$' | cut -d- -f2 | sort -n | tail -1)"
+          build_number=$(( ${highest:-0} + 1 ))
+          bundle_tag="rust-libs-${rust_sha}"
+          if gh release view "$bundle_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            bundle_ready=yes
+          else
+            bundle_ready=no
+          fi
+          {
+            echo "rust_sha=$rust_sha"
+            echo "bundle_tag=$bundle_tag"
+            echo "bundle_ready=$bundle_ready"
+            echo "version_name=$version_name"
+            echo "build_number=$build_number"
+          } >> "$GITHUB_OUTPUT"
+          echo "pin=$rust_sha bundle_ready=$bundle_ready version=$version_name+$build_number"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Resolve the packages
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Check out the pinned rust commit
+        uses: actions/checkout@v5
+        with:
+          repository: sideswap-io/sideswap_rust
+          ref: ${{ steps.pin.outputs.rust_sha }}
+          path: _rust
+
+      - name: Install the pinned protoc and dart plugin
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/protoc.zip \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+          unzip -q /tmp/protoc.zip -d /tmp/protoc
+          echo "/tmp/protoc/bin" >> "$GITHUB_PATH"
+          dart pub global activate protoc_plugin "$PROTOC_PLUGIN_VERSION"
+          echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+
+      - name: Fail on protobuf drift
+        run: |
+          set -euo pipefail
+          protoc --version
+          cp _rust/sideswap_client/proto/sideswap.proto ffi/sideswap.proto
+          protoc --proto_path=ffi --dart_out=thirdparty/sideswap_protobuf/lib/src ffi/sideswap.proto
+          rm -f ffi/sideswap.proto
+          if ! git diff --quiet -- thirdparty/sideswap_protobuf/lib/src; then
+            echo "The committed Dart protobuf bindings do not match the pinned rust commit." >&2
+            echo "Regenerate them with ffi/Makefile and commit the result." >&2
+            git --no-pager diff --stat -- thirdparty/sideswap_protobuf/lib/src >&2
+            exit 1
+          fi
+          echo "no drift"
+
+      - name: Open the build prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "build-${{ steps.pin.outputs.build_number }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "${{ steps.pin.outputs.version_name }}+${{ steps.pin.outputs.build_number }}" \
+            --notes "Automated build. Rust pin \`${{ steps.pin.outputs.rust_sha }}\`. Not a product release." \
+            --prerelease
+
+  rust-libs:
+    name: Build the rust libs bundle
+    needs: prepare
+    if: needs.prepare.outputs.bundle_ready == 'no'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the pinned rust commit
+        uses: actions/checkout@v5
+        with:
+          repository: sideswap-io/sideswap_rust
+          ref: ${{ needs.prepare.outputs.rust_sha }}
+
+      - name: Install the MinGW toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
+
+      # prost-build 0.12 does not vendor protoc: `sideswap_client/build.rs`
+      # fails with "Could not find `protoc`" without it. The same pinned
+      # version is used here as in the drift check, so there is one mechanism
+      # and no version ambiguity.
+      - name: Install the pinned protoc
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/protoc.zip \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+          unzip -q /tmp/protoc.zip -d /tmp/protoc
+          echo "/tmp/protoc/bin" >> "$GITHUB_PATH"
+
+      - name: Add the rust targets
+        run: rustup target add aarch64-linux-android x86_64-pc-windows-gnu
+
+      - name: Build for Windows
+        run: cargo build --release --target x86_64-pc-windows-gnu -p sideswap_client
+
+      - name: Build for Android arm64-v8a
+        run: |
+          set -euo pipefail
+          ndk="$ANDROID_HOME/ndk/${NDK_VERSION}"
+          bin="$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          export ANDROID_NDK_HOME="$ndk"
+          export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$bin/aarch64-linux-android21-clang"
+          export CC_aarch64_linux_android="$bin/aarch64-linux-android21-clang"
+          export AR_aarch64_linux_android="$bin/llvm-ar"
+          cargo build --release --target aarch64-linux-android -p sideswap_client
+
+      - name: Assemble the bundle
+        run: |
+          set -euo pipefail
+          mkdir -p bundle/android/arm64-v8a bundle/windows
+          cp target/aarch64-linux-android/release/libsideswap_client.so bundle/android/arm64-v8a/
+          cp target/x86_64-pc-windows-gnu/release/sideswap_client.dll bundle/windows/
+          # The DLL is a MinGW build, so its four runtime libraries ship beside
+          # it. Take the posix threading variant, which is the Ubuntu default
+          # the DLL was linked against.
+          for lib in libgcc_s_seh-1.dll libssp-0.dll libstdc++-6.dll; do
+            src="$(find /usr/lib/gcc/x86_64-w64-mingw32 -path '*posix*' -name "$lib" | head -1)"
+            if [ -z "$src" ]; then echo "missing $lib" >&2; exit 1; fi
+            cp "$src" bundle/windows/
+          done
+          cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll bundle/windows/
+          tar -czf rust-libs.tar.gz -C bundle .
+          ls -la bundle/android/arm64-v8a bundle/windows rust-libs.tar.gz
+
+      - name: Publish the bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "${{ needs.prepare.outputs.bundle_tag }}" rust-libs.tar.gz \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "${{ needs.prepare.outputs.bundle_tag }}" \
+            --notes "Native libraries built from sideswap_rust \`${{ needs.prepare.outputs.rust_sha }}\`. Delete only when no rust.sha refers to it." \
+            --prerelease
+
+  windows:
+    name: Windows release
+    needs: [prepare, rust-libs]
+    if: >-
+      !cancelled()
+      && needs.prepare.result == 'success'
+      && needs.rust-libs.result != 'failure'
+      && needs.rust-libs.result != 'cancelled'
+      && (inputs.platform == 'both' || inputs.platform == 'windows')
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download the rust libs bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download "${{ needs.prepare.outputs.bundle_tag }}" \
+            --repo "$GITHUB_REPOSITORY" --pattern rust-libs.tar.gz --dir .
+          mkdir -p bundle
+          tar -xzf rust-libs.tar.gz -C bundle
+          ls -la bundle/windows
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Stamp the in-app version
+        run: |
+          set -euo pipefail
+          sed -i "1s|.*|const appVersion = '${{ needs.prepare.outputs.version_name }}';|" lib/app_version.dart
+          sed -i "2s|.*|const appBuildNumber = ${{ needs.prepare.outputs.build_number }};|" lib/app_version.dart
+          head -2 lib/app_version.dart
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          flutter pub get
+          flutter build windows --release \
+            --build-name "${{ needs.prepare.outputs.version_name }}" \
+            --build-number "${{ needs.prepare.outputs.build_number }}"
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          out=build/windows/x64/runner/Release
+          cp bundle/windows/*.dll "$out/"
+          name="sideswap-windows-${{ needs.prepare.outputs.version_name }}+${{ needs.prepare.outputs.build_number }}.zip"
+          powershell -Command "Compress-Archive -Path '$out\\*' -DestinationPath '$name' -Force"
+          ls -la "$name"
+          echo "ASSET=$name" >> "$GITHUB_ENV"
+
+      - name: Attach to the build prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ needs.prepare.outputs.build_tag }}" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
+
+  android:
+    name: Android debug APK
+    needs: [prepare, rust-libs]
+    if: >-
+      !cancelled()
+      && needs.prepare.result == 'success'
+      && needs.rust-libs.result != 'failure'
+      && needs.rust-libs.result != 'cancelled'
+      && (inputs.platform == 'both' || inputs.platform == 'android')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download the rust libs bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download "${{ needs.prepare.outputs.bundle_tag }}" \
+            --repo "$GITHUB_REPOSITORY" --pattern rust-libs.tar.gz --dir .
+          mkdir -p bundle
+          tar -xzf rust-libs.tar.gz -C bundle
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a
+          cp bundle/android/arm64-v8a/libsideswap_client.so android/app/src/main/jniLibs/arm64-v8a/
+          ls -la android/app/src/main/jniLibs/arm64-v8a
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Stamp the in-app version
+        run: |
+          set -euo pipefail
+          sed -i "1s|.*|const appVersion = '${{ needs.prepare.outputs.version_name }}';|" lib/app_version.dart
+          sed -i "2s|.*|const appBuildNumber = ${{ needs.prepare.outputs.build_number }};|" lib/app_version.dart
+          head -2 lib/app_version.dart
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          flutter pub get
+          flutter build apk --debug --flavor full \
+            --build-name "${{ needs.prepare.outputs.version_name }}" \
+            --build-number "${{ needs.prepare.outputs.build_number }}"
+
+      - name: Rename
+        run: |
+          set -euo pipefail
+          src=build/app/outputs/flutter-apk/app-full-debug.apk
+          name="sideswap-${{ needs.prepare.outputs.version_name }}+${{ needs.prepare.outputs.build_number }}-arm64-v8a-debug.apk"
+          cp "$src" "$name"
+          ls -la "$name"
+          echo "ASSET=$name" >> "$GITHUB_ENV"
+
+      - name: Attach to the build prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ needs.prepare.outputs.build_tag }}" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
+
+  prune:
+    name: Keep the last build prereleases
+    needs: [prepare, windows, android]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete the older build prereleases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Both `build-` and `local-` tags are pruned, by their shared number
+          # rather than by date, so the newest survive whichever side made them.
+          # A `rust-libs-` bundle is kept for as long as some rust.sha may point
+          # at it. tools/build_local_release.py prunes by the same rule.
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName --jq '.[].tagName' \
+            | grep -E '^(build|local)-[0-9]+$' \
+            | sort -t- -k2 -n -r \
+            | tail -n +$(( KEPT_BUILDS + 1 )) \
+            > stale.txt
+          if [ ! -s stale.txt ]; then
+            echo "nothing to prune"
+            exit 0
+          fi
+          while read -r tag; do
+            [ -n "$tag" ] || continue
+            echo "deleting $tag"
+            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          done < stale.txt

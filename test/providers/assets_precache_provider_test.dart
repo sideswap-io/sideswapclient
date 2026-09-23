@@ -36,6 +36,31 @@ class FakeAssetBundle extends Fake implements AssetBundle {
   }
 }
 
+/// A [Cache] whose `putIfAbsent` parks until [release] completes, so a test can
+/// dispose the container while the precache loop is mid-asset.
+class GatedCache extends Cache {
+  final requestedKeys = <Object>[];
+
+  /// Completes as soon as the precache loop asks for its first asset.
+  final firstCall = Completer<void>();
+
+  /// Complete this to let the parked `putIfAbsent` calls through.
+  final release = Completer<void>();
+
+  @override
+  Future<ByteData> putIfAbsent(
+    Object key,
+    Future<ByteData> Function() loader,
+  ) async {
+    requestedKeys.add(key);
+    if (!firstCall.isCompleted) {
+      firstCall.complete();
+    }
+    await release.future;
+    return ByteData(0);
+  }
+}
+
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -98,6 +123,53 @@ void main() {
 
       final result = await container.read(assetsPrecacheFutureProvider.future);
       expect(result, isTrue);
+    });
+
+    test(
+      'precaches nothing when the ref is disposed while the manifest loads',
+      () async {
+        final manifestCompleter = Completer<AssetManifest>();
+        final cache = Cache();
+        final container = ProviderContainer.test(
+          overrides: [
+            assetManifestProvider.overrideWith(
+              (ref) => manifestCompleter.future,
+            ),
+            svgCacheProvider.overrideWithValue(cache),
+          ],
+        );
+
+        final future = container.read(assetsPrecacheFutureProvider.future);
+        container.dispose();
+        manifestCompleter.complete(FakeAssetManifest(['assets/icon.svg']));
+
+        expect(await future, isTrue);
+        expect(cache.count, 0);
+      },
+    );
+
+    test('stops precaching when the ref is disposed between assets', () async {
+      final cache = GatedCache();
+      final container = ProviderContainer.test(
+        overrides: [
+          assetManifestProvider.overrideWith(
+            (ref) => FakeAssetManifest(['assets/a.svg', 'assets/b.svg']),
+          ),
+          svgCacheProvider.overrideWithValue(cache),
+        ],
+      );
+
+      final future = container.read(assetsPrecacheFutureProvider.future);
+      await cache.firstCall.future;
+      container.dispose();
+      cache.release.complete();
+
+      expect(await future, isTrue);
+      // The loop asked for the first asset and stopped: the second asset's
+      // loader was never reached.
+      expect(cache.requestedKeys, [
+        SvgAssetLoader('assets/a.svg').cacheKey(null),
+      ]);
     });
 
     test('catch branch does not propagate loader error', () async {

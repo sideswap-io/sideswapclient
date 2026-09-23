@@ -401,10 +401,65 @@ void main() {
         expect(container.read(allTxsProvider)['show1'], equals(item));
       });
 
+      test('a later None leaves allTxs untouched', () async {
+        container.read(allTxsProvider);
+        final item = _makeTxItem(id: 'show1', txid: 'show1');
+        container.read(showTransactionProvider.notifier).setState(item);
+        expect(container.read(allTxsProvider).keys, ['show1']);
+
+        container.invalidate(showTransactionProvider);
+        await container.pump();
+
+        expect(container.read(showTransactionProvider).isNone(), isTrue);
+        expect(container.read(allTxsProvider).keys, ['show1']);
+      });
+
       test('initial None does not add anything to allTxs', () {
         container.read(allTxsProvider);
         // showTransactionProvider starts as None — nothing should be added
         expect(container.read(allTxsProvider), isEmpty);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // AllTxsNotifier — txHistoryState listener
+    // -------------------------------------------------------------------------
+
+    group('txHistoryState listener', () {
+      test('loads transactions when the history state turns visible', () async {
+        container.read(allTxsProvider);
+        container.read(txHistoryStateProvider.notifier).setVisible();
+        await Future<void>.microtask(() {});
+        await Future<void>.microtask(() {});
+
+        expect(
+          container.read(loadTransactionsStateProvider),
+          isA<LoadTransactionsStateLoading>(),
+        );
+      });
+
+      test('does not load transactions when the history state turns invisible',
+          () async {
+        container.read(allTxsProvider);
+        container.read(txHistoryStateProvider.notifier).setVisible();
+        await Future<void>.microtask(() {});
+        await Future<void>.microtask(() {});
+
+        container
+            .read(loadTransactionsStateProvider.notifier)
+            .setState(LoadTransactionsState.empty());
+        container.invalidate(txHistoryStateProvider);
+        await container.pump();
+        await Future<void>.microtask(() {});
+
+        expect(
+          container.read(txHistoryStateProvider),
+          isA<TxHistoryStateInvisible>(),
+        );
+        expect(
+          container.read(loadTransactionsStateProvider),
+          isA<LoadTransactionsStateEmpty>(),
+        );
       });
     });
 
@@ -1977,6 +2032,17 @@ void main() {
           );
       final result = container.read(unconfirmedTxsProvider);
       expect(result, contains(item));
+    });
+
+    test('sorts the unconfirmed list newest first', () {
+      final older = _makeTxItem(id: 'u1', txid: 'u1')..createdAt = Int64(100);
+      final newer = _makeTxItem(id: 'u2', txid: 'u2')..createdAt = Int64(200);
+      container.read(updatedTxsProvider.notifier).update(
+            From_UpdatedTxs()..items.addAll([older, newer]),
+          );
+
+      final result = container.read(unconfirmedTxsProvider);
+      expect(result.map((e) => e.id), ['u2', 'u1']);
     });
 
     test('includes peg item without confs and without txidRecv', () {

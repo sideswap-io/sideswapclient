@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/new_wallet_backup_skip_prompt_providers.dart';
-import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dart';
+import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_background.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
@@ -21,13 +21,7 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
       onClose: () {
         Navigator.of(context).pop();
       },
-      backgroundContent: Stack(
-        alignment: Alignment.center,
-        children: [
-          const SizedBox(height: 640, child: DNewWalletBackupLogo()),
-          Container(color: Colors.black.withValues(alpha: 0.5)),
-        ],
-      ),
+      backgroundContent: const DNewWalletBackupLogoBackground(),
       foregroundContent: skipForNow == const SkipForNowStateSkipped()
           ? Container(
               color: Colors.black.withValues(alpha: 0.3),

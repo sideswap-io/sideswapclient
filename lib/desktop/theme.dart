@@ -401,7 +401,6 @@ class DesktopAppTheme {
               fontSize: 10,
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w500,
-              height: 0.12,
               letterSpacing: 0.16,
             ),
           ),
@@ -710,7 +709,6 @@ class DesktopAppTheme {
 
   NotificationItemSignRequestStyle notificationItemSignRequestStyle() {
     return NotificationItemSignRequestStyle(
-      height: 189,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: SideSwapColors.indigo,
@@ -727,7 +725,6 @@ class DesktopAppTheme {
 
   NotificationItemConnectRequestStyle notificationItemConnectRequestStyle() {
     return NotificationItemConnectRequestStyle(
-      height: 286,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: SideSwapColors.indigo,

@@ -21,7 +21,7 @@ class TickerAmountTextField extends HookConsumerWidget {
     this.onDropdownChanged,
     required this.dropdownValue,
     this.controller,
-    this.focusNode,
+    required this.focusNode,
     this.onChanged,
     this.availableAssets = const <String>[],
     this.disabledAssets = const <String>[],
@@ -40,7 +40,7 @@ class TickerAmountTextField extends HookConsumerWidget {
   final void Function(String)? onDropdownChanged;
   final String dropdownValue;
   final TextEditingController? controller;
-  final FocusNode? focusNode;
+  final FocusNode focusNode;
   final ValueChanged<String>? onChanged;
   final Iterable<String> availableAssets;
   final Iterable<String> disabledAssets;
@@ -66,7 +66,6 @@ class TickerAmountTextField extends HookConsumerWidget {
 
     final swapType = ref.watch(swapTypeProvider);
 
-    final textfieldFocusNode = focusNode ?? useFocusNode();
     final visibleHintText = useState(
       swapType == const SwapType.pegIn() && readOnly ? false : showHintText,
     );
@@ -74,27 +73,30 @@ class TickerAmountTextField extends HookConsumerWidget {
     final hasFocus = useState(false);
 
     useEffect(() {
-      textfieldFocusNode.addListener(() {
+      void syncFocusState() {
         if (!context.mounted) {
           return;
         }
 
-        hasFocus.value = textfieldFocusNode.hasFocus;
+        hasFocus.value = focusNode.hasFocus;
 
         if (swapType == const SwapType.pegIn() && readOnly) {
           return;
         }
 
-        if (textfieldFocusNode.hasFocus && !readOnly) {
+        if (focusNode.hasFocus && !readOnly) {
           visibleHintText.value = false;
           return;
         }
 
         visibleHintText.value = showHintText;
-      });
+      }
 
-      return;
-    }, const []);
+      focusNode.addListener(syncFocusState);
+      syncFocusState();
+
+      return () => focusNode.removeListener(syncFocusState);
+    }, [focusNode, readOnly, showHintText, swapType]);
 
     void showAccountsPopup() {
       Navigator.of(context).push<void>(
@@ -197,7 +199,7 @@ class TickerAmountTextField extends HookConsumerWidget {
                         autofocus: false,
                         readOnly: readOnly,
                         controller: controller,
-                        focusNode: textfieldFocusNode,
+                        focusNode: focusNode,
                         textAlign: TextAlign.end,
                         style: textFieldStyle,
                         cursorColor: Colors.white,

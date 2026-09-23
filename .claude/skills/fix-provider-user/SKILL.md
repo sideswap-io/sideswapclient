@@ -16,10 +16,9 @@ Full pipeline diagram: `references/pipeline.md`
 
 ## Auto-Selection Priority
 
-Pick from `coverage_progress.json` work queue (status=needs-fix), ordered by:
+Pick from the `tools/coverage_progress.json` work queue (status=needs-fix), ordered by:
 1. Highest coverage% first (closest to 100%)
 2. Lowest retry count
-3. test-only > lib-change-required (check INDEX.md)
 
 ## Pipeline Overview
 
@@ -65,14 +64,14 @@ If missing or older than 1 hour → run:
 ```bash
 python tools/scripts/coverage_baseline.py
 ```
-Creates/updates `coverage_progress.json`. If the file doesn't exist, `coverage_baseline.py` creates it on first run.
+Creates/updates `tools/coverage_progress.json`. If the file doesn't exist, `coverage_baseline.py` creates it on first run.
 
 ### 1. Select provider
 
 If no argument: run `python tools/scripts/coverage_baseline.py --stats-only`, pick easiest per Auto-Selection Priority.
 If argument: use specified provider.
 
-**Early exit:** If all providers in `coverage_progress.json` have status=done and full project coverage is 100% → report "All providers at 100% coverage" and stop. Do not proceed to step 2.
+**Early exit:** If all providers in `tools/coverage_progress.json` have status=done and full project coverage is 100% → report "All providers at 100% coverage" and stop. Do not proceed to step 2.
 
 ### 2. Gather data (orchestrator Bash)
 ```bash
@@ -82,15 +81,14 @@ Reads coverage from existing lcov. **Does not run tests.** Returns metadata JSON
 
 ### 2a. Deep dive (orchestrator, optional)
 
-After gather, ask user: **"Deep dive? (docs-mcp, existing tests, fix proposal → test-only 100% feasibility)"**
+After gather, ask user: **"Deep dive? (existing tests, fix proposal → test-only 100% feasibility)"**
 
 If user approves:
-1. Search docs-mcp-server for testing patterns related to the provider's static deps (e.g., rootBundle, Navigator, WebSocket)
-2. Search existing test files for similar mocking patterns (Grep for key classes/fakes)
-3. Read fix proposal if exists (`fix_proposal_path` from gather)
-4. Compare approaches: test-only vs lib-change, feasibility of each
-5. Present findings summary with recommendation
-6. **WAIT for user decision** on approach before proceeding to step 3
+1. Search existing test files for similar mocking patterns (Grep for key classes/fakes)
+2. Read fix proposal if exists (`fix_proposal_path` from gather)
+3. Compare approaches: test-only vs lib-change, feasibility of each
+4. Present findings summary with recommendation
+5. **WAIT for user decision** on approach before proceeding to step 3
 
 If user declines → proceed directly to step 3.
 
@@ -120,7 +118,7 @@ Skip the other step if all items are one type.
 
 **All agents:**
 - **Task-driven execution:** Create ALL tasks first (one per test group). Work task-by-task: read target lines → edit → re-read to confirm → mark completed.
-- Read `references/docs-mcp.md` and `references/writer-patterns.md` (subagent reads these itself)
+- Read `references/writer-patterns.md` (subagent reads this itself)
 - **Invoke the `provider-test-standards` skill via the Skill tool before starting** — for naming, structure, what to test/delete
 - No self-check loop — Tester handles testing
 - Exact lib/ changes (if authorized by user)
@@ -145,7 +143,7 @@ Returns JSON with tests_passed, integrity_violations, coverage_pct, uncovered_li
 
 ### 6a. Diagnosis (subagent code-reviewer, sonnet)
 
-Diagnose root cause, provide actionable feedback with exact API calls and signatures. Use docs-mcp-server (see `references/docs-mcp.md`).
+Diagnose root cause, provide actionable feedback with exact API calls and signatures.
 
 Present diagnosis to user as numbered bullets (root cause + proposed fix per failing test, with exact API calls). **WAIT for confirmation** before launching Fix.
 
@@ -157,7 +155,7 @@ After fix → Re-test → on PASS → Review (step 7) → Simplify (step 8).
 
 Review ALL changed files (lib/ provider + test). **Invoke the `provider-test-standards` skill via the Skill tool before starting** — for naming, structure, what to test/delete. Criteria for tests: duplicates, trivial tests, addTearDown, table-driven, naming, assertion quality. Criteria for lib/: code quality, unnecessary complexity, missing edge cases, dead code. Classify each issue as `[mechanical]` or `[structural]`.
 
-**Exact API requirement:** When suggesting override changes, provide exact method name AND full signature. Search docs-mcp-server (see `references/docs-mcp.md`) before suggesting.
+**Exact API requirement:** When suggesting override changes, provide exact method name AND full signature. Check `references/api-reference.md` in the `provider-test-standards` skill before suggesting.
 
 **Round-specific behavior:**
 - **Round 1:** fresh review, no prior context.
@@ -200,7 +198,7 @@ Skip the other step if all issues are one type.
 
 **Both agents:**
 - **Task-driven execution:** same as Writer (step 4)
-- Use docs-mcp-server (see `references/docs-mcp.md`)
+- Read `references/writer-patterns.md`
 - Watch for coverage regression when deleting tests
 
 After fixing:
@@ -213,17 +211,13 @@ python ${CLAUDE_SKILL_DIR}/scripts/validate_fix.py <project_root> <provider>.dar
 python tools/scripts/run_tester.py <provider>.dart --integrity
 ```
 - **PASS** → if round 1: Simplify (step 8) → Review round 2 (step 7). If round 2: Finalize.
-- **FAIL** → fail counter check (step 6). If <2: diagnoza → fix → re-test. If >=2: escalate.
+- **FAIL** → fail counter check (step 6). If <2: diagnosis → fix → re-test. If >=2: escalate.
 
 ### Finalize
 ```bash
 PYTHONIOENCODING=utf-8 python tools/scripts/update_memory.py <provider>.dart done --coverage 100
 rm tools/prompts/fixes/<stem>_fix.md          # if exists
 rm tools/prompts/fixes/<stem>_fail_fix.md     # if exists
-```
-Refresh sideswap docs in background:
-```
-mcp__docs-mcp-server__refresh_version(library: "sideswap")
 ```
 
 ### Report (orchestrator Bash)
@@ -240,8 +234,8 @@ PYTHONUTF8=1 python ${CLAUDE_SKILL_DIR}/scripts/format_report.py <provider>.dart
 |------|-------|------|-----------------|
 | Writer mechanical | haiku | general-purpose | 1 |
 | Writer structural | sonnet | general-purpose | 1 |
-| Diagnosis | sonnet | superpowers:code-reviewer | 1 |
-| Quality review | sonnet | superpowers:code-reviewer | 2 (round 1 + 2) |
+| Diagnosis | sonnet | general-purpose | 1 |
+| Quality review | sonnet | general-purpose | 2 (round 1 + 2) |
 | Simplify | inherited | code-simplifier | 1 |
 | Fix mechanical | haiku | general-purpose | 2 (after R1 + R2) |
 | Fix structural | sonnet | general-purpose | 2 (after R1 + R2) |

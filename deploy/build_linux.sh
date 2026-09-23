@@ -22,14 +22,14 @@ mkdir deps
 pushd deps
 
 echo "Downloading Flutter. This may take some time..."
-curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.6-stable.tar.xz \
+curl -s https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.4-stable.tar.xz \
  | tar -xJ -C ./
 chown -R "$(whoami)" ./flutter
 
 echo "Building sideswap rust library..."
 git clone https://github.com/sideswap-io/sideswap_rust
 pushd sideswap_rust
-git checkout 612474f05ee908c4c3fe2ec021ed13d79a7e7ecd
+git checkout 9ceeb0906f82e3d7aa41af8b7ee4b94480abd181
 cargo build --release --package sideswap_client
 popd
 

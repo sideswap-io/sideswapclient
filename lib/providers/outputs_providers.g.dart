@@ -90,7 +90,7 @@ final class OutputsReaderNotifierProvider
 }
 
 String _$outputsReaderNotifierHash() =>
-    r'3ae7a8456be8e212e7d881c5fce69956682d4759';
+    r'4039a0cd9a999da775a1cfca962f6409f42012b0';
 
 abstract class _$OutputsReaderNotifier
     extends $Notifier<Either<OutputsError, OutputsData>> {
@@ -154,7 +154,7 @@ final class OutputsCreatorProvider
   }
 }
 
-String _$outputsCreatorHash() => r'ca25f35d383b0d9c8a132a666c34f25edf7fd819';
+String _$outputsCreatorHash() => r'5c423e6191a108ae7ee3a649c82345e562fc5cb5';
 
 abstract class _$OutputsCreator
     extends $Notifier<Either<OutputsError, OutputsData>> {

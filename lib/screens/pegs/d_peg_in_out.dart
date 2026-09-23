@@ -9,6 +9,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/peg_in_info_lines.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -21,6 +22,26 @@ import 'package:sideswap/screens/swap/widgets/swap_receive_amount.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+/// The height the peg card is designed for.
+const double kPegCardHeight = 680;
+
+/// The chrome above the peg body inside the card: 18, the 40 px
+/// [TopPegButtons], and 24.
+const double _pegChromeHeight = 18 + 40 + 24;
+
+/// The height the peg body has at the design window, and the height its
+/// scroll owner lays it out at everywhere.
+const double _pegBodyDesignHeight = kPegCardHeight - _pegChromeHeight;
+
+/// The pinned peg-out action: [SwapBottomButton]'s 4 px of top padding and
+/// its 54 px button, plus the 24 px below it.
+const double _pegOutActionHeight = 4 + 54 + 24;
+
+/// The height the peg-out form above the pinned action has at the design
+/// window.
+const double _pegOutFormDesignHeight =
+    _pegBodyDesignHeight - _pegOutActionHeight;
+
 class DPegInOut extends HookConsumerWidget {
   const DPegInOut({super.key});
   @override
@@ -28,12 +49,16 @@ class DPegInOut extends HookConsumerWidget {
     final swapType = ref.watch(swapTypeProvider);
     final pegRepository = ref.watch(pegRepositoryProvider);
 
+    // Every mount-time side effect runs after the build, not during it:
+    // `getPegOutAmount` clears the swap network error, and a `ref.invalidate`
+    // raised from a build phase marks the enclosing `ProviderScope` as needing
+    // to build while the framework is already building.
     useEffect(() {
-      Future.microtask(() => ref.invalidate(swapPegAddressServerProvider));
-
-      pegRepository.setActivePage(activePage: ActivePage.PEG_IN);
-
-      pegRepository.getPegOutAmount();
+      Future.microtask(() {
+        pegRepository.setActivePage(activePage: ActivePage.PEG_IN);
+        pegRepository.getPegOutAmount();
+        ref.invalidate(swapPegAddressServerProvider);
+      });
       return;
     }, const []);
 
@@ -44,7 +69,7 @@ class DPegInOut extends HookConsumerWidget {
           children: [
             Container(
               width: 570,
-              height: 680,
+              height: kPegCardHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: SideSwapColors.prussianBlue,
@@ -57,8 +82,31 @@ class DPegInOut extends HookConsumerWidget {
                     child: TopPegButtons(),
                   ),
                   const SizedBox(height: 24),
+                  // The card is bounded here -- `Center` clamps its 680 px to
+                  // the viewport on a short window -- so the body's scroll
+                  // owner has the bounded parent it needs. `DPegOut` splits
+                  // its own body around its pinned action; `DPegIn` has no
+                  // action, so its whole body scrolls.
+                  //
+                  // The peg-in body is copy, and copy grows: a longer
+                  // translation or a larger font would be clipped by
+                  // `DScrollWhenShort`'s fixed box, whose scroll extent is
+                  // computed from the box and not from what overflows it. So
+                  // this is the shape ADR-0014 decision 10 prescribes for
+                  // growable content instead -- a *minimum* design height,
+                  // with the scroll body free to take its natural size.
                   swapType == SwapType.pegIn()
-                      ? Flexible(child: const DPegIn())
+                      ? Flexible(
+                          child: SingleChildScrollView(
+                            primary: false,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minHeight: _pegBodyDesignHeight,
+                              ),
+                              child: const DPegIn(),
+                            ),
+                          ),
+                        )
                       : Flexible(child: const DPegOut()),
                 ],
               ),
@@ -284,9 +332,8 @@ class DPegInAddressBox extends HookConsumerWidget {
                                     },
                               child: Text(
                                 'Generate address'.tr(),
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.labelMedium?.copyWith(fontSize: 13),
+                                style: Theme.of(context).textTheme.labelMedium
+                                    ?.copyWith(fontSize: 13),
                               ),
                             ),
                             if (swapState == const SwapState.sent()) ...[
@@ -321,9 +368,8 @@ class DPegInAddressBox extends HookConsumerWidget {
                               const SizedBox(width: 8),
                               Text(
                                 'Copy address'.tr(),
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.labelMedium?.copyWith(fontSize: 13),
+                                style: Theme.of(context).textTheme.labelMedium
+                                    ?.copyWith(fontSize: 13),
                               ),
                             ],
                           ),
@@ -390,15 +436,31 @@ class DPegOut extends HookConsumerWidget {
         ),
         Column(
           children: [
-            const SizedBox(height: 5),
-            SizedBox(
-              height: 109,
-              child: SwapDeliverAmount(deliverFocusNode: deliverFocusNode),
+            // The form scrolls; the action below it does not. The `Stack`'s
+            // first child still paints the blumine backdrop across the whole
+            // body, so the button sits on it exactly as it did behind the
+            // `Spacer()` this replaces. ADR-0014 decisions 8 and 11.
+            Flexible(
+              child: DScrollWhenShort(
+                height: _pegOutFormDesignHeight,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    SizedBox(
+                      height: 109,
+                      child: SwapDeliverAmount(
+                        deliverFocusNode: deliverFocusNode,
+                      ),
+                    ),
+                    SwapMiddleIcon(
+                      onTap: ref.read(swapHelperProvider).toggleAssets,
+                    ),
+                    const SizedBox(height: 6),
+                    const SwapReceiveAmount(),
+                  ],
+                ),
+              ),
             ),
-            SwapMiddleIcon(onTap: ref.read(swapHelperProvider).toggleAssets),
-            const SizedBox(height: 6),
-            const SwapReceiveAmount(),
-            const Spacer(),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: SwapBottomButton(),

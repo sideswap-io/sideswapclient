@@ -12,7 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -21,12 +20,8 @@ import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+import '../helpers/test_utils.dart';
 import '../utils.dart';
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
 
 class MockCacheManager extends Mock implements CacheManager {}
 
@@ -62,7 +57,7 @@ class _FakePathProviderPlatform extends PathProviderPlatform {
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     registerFallbackValue(Uint8List(0));
   });
 

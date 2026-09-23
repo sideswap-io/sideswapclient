@@ -994,6 +994,34 @@ void main() {
       expect(orders.first.toString(), contains('InternalUiOrder'));
     });
 
+    test('an order equals itself', () {
+      final assetPair = AssetPair(base: 'BTC', quote: 'USD');
+      final publicOrder = PublicOrder(
+        assetPair: assetPair,
+        tradeDir: TradeDir.BUY,
+        amount: Int64(1000),
+        price: 50000.0,
+      );
+      final satoshiRepository = MockSatoshiRepository();
+
+      final container = ProviderContainer.test(
+        overrides: [
+          marketSubscribedAssetPairProvider.overrideWithValue(
+            Option.of(assetPair),
+          ),
+          debouncedMarketPublicOrdersProvider.overrideWithValue(
+            {assetPair: [publicOrder]},
+          ),
+          marketOwnOrdersProvider.overrideWithValue([]),
+          satoshiRepositoryProvider.overrideWithValue(satoshiRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final order = container.read(internalUiOrdersProvider).toList().first;
+      expect(order == order, isTrue);
+    });
+
     test('orders with same fields are equal', () {
       final assetPair = AssetPair(base: 'BTC', quote: 'USD');
       final publicOrder = PublicOrder(

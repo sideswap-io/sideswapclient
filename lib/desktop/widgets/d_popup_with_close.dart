@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 
 part 'd_popup_with_close.freezed.dart';
 
@@ -19,6 +20,8 @@ class DPopupWithClose extends StatelessWidget {
     this.height,
     this.onClose,
     this.alignment = AlignmentDirectional.topStart,
+    this.actions,
+    this.scrollOwner = ScrollOwner.wrapper,
   });
 
   final Widget child;
@@ -26,6 +29,21 @@ class DPopupWithClose extends StatelessWidget {
   final double? height;
   final VoidCallback? onClose;
   final AlignmentGeometry alignment;
+
+  /// The popup's action, laid out below [child] and outside the scroll region.
+  ///
+  /// It is *pinned* -- visible however short the window is -- because [child]
+  /// carries the `Flexible` that yields the shortfall.
+  ///
+  /// The body is laid out in a column, so [alignment] places that column
+  /// rather than the body itself; a surface that needs a non-default
+  /// horizontal placement aligns inside its own [child].
+  final Widget? actions;
+
+  /// Which widget owns this surface's scrollable. Under [ScrollOwner.wrapper]
+  /// and [ScrollOwner.child] the [child] becomes flexible while [actions]
+  /// stays unflexed.
+  final ScrollOwner scrollOwner;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +56,8 @@ class DPopupWithClose extends StatelessWidget {
         height: height,
         onClose: onClose,
         alignment: alignment,
+        actions: actions,
+        scrollOwner: scrollOwner,
         child: child,
       ),
       _ => Scaffold(
@@ -46,6 +66,8 @@ class DPopupWithClose extends StatelessWidget {
           height: height,
           onClose: onClose,
           alignment: alignment,
+          actions: actions,
+          scrollOwner: scrollOwner,
           child: child,
         ),
       ),
@@ -61,6 +83,8 @@ class DPopupWithCloseContent extends StatelessWidget {
     this.height,
     this.onClose,
     this.alignment = AlignmentDirectional.topStart,
+    this.actions,
+    this.scrollOwner = ScrollOwner.wrapper,
   });
 
   final Widget child;
@@ -69,8 +93,49 @@ class DPopupWithCloseContent extends StatelessWidget {
   final VoidCallback? onClose;
   final AlignmentGeometry alignment;
 
+  /// The popup's action, laid out below [child] and outside the scroll region.
+  ///
+  /// It is *pinned* -- visible however short the window is -- because [child]
+  /// carries the `Flexible` that yields the shortfall.
+  ///
+  /// The body is laid out in a column, so [alignment] places that column
+  /// rather than the body itself; a surface that needs a non-default
+  /// horizontal placement aligns inside its own [child].
+  final Widget? actions;
+
+  /// Which widget owns this surface's scrollable.
+  final ScrollOwner scrollOwner;
+
   @override
   Widget build(BuildContext context) {
+    final closeButton = DIconButton(
+      icon: const Icon(Icons.close, color: SideSwapColors.freshAir, size: 18),
+      onPressed:
+          onClose ??
+          () {
+            Navigator.pop(context);
+          },
+    );
+
+    // The body as it sits in the column: `wrapper` adds both halves of the
+    // contract, `child` supplies the `Flexible` only and leaves the scrollable
+    // to the content.
+    final columnBody = Flexible(
+      fit: FlexFit.loose,
+      child: switch (scrollOwner) {
+        ScrollOwner.wrapper => SingleChildScrollView(
+          primary: false,
+          child: child,
+        ),
+        ScrollOwner.child => child,
+      },
+    );
+
+    final stackBody = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [columnBody, ?actions],
+    );
+
     return Center(
       child: Material(
         borderRadius: BorderRadius.circular(8),
@@ -86,26 +151,10 @@ class DPopupWithCloseContent extends StatelessWidget {
             child: Stack(
               alignment: alignment,
               children: [
-                child,
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: DIconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: SideSwapColors.freshAir,
-                        size: 18,
-                      ),
-                      onPressed: switch (onClose) {
-                        final onClose? => onClose,
-                        _ => () {
-                          Navigator.pop(context);
-                        },
-                      },
-                    ),
-                  ),
-                ),
+                stackBody,
+                // Positioned rather than an Align that expands to fill the
+                // popup, so the close button cannot claim the popup's size.
+                Positioned(top: 20, right: 20, child: closeButton),
               ],
             ),
           ),

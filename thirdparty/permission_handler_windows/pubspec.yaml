@@ -1,0 +1,31 @@
+# This is a vendored copy of Baseflow's `permission_handler_windows`, carrying a
+# single patch. Do not edit it casually -- see UPSTREAM.md and
+# docs/adr/0007-vendored-permission-handler-windows.md before changing anything,
+# and note that the root pubspec.yaml substitutes this package for the pub.dev one
+# through `dependency_overrides`, which ignores version constraints silently.
+name: permission_handler_windows
+description: Permission plugin for Flutter. This plugin provides the Windows API to request and check permissions.
+version: 0.2.2
+homepage: https://github.com/baseflow/flutter-permission-handler
+publish_to: "none"
+
+flutter:
+  plugin:
+    implements: permission_handler
+    platforms:
+      windows:
+        pluginClass: PermissionHandlerWindowsPlugin
+
+dependencies:
+  flutter:
+    sdk: flutter
+  permission_handler_platform_interface: ^4.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.0
+
+environment:
+  sdk: ^3.6.0
+  flutter: ">=3.24.0"

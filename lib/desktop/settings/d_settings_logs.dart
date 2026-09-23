@@ -8,6 +8,7 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class DSettingsLogs extends ConsumerWidget {
@@ -135,6 +136,7 @@ class DSettingsLogs extends ConsumerWidget {
         ],
         style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 693),
+        scrollOwner: ScrollOwner.wrapper,
       ),
     );
   }

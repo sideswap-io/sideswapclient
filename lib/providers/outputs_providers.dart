@@ -89,6 +89,7 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
   Future<bool> decodeJsonString(String jsonString) async {
     try {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
+      final receivers = json['receivers'];
 
       return switch (json) {
         {'type': String type} when type != 'sideswap_app' => () {
@@ -98,6 +99,15 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
         {'version': String version} when version != '2' => () {
           state = Left(
             OutputsErrorWrongVersionOfFile('Wrong version of file'.tr()),
+          );
+          return false;
+        }(),
+        // A payload with no receivers is invalid, and is refused at decode.
+        {'type': 'sideswap_app', 'version': '2'}
+            when receivers == null ||
+                (receivers is List && receivers.isEmpty) => () {
+          state = Left(
+            OutputsErrorFileStructureError('File structure error'.tr()),
           );
           return false;
         }(),
@@ -136,7 +146,7 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
 
     try {
       final fileString = await xFile.readAsString();
-      return decodeJsonString(fileString);
+      return await decodeJsonString(fileString);
     } catch (e) {
       logger.e(e);
       state = Left(

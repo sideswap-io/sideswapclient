@@ -37,6 +37,10 @@ class EditOrderErrorListener extends HookConsumerWidget {
       return;
     }, [editOrderError]);
 
-    return Container();
+    // A listener occupies no space. A bare `Container()` expands to the
+    // biggest size its constraints allow, so under the bounded parent
+    // `DTxAndOrdersPanel` now has it would size that panel's `Stack` to the
+    // whole bound instead of to the panel itself.
+    return const SizedBox.shrink();
   }
 }

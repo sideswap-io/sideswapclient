@@ -525,14 +525,7 @@ class SelectedInputsNotifier extends _$SelectedInputsNotifier {
     state = utxos;
   }
 
-  bool _contains(UtxosItem? item) {
-    if (item == null) {
-      return false;
-    }
-
-    final utxos = [...state];
-    return utxos.any((element) => element == item);
-  }
+  bool _contains(UtxosItem item) => state.contains(item);
 }
 
 @riverpod

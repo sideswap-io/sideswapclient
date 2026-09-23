@@ -5,6 +5,7 @@ import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 
 class DContentDialog extends ConsumerWidget {
   const DContentDialog({
@@ -15,6 +16,7 @@ class DContentDialog extends ConsumerWidget {
     this.style,
     this.constraints = const BoxConstraints(maxWidth: 368),
     this.alignment,
+    this.scrollOwner = ScrollOwner.wrapper,
   });
 
   final Widget? title;
@@ -24,12 +26,62 @@ class DContentDialog extends ConsumerWidget {
   final BoxConstraints constraints;
   final AlignmentGeometry? alignment;
 
+  /// Which widget owns this surface's scrollable. Under [ScrollOwner.wrapper]
+  /// and [ScrollOwner.child] the [content] becomes flexible, while [title] and
+  /// [actions] stay unflexed and outside the scroll body, so the primary
+  /// action never hides behind a scrollbar.
+  ///
+  /// The value is fixed by the call site, so the tree it selects never changes
+  /// while the window is resized.
+  final ScrollOwner scrollOwner;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dialogTheme = ref.watch(desktopAppThemeProvider).dialogTheme;
     final style = DContentDialogThemeData.standard().merge(
       dialogTheme.merge(this.style),
     );
+    final content = this.content;
+    final contentSlot = content == null
+        ? null
+        : Padding(
+            padding: style.bodyPadding ?? EdgeInsets.zero,
+            child: DefaultTextStyle(
+              style: style.bodyStyle ?? const TextStyle(),
+              // The scroll view sits innermost, so `bodyPadding` frames the
+              // scroll region instead of scrolling with it.
+              child: switch (scrollOwner) {
+                ScrollOwner.wrapper => SingleChildScrollView(
+                  primary: false,
+                  child: content,
+                ),
+                ScrollOwner.child => content,
+              },
+            ),
+          );
+
+    final titleAndContent = Padding(
+      padding: style.padding ?? EdgeInsets.zero,
+      child: Column(
+        // The inner column must be `min`, or it eats the height its
+        // `Flexible` parent was about to hand back.
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null)
+            Padding(
+              padding: style.titlePadding ?? EdgeInsets.zero,
+              child: DefaultTextStyle(
+                style: style.titleStyle ?? const TextStyle(),
+                child: title!,
+              ),
+            ),
+          if (contentSlot != null)
+            Flexible(fit: FlexFit.loose, child: contentSlot),
+        ],
+      ),
+    );
+
     return Align(
       alignment: alignment ?? Alignment.center,
       child: Container(
@@ -39,30 +91,7 @@ class DContentDialog extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: style.padding ?? EdgeInsets.zero,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (title != null)
-                    Padding(
-                      padding: style.titlePadding ?? EdgeInsets.zero,
-                      child: DefaultTextStyle(
-                        style: style.titleStyle ?? const TextStyle(),
-                        child: title!,
-                      ),
-                    ),
-                  if (content != null)
-                    Padding(
-                      padding: style.bodyPadding ?? EdgeInsets.zero,
-                      child: DefaultTextStyle(
-                        style: style.bodyStyle ?? const TextStyle(),
-                        child: content!,
-                      ),
-                    ),
-                ],
-              ),
-            ),
+            Flexible(fit: FlexFit.loose, child: titleAndContent),
             if (actions != null)
               Container(
                 decoration: style.actionsDecoration,

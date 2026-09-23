@@ -14,6 +14,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:window_manager/window_manager.dart';
@@ -129,83 +130,78 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                     },
                   ),
                   content: Center(
-                    child: SizedBox(
-                      height: 430,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 40),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
-                                  .tr(args: [wordCount.toString()]),
-                            ),
-                            const SizedBox(height: 24),
-                            Flexible(
-                              child: Scrollbar(
-                                thumbVisibility: true,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Your {} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
+                                .tr(args: [wordCount.toString()]),
+                          ),
+                          const SizedBox(height: 24),
+                          Flexible(
+                            child: Scrollbar(
+                              thumbVisibility: true,
+                              controller: scrollController,
+                              child: CustomScrollView(
                                 controller: scrollController,
-                                child: CustomScrollView(
-                                  controller: scrollController,
-                                  slivers: [
-                                    SliverToBoxAdapter(
-                                      child: DMnemonicTable(
-                                        enabled: false,
-                                        itemsCount: wordCount,
-                                      ),
+                                slivers: [
+                                  SliverToBoxAdapter(
+                                    child: DMnemonicTable(
+                                      enabled: false,
+                                      itemsCount: wordCount,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 24),
-                            Consumer(
-                              builder: (context, ref, child) {
-                                final enabled = ref.watch(
-                                  isCopyEnabledProvider,
-                                );
+                          ),
+                          const SizedBox(height: 24),
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final enabled = ref.watch(isCopyEnabledProvider);
 
-                                return Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    DButton(
-                                      onPressed: enabled
-                                          ? () {
-                                              Actions.maybeInvoke<
-                                                CopyMnemonicIntent
-                                              >(
-                                                context,
-                                                const CopyMnemonicIntent(),
-                                              );
-                                            }
-                                          : null,
-                                      child: SizedBox(
-                                        height: 34,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SvgPicture.asset(
-                                                'assets/copy3.svg',
-                                                width: 16,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text('Copy mnemonic'.tr()),
-                                            ],
-                                          ),
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  DButton(
+                                    onPressed: enabled
+                                        ? () {
+                                            Actions.maybeInvoke<
+                                              CopyMnemonicIntent
+                                            >(
+                                              context,
+                                              const CopyMnemonicIntent(),
+                                            );
+                                          }
+                                        : null,
+                                    child: SizedBox(
+                                      height: 34,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/copy3.svg',
+                                              width: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text('Copy mnemonic'.tr()),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  ],
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ),
                     ),
                   ),
@@ -223,7 +219,23 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                   style: const DContentDialogThemeData().merge(
                     defaultDialogTheme,
                   ),
-                  constraints: const BoxConstraints(maxWidth: 580),
+                  // 735 is this dialog's measured natural height in its
+                  // tallest realistic state -- a 24-word recovery phrase --
+                  // plus the title and actions chrome. The removed `SizedBox`
+                  // fixed the body at 430, which is 118 px short of that, so
+                  // carrying 430 forward would have kept a 24-word phrase
+                  // scrolling at the design height with room to spare: the
+                  // needless scrollbar ADR-0014 decision 10 warns about. The
+                  // height is now recorded once, here, and the body takes the
+                  // room the bound leaves it. See ADR-0014 decision 8.
+                  constraints: const BoxConstraints(
+                    maxWidth: 580,
+                    maxHeight: 735,
+                  ),
+                  // The body already owns a `Scrollbar` over a
+                  // `CustomScrollView`; the wrapper must not nest a second
+                  // owner inside it. See ADR-0014 decision 9.
+                  scrollOwner: ScrollOwner.child,
                 ),
               );
             },

@@ -17,6 +17,7 @@ import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
+import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/swap_providers.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -24,8 +25,6 @@ import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/pegs/d_peg_in_out.dart';
-
-final pageStorageBucket = PageStorageBucket();
 
 class DesktopWalletMain extends HookConsumerWidget {
   const DesktopWalletMain({super.key});
@@ -46,6 +45,7 @@ class DesktopWalletMain extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final walletMainArguments = ref.watch(uiStateArgsProvider);
+    final pageStorageBucket = ref.watch(pageStorageBucketProvider);
 
     return SideSwapScaffoldPage(
       header: const TopToolbar(),

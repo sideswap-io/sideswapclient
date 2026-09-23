@@ -24,20 +24,13 @@ import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
-import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
-class DAddresses extends HookConsumerWidget {
+class DAddresses extends ConsumerWidget {
   const DAddresses({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAddresses = ref.watch(filteredAddressesAsyncProvider);
-
-    useEffect(() {
-      Future.microtask(() => ref.invalidate(pageStorageKeyDataProvider));
-
-      return;
-    }, const []);
 
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 23),
@@ -70,8 +63,6 @@ class DAddressesList extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAddresses = ref.watch(filteredAddressesAsyncProvider);
-    final pageStorageKeyData = ref.watch(pageStorageKeyDataProvider);
-    final storageKey = useMemoized(() => PageStorageKey(pageStorageKeyData));
     final flexes = [60, 80, 45, 500, 60, 110];
     final scrollController = useScrollController();
 
@@ -108,7 +99,7 @@ class DAddressesList extends HookConsumerWidget {
                 controller: scrollController,
                 child: CustomScrollView(
                   controller: scrollController,
-                  key: storageKey,
+                  key: const PageStorageKey('addresses'),
                   slivers: [
                     SliverList.builder(
                       itemBuilder: (context, index) {

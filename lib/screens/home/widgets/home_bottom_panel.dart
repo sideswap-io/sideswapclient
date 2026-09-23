@@ -23,12 +23,6 @@ class HomeBottomPanel extends ConsumerWidget {
       logger.d(next);
       (switch (next) {
         QrCodeResultModelData() => () {
-          if (next.result?.outputsData != null) {
-            // go to the confirm transaction page directly
-            ref.read(paymentHelperProvider).outputsPaymentSend();
-            return;
-          }
-
           Future.microtask(() {
             ref
                 .read(paymentAmountPageArgumentsProvider.notifier)

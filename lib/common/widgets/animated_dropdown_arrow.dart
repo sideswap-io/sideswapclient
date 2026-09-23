@@ -28,6 +28,12 @@ class AnimatedDropdownArrow extends StatelessWidget {
         )
         .animate(
           target: target,
+          // Not redundant with target, and not dead: Animate starts its
+          // internal controller at 0, then animates to target. A caller that
+          // rests at target 1 would therefore turn the arrow half a circle
+          // every time it is mounted. This callback puts the controller at
+          // initFrom first, so the distance to travel is zero.
+          // test/widgets/animated_dropdown_arrow_test.dart holds this.
           onInit: (controller) {
             controller.forward(from: initFrom);
           },

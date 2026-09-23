@@ -37,11 +37,17 @@ class DPinKeyboard extends HookConsumerWidget {
     this.width,
     this.height,
     this.acceptType = PinKeyboardAcceptType.icon,
+    this.enabled = true,
   });
 
   final PinKeyboardAcceptType acceptType;
   final double? width;
   final double? height;
+
+  /// Every key shows the same state as the fields. Each button renders its own
+  /// disabled appearance; the grid is not dimmed as one block. ADR-0013
+  /// decision 10.
+  final bool enabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,8 +69,17 @@ class DPinKeyboard extends HookConsumerWidget {
         ?.merge(
           DButtonStyle(
             border: ButtonState.resolveWith((states) {
-              return const BorderSide(color: Color(0xFF5F9EC4), width: 1);
+              return BorderSide(
+                color: states.isDisabled
+                    ? const Color(0xFF5F9EC4).withValues(alpha: 0.5)
+                    : const Color(0xFF5F9EC4),
+                width: 1,
+              );
             }),
+            // No colour branch here: `DBaseButton` overwrites the resolved
+            // text colour with `foregroundColor`
+            // (`d_base_button.dart:168-170`), which already dims on
+            // `isDisabled`. Only the border is this style's to state.
             textStyle: ButtonState.all(
               const TextStyle(
                 fontSize: 18,
@@ -106,9 +121,13 @@ class DPinKeyboard extends HookConsumerWidget {
           Widget child = Container();
           switch (index) {
             case 9:
-              child = const Icon(
+              child = Icon(
                 Icons.backspace_outlined,
-                color: SideSwapColors.brightTurquoise,
+                // The style resolvers reach the border and the label; an icon
+                // carries its own colour, so each icon key dims its own glyph.
+                color: enabled
+                    ? SideSwapColors.brightTurquoise
+                    : SideSwapColors.brightTurquoise.withValues(alpha: 0.5),
                 size: 24,
               );
               break;
@@ -121,9 +140,11 @@ class DPinKeyboard extends HookConsumerWidget {
 
               switch (acceptType) {
                 case PinKeyboardAcceptType.icon:
-                  child = const Icon(
+                  child = Icon(
                     Icons.keyboard_return,
-                    color: Colors.white,
+                    color: enabled
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.5),
                     size: 24,
                   );
                   break;
@@ -151,6 +172,7 @@ class DPinKeyboard extends HookConsumerWidget {
             itemHeight: itemHeight,
             buttonStyle: buttonStyle,
             index: index,
+            enabled: enabled,
             child: child,
           );
         }),
@@ -167,6 +189,7 @@ class DAnimatedPinButton extends HookConsumerWidget {
     required this.buttonStyle,
     required this.child,
     required this.index,
+    this.enabled = true,
   });
 
   final double itemWidth;
@@ -174,6 +197,7 @@ class DAnimatedPinButton extends HookConsumerWidget {
   final DButtonStyle? buttonStyle;
   final Widget child;
   final int index;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -205,6 +229,7 @@ class DAnimatedPinButton extends HookConsumerWidget {
       width: itemWidth,
       height: itemHeight,
       padding: EdgeInsets.zero,
+      enabled: enabled,
       onPressed: () {
         ref.read(pinKeyboardHelperProvider).keyPressed(index);
         ref.watch(pinKeyboardIndexProvider).pinIndex = index + 1;

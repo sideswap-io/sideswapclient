@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -11,10 +10,7 @@ import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
+import '../helpers/test_utils.dart';
 
 // Mock classes
 class MockSideswapWallet extends Mock implements SideswapWallet {}
@@ -43,7 +39,7 @@ class FakePinHelper extends Fake implements PinHelper {
 
 void main() {
   setUpAll(() {
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
   group('PinProtectionStateNotifier', () {
     late ProviderContainer container;

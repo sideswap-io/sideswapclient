@@ -1,21 +1,15 @@
 PODS:
   - FlutterMacOS (1.0.0)
-  - window_size (0.0.2):
-    - FlutterMacOS
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
-  - window_size (from `Flutter/ephemeral/.symlinks/plugins/window_size/macos`)
 
 EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral
-  window_size:
-    :path: Flutter/ephemeral/.symlinks/plugins/window_size/macos
 
 SPEC CHECKSUMS:
-  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
-  window_size: 4bd15034e6e3d0720fd77928a7c42e5492cfece9
+  FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
 
 PODFILE CHECKSUM: 0d3963a09fc94f580682bd88480486da345dc3f0
 

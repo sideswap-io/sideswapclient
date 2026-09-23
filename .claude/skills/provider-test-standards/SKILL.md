@@ -209,11 +209,6 @@ before verifying — computed rebuilds are async.
 ## Coverage requirement
 
 Every provider must reach **100% line and branch coverage**.
-
-```bash
-flutter test test/providers/<file>_test.dart --coverage
-dart run coverage:format_coverage \
-  --lcov --in=coverage --out=coverage/lcov.info \
-  --report-on=lib/providers/
-# No DA:<n>,0 entries for lib/providers/<file>.dart = 100% covered
-```
+Run `dart run tools/coverage.dart` and read the figure out of the report.
+`docs/TESTING.md` is authoritative: it defines the exemptions and states that the
+figure binds on Windows.

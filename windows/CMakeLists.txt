@@ -68,6 +68,51 @@ set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}")
 install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
   COMPONENT Runtime)
 
+# Copy sideswap_client.dll (and the MinGW runtime DLLs sitting beside it) next
+# to the runner executable, so `flutter build windows` / `flutter run -d
+# windows` produce a working exe without a manual copy step. The library is
+# taken from the cargo target dir of the sideswap_rust checkout, or, for
+# developers who do not build it themselves, from windows/lib/ (a manual drop
+# location, gitignored - the Android jniLibs/ equivalent).
+#
+# This block is declared before the engine and plugin installs below, so a
+# drop directory that also holds flutter_windows.dll or a plugin DLL cannot
+# overwrite the versions this build produced.
+#
+# A missing library is a warning, not an error: the app builds without it (it
+# will fail to start), and builds that provide the DLL some other way must
+# keep working. Everything below is resolved at install time, not configure
+# time, because the Visual Studio generator is multi-config, so
+# CMAKE_BUILD_TYPE is empty when this file is configured.
+install(CODE "
+  if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" STREQUAL \"Debug\")
+    set(cargo_profile \"debug\")
+  else()
+    set(cargo_profile \"release\")
+  endif()
+  if(DEFINED ENV{SIDESWAP_RUST_DIR} AND NOT \"\$ENV{SIDESWAP_RUST_DIR}\" STREQUAL \"\")
+    set(rust_root \"\$ENV{SIDESWAP_RUST_DIR}\")
+  else()
+    set(rust_root \"${CMAKE_CURRENT_SOURCE_DIR}/../../sideswap_rust\")
+  endif()
+  set(cargo_src_dir \"\${rust_root}/target/\${cargo_profile}\")
+  set(manual_src_dir \"${CMAKE_CURRENT_SOURCE_DIR}/lib\")
+  if(EXISTS \"\${cargo_src_dir}/sideswap_client.dll\")
+    set(src_dir \"\${cargo_src_dir}\")
+  elseif(EXISTS \"\${manual_src_dir}/sideswap_client.dll\")
+    set(src_dir \"\${manual_src_dir}\")
+  else()
+    set(src_dir \"\")
+  endif()
+  if(src_dir)
+    file(GLOB dlls \"\${src_dir}/*.dll\")
+    file(COPY \${dlls} DESTINATION \"${INSTALL_BUNDLE_LIB_DIR}\")
+    message(STATUS \"Copied DLLs from \${src_dir} to ${INSTALL_BUNDLE_LIB_DIR}\")
+  else()
+    message(WARNING \"sideswap_client.dll not found at \${cargo_src_dir}/sideswap_client.dll nor at \${manual_src_dir}/sideswap_client.dll - run the 'Sideswap: cargo sideswap_client (desktop)' task for a Debug build, or 'cargo build -p sideswap_client --release' in the sideswap_rust checkout, or drop a prebuilt DLL into windows/lib/, or the app will fail on the login screen\")
+  endif()
+  " COMPONENT Runtime)
+
 install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   COMPONENT Runtime)
 

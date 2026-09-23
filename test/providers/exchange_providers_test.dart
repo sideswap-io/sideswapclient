@@ -3,7 +3,6 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
@@ -18,6 +17,8 @@ import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+import '../helpers/test_utils.dart';
+
 // Mock implementations
 class MockWallet extends Mock implements SideswapWallet {}
 
@@ -28,11 +29,6 @@ class MockAmountToString extends Mock implements AmountToString {}
 
 class MockJadeLockRepository extends Mock
     implements AbstractJadeLockRepository {}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
 
 void _registerFallbackValues() {
   registerFallbackValue(To());
@@ -73,7 +69,7 @@ MarketInfo createTestMarketInfo({
 
 void main() {
   setUpAll(() {
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     _registerFallbackValues();
     registerFallbackValue(AmountToStringParameters(amount: 0));
   });
@@ -854,6 +850,65 @@ void main() {
       addTearDown(container.dispose);
 
       expect(container.read(exchangeQuoteProvider), Option.none());
+    });
+  });
+
+  group('ExchangeQuoteNotifier keep-alive', () {
+    test('keeps the current edit asset alive while the quote is watched', () async {
+      final asset = Asset(assetId: 'BTC', precision: 8);
+      asset.freeze();
+      final container = ProviderContainer.test(
+        overrides: [quoteEventProvider.overrideWithValue(Option.none())],
+      );
+      addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        exchangeQuoteProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      container
+          .read(exchangeCurrentEditAssetProvider.notifier)
+          .setState(Option.of(asset));
+      await container.pump();
+
+      expect(
+        container.read(exchangeCurrentEditAssetProvider),
+        Option.of(asset),
+      );
+    });
+
+    test('drops the current edit asset once the quote is unwatched', () async {
+      final asset = Asset(assetId: 'BTC', precision: 8);
+      asset.freeze();
+      final container = ProviderContainer.test(
+        overrides: [quoteEventProvider.overrideWithValue(Option.none())],
+      );
+      addTearDown(container.dispose);
+
+      final subscription = container.listen(
+        exchangeQuoteProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      container
+          .read(exchangeCurrentEditAssetProvider.notifier)
+          .setState(Option.of(asset));
+      await container.pump();
+      expect(
+        container.read(exchangeCurrentEditAssetProvider),
+        Option.of(asset),
+      );
+
+      subscription.close();
+      container
+          .read(exchangeCurrentEditAssetProvider.notifier)
+          .setState(Option.of(asset));
+      await container.pump();
+
+      expect(container.read(exchangeCurrentEditAssetProvider), Option.none());
     });
   });
 

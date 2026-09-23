@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'notification_model.dart';
@@ -9,6 +9,7 @@ part of 'notification_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -66,7 +67,7 @@ class _$FCMPayloadCopyWithImpl<$Res>
 /// Create a copy of FCMPayload
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? type = freezed,Object? txid = freezed,Object? data = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMPayload(
 type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as FCMPayloadType?,txid: freezed == txid ? _self.txid : txid // ignore: cast_nullable_to_non_nullable
 as String?,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
@@ -329,7 +330,7 @@ class _$FCMNotificationCopyWithImpl<$Res>
 /// Create a copy of FCMNotification
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? title = freezed,Object? body = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMNotification(
 title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,body: freezed == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -589,7 +590,7 @@ class _$FCMDataCopyWithImpl<$Res>
 /// Create a copy of FCMData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? details = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMData(
 details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as FCMDetails?,
   ));
@@ -870,7 +871,7 @@ class _$FCMDetailsCopyWithImpl<$Res>
 /// Create a copy of FCMDetails
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? tx = freezed,Object? pegPayout = freezed,Object? pegDetected = freezed,Object? orderCancelled = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMDetails(
 tx: freezed == tx ? _self.tx : tx // ignore: cast_nullable_to_non_nullable
 as FCMTx?,pegPayout: freezed == pegPayout ? _self.pegPayout : pegPayout // ignore: cast_nullable_to_non_nullable
 as FCMPeg?,pegDetected: freezed == pegDetected ? _self.pegDetected : pegDetected // ignore: cast_nullable_to_non_nullable
@@ -1232,7 +1233,7 @@ class _$FCMTxCopyWithImpl<$Res>
 /// Create a copy of FCMTx
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? txType = freezed,Object? txId = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMTx(
 txType: freezed == txType ? _self.txType : txType // ignore: cast_nullable_to_non_nullable
 as FCMTxType?,txId: freezed == txId ? _self.txId : txId // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -1492,7 +1493,7 @@ class _$FCMPegCopyWithImpl<$Res>
 /// Create a copy of FCMPeg
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? orderId = freezed,Object? pegIn = freezed,Object? txHash = freezed,Object? vout = freezed,Object? createdAt = freezed,Object? payoutTxId = freezed,Object? payout = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMPeg(
 orderId: freezed == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
 as String?,pegIn: freezed == pegIn ? _self.pegIn : pegIn // ignore: cast_nullable_to_non_nullable
 as bool?,txHash: freezed == txHash ? _self.txHash : txHash // ignore: cast_nullable_to_non_nullable
@@ -1767,7 +1768,7 @@ class _$FCMOrderCancelledCopyWithImpl<$Res>
 /// Create a copy of FCMOrderCancelled
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? orderId = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMOrderCancelled(
 orderId: freezed == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -2024,7 +2025,7 @@ class _$FCMMessageCopyWithImpl<$Res>
 /// Create a copy of FCMMessage
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? notification = freezed,Object? data = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMMessage(
 notification: freezed == notification ? _self.notification : notification // ignore: cast_nullable_to_non_nullable
 as FCMNotification?,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as FCMData?,
@@ -2332,7 +2333,7 @@ class _$FCMRemoteMessageCopyWithImpl<$Res>
 /// Create a copy of FCMRemoteMessage
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? details = freezed,Object? body = freezed,Object? title = freezed,Object? data = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FCMRemoteMessage(
 details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as dynamic,body: freezed == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -2472,7 +2473,7 @@ return $default(_that.details,_that.body,_that.title,_that.data);case _:
 @JsonSerializable()
 
 class _FCMRemoteMessage implements FCMRemoteMessage {
-  const _FCMRemoteMessage({this.details, this.body, this.title, final  Map<String, dynamic>? data}): _data = data;
+  const _FCMRemoteMessage({this.details, this.body, this.title,  Map<String, dynamic>? data}): _data = data;
   factory _FCMRemoteMessage.fromJson(Map<String, dynamic> json) => _$FCMRemoteMessageFromJson(json);
 
 @override final  dynamic details;

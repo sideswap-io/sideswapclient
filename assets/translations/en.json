@@ -430,12 +430,14 @@
   "Register your AMP ID": "Register your AMP ID",
   "Tax ID": "Tax ID",
   "This asset has country restrictions": "This asset has country restrictions",
+  "This file can only be imported on desktop": "This file can only be imported on desktop",
   "Blocked countries": "Blocked countries",
   "Open the list": "Open the list",
   "DON'T SHOW AGAIN": "DON'T SHOW AGAIN",
   "Wrong PIN code. Two attempts left.": "Wrong PIN code. Two attempts left.",
   "Wrong PIN code. Last attempt left.\nIf the last attempt fails, the wallet will be deleted and can only be recovered using the recovery phrase.": "Wrong PIN code. Last attempt left.\nIf the last attempt fails, the wallet will be deleted and can only be recovered using the recovery phrase.",
   "Connection issues detected. Check your network connection and restart the app.": "Connection issues detected. Check your network connection and restart the app.",
+  "Could not unlock your wallet. Please try again.": "Could not unlock your wallet. Please try again.",
   "Address details": "Address details",
   "External": "External",
   "Index": "Index",
@@ -627,5 +629,6 @@
   "Native segwit": "Native segwit",
   "Nested segwit": "Nested segwit",
   "Copy descriptor": "Copy descriptor",
-  "The descriptor will be copied to your system clipboard and may remain there, outside SideSwap's control, until you clear it.": "The descriptor will be copied to your system clipboard and may remain there, outside SideSwap's control, until you clear it."
+  "The descriptor will be copied to your system clipboard and may remain there, outside SideSwap's control, until you clear it.": "The descriptor will be copied to your system clipboard and may remain there, outside SideSwap's control, until you clear it.",
+  "This is taking longer than usual. Close and reopen the app before trying again.": "This is taking longer than usual. Close and reopen the app before trying again."
 }

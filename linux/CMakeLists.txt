@@ -101,6 +101,57 @@ if(PLUGIN_BUNDLED_LIBRARIES)
     COMPONENT Runtime)
 endif()
 
+# Copy the rust client library into the bundle's lib/ directory.
+#
+# flutter run/build on Linux dlopen()s libsideswap_client.so by its bare
+# name, resolved via the executable's $ORIGIN/lib rpath (set above), so the
+# library must be present in INSTALL_BUNDLE_LIB_DIR for the app to start.
+#
+# The library is taken from the cargo target dir of the sideswap_rust
+# checkout (SIDESWAP_RUST_DIR env var, or the sibling ../../sideswap_rust),
+# or, for developers who do not build it themselves, from linux/lib/ (a
+# manual drop location, gitignored - the Android jniLibs/ equivalent).
+#
+# A missing library is a warning, not an error: the app still builds (it
+# will fail to start), and this must not break builds that provide the
+# library some other way.
+install(CODE "
+  if(\"\$ENV{SIDESWAP_RUST_DIR}\" STREQUAL \"\")
+    set(rust_root \"${CMAKE_CURRENT_SOURCE_DIR}/../../sideswap_rust\")
+  else()
+    set(rust_root \"\$ENV{SIDESWAP_RUST_DIR}\")
+  endif()
+
+  if(CMAKE_INSTALL_CONFIG_NAME)
+    set(cargo_config \"\${CMAKE_INSTALL_CONFIG_NAME}\")
+  else()
+    set(cargo_config \"${CMAKE_BUILD_TYPE}\")
+  endif()
+  if(cargo_config STREQUAL \"Debug\")
+    set(cargo_profile \"debug\")
+  else()
+    set(cargo_profile \"release\")
+  endif()
+
+  set(cargo_src \"\${rust_root}/target/\${cargo_profile}/libsideswap_client.so\")
+  set(manual_src \"${CMAKE_CURRENT_SOURCE_DIR}/lib/libsideswap_client.so\")
+
+  if(EXISTS \"\${cargo_src}\")
+    set(client_src \"\${cargo_src}\")
+  elseif(EXISTS \"\${manual_src}\")
+    set(client_src \"\${manual_src}\")
+  else()
+    set(client_src \"\")
+  endif()
+
+  if(client_src STREQUAL \"\")
+    message(WARNING \"libsideswap_client.so not found at \${cargo_src} nor at \${manual_src} - build it with 'cargo build -p sideswap_client' (add --release for a Profile or Release build) in the sideswap_rust checkout, or drop a prebuilt library into linux/lib/, or the app will fail on the login screen\")
+  else()
+    file(INSTALL \"\${client_src}\" DESTINATION \"${INSTALL_BUNDLE_LIB_DIR}\")
+    message(STATUS \"Copied \${client_src} -> ${INSTALL_BUNDLE_LIB_DIR}\")
+  endif()
+  " COMPONENT Runtime)
+
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.
 set(FLUTTER_ASSET_DIR_NAME "flutter_assets")

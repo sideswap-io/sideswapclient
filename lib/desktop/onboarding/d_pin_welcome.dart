@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
+import 'package:sideswap/desktop/onboarding/widgets/d_onboarding_block.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
@@ -32,67 +33,64 @@ class DPinWelcome extends HookConsumerWidget {
         ref.invalidate(firstLaunchStateProvider);
         ref.read(pageStatusProvider.notifier).setStatus(Status.noWallet);
       },
-      content: Center(
-        child: SizedBox(
-          height: 640,
-          child: Column(
-            children: [
-              const DPinWelcomeLogo(),
-              Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: Text(
-                  'Do you wish to set a PIN to protect your wallet?'.tr(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
+      content: DOnboardingBlock(
+        child: Column(
+          children: [
+            const DPinWelcomeLogo(),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: Text(
+                'Do you wish to set a PIN to protect your wallet?'.tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  'Protect your wallet with the PIN'.tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                'Protect your wallet with the PIN'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 90),
-                child: DCustomFilledBigButton(
-                  width: 266,
-                  height: 49,
-                  focusNode: yesFocusNode,
-                  onPressed:
-                      onYesPressed ??
-                      () {
-                        ref.read(pinHelperProvider).initPinSetupPinWelcome();
-                      },
-                  child: Text('YES'.tr()),
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 90),
+              child: DCustomFilledBigButton(
+                width: 266,
+                height: 49,
+                focusNode: yesFocusNode,
+                onPressed:
+                    onYesPressed ??
+                    () {
+                      ref.read(pinHelperProvider).initPinSetupPinWelcome();
+                    },
+                child: Text('YES'.tr()),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: DCustomTextBigButton(
-                  width: 266,
-                  height: 49,
-                  onPressed:
-                      onNoPressed ??
-                      () async {
-                        await ref
-                            .read(walletProvider)
-                            .setImportWalletBiometricPrompt();
-                      },
-                  child: Text('NOT NOW'.tr()),
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: DCustomTextBigButton(
+                width: 266,
+                height: 49,
+                onPressed:
+                    onNoPressed ??
+                    () async {
+                      await ref
+                          .read(walletProvider)
+                          .setImportWalletBiometricPrompt();
+                    },
+                child: Text('NOT NOW'.tr()),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

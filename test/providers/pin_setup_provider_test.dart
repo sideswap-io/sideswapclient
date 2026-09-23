@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -12,449 +13,626 @@ import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 import '../helpers/fake_configuration.dart';
+import '../helpers/test_utils.dart';
 
 class MockSideswapWallet extends Mock implements SideswapWallet {}
 
+const _blob = PinDataStateData(
+  salt: 'salt',
+  encryptedData: 'encrypted',
+  pinIdentifier: 'identifier',
+  hmac: 'hmac',
+);
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
+/// Builds a container with the setup screen's providers held open.
+///
+/// Every provider here is auto-dispose, and the screen holds them by watching
+/// them. Without the listens a provider written on an asynchronous path is
+/// disposed before the assertion reads it, and reports its default instead of
+/// what the code wrote.
+ProviderContainer _container({
+  SideswapWallet? wallet,
+  bool biometricEnabled = false,
+  bool holdHelper = true,
+}) {
+  final container = ProviderContainer.test(
+    overrides: [
+      if (wallet != null) walletProvider.overrideWithValue(wallet),
+      isBiometricEnabledProvider.overrideWithValue(biometricEnabled),
+      configurationProvider.overrideWith(
+        () => FakeConfiguration(
+          SideswapSettings.empty(
+            mnemonicEncrypted: Uint8List(0),
+            usePinProtection: false,
+            useBiometricProtection: false,
+          ),
+        ),
+      ),
+    ],
+  );
+
+  // `holdHelper: false` models the screen being gone: nothing holds the
+  // auto-dispose helper, so its `Ref` dies at the next microtask.
+  if (holdHelper) {
+    container.listen(pinHelperProvider, (_, _) {});
+  }
+  container.listen(pinSetupStateProvider, (_, _) {});
+  container.listen(pinFieldStateProvider, (_, _) {});
+  container.listen(firstPinProvider, (_, _) {});
+  container.listen(secondPinProvider, (_, _) {});
+  container.listen(firstPinEnabledProvider, (_, _) {});
+  container.listen(secondPinEnabledProvider, (_, _) {});
+  container.listen(pinSetupCallerProvider, (_, _) {});
+  container.listen(pinSetupExitProvider, (_, _) {});
+  container.listen(pinDataProvider, (_, _) {});
+  container.listen(pageStatusProvider, (_, _) {});
+
+  return container;
+}
+
+/// Drives the form to a filled, matching pair sitting on the confirm field.
+void _fillMatchingPins(ProviderContainer container, String pin) {
+  container.read(firstPinProvider.notifier).setFirstPin(pin);
+  container
+      .read(pinFieldStateProvider.notifier)
+      .setPinFieldState(const PinFieldState.second());
+  container.read(secondPinProvider.notifier).setSecondPin(pin);
 }
 
 void main() {
   setUpAll(() {
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
 
   group('PinDataNotifier', () {
-    group('setPinDataState', () {
-      test('updates state to error', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinDataProvider.notifier).setPinDataState(
-              const PinDataState.error(message: 'Test error'),
-            );
-        expect(
-          container.read(pinDataProvider),
-          const PinDataState.error(message: 'Test error'),
-        );
-      });
+    test('starts empty', () {
+      final container = _container();
 
-      test('updates state to data', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        const data = PinDataState.data(
-          salt: 'salt',
-          encryptedData: 'data',
-          pinIdentifier: 'id',
-          hmac: 'hmac',
-        );
-        container.read(pinDataProvider.notifier).setPinDataState(data);
-        expect(container.read(pinDataProvider), data);
-      });
+      expect(container.read(pinDataProvider), const PinDataState.empty());
+    });
+
+    test('holds the reply it is given', () {
+      final container = _container();
+
+      container
+          .read(pinDataProvider.notifier)
+          .setPinDataState(const PinDataState.error(message: 'boom'));
+
+      expect(
+        container.read(pinDataProvider),
+        const PinDataState.error(message: 'boom'),
+      );
     });
   });
 
   group('PinSetupCallerNotifier', () {
-    group('setPinSetupCallerState', () {
-      test('updates state to settings', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupCallerProvider.notifier).setPinSetupCallerState(
-              const PinSetupCallerState.settings(),
-            );
-        expect(
-          container.read(pinSetupCallerProvider),
-          const PinSetupCallerState.settings(),
-        );
-      });
+    test('starts empty', () {
+      final container = _container();
 
-      test('updates state to pinWelcome', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupCallerProvider.notifier).setPinSetupCallerState(
-              const PinSetupCallerState.pinWelcome(),
-            );
-        expect(
-          container.read(pinSetupCallerProvider),
-          const PinSetupCallerState.pinWelcome(),
-        );
-      });
+      expect(
+        container.read(pinSetupCallerProvider),
+        const PinSetupCallerState.empty(),
+      );
+    });
 
-      test('updates state to newWalletPinWelcome', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupCallerProvider.notifier).setPinSetupCallerState(
-              const PinSetupCallerState.newWalletPinWelcome(),
-            );
-        expect(
-          container.read(pinSetupCallerProvider),
-          const PinSetupCallerState.newWalletPinWelcome(),
-        );
-      });
+    test('holds the caller it is given', () {
+      final container = _container();
+
+      container
+          .read(pinSetupCallerProvider.notifier)
+          .setPinSetupCallerState(const PinSetupCallerState.settings());
+
+      expect(
+        container.read(pinSetupCallerProvider),
+        const PinSetupCallerState.settings(),
+      );
     });
   });
 
   group('PinSetupExitNotifier', () {
-    group('setPinSetupExitState', () {
-      test('updates state to back', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupExitProvider.notifier).setPinSetupExitState(
-              const PinSetupExitState.back(),
-            );
-        expect(
-          container.read(pinSetupExitProvider),
-          const PinSetupExitState.back(),
-        );
-      });
+    test('starts empty', () {
+      final container = _container();
 
-      test('updates state to success', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupExitProvider.notifier).setPinSetupExitState(
-              const PinSetupExitState.success(),
-            );
-        expect(
-          container.read(pinSetupExitProvider),
-          const PinSetupExitState.success(),
-        );
-      });
+      expect(
+        container.read(pinSetupExitProvider),
+        const PinSetupExitState.empty(),
+      );
+    });
+
+    test('holds the exit it is given', () {
+      final container = _container();
+
+      container
+          .read(pinSetupExitProvider.notifier)
+          .setPinSetupExitState(const PinSetupExitState.back());
+
+      expect(
+        container.read(pinSetupExitProvider),
+        const PinSetupExitState.back(),
+      );
     });
   });
 
   group('PinFieldStateNotifier', () {
-    group('setPinFieldState', () {
-      test('updates state to second', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        expect(
-          container.read(pinFieldStateProvider),
-          const PinFieldState.second(),
-        );
-      });
+    test('starts on the first field', () {
+      final container = _container();
 
-      test('updates state back to first', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.first(),
-            );
-        expect(
-          container.read(pinFieldStateProvider),
-          const PinFieldState.first(),
-        );
-      });
+      expect(
+        container.read(pinFieldStateProvider),
+        const PinFieldState.first(),
+      );
+    });
+
+    test('holds the field it is given', () {
+      final container = _container();
+
+      container
+          .read(pinFieldStateProvider.notifier)
+          .setPinFieldState(const PinFieldState.second());
+
+      expect(
+        container.read(pinFieldStateProvider),
+        const PinFieldState.second(),
+      );
     });
   });
 
   group('PinSetupStateNotifier', () {
-    group('setPinSetupState', () {
-      test('updates state to done', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.done(),
-            );
-        expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.done(),
-        );
-      });
+    test('starts idle', () {
+      final container = _container();
 
-      test('updates state to error with message', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.error(message: 'Test error'),
-            );
-        expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.error(message: 'Test error'),
-        );
-      });
+      expect(container.read(pinSetupStateProvider), const PinSetupState.idle());
+    });
+
+    test('holds the message it is given', () {
+      final container = _container();
+
+      container
+          .read(pinSetupStateProvider.notifier)
+          .setPinSetupState(const PinSetupState.error(message: 'wrong'));
+
+      expect(
+        container.read(pinSetupStateProvider),
+        const PinSetupState.error(message: 'wrong'),
+      );
     });
   });
 
-  group('FirstPinNotifier', () {
-    group('setFirstPin', () {
-      test('sets first pin when firstPinEnabled is true', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        // Manually enable firstPin before setting
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        expect(container.read(firstPinProvider), '123456');
-      });
+  group('PinSetupAttempt', () {
+    test('starts with no attempt outstanding', () {
+      final container = _container();
 
-      test('does not set first pin when firstPinEnabled is false', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(false);
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        expect(container.read(firstPinProvider), '');
-      });
+      expect(
+        container.read(pinSetupAttemptProvider),
+        const PinSetupAttemptState.none(),
+      );
+    });
 
-      test('resets pinSetupState to idle when setting first pin', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        // Set initial state to error
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.error(message: 'Test'),
-            );
+    test('open holds the attempt', () {
+      final container = _container();
+
+      container.read(pinSetupAttemptProvider.notifier).open();
+
+      expect(
+        container.read(pinSetupAttemptProvider),
+        const PinSetupAttemptState.outstanding(),
+      );
+
+      container.read(pinSetupAttemptProvider.notifier).release();
+    });
+
+    test('open does nothing while an attempt is outstanding', () {
+      fakeAsync((async) {
+        final container = _container();
+
+        container.read(pinSetupAttemptProvider.notifier).open();
+        async.elapse(pinSetupAttemptOverdueAfter);
+        container.read(pinSetupAttemptProvider.notifier).open();
+
+        // The second open neither restarted the wait nor replaced the attempt.
         expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.error(message: 'Test'),
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.outstanding(overdue: true),
         );
-        // Setting first pin should reset to idle
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
+
+        container.read(pinSetupAttemptProvider.notifier).release();
+      });
+    });
+
+    test('release gives the attempt back', () {
+      final container = _container();
+
+      container.read(pinSetupAttemptProvider.notifier).open();
+      container.read(pinSetupAttemptProvider.notifier).release();
+
+      expect(
+        container.read(pinSetupAttemptProvider),
+        const PinSetupAttemptState.none(),
+      );
+    });
+
+    test('release with nothing outstanding changes nothing', () {
+      final container = _container();
+
+      container.read(pinSetupAttemptProvider.notifier).release();
+
+      expect(
+        container.read(pinSetupAttemptProvider),
+        const PinSetupAttemptState.none(),
+      );
+    });
+
+    test('the attempt goes overdue after the threshold, and stays held', () {
+      fakeAsync((async) {
+        final container = _container();
+
+        container.read(pinSetupAttemptProvider.notifier).open();
+        async.elapse(pinSetupAttemptOverdueAfter);
+
         expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.idle(),
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.outstanding(overdue: true),
+        );
+
+        container.read(pinSetupAttemptProvider.notifier).release();
+      });
+    });
+
+    test('a released attempt never goes overdue', () {
+      fakeAsync((async) {
+        final container = _container();
+
+        container.read(pinSetupAttemptProvider.notifier).open();
+        container.read(pinSetupAttemptProvider.notifier).release();
+        async.elapse(pinSetupAttemptOverdueAfter * 2);
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
         );
       });
     });
-  });
 
-  group('SecondPinNotifier', () {
-    group('setSecondPin', () {
-      test('sets second pin when secondPinEnabled is true', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-        expect(container.read(secondPinProvider), '123456');
+    test('disposing the container cancels the wait', () {
+      fakeAsync((async) {
+        final container = _container();
+
+        container.read(pinSetupAttemptProvider.notifier).open();
+        container.dispose();
+        async.elapse(pinSetupAttemptOverdueAfter * 2);
+
+        // No timer survives the container, so nothing writes to a dead
+        // notifier.
+        expect(async.pendingTimers, isEmpty);
       });
-
-      test('does not set second pin when secondPinEnabled is false', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(false);
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-        expect(container.read(secondPinProvider), '');
-      });
-
-      // Test of state reset skipped: secondPinEnabled reactively watches pinSetupState,
-      // so changing pinSetupState invalidates secondPinEnabled (rebuilds it)
     });
   });
 
   group('FirstPinEnabled', () {
-    group('build', () {
-      test('returns true when pinSetupState is not done', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        expect(container.read(firstPinEnabledProvider), true);
-      });
+    test('is open while no attempt is outstanding', () {
+      final container = _container();
 
-      test('returns false when pinSetupState is done', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.done(),
-            );
-        expect(container.read(firstPinEnabledProvider), false);
-      });
+      expect(container.read(firstPinEnabledProvider), isTrue);
+    });
 
-      test('reacts to pinSetupState changes', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        // Initial read should be true (pinSetupState not done)
-        expect(container.read(firstPinEnabledProvider), true);
+    test('closes while an attempt is outstanding', () {
+      final container = _container();
 
-        // Change pinSetupState to done
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.done(),
-            );
+      container.read(pinSetupAttemptProvider.notifier).open();
 
-        // firstPinEnabled should react and become false
-        expect(container.read(firstPinEnabledProvider), false);
-      });
+      expect(container.read(firstPinEnabledProvider), isFalse);
+
+      container.read(pinSetupAttemptProvider.notifier).release();
+    });
+
+    test('opens again when the attempt is given back', () {
+      final container = _container();
+
+      container.read(pinSetupAttemptProvider.notifier).open();
+      container.read(pinSetupAttemptProvider.notifier).release();
+
+      expect(container.read(firstPinEnabledProvider), isTrue);
+    });
+
+    test('a form message leaves it open', () {
+      final container = _container();
+
+      container
+          .read(pinSetupStateProvider.notifier)
+          .setPinSetupState(const PinSetupState.error(message: 'wrong'));
+
+      expect(container.read(firstPinEnabledProvider), isTrue);
     });
   });
 
   group('SecondPinEnabled', () {
-    group('setSecondPinEnabled', () {
-      test('updates state to true', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        expect(container.read(secondPinEnabledProvider), true);
-      });
+    test('is closed while the first PIN is short', () {
+      final container = _container();
 
-      test('updates state to false', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(false);
-        expect(container.read(secondPinEnabledProvider), false);
-      });
+      container.read(firstPinProvider.notifier).setFirstPin('12345');
+
+      expect(container.read(secondPinEnabledProvider), isFalse);
+    });
+
+    test('opens at six characters', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+
+      expect(container.read(secondPinEnabledProvider), isTrue);
+    });
+
+    test('closes again below six characters', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+      container.read(firstPinProvider.notifier).setFirstPin('12345');
+
+      expect(container.read(secondPinEnabledProvider), isFalse);
+    });
+
+    test('closes while an attempt is outstanding, however long the PIN', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+      container.read(pinSetupAttemptProvider.notifier).open();
+
+      expect(container.read(secondPinEnabledProvider), isFalse);
+
+      container.read(pinSetupAttemptProvider.notifier).release();
+    });
+
+    test('a form message leaves it open', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+      container
+          .read(pinSetupStateProvider.notifier)
+          .setPinSetupState(const PinSetupState.error(message: 'wrong'));
+
+      expect(container.read(secondPinEnabledProvider), isTrue);
+    });
+  });
+
+  group('FirstPinNotifier', () {
+    test('takes the value while the field is open', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+
+      expect(container.read(firstPinProvider), '123456');
+    });
+
+    test('refuses the value while the field is closed', () {
+      final container = _container();
+
+      container.read(pinSetupAttemptProvider.notifier).open();
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+
+      expect(container.read(firstPinProvider), '');
+
+      container.read(pinSetupAttemptProvider.notifier).release();
+    });
+
+    test('the first keystroke clears the message', () {
+      final container = _container();
+
+      container
+          .read(pinSetupStateProvider.notifier)
+          .setPinSetupState(const PinSetupState.error(message: 'wrong'));
+      container.read(firstPinProvider.notifier).setFirstPin('1');
+
+      expect(container.read(pinSetupStateProvider), const PinSetupState.idle());
+    });
+  });
+
+  group('SecondPinNotifier', () {
+    test('takes the value while the field is open', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+      container.read(secondPinProvider.notifier).setSecondPin('654321');
+
+      expect(container.read(secondPinProvider), '654321');
+    });
+
+    test('refuses the value while the field is closed', () {
+      final container = _container();
+
+      container.read(secondPinProvider.notifier).setSecondPin('654321');
+
+      expect(container.read(secondPinProvider), '');
+    });
+
+    test('the first keystroke clears the message', () {
+      final container = _container();
+
+      container.read(firstPinProvider.notifier).setFirstPin('123456');
+      container
+          .read(pinSetupStateProvider.notifier)
+          .setPinSetupState(const PinSetupState.error(message: 'wrong'));
+      container.read(secondPinProvider.notifier).setSecondPin('6');
+
+      expect(container.read(pinSetupStateProvider), const PinSetupState.idle());
     });
   });
 
   group('PinHelper', () {
-    group('minPinLength and maxPinLength', () {
-      test('minPinLength is 6', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-        expect(helper.minPinLength, 6);
-      });
+    test('states the PIN length the screen label states', () {
+      final container = _container();
+      final helper = container.read(pinHelperProvider);
 
-      test('maxPinLength is 8', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-        expect(helper.maxPinLength, 8);
-      });
+      expect(helper.minPinLength, 6);
+      expect(helper.maxPinLength, 8);
     });
 
-    group('onSuccess', () {
-      test('sets pinSetupExitState to success', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-        helper.onSuccess();
-        expect(
-          container.read(pinSetupExitProvider),
-          const PinSetupExitState.success(),
-        );
-      });
+    test('onSuccess reports success', () {
+      final container = _container();
+
+      container.read(pinHelperProvider).onSuccess();
+
+      expect(
+        container.read(pinSetupExitProvider),
+        const PinSetupExitState.success(),
+      );
     });
 
-    group('onBack', () {
-      test('sets pinSetupExitState to back', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-        helper.onBack();
-        expect(
-          container.read(pinSetupExitProvider),
-          const PinSetupExitState.back(),
-        );
-      });
+    test('onBack reports back', () {
+      final container = _container();
+
+      container.read(pinHelperProvider).onBack();
+
+      expect(
+        container.read(pinSetupExitProvider),
+        const PinSetupExitState.back(),
+      );
     });
 
-    group('initPinSetupSettings', () {
-      test('sets up pin setup from settings screen', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
+    group('entering the screen', () {
+      test('from settings', () {
+        final container = _container();
 
-        helper.initPinSetupSettings();
+        container.read(pinHelperProvider).initPinSetupSettings();
 
-        expect(
-          container.read(pinSetupExitProvider),
-          const PinSetupExitState.empty(),
-        );
         expect(
           container.read(pinSetupCallerProvider),
           const PinSetupCallerState.settings(),
         );
-      });
-    });
-
-    group('initPinSetupNewWalletPinWelcome', () {
-      test('sets up pin setup from new wallet welcome', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-
-        helper.initPinSetupNewWalletPinWelcome();
-
         expect(
           container.read(pinSetupExitProvider),
           const PinSetupExitState.empty(),
         );
+        expect(container.read(pageStatusProvider), Status.pinSetup);
+      });
+
+      test('from the new wallet welcome', () {
+        final container = _container();
+
+        container.read(pinHelperProvider).initPinSetupNewWalletPinWelcome();
+
         expect(
           container.read(pinSetupCallerProvider),
           const PinSetupCallerState.newWalletPinWelcome(),
         );
-      });
-    });
-
-    group('initPinSetupPinWelcome', () {
-      test('sets up pin setup from pin welcome screen', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-
-        helper.initPinSetupPinWelcome();
-
         expect(
           container.read(pinSetupExitProvider),
           const PinSetupExitState.empty(),
         );
+        expect(container.read(pageStatusProvider), Status.pinSetup);
+      });
+
+      test('from the PIN welcome', () {
+        final container = _container();
+
+        container.read(pinHelperProvider).initPinSetupPinWelcome();
+
         expect(
           container.read(pinSetupCallerProvider),
           const PinSetupCallerState.pinWelcome(),
         );
+        expect(
+          container.read(pinSetupExitProvider),
+          const PinSetupExitState.empty(),
+        );
+        expect(container.read(pageStatusProvider), Status.pinSetup);
+      });
+
+      test('clears what the form had to say', () {
+        final container = _container();
+
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container.read(secondPinProvider.notifier).setSecondPin('654321');
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container
+            .read(pinSetupStateProvider.notifier)
+            .setPinSetupState(const PinSetupState.error(message: 'wrong'));
+
+        container.read(pinHelperProvider).initPinSetupSettings();
+
+        expect(container.read(firstPinProvider), '');
+        expect(container.read(secondPinProvider), '');
+        expect(
+          container.read(pinFieldStateProvider),
+          const PinFieldState.first(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          const PinSetupState.idle(),
+        );
+      });
+
+      test('leaves an outstanding attempt outstanding', () {
+        final container = _container();
+
+        container.read(pinSetupAttemptProvider.notifier).open();
+        container.read(pinHelperProvider).initPinSetupSettings();
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.outstanding(),
+        );
+        expect(container.read(firstPinEnabledProvider), isFalse);
+
+        container.read(pinSetupAttemptProvider.notifier).release();
       });
     });
 
     group('onKeyEntered', () {
-      final keyEnums = [
-        (keyEnum: PinKeyEnum.zero, digit: '0'),
-        (keyEnum: PinKeyEnum.one, digit: '1'),
-        (keyEnum: PinKeyEnum.two, digit: '2'),
-        (keyEnum: PinKeyEnum.three, digit: '3'),
-        (keyEnum: PinKeyEnum.four, digit: '4'),
-        (keyEnum: PinKeyEnum.five, digit: '5'),
-        (keyEnum: PinKeyEnum.six, digit: '6'),
-        (keyEnum: PinKeyEnum.seven, digit: '7'),
-        (keyEnum: PinKeyEnum.eight, digit: '8'),
-        (keyEnum: PinKeyEnum.nine, digit: '9'),
-      ];
+      test('every digit key appends its digit', () {
+        const keys = [
+          PinKeyEnum.one,
+          PinKeyEnum.two,
+          PinKeyEnum.three,
+          PinKeyEnum.four,
+          PinKeyEnum.five,
+          PinKeyEnum.six,
+          PinKeyEnum.seven,
+          PinKeyEnum.eight,
+        ];
 
-      for (final entry in keyEnums) {
-        test('handles digit key ${entry.digit}', () {
-          final container = ProviderContainer.test();
-          addTearDown(container.dispose);
-          container
-              .read(firstPinEnabledProvider.notifier)
-              .setFirstPinEnabled(true);
-          final helper = container.read(pinHelperProvider);
+        final container = _container();
+        final helper = container.read(pinHelperProvider);
 
-          helper.onKeyEntered(entry.keyEnum);
+        for (final key in keys) {
+          helper.onKeyEntered(key);
+        }
 
-          expect(container.read(firstPinProvider), entry.digit);
-        });
-      }
+        expect(container.read(firstPinProvider), '12345678');
+      });
 
-      test('handles enter key on first pin field when secondPinEnabled', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
+      test('the nine key appends a nine', () {
+        final container = _container();
+
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.nine);
+
+        expect(container.read(firstPinProvider), '9');
+      });
+
+      test('the zero key appends a zero', () {
+        final container = _container();
+
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.zero);
+
+        expect(container.read(firstPinProvider), '0');
+      });
+
+      test('backspace removes the last digit', () {
+        final container = _container();
+        final helper = container.read(pinHelperProvider);
+
+        helper.onKeyEntered(PinKeyEnum.one);
+        helper.onKeyEntered(PinKeyEnum.backspace);
+
+        expect(container.read(firstPinProvider), '');
+      });
+
+      test('enter moves to the confirm field once it is open', () {
+        final container = _container();
         final helper = container.read(pinHelperProvider);
 
         container.read(firstPinProvider.notifier).setFirstPin('123456');
@@ -467,448 +645,136 @@ void main() {
       });
     });
 
-    group('_onNumber', () {
-      test('adds number to first pin when on first field', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
+    group('typing', () {
+      test('the first PIN stops at eight digits', () {
+        final container = _container();
         final helper = container.read(pinHelperProvider);
 
-        helper.onKeyEntered(PinKeyEnum.one);
-        helper.onKeyEntered(PinKeyEnum.two);
+        container.read(firstPinProvider.notifier).setFirstPin('12345678');
+        helper.onKeyEntered(PinKeyEnum.nine);
 
-        expect(container.read(firstPinProvider), '12');
+        expect(container.read(firstPinProvider), '12345678');
       });
 
-      test('caps first pin at maxPinLength (8)', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        for (int i = 0; i < 10; i++) {
-          helper.onKeyEntered(PinKeyEnum.one);
-        }
-
-        expect(container.read(firstPinProvider), '11111111');
-      });
-
-      test(
-          'enables secondPin when first pin reaches minPinLength (6)',
-          () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(false);
-        final helper = container.read(pinHelperProvider);
-
-        // Add 5 digits - secondPin should still be disabled
-        for (int i = 0; i < 5; i++) {
-          helper.onKeyEntered(PinKeyEnum.one);
-        }
-        expect(container.read(secondPinEnabledProvider), false);
-
-        // Add 6th digit - secondPin should be enabled
-        helper.onKeyEntered(PinKeyEnum.one);
-        expect(container.read(secondPinEnabledProvider), true);
-      });
-
-      test('adds number to second pin when on second field', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
+      test('the confirm PIN takes digits once the field is open', () {
+        final container = _container();
         final helper = container.read(pinHelperProvider);
 
         container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        helper.onKeyEntered(PinKeyEnum.seven);
 
-        helper.onKeyEntered(PinKeyEnum.one);
-        helper.onKeyEntered(PinKeyEnum.two);
-
-        expect(container.read(secondPinProvider), '12');
+        expect(container.read(secondPinProvider), '7');
       });
 
-      test('caps second pin at maxPinLength (8)', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
+      test('the confirm PIN stops at eight digits', () {
+        final container = _container();
         final helper = container.read(pinHelperProvider);
 
         container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container.read(secondPinProvider.notifier).setSecondPin('12345678');
+        helper.onKeyEntered(PinKeyEnum.nine);
 
-        for (int i = 0; i < 10; i++) {
-          helper.onKeyEntered(PinKeyEnum.one);
-        }
-
-        expect(container.read(secondPinProvider), '11111111');
+        expect(container.read(secondPinProvider), '12345678');
       });
     });
 
-    group('_onBackspace', () {
-      test('removes last digit from first pin', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+    group('backspace', () {
+      test('does nothing on an empty first PIN', () {
+        final container = _container();
 
-        container.read(firstPinProvider.notifier).setFirstPin('12345');
-        helper.onKeyEntered(PinKeyEnum.backspace);
-
-        expect(container.read(firstPinProvider), '1234');
-      });
-
-      test('does nothing when first pin is empty', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        helper.onKeyEntered(PinKeyEnum.backspace);
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
 
         expect(container.read(firstPinProvider), '');
       });
 
-      test('does nothing when firstPinEnabled is false on first field', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(false);
-        final helper = container.read(pinHelperProvider);
+      test('does nothing while the first field is closed', () {
+        final container = _container();
 
-        helper.onKeyEntered(PinKeyEnum.backspace);
-
-        expect(container.read(firstPinProvider), '');
-      });
-
-      test(
-          'clears second pin and disables it when first pin becomes < 4 digits',
-          () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('1234567');
-        container.read(secondPinProvider.notifier).setSecondPin('12');
-
-        helper.onKeyEntered(PinKeyEnum.backspace);
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container.read(pinSetupAttemptProvider.notifier).open();
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
 
         expect(container.read(firstPinProvider), '123456');
-        expect(container.read(secondPinProvider), '12');
-        expect(container.read(secondPinEnabledProvider), true);
+
+        container.read(pinSetupAttemptProvider.notifier).release();
       });
 
-      test('clears second pin when deleting from first pin below 4 digits', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('1234');
-        container.read(secondPinProvider.notifier).setSecondPin('56');
-
-        helper.onKeyEntered(PinKeyEnum.backspace);
-
-        expect(container.read(firstPinProvider), '123');
-        expect(container.read(secondPinProvider), '');
-        expect(container.read(secondPinEnabledProvider), false);
-      });
-
-      test('removes last digit from second pin', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+      test('shortening the first PIN below six clears the confirm PIN', () {
+        final container = _container();
 
         container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('789');
-
-        helper.onKeyEntered(PinKeyEnum.backspace);
-
-        expect(container.read(secondPinProvider), '78');
-      });
-
-      test('does nothing when second pin is empty', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-
-        helper.onKeyEntered(PinKeyEnum.backspace);
-
-        expect(container.read(secondPinProvider), '');
-      });
-
-      test('does nothing when secondPinEnabled is false on second field', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(false);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-
-        helper.onKeyEntered(PinKeyEnum.backspace);
-
-        expect(container.read(secondPinProvider), '');
-      });
-    });
-
-    group('_onEnter', () {
-      test('does nothing when pinSetupState is done', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.done(),
-            );
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        expect(
-          container.read(pinFieldStateProvider),
-          const PinFieldState.first(),
-        );
-      });
-
-      test(
-          'transitions to second field when on first field and secondPinEnabled',
-          () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        expect(
-          container.read(pinFieldStateProvider),
-          const PinFieldState.second(),
-        );
-      });
-
-      test(
-          'does not transition when on first field but secondPinEnabled is false',
-          () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(false);
-        final helper = container.read(pinHelperProvider);
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        expect(
-          container.read(pinFieldStateProvider),
-          const PinFieldState.first(),
-        );
-      });
-
-      test('sets error when pins do not match', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('654321');
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.error(message: "PIN code doesn't match"),
-        );
-      });
-
-      test('calls sendEncryptPin on wallet when pins match', () {
-        final mockWallet = MockSideswapWallet();
-        when(() => mockWallet.sendEncryptPin('123456')).thenReturn(true);
-
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
-        );
-
-        final container = ProviderContainer.test(
-          overrides: [
-            walletProvider.overrideWithValue(mockWallet),
-            isBiometricEnabledProvider.overrideWithValue(false),
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
         container.read(secondPinProvider.notifier).setSecondPin('123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
 
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        // Verify wallet method was called
-        verify(() => mockWallet.sendEncryptPin('123456')).called(1);
-      });
-    });
-
-    group('onPinData', () {
-      test('sets error state on pin data error', () {
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
-        );
-
-        final container = ProviderContainer.test(
-          overrides: [
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-
-        helper.onPinData(const PinDataState.error(message: 'Test error'));
-
-        expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.error(message: 'Error setup new PIN code'),
-        );
+        expect(container.read(firstPinProvider), '12345');
+        expect(container.read(secondPinProvider), '');
+        expect(container.read(secondPinEnabledProvider), isFalse);
       });
 
-      test('calls enablePinProtection on valid pin data', () {
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: true,
-        );
+      test('shortening the first PIN to six keeps the confirm PIN', () {
+        final container = _container();
 
-        final container = ProviderContainer.test(
-          overrides: [
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
+        container.read(firstPinProvider.notifier).setFirstPin('1234567');
+        container.read(secondPinProvider.notifier).setSecondPin('123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
 
-        // Initial state: usePinProtection=false, useBiometricProtection=true
-        expect(container.read(configurationProvider).usePinProtection, false);
-        expect(
-          container.read(configurationProvider).useBiometricProtection,
-          true,
-        );
+        expect(container.read(firstPinProvider), '123456');
+        expect(container.read(secondPinProvider), '123456');
+      });
 
-        // Call onPinData - it calls _done(), pageStatusProvider update, and enablePinProtection
-        helper.onPinData(const PinDataState.data(
-          salt: 'salt',
-          encryptedData: 'data',
-          pinIdentifier: 'id',
-          hmac: 'hmac',
-        ));
+      test('removes the last digit of the confirm PIN', () {
+        final container = _container();
 
-        // After onPinData on valid state, enablePinProtection should be called
-        // which sets usePinProtection to true and useBiometricProtection to false
-        expect(container.read(configurationProvider).usePinProtection, true);
-        expect(
-          container.read(configurationProvider).useBiometricProtection,
-          false,
-        );
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container.read(secondPinProvider.notifier).setSecondPin('123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
+
+        expect(container.read(secondPinProvider), '12345');
+      });
+
+      test('does nothing on an empty confirm PIN', () {
+        final container = _container();
+
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
+
+        expect(container.read(secondPinProvider), '');
+      });
+
+      test('does nothing while the confirm field is closed', () {
+        final container = _container();
+
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container.read(secondPinProvider.notifier).setSecondPin('123456');
+        container.read(pinSetupAttemptProvider.notifier).open();
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.backspace);
+
+        expect(container.read(secondPinProvider), '123456');
+
+        container.read(pinSetupAttemptProvider.notifier).release();
       });
     });
 
     group('onTap', () {
-      test('does nothing when secondPinEnabled is false', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(false);
-        final helper = container.read(pinHelperProvider);
+      test('does nothing while the confirm field is closed', () {
+        final container = _container();
 
-        helper.onTap();
+        container.read(pinHelperProvider).onTap();
 
         expect(
           container.read(pinFieldStateProvider),
@@ -916,16 +782,11 @@ void main() {
         );
       });
 
-      test('transitions to second field when on first field and secondPinEnabled',
-          () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+      test('moves to the confirm field', () {
+        final container = _container();
 
-        helper.onTap();
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container.read(pinHelperProvider).onTap();
 
         expect(
           container.read(pinFieldStateProvider),
@@ -933,18 +794,14 @@ void main() {
         );
       });
 
-      test('transitions back to first field when on second field', () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+      test('moves back to the first field', () {
+        final container = _container();
 
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        helper.onTap();
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container.read(pinHelperProvider).onTap();
 
         expect(
           container.read(pinFieldStateProvider),
@@ -953,328 +810,404 @@ void main() {
       });
     });
 
-    group('_prepareToSendPin and _sendPin', () {
-      test('executes wallet operations when pins match', () {
-        final mockWallet = MockSideswapWallet();
-        when(() => mockWallet.sendEncryptPin('123456')).thenReturn(true);
+    group('ENABLE', () {
+      test('does nothing while the confirm field is closed', () {
+        final container = _container();
 
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        expect(
+          container.read(pinFieldStateProvider),
+          const PinFieldState.first(),
         );
-
-        final container = ProviderContainer.test(
-          overrides: [
-            walletProvider.overrideWithValue(mockWallet),
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-            isBiometricEnabledProvider.overrideWithValue(false),
-          ],
-        );
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-
-        // Enter key triggers _onEnter which calls _prepareToSendPin
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        // The wallet method should have been called
-        verify(() => mockWallet.sendEncryptPin('123456')).called(1);
-      });
-
-      test('biometric disabled: calls _sendPin directly → sets done state', () {
-        final mockWallet = MockSideswapWallet();
-        when(() => mockWallet.sendEncryptPin('123456')).thenReturn(true);
-
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
-        );
-
-        final container = ProviderContainer.test(
-          overrides: [
-            walletProvider.overrideWithValue(mockWallet),
-            isBiometricEnabledProvider.overrideWithValue(false),
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
-
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        // biometric disabled → line 374 executed → _sendPin called → done
-        verify(() => mockWallet.sendEncryptPin('123456')).called(1);
         expect(
           container.read(pinSetupStateProvider),
-          const PinSetupState.done(),
+          const PinSetupState.idle(),
         );
       });
 
-      test(
-          'biometric enabled + isAuthenticated true: calls _sendPin → done state',
-          () async {
-        final mockWallet = MockSideswapWallet();
-        when(() => mockWallet.isAuthenticated())
-            .thenAnswer((_) async => true);
-        when(() => mockWallet.sendEncryptPin('123456')).thenReturn(true);
+      test('does nothing on the confirm field while it is closed', () {
+        final container = _container();
 
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
-        );
-
-        final container = ProviderContainer.test(
-          overrides: [
-            walletProvider.overrideWithValue(mockWallet),
-            isBiometricEnabledProvider.overrideWithValue(true),
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
         container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
 
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-        // pump microtask queue so async _prepareToSendPin completes
-        await Future<void>.microtask(() {});
-        await Future<void>.microtask(() {});
-
-        // biometric enabled + authenticated → lines 369-370 executed
-        verify(() => mockWallet.isAuthenticated()).called(1);
-        verify(() => mockWallet.sendEncryptPin('123456')).called(1);
         expect(
           container.read(pinSetupStateProvider),
-          const PinSetupState.done(),
+          const PinSetupState.idle(),
         );
       });
 
-      test(
-          'biometric enabled + isAuthenticated false: sets biometric error state',
-          () async {
-        final mockWallet = MockSideswapWallet();
-        when(() => mockWallet.isAuthenticated())
-            .thenAnswer((_) async => false);
+      test('does nothing while an attempt is outstanding', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenReturn(true);
+        final container = _container(wallet: wallet);
 
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
-        );
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
 
-        final container = ProviderContainer.test(
-          overrides: [
-            walletProvider.overrideWithValue(mockWallet),
-            isBiometricEnabledProvider.overrideWithValue(true),
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+        verify(() => wallet.sendEncryptPin('123456')).called(1);
 
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-        // pump microtask queue so async _prepareToSendPin completes
-        await Future<void>.microtask(() {});
-        await Future<void>.microtask(() {});
-
-        // biometric enabled + not authenticated → lines 378-382 executed
-        verify(() => mockWallet.isAuthenticated()).called(1);
-        expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.error(message: 'Biometric authentication failed'),
-        );
+        container.read(pinSetupAttemptProvider.notifier).release();
       });
 
-      test('_sendPin returns false: sets mnemonic error state', () {
-        final mockWallet = MockSideswapWallet();
-        when(() => mockWallet.sendEncryptPin('123456')).thenReturn(false);
-
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
-        );
-
-        final container = ProviderContainer.test(
-          overrides: [
-            walletProvider.overrideWithValue(mockWallet),
-            isBiometricEnabledProvider.overrideWithValue(false),
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        container
-            .read(secondPinEnabledProvider.notifier)
-            .setSecondPinEnabled(true);
-        final helper = container.read(pinHelperProvider);
+      test('mismatched PINs keep both fields open and both values', () {
+        final wallet = MockSideswapWallet();
+        final container = _container(wallet: wallet);
 
         container.read(firstPinProvider.notifier).setFirstPin('123456');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(secondPinProvider.notifier).setSecondPin('123456');
-
-        helper.onKeyEntered(PinKeyEnum.enter);
-
-        // sendEncryptPin returns false → lines 390-394 executed
-        verify(() => mockWallet.sendEncryptPin('123456')).called(1);
-        expect(
-          container.read(pinSetupStateProvider),
-          const PinSetupState.error(
-            message: 'Error setup new PIN code - mnemonic error',
-          ),
-        );
-      });
-    });
-
-    group('_clearStates', () {
-      test('invalidates pin-related providers when called through initPinSetup',
-          () {
-        final container = ProviderContainer.test();
-        addTearDown(container.dispose);
-
-        // Set up state
         container
-            .read(firstPinEnabledProvider.notifier)
-            .setFirstPinEnabled(true);
-        container.read(firstPinProvider.notifier).setFirstPin('123456');
+            .read(pinFieldStateProvider.notifier)
+            .setPinFieldState(const PinFieldState.second());
         container.read(secondPinProvider.notifier).setSecondPin('654321');
-        container.read(pinFieldStateProvider.notifier).setPinFieldState(
-              const PinFieldState.second(),
-            );
-        container.read(pinSetupStateProvider.notifier).setPinSetupState(
-              const PinSetupState.error(message: 'Test'),
-            );
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
 
-        // We test the outcome of clearStates by invalidating providers manually
-        // since direct access to _clearStates is not possible
-        container.invalidate(firstPinProvider);
-        container.invalidate(secondPinProvider);
-        container.invalidate(pinSetupStateProvider);
-        container.invalidate(pinFieldStateProvider);
-
-        // After invalidation, should have fresh values
-        expect(container.read(firstPinProvider), '');
-        expect(container.read(secondPinProvider), '');
         expect(
-          container.read(pinFieldStateProvider),
-          const PinFieldState.first(),
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
         );
+        expect(container.read(firstPinProvider), '123456');
+        expect(container.read(secondPinProvider), '654321');
+        expect(container.read(firstPinEnabledProvider), isTrue);
+        expect(container.read(secondPinEnabledProvider), isTrue);
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        verifyNever(() => wallet.sendEncryptPin(any()));
+      });
+
+      test('matching PINs send the PIN and hold the attempt', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenReturn(true);
+        final container = _container(wallet: wallet);
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        verify(() => wallet.sendEncryptPin('123456')).called(1);
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.outstanding(),
+        );
+        expect(container.read(firstPinEnabledProvider), isFalse);
+        expect(container.read(secondPinEnabledProvider), isFalse);
+
+        container.read(pinSetupAttemptProvider.notifier).release();
+      });
+
+      test('a refused send gives the attempt back with a message', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenReturn(false);
+        final container = _container(wallet: wallet);
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
+        );
+        expect(container.read(firstPinEnabledProvider), isTrue);
       });
     });
 
-    group('_done', () {
-      test('is called by onPinData on valid pin data', () {
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: false,
+    group('the biometric prompt', () {
+      test('an accepted prompt sends the PIN', () async {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.isAuthenticated()).thenAnswer((_) async => true);
+        when(() => wallet.sendEncryptPin(any())).thenReturn(true);
+        final container = _container(wallet: wallet, biometricEnabled: true);
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+        await Future<void>.delayed(Duration.zero);
+
+        verify(() => wallet.sendEncryptPin('123456')).called(1);
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.outstanding(),
         );
 
-        final container = ProviderContainer.test(
-          overrides: [
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
+        container.read(pinSetupAttemptProvider.notifier).release();
+      });
+
+      test('a refused prompt gives the attempt back with a message', () async {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.isAuthenticated()).thenAnswer((_) async => false);
+        final container = _container(wallet: wallet, biometricEnabled: true);
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+        await Future<void>.delayed(Duration.zero);
+
+        verifyNever(() => wallet.sendEncryptPin(any()));
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
         );
-        addTearDown(container.dispose);
+        expect(
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
+        );
+      });
 
-        final helper = container.read(pinHelperProvider);
+      test('a thrown prompt gives the attempt back with a message', () async {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.isAuthenticated()).thenThrow(Exception('no sensor'));
+        final container = _container(wallet: wallet, biometricEnabled: true);
 
-        // Before call, state is idle
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
+        );
+        expect(container.read(firstPinEnabledProvider), isTrue);
+      });
+
+      test('a thrown send gives the attempt back with a message', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenThrow(Exception('no id'));
+        final container = _container(wallet: wallet);
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
+        );
+        expect(container.read(firstPinEnabledProvider), isTrue);
+      });
+
+      test('opening an attempt clears the last failure message', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenReturn(true);
+        final container = _container(wallet: wallet);
+
+        _fillMatchingPins(container, '123456');
+        container
+            .read(pinSetupStateProvider.notifier)
+            .setPinSetupState(const PinSetupState.error(message: 'stale'));
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        // A new attempt has nothing to say yet. Keeping the old message would
+        // make the next failure no transition at all, so the focus would never
+        // come back, and it would mask the threshold message.
         expect(
           container.read(pinSetupStateProvider),
           const PinSetupState.idle(),
         );
 
-        // onPinData calls _done() which invalidates providers
-        // Note: pageStatusProvider call is blocked, but _done logic executes
-        helper.onPinData(const PinDataState.data(
-          salt: 'salt',
-          encryptedData: 'data',
-          pinIdentifier: 'id',
-          hmac: 'hmac',
-        ));
+        container.read(pinSetupAttemptProvider.notifier).release();
+      });
 
-        // onPinData eventually calls _done which sets state to done
-        // but it also calls setStatus on pageStatusProvider which is blocked
-        // So we just verify the enablePinProtection was called (side effect)
-        expect(container.read(configurationProvider).usePinProtection, true);
+      test('a repeat failure is a fresh transition into the message', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenReturn(true);
+        final container = _container(wallet: wallet);
+        final seen = <PinSetupState>[];
+        container.listen(pinSetupStateProvider, (_, next) => seen.add(next));
+
+        _fillMatchingPins(container, '123456');
+        for (var attempt = 0; attempt < 2; attempt++) {
+          container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+          container
+              .read(pinHelperProvider)
+              .onPinData(const PinDataState.error(message: 'server said no'));
+        }
+
+        // Both failures are observable, not just the first.
+        expect(seen.whereType<PinSetupStateError>(), hasLength(2));
+      });
+
+      test('a throw after the screen is gone still gives the attempt back',
+          () async {
+        final completer = Completer<bool>();
+        final wallet = MockSideswapWallet();
+        when(
+          () => wallet.isAuthenticated(),
+        ).thenAnswer((_) => completer.future);
+        final container = _container(
+          wallet: wallet,
+          biometricEnabled: true,
+          holdHelper: false,
+        );
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        // BACK during the prompt takes the helper away, and the cancelled
+        // prompt then throws. Releasing through the helper's own dead `Ref`
+        // would throw here and hold the attempt for the life of the process.
+        await Future<void>.delayed(Duration.zero);
+        completer.completeError(Exception('prompt cancelled'));
+        await Future<void>.delayed(Duration.zero);
+
+        verifyNever(() => wallet.sendEncryptPin(any()));
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          const PinSetupState.idle(),
+        );
+      });
+
+      test('leaving during the prompt gives the attempt back and stops', () async {
+        final completer = Completer<bool>();
+        final wallet = MockSideswapWallet();
+        when(
+          () => wallet.isAuthenticated(),
+        ).thenAnswer((_) => completer.future);
+        final container = _container(
+          wallet: wallet,
+          biometricEnabled: true,
+          holdHelper: false,
+        );
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        // BACK during the prompt takes the screen, and the helper, away.
+        await Future<void>.delayed(Duration.zero);
+        completer.complete(true);
+        await Future<void>.delayed(Duration.zero);
+
+        verifyNever(() => wallet.sendEncryptPin(any()));
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          const PinSetupState.idle(),
+        );
       });
     });
 
+    group('onPinData', () {
+      test('a reply with no attempt outstanding changes nothing', () {
+        final container = _container();
 
-    group('enablePinProtection', () {
-      test('sets pin protection to true and biometric to false', () {
-        final settings = SideswapSettings.empty(
-          mnemonicEncrypted: Uint8List(0),
-          usePinProtection: false,
-          useBiometricProtection: true,
-        );
+        container.read(pinHelperProvider).onPinData(_blob);
 
-        final container = ProviderContainer.test(
-          overrides: [
-            configurationProvider.overrideWith(
-              () => FakeConfiguration(settings),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
-        final helper = container.read(pinHelperProvider);
-
-        helper.enablePinProtection();
-
-        expect(container.read(configurationProvider).usePinProtection, true);
+        expect(container.read(configurationProvider).usePinProtection, isFalse);
         expect(
-          container.read(configurationProvider).useBiometricProtection,
-          false,
+          container.read(pinSetupStateProvider),
+          const PinSetupState.idle(),
+        );
+        expect(container.read(pageStatusProvider), isNot(Status.pinSuccess));
+      });
+
+      test('a server failure gives the attempt back and keeps both PINs', () {
+        final container = _container();
+
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container.read(secondPinProvider.notifier).setSecondPin('123456');
+        container.read(pinSetupAttemptProvider.notifier).open();
+
+        container
+            .read(pinHelperProvider)
+            .onPinData(const PinDataState.error(message: 'server said no'));
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
+        );
+        expect(container.read(firstPinProvider), '123456');
+        expect(container.read(secondPinProvider), '123456');
+        expect(container.read(firstPinEnabledProvider), isTrue);
+        expect(container.read(secondPinEnabledProvider), isTrue);
+      });
+
+      test('ENABLE after a server failure retries with no retyping', () {
+        final wallet = MockSideswapWallet();
+        when(() => wallet.sendEncryptPin(any())).thenReturn(true);
+        final container = _container(wallet: wallet);
+
+        _fillMatchingPins(container, '123456');
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+        container
+            .read(pinHelperProvider)
+            .onPinData(const PinDataState.error(message: 'server said no'));
+
+        container.read(pinHelperProvider).onKeyEntered(PinKeyEnum.enter);
+
+        verify(() => wallet.sendEncryptPin('123456')).called(2);
+        expect(container.read(firstPinProvider), '123456');
+        expect(container.read(secondPinProvider), '123456');
+
+        container.read(pinSetupAttemptProvider.notifier).release();
+      });
+
+      test('a blob that is not whole is a failure', () {
+        final container = _container();
+
+        container.read(pinSetupAttemptProvider.notifier).open();
+        container.read(pinHelperProvider).onPinData(
+          const PinDataState.data(
+            salt: '',
+            encryptedData: 'encrypted',
+            pinIdentifier: 'identifier',
+            hmac: 'hmac',
+          ),
+        );
+
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(
+          container.read(pinSetupStateProvider),
+          isA<PinSetupStateError>(),
+        );
+        expect(container.read(configurationProvider).usePinProtection, isFalse);
+      });
+
+      test('a whole blob is committed, and the attempt given back', () {
+        final container = _container();
+
+        container.read(firstPinProvider.notifier).setFirstPin('123456');
+        container.read(pinSetupAttemptProvider.notifier).open();
+
+        container.read(pinHelperProvider).onPinData(_blob);
+
+        final settings = container.read(configurationProvider);
+        expect(settings.usePinProtection, isTrue);
+        expect(settings.pinDataState, _blob);
+        expect(container.read(pageStatusProvider), Status.pinSuccess);
+        expect(
+          container.read(pinSetupAttemptProvider),
+          const PinSetupAttemptState.none(),
+        );
+        expect(container.read(firstPinProvider), '');
+        expect(
+          container.read(pinSetupStateProvider),
+          const PinSetupState.idle(),
         );
       });
     });

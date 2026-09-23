@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'pin_models.dart';
@@ -9,6 +9,7 @@ part of 'pin_models.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -798,6 +799,264 @@ String toString() {
 
 
 /// @nodoc
+mixin _$PinSetupAttemptState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PinSetupAttemptState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PinSetupAttemptState()';
+}
+
+
+}
+
+/// @nodoc
+class $PinSetupAttemptStateCopyWith<$Res>  {
+$PinSetupAttemptStateCopyWith(PinSetupAttemptState _, $Res Function(PinSetupAttemptState) __);
+}
+
+
+/// Adds pattern-matching-related methods to [PinSetupAttemptState].
+extension PinSetupAttemptStatePatterns on PinSetupAttemptState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( PinSetupAttemptStateNone value)?  none,TResult Function( PinSetupAttemptStateOutstanding value)?  outstanding,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case PinSetupAttemptStateNone() when none != null:
+return none(_that);case PinSetupAttemptStateOutstanding() when outstanding != null:
+return outstanding(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( PinSetupAttemptStateNone value)  none,required TResult Function( PinSetupAttemptStateOutstanding value)  outstanding,}){
+final _that = this;
+switch (_that) {
+case PinSetupAttemptStateNone():
+return none(_that);case PinSetupAttemptStateOutstanding():
+return outstanding(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( PinSetupAttemptStateNone value)?  none,TResult? Function( PinSetupAttemptStateOutstanding value)?  outstanding,}){
+final _that = this;
+switch (_that) {
+case PinSetupAttemptStateNone() when none != null:
+return none(_that);case PinSetupAttemptStateOutstanding() when outstanding != null:
+return outstanding(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  none,TResult Function( bool overdue)?  outstanding,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case PinSetupAttemptStateNone() when none != null:
+return none();case PinSetupAttemptStateOutstanding() when outstanding != null:
+return outstanding(_that.overdue);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  none,required TResult Function( bool overdue)  outstanding,}) {final _that = this;
+switch (_that) {
+case PinSetupAttemptStateNone():
+return none();case PinSetupAttemptStateOutstanding():
+return outstanding(_that.overdue);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  none,TResult? Function( bool overdue)?  outstanding,}) {final _that = this;
+switch (_that) {
+case PinSetupAttemptStateNone() when none != null:
+return none();case PinSetupAttemptStateOutstanding() when outstanding != null:
+return outstanding(_that.overdue);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class PinSetupAttemptStateNone implements PinSetupAttemptState {
+  const PinSetupAttemptStateNone();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PinSetupAttemptStateNone);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'PinSetupAttemptState.none()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class PinSetupAttemptStateOutstanding implements PinSetupAttemptState {
+  const PinSetupAttemptStateOutstanding({this.overdue = false});
+  
+
+@JsonKey() final  bool overdue;
+
+/// Create a copy of PinSetupAttemptState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PinSetupAttemptStateOutstandingCopyWith<PinSetupAttemptStateOutstanding> get copyWith => _$PinSetupAttemptStateOutstandingCopyWithImpl<PinSetupAttemptStateOutstanding>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PinSetupAttemptStateOutstanding&&(identical(other.overdue, overdue) || other.overdue == overdue));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,overdue);
+
+@override
+String toString() {
+  return 'PinSetupAttemptState.outstanding(overdue: $overdue)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PinSetupAttemptStateOutstandingCopyWith<$Res> implements $PinSetupAttemptStateCopyWith<$Res> {
+  factory $PinSetupAttemptStateOutstandingCopyWith(PinSetupAttemptStateOutstanding value, $Res Function(PinSetupAttemptStateOutstanding) _then) = _$PinSetupAttemptStateOutstandingCopyWithImpl;
+@useResult
+$Res call({
+ bool overdue
+});
+
+
+
+
+}
+/// @nodoc
+class _$PinSetupAttemptStateOutstandingCopyWithImpl<$Res>
+    implements $PinSetupAttemptStateOutstandingCopyWith<$Res> {
+  _$PinSetupAttemptStateOutstandingCopyWithImpl(this._self, this._then);
+
+  final PinSetupAttemptStateOutstanding _self;
+  final $Res Function(PinSetupAttemptStateOutstanding) _then;
+
+/// Create a copy of PinSetupAttemptState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? overdue = null,}) {
+  return _then(PinSetupAttemptStateOutstanding(
+overdue: null == overdue ? _self.overdue : overdue // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$PinSetupState {
 
 
@@ -841,13 +1100,12 @@ extension PinSetupStatePatterns on PinSetupState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( PinSetupStateIdle value)?  idle,TResult Function( PinSetupStateError value)?  error,TResult Function( PinSetupStateDone value)?  done,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( PinSetupStateIdle value)?  idle,TResult Function( PinSetupStateError value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case PinSetupStateIdle() when idle != null:
 return idle(_that);case PinSetupStateError() when error != null:
-return error(_that);case PinSetupStateDone() when done != null:
-return done(_that);case _:
+return error(_that);case _:
   return orElse();
 
 }
@@ -865,13 +1123,12 @@ return done(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( PinSetupStateIdle value)  idle,required TResult Function( PinSetupStateError value)  error,required TResult Function( PinSetupStateDone value)  done,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( PinSetupStateIdle value)  idle,required TResult Function( PinSetupStateError value)  error,}){
 final _that = this;
 switch (_that) {
 case PinSetupStateIdle():
 return idle(_that);case PinSetupStateError():
-return error(_that);case PinSetupStateDone():
-return done(_that);}
+return error(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -885,13 +1142,12 @@ return done(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( PinSetupStateIdle value)?  idle,TResult? Function( PinSetupStateError value)?  error,TResult? Function( PinSetupStateDone value)?  done,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( PinSetupStateIdle value)?  idle,TResult? Function( PinSetupStateError value)?  error,}){
 final _that = this;
 switch (_that) {
 case PinSetupStateIdle() when idle != null:
 return idle(_that);case PinSetupStateError() when error != null:
-return error(_that);case PinSetupStateDone() when done != null:
-return done(_that);case _:
+return error(_that);case _:
   return null;
 
 }
@@ -908,12 +1164,11 @@ return done(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function( String message)?  error,TResult Function()?  done,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case PinSetupStateIdle() when idle != null:
 return idle();case PinSetupStateError() when error != null:
-return error(_that.message);case PinSetupStateDone() when done != null:
-return done();case _:
+return error(_that.message);case _:
   return orElse();
 
 }
@@ -931,12 +1186,11 @@ return done();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function( String message)  error,required TResult Function()  done,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case PinSetupStateIdle():
 return idle();case PinSetupStateError():
-return error(_that.message);case PinSetupStateDone():
-return done();}
+return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -950,12 +1204,11 @@ return done();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function( String message)?  error,TResult? Function()?  done,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case PinSetupStateIdle() when idle != null:
 return idle();case PinSetupStateError() when error != null:
-return error(_that.message);case PinSetupStateDone() when done != null:
-return done();case _:
+return error(_that.message);case _:
   return null;
 
 }
@@ -1060,38 +1313,6 @@ as String,
 
 
 }
-
-/// @nodoc
-
-
-class PinSetupStateDone implements PinSetupState {
-  const PinSetupStateDone();
-  
-
-
-
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PinSetupStateDone);
-}
-
-
-@override
-int get hashCode => runtimeType.hashCode;
-
-@override
-String toString() {
-  return 'PinSetupState.done()';
-}
-
-
-}
-
-
-
 
 PinDataState _$PinDataStateFromJson(
   Map<String, dynamic> json
@@ -1293,7 +1514,7 @@ return data(_that.salt,_that.encryptedData,_that.pinIdentifier,_that.hmac);case 
 @JsonSerializable()
 
 class PinDataStateEmpty implements PinDataState {
-  const PinDataStateEmpty({final  String? $type}): $type = $type ?? 'empty';
+  const PinDataStateEmpty({ String? $type}): $type = $type ?? 'empty';
   factory PinDataStateEmpty.fromJson(Map<String, dynamic> json) => _$PinDataStateEmptyFromJson(json);
 
 
@@ -1332,7 +1553,7 @@ String toString() {
 @JsonSerializable()
 
 class PinDataStateError implements PinDataState {
-  const PinDataStateError({required this.message, final  String? $type}): $type = $type ?? 'error';
+  const PinDataStateError({required this.message,  String? $type}): $type = $type ?? 'error';
   factory PinDataStateError.fromJson(Map<String, dynamic> json) => _$PinDataStateErrorFromJson(json);
 
  final  String message;
@@ -1405,7 +1626,7 @@ as String,
 @JsonSerializable()
 
 class PinDataStateData implements PinDataState {
-  const PinDataStateData({required this.salt, required this.encryptedData, required this.pinIdentifier, required this.hmac, final  String? $type}): $type = $type ?? 'data';
+  const PinDataStateData({required this.salt, required this.encryptedData, required this.pinIdentifier, required this.hmac,  String? $type}): $type = $type ?? 'data';
   factory PinDataStateData.fromJson(Map<String, dynamic> json) => _$PinDataStateDataFromJson(json);
 
  final  String salt;

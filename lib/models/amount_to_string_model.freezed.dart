@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'amount_to_string_model.dart';
@@ -9,6 +9,7 @@ part of 'amount_to_string_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -63,7 +64,7 @@ class _$AmountToStringParametersCopyWithImpl<$Res>
 /// Create a copy of AmountToStringParameters
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? amount = null,Object? forceSign = null,Object? precision = null,Object? trailingZeroes = null,Object? useNumberFormatter = null,}) {
-  return _then(_self.copyWith(
+  return _then(AmountToStringParameters(
 amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,forceSign: null == forceSign ? _self.forceSign : forceSign // ignore: cast_nullable_to_non_nullable
 as bool,precision: null == precision ? _self.precision : precision // ignore: cast_nullable_to_non_nullable
@@ -326,7 +327,7 @@ class _$AmountToStringNamedParametersCopyWithImpl<$Res>
 /// Create a copy of AmountToStringNamedParameters
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? amount = null,Object? ticker = null,Object? forceSign = null,Object? precision = null,Object? trailingZeroes = null,Object? useNumberFormatter = null,}) {
-  return _then(_self.copyWith(
+  return _then(AmountToStringNamedParameters(
 amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,ticker: null == ticker ? _self.ticker : ticker // ignore: cast_nullable_to_non_nullable
 as String,forceSign: null == forceSign ? _self.forceSign : forceSign // ignore: cast_nullable_to_non_nullable

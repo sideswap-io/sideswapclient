@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'config_provider.dart';
@@ -9,12 +9,13 @@ part of 'config_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SideswapSettings {
 
- Uint8List get mnemonicEncrypted; String get jadeId; bool get licenseAccepted; bool get enableEndpoint; bool get useBiometricProtection; int get env; String get phoneKey; String get phoneNumber; bool get usePinProtection; PinDataState? get pinDataState; SettingsNetworkType get settingsNetworkType; String get networkHost; int get networkPort; bool get networkUseTLS; int get knownNewReleaseBuild; bool get showAmpOnboarding; NetworkSettingsModel? get networkSettingsModel; bool get hideTxChainingPromptValue; ProxySettings? get proxySettings; bool get useProxy; String? get defaultCurrency; StokrSettingsModel? get stokrSettingsModel; Map<String, bool> get autosignDomains;
+ Uint8List get mnemonicEncrypted; String get jadeId; bool get licenseAccepted; bool get enableEndpoint; bool get useBiometricProtection; int get env; String get phoneKey; String get phoneNumber; bool get usePinProtection; PinDataState? get pinDataState; SettingsNetworkType get settingsNetworkType; String get networkHost; int get networkPort; bool get networkUseTLS; int get knownNewReleaseBuild; bool get showAmpOnboarding; NetworkSettingsModel? get networkSettingsModel; bool get hideTxChainingPromptValue; ProxySettings? get proxySettings; bool get useProxy; String? get defaultCurrency; StokrSettingsModel? get stokrSettingsModel; DesktopWindowGeometry? get desktopWindowGeometry; Map<String, bool> get autosignDomains;
 /// Create a copy of SideswapSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $SideswapSettingsCopyWith<SideswapSettings> get copyWith => _$SideswapSettingsCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SideswapSettings&&const DeepCollectionEquality().equals(other.mnemonicEncrypted, mnemonicEncrypted)&&(identical(other.jadeId, jadeId) || other.jadeId == jadeId)&&(identical(other.licenseAccepted, licenseAccepted) || other.licenseAccepted == licenseAccepted)&&(identical(other.enableEndpoint, enableEndpoint) || other.enableEndpoint == enableEndpoint)&&(identical(other.useBiometricProtection, useBiometricProtection) || other.useBiometricProtection == useBiometricProtection)&&(identical(other.env, env) || other.env == env)&&(identical(other.phoneKey, phoneKey) || other.phoneKey == phoneKey)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.usePinProtection, usePinProtection) || other.usePinProtection == usePinProtection)&&(identical(other.pinDataState, pinDataState) || other.pinDataState == pinDataState)&&(identical(other.settingsNetworkType, settingsNetworkType) || other.settingsNetworkType == settingsNetworkType)&&(identical(other.networkHost, networkHost) || other.networkHost == networkHost)&&(identical(other.networkPort, networkPort) || other.networkPort == networkPort)&&(identical(other.networkUseTLS, networkUseTLS) || other.networkUseTLS == networkUseTLS)&&(identical(other.knownNewReleaseBuild, knownNewReleaseBuild) || other.knownNewReleaseBuild == knownNewReleaseBuild)&&(identical(other.showAmpOnboarding, showAmpOnboarding) || other.showAmpOnboarding == showAmpOnboarding)&&(identical(other.networkSettingsModel, networkSettingsModel) || other.networkSettingsModel == networkSettingsModel)&&(identical(other.hideTxChainingPromptValue, hideTxChainingPromptValue) || other.hideTxChainingPromptValue == hideTxChainingPromptValue)&&(identical(other.proxySettings, proxySettings) || other.proxySettings == proxySettings)&&(identical(other.useProxy, useProxy) || other.useProxy == useProxy)&&(identical(other.defaultCurrency, defaultCurrency) || other.defaultCurrency == defaultCurrency)&&(identical(other.stokrSettingsModel, stokrSettingsModel) || other.stokrSettingsModel == stokrSettingsModel)&&const DeepCollectionEquality().equals(other.autosignDomains, autosignDomains));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SideswapSettings&&const DeepCollectionEquality().equals(other.mnemonicEncrypted, mnemonicEncrypted)&&(identical(other.jadeId, jadeId) || other.jadeId == jadeId)&&(identical(other.licenseAccepted, licenseAccepted) || other.licenseAccepted == licenseAccepted)&&(identical(other.enableEndpoint, enableEndpoint) || other.enableEndpoint == enableEndpoint)&&(identical(other.useBiometricProtection, useBiometricProtection) || other.useBiometricProtection == useBiometricProtection)&&(identical(other.env, env) || other.env == env)&&(identical(other.phoneKey, phoneKey) || other.phoneKey == phoneKey)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.usePinProtection, usePinProtection) || other.usePinProtection == usePinProtection)&&(identical(other.pinDataState, pinDataState) || other.pinDataState == pinDataState)&&(identical(other.settingsNetworkType, settingsNetworkType) || other.settingsNetworkType == settingsNetworkType)&&(identical(other.networkHost, networkHost) || other.networkHost == networkHost)&&(identical(other.networkPort, networkPort) || other.networkPort == networkPort)&&(identical(other.networkUseTLS, networkUseTLS) || other.networkUseTLS == networkUseTLS)&&(identical(other.knownNewReleaseBuild, knownNewReleaseBuild) || other.knownNewReleaseBuild == knownNewReleaseBuild)&&(identical(other.showAmpOnboarding, showAmpOnboarding) || other.showAmpOnboarding == showAmpOnboarding)&&(identical(other.networkSettingsModel, networkSettingsModel) || other.networkSettingsModel == networkSettingsModel)&&(identical(other.hideTxChainingPromptValue, hideTxChainingPromptValue) || other.hideTxChainingPromptValue == hideTxChainingPromptValue)&&(identical(other.proxySettings, proxySettings) || other.proxySettings == proxySettings)&&(identical(other.useProxy, useProxy) || other.useProxy == useProxy)&&(identical(other.defaultCurrency, defaultCurrency) || other.defaultCurrency == defaultCurrency)&&(identical(other.stokrSettingsModel, stokrSettingsModel) || other.stokrSettingsModel == stokrSettingsModel)&&(identical(other.desktopWindowGeometry, desktopWindowGeometry) || other.desktopWindowGeometry == desktopWindowGeometry)&&const DeepCollectionEquality().equals(other.autosignDomains, autosignDomains));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(mnemonicEncrypted),jadeId,licenseAccepted,enableEndpoint,useBiometricProtection,env,phoneKey,phoneNumber,usePinProtection,pinDataState,settingsNetworkType,networkHost,networkPort,networkUseTLS,knownNewReleaseBuild,showAmpOnboarding,networkSettingsModel,hideTxChainingPromptValue,proxySettings,useProxy,defaultCurrency,stokrSettingsModel,const DeepCollectionEquality().hash(autosignDomains)]);
+int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(mnemonicEncrypted),jadeId,licenseAccepted,enableEndpoint,useBiometricProtection,env,phoneKey,phoneNumber,usePinProtection,pinDataState,settingsNetworkType,networkHost,networkPort,networkUseTLS,knownNewReleaseBuild,showAmpOnboarding,networkSettingsModel,hideTxChainingPromptValue,proxySettings,useProxy,defaultCurrency,stokrSettingsModel,desktopWindowGeometry,const DeepCollectionEquality().hash(autosignDomains)]);
 
 @override
 String toString() {
-  return 'SideswapSettings(mnemonicEncrypted: $mnemonicEncrypted, jadeId: $jadeId, licenseAccepted: $licenseAccepted, enableEndpoint: $enableEndpoint, useBiometricProtection: $useBiometricProtection, env: $env, phoneKey: $phoneKey, phoneNumber: $phoneNumber, usePinProtection: $usePinProtection, pinDataState: $pinDataState, settingsNetworkType: $settingsNetworkType, networkHost: $networkHost, networkPort: $networkPort, networkUseTLS: $networkUseTLS, knownNewReleaseBuild: $knownNewReleaseBuild, showAmpOnboarding: $showAmpOnboarding, networkSettingsModel: $networkSettingsModel, hideTxChainingPromptValue: $hideTxChainingPromptValue, proxySettings: $proxySettings, useProxy: $useProxy, defaultCurrency: $defaultCurrency, stokrSettingsModel: $stokrSettingsModel, autosignDomains: $autosignDomains)';
+  return 'SideswapSettings(mnemonicEncrypted: $mnemonicEncrypted, jadeId: $jadeId, licenseAccepted: $licenseAccepted, enableEndpoint: $enableEndpoint, useBiometricProtection: $useBiometricProtection, env: $env, phoneKey: $phoneKey, phoneNumber: $phoneNumber, usePinProtection: $usePinProtection, pinDataState: $pinDataState, settingsNetworkType: $settingsNetworkType, networkHost: $networkHost, networkPort: $networkPort, networkUseTLS: $networkUseTLS, knownNewReleaseBuild: $knownNewReleaseBuild, showAmpOnboarding: $showAmpOnboarding, networkSettingsModel: $networkSettingsModel, hideTxChainingPromptValue: $hideTxChainingPromptValue, proxySettings: $proxySettings, useProxy: $useProxy, defaultCurrency: $defaultCurrency, stokrSettingsModel: $stokrSettingsModel, desktopWindowGeometry: $desktopWindowGeometry, autosignDomains: $autosignDomains)';
 }
 
 
@@ -45,11 +46,11 @@ abstract mixin class $SideswapSettingsCopyWith<$Res>  {
   factory $SideswapSettingsCopyWith(SideswapSettings value, $Res Function(SideswapSettings) _then) = _$SideswapSettingsCopyWithImpl;
 @useResult
 $Res call({
- Uint8List mnemonicEncrypted, String jadeId, bool licenseAccepted, bool enableEndpoint, bool useBiometricProtection, int env, String phoneKey, String phoneNumber, bool usePinProtection, PinDataState? pinDataState, SettingsNetworkType settingsNetworkType, String networkHost, int networkPort, bool networkUseTLS, int knownNewReleaseBuild, bool showAmpOnboarding, NetworkSettingsModel? networkSettingsModel, bool hideTxChainingPromptValue, ProxySettings? proxySettings, bool useProxy, String? defaultCurrency, StokrSettingsModel? stokrSettingsModel, Map<String, bool> autosignDomains
+ Uint8List mnemonicEncrypted, String jadeId, bool licenseAccepted, bool enableEndpoint, bool useBiometricProtection, int env, String phoneKey, String phoneNumber, bool usePinProtection, PinDataState? pinDataState, SettingsNetworkType settingsNetworkType, String networkHost, int networkPort, bool networkUseTLS, int knownNewReleaseBuild, bool showAmpOnboarding, NetworkSettingsModel? networkSettingsModel, bool hideTxChainingPromptValue, ProxySettings? proxySettings, bool useProxy, String? defaultCurrency, StokrSettingsModel? stokrSettingsModel, DesktopWindowGeometry? desktopWindowGeometry, Map<String, bool> autosignDomains
 });
 
 
-$PinDataStateCopyWith<$Res>? get pinDataState;$NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;$ProxySettingsCopyWith<$Res>? get proxySettings;$StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel;
+$PinDataStateCopyWith<$Res>? get pinDataState;$NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;$ProxySettingsCopyWith<$Res>? get proxySettings;$StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel;$DesktopWindowGeometryCopyWith<$Res>? get desktopWindowGeometry;
 
 }
 /// @nodoc
@@ -62,10 +63,9 @@ class _$SideswapSettingsCopyWithImpl<$Res>
 
 /// Create a copy of SideswapSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? mnemonicEncrypted = null,Object? jadeId = null,Object? licenseAccepted = null,Object? enableEndpoint = null,Object? useBiometricProtection = null,Object? env = null,Object? phoneKey = null,Object? phoneNumber = null,Object? usePinProtection = null,Object? pinDataState = freezed,Object? settingsNetworkType = null,Object? networkHost = null,Object? networkPort = null,Object? networkUseTLS = null,Object? knownNewReleaseBuild = null,Object? showAmpOnboarding = null,Object? networkSettingsModel = freezed,Object? hideTxChainingPromptValue = null,Object? proxySettings = freezed,Object? useProxy = null,Object? defaultCurrency = freezed,Object? stokrSettingsModel = freezed,Object? autosignDomains = null,}) {
-  return _then(_self.copyWith(
-mnemonicEncrypted: null == mnemonicEncrypted ? _self.mnemonicEncrypted : mnemonicEncrypted // ignore: cast_nullable_to_non_nullable
-as Uint8List,jadeId: null == jadeId ? _self.jadeId : jadeId // ignore: cast_nullable_to_non_nullable
+@pragma('vm:prefer-inline') @override $Res call({Object? mnemonicEncrypted = null,Object? jadeId = null,Object? licenseAccepted = null,Object? enableEndpoint = null,Object? useBiometricProtection = null,Object? env = null,Object? phoneKey = null,Object? phoneNumber = null,Object? usePinProtection = null,Object? pinDataState = freezed,Object? settingsNetworkType = null,Object? networkHost = null,Object? networkPort = null,Object? networkUseTLS = null,Object? knownNewReleaseBuild = null,Object? showAmpOnboarding = null,Object? networkSettingsModel = freezed,Object? hideTxChainingPromptValue = null,Object? proxySettings = freezed,Object? useProxy = null,Object? defaultCurrency = freezed,Object? stokrSettingsModel = freezed,Object? desktopWindowGeometry = freezed,Object? autosignDomains = null,}) {
+  return _then(SideswapSettings(
+jadeId: null == jadeId ? _self.jadeId : jadeId // ignore: cast_nullable_to_non_nullable
 as String,licenseAccepted: null == licenseAccepted ? _self.licenseAccepted : licenseAccepted // ignore: cast_nullable_to_non_nullable
 as bool,enableEndpoint: null == enableEndpoint ? _self.enableEndpoint : enableEndpoint // ignore: cast_nullable_to_non_nullable
 as bool,useBiometricProtection: null == useBiometricProtection ? _self.useBiometricProtection : useBiometricProtection // ignore: cast_nullable_to_non_nullable
@@ -86,8 +86,8 @@ as bool,proxySettings: freezed == proxySettings ? _self.proxySettings : proxySet
 as ProxySettings?,useProxy: null == useProxy ? _self.useProxy : useProxy // ignore: cast_nullable_to_non_nullable
 as bool,defaultCurrency: freezed == defaultCurrency ? _self.defaultCurrency : defaultCurrency // ignore: cast_nullable_to_non_nullable
 as String?,stokrSettingsModel: freezed == stokrSettingsModel ? _self.stokrSettingsModel : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
-as StokrSettingsModel?,autosignDomains: null == autosignDomains ? _self.autosignDomains : autosignDomains // ignore: cast_nullable_to_non_nullable
-as Map<String, bool>,
+as StokrSettingsModel?,desktopWindowGeometry: freezed == desktopWindowGeometry ? _self.desktopWindowGeometry : desktopWindowGeometry // ignore: cast_nullable_to_non_nullable
+as DesktopWindowGeometry?,
   ));
 }
 /// Create a copy of SideswapSettings
@@ -137,6 +137,18 @@ $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel {
 
   return $StokrSettingsModelCopyWith<$Res>(_self.stokrSettingsModel!, (value) {
     return _then(_self.copyWith(stokrSettingsModel: value));
+  });
+}/// Create a copy of SideswapSettings
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DesktopWindowGeometryCopyWith<$Res>? get desktopWindowGeometry {
+    if (_self.desktopWindowGeometry == null) {
+    return null;
+  }
+
+  return $DesktopWindowGeometryCopyWith<$Res>(_self.desktopWindowGeometry!, (value) {
+    return _then(_self.copyWith(desktopWindowGeometry: value));
   });
 }
 }
@@ -217,10 +229,10 @@ return empty(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel,  Map<String, bool> autosignDomains)?  empty,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel,  DesktopWindowGeometry? desktopWindowGeometry,  Map<String, bool> autosignDomains)?  empty,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SideswapSettings() when empty != null:
-return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel,_that.autosignDomains);case _:
+return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel,_that.desktopWindowGeometry,_that.autosignDomains);case _:
   return orElse();
 
 }
@@ -238,10 +250,10 @@ return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.en
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel,  Map<String, bool> autosignDomains)  empty,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel,  DesktopWindowGeometry? desktopWindowGeometry,  Map<String, bool> autosignDomains)  empty,}) {final _that = this;
 switch (_that) {
 case _SideswapSettings():
-return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel,_that.autosignDomains);}
+return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel,_that.desktopWindowGeometry,_that.autosignDomains);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -255,10 +267,10 @@ return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.en
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel,  Map<String, bool> autosignDomains)?  empty,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Uint8List mnemonicEncrypted,  String jadeId,  bool licenseAccepted,  bool enableEndpoint,  bool useBiometricProtection,  int env,  String phoneKey,  String phoneNumber,  bool usePinProtection,  PinDataState? pinDataState,  SettingsNetworkType settingsNetworkType,  String networkHost,  int networkPort,  bool networkUseTLS,  int knownNewReleaseBuild,  bool showAmpOnboarding,  NetworkSettingsModel? networkSettingsModel,  bool hideTxChainingPromptValue,  ProxySettings? proxySettings,  bool useProxy,  String? defaultCurrency,  StokrSettingsModel? stokrSettingsModel,  DesktopWindowGeometry? desktopWindowGeometry,  Map<String, bool> autosignDomains)?  empty,}) {final _that = this;
 switch (_that) {
 case _SideswapSettings() when empty != null:
-return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel,_that.autosignDomains);case _:
+return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.enableEndpoint,_that.useBiometricProtection,_that.env,_that.phoneKey,_that.phoneNumber,_that.usePinProtection,_that.pinDataState,_that.settingsNetworkType,_that.networkHost,_that.networkPort,_that.networkUseTLS,_that.knownNewReleaseBuild,_that.showAmpOnboarding,_that.networkSettingsModel,_that.hideTxChainingPromptValue,_that.proxySettings,_that.useProxy,_that.defaultCurrency,_that.stokrSettingsModel,_that.desktopWindowGeometry,_that.autosignDomains);case _:
   return null;
 
 }
@@ -270,7 +282,7 @@ return empty(_that.mnemonicEncrypted,_that.jadeId,_that.licenseAccepted,_that.en
 
 
 class _SideswapSettings implements SideswapSettings {
-   _SideswapSettings({required this.mnemonicEncrypted, this.jadeId = '', this.licenseAccepted = false, this.enableEndpoint = true, this.useBiometricProtection = false, this.env = 0, this.phoneKey = '', this.phoneNumber = '', this.usePinProtection = false, this.pinDataState, this.settingsNetworkType = SettingsNetworkType.sideswap, this.networkHost = '', this.networkPort = 0, this.networkUseTLS = false, this.knownNewReleaseBuild = 0, this.showAmpOnboarding = false, this.networkSettingsModel, this.hideTxChainingPromptValue = false, this.proxySettings, this.useProxy = false, this.defaultCurrency, this.stokrSettingsModel, final  Map<String, bool> autosignDomains = const {}}): _autosignDomains = autosignDomains;
+   _SideswapSettings({required this.mnemonicEncrypted, this.jadeId = '', this.licenseAccepted = false, this.enableEndpoint = true, this.useBiometricProtection = false, this.env = 0, this.phoneKey = '', this.phoneNumber = '', this.usePinProtection = false, this.pinDataState, this.settingsNetworkType = SettingsNetworkType.sideswap, this.networkHost = '', this.networkPort = 0, this.networkUseTLS = false, this.knownNewReleaseBuild = 0, this.showAmpOnboarding = false, this.networkSettingsModel, this.hideTxChainingPromptValue = false, this.proxySettings, this.useProxy = false, this.defaultCurrency, this.stokrSettingsModel, this.desktopWindowGeometry,  Map<String, bool> autosignDomains = const {}}): _autosignDomains = autosignDomains;
   
 
 @override final  Uint8List mnemonicEncrypted;
@@ -295,6 +307,7 @@ class _SideswapSettings implements SideswapSettings {
 @override@JsonKey() final  bool useProxy;
 @override final  String? defaultCurrency;
 @override final  StokrSettingsModel? stokrSettingsModel;
+@override final  DesktopWindowGeometry? desktopWindowGeometry;
  final  Map<String, bool> _autosignDomains;
 @override@JsonKey() Map<String, bool> get autosignDomains {
   if (_autosignDomains is EqualUnmodifiableMapView) return _autosignDomains;
@@ -313,16 +326,16 @@ _$SideswapSettingsCopyWith<_SideswapSettings> get copyWith => __$SideswapSetting
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SideswapSettings&&const DeepCollectionEquality().equals(other.mnemonicEncrypted, mnemonicEncrypted)&&(identical(other.jadeId, jadeId) || other.jadeId == jadeId)&&(identical(other.licenseAccepted, licenseAccepted) || other.licenseAccepted == licenseAccepted)&&(identical(other.enableEndpoint, enableEndpoint) || other.enableEndpoint == enableEndpoint)&&(identical(other.useBiometricProtection, useBiometricProtection) || other.useBiometricProtection == useBiometricProtection)&&(identical(other.env, env) || other.env == env)&&(identical(other.phoneKey, phoneKey) || other.phoneKey == phoneKey)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.usePinProtection, usePinProtection) || other.usePinProtection == usePinProtection)&&(identical(other.pinDataState, pinDataState) || other.pinDataState == pinDataState)&&(identical(other.settingsNetworkType, settingsNetworkType) || other.settingsNetworkType == settingsNetworkType)&&(identical(other.networkHost, networkHost) || other.networkHost == networkHost)&&(identical(other.networkPort, networkPort) || other.networkPort == networkPort)&&(identical(other.networkUseTLS, networkUseTLS) || other.networkUseTLS == networkUseTLS)&&(identical(other.knownNewReleaseBuild, knownNewReleaseBuild) || other.knownNewReleaseBuild == knownNewReleaseBuild)&&(identical(other.showAmpOnboarding, showAmpOnboarding) || other.showAmpOnboarding == showAmpOnboarding)&&(identical(other.networkSettingsModel, networkSettingsModel) || other.networkSettingsModel == networkSettingsModel)&&(identical(other.hideTxChainingPromptValue, hideTxChainingPromptValue) || other.hideTxChainingPromptValue == hideTxChainingPromptValue)&&(identical(other.proxySettings, proxySettings) || other.proxySettings == proxySettings)&&(identical(other.useProxy, useProxy) || other.useProxy == useProxy)&&(identical(other.defaultCurrency, defaultCurrency) || other.defaultCurrency == defaultCurrency)&&(identical(other.stokrSettingsModel, stokrSettingsModel) || other.stokrSettingsModel == stokrSettingsModel)&&const DeepCollectionEquality().equals(other._autosignDomains, _autosignDomains));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SideswapSettings&&const DeepCollectionEquality().equals(other.mnemonicEncrypted, mnemonicEncrypted)&&(identical(other.jadeId, jadeId) || other.jadeId == jadeId)&&(identical(other.licenseAccepted, licenseAccepted) || other.licenseAccepted == licenseAccepted)&&(identical(other.enableEndpoint, enableEndpoint) || other.enableEndpoint == enableEndpoint)&&(identical(other.useBiometricProtection, useBiometricProtection) || other.useBiometricProtection == useBiometricProtection)&&(identical(other.env, env) || other.env == env)&&(identical(other.phoneKey, phoneKey) || other.phoneKey == phoneKey)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.usePinProtection, usePinProtection) || other.usePinProtection == usePinProtection)&&(identical(other.pinDataState, pinDataState) || other.pinDataState == pinDataState)&&(identical(other.settingsNetworkType, settingsNetworkType) || other.settingsNetworkType == settingsNetworkType)&&(identical(other.networkHost, networkHost) || other.networkHost == networkHost)&&(identical(other.networkPort, networkPort) || other.networkPort == networkPort)&&(identical(other.networkUseTLS, networkUseTLS) || other.networkUseTLS == networkUseTLS)&&(identical(other.knownNewReleaseBuild, knownNewReleaseBuild) || other.knownNewReleaseBuild == knownNewReleaseBuild)&&(identical(other.showAmpOnboarding, showAmpOnboarding) || other.showAmpOnboarding == showAmpOnboarding)&&(identical(other.networkSettingsModel, networkSettingsModel) || other.networkSettingsModel == networkSettingsModel)&&(identical(other.hideTxChainingPromptValue, hideTxChainingPromptValue) || other.hideTxChainingPromptValue == hideTxChainingPromptValue)&&(identical(other.proxySettings, proxySettings) || other.proxySettings == proxySettings)&&(identical(other.useProxy, useProxy) || other.useProxy == useProxy)&&(identical(other.defaultCurrency, defaultCurrency) || other.defaultCurrency == defaultCurrency)&&(identical(other.stokrSettingsModel, stokrSettingsModel) || other.stokrSettingsModel == stokrSettingsModel)&&(identical(other.desktopWindowGeometry, desktopWindowGeometry) || other.desktopWindowGeometry == desktopWindowGeometry)&&const DeepCollectionEquality().equals(other._autosignDomains, _autosignDomains));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(mnemonicEncrypted),jadeId,licenseAccepted,enableEndpoint,useBiometricProtection,env,phoneKey,phoneNumber,usePinProtection,pinDataState,settingsNetworkType,networkHost,networkPort,networkUseTLS,knownNewReleaseBuild,showAmpOnboarding,networkSettingsModel,hideTxChainingPromptValue,proxySettings,useProxy,defaultCurrency,stokrSettingsModel,const DeepCollectionEquality().hash(_autosignDomains)]);
+int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(mnemonicEncrypted),jadeId,licenseAccepted,enableEndpoint,useBiometricProtection,env,phoneKey,phoneNumber,usePinProtection,pinDataState,settingsNetworkType,networkHost,networkPort,networkUseTLS,knownNewReleaseBuild,showAmpOnboarding,networkSettingsModel,hideTxChainingPromptValue,proxySettings,useProxy,defaultCurrency,stokrSettingsModel,desktopWindowGeometry,const DeepCollectionEquality().hash(_autosignDomains)]);
 
 @override
 String toString() {
-  return 'SideswapSettings.empty(mnemonicEncrypted: $mnemonicEncrypted, jadeId: $jadeId, licenseAccepted: $licenseAccepted, enableEndpoint: $enableEndpoint, useBiometricProtection: $useBiometricProtection, env: $env, phoneKey: $phoneKey, phoneNumber: $phoneNumber, usePinProtection: $usePinProtection, pinDataState: $pinDataState, settingsNetworkType: $settingsNetworkType, networkHost: $networkHost, networkPort: $networkPort, networkUseTLS: $networkUseTLS, knownNewReleaseBuild: $knownNewReleaseBuild, showAmpOnboarding: $showAmpOnboarding, networkSettingsModel: $networkSettingsModel, hideTxChainingPromptValue: $hideTxChainingPromptValue, proxySettings: $proxySettings, useProxy: $useProxy, defaultCurrency: $defaultCurrency, stokrSettingsModel: $stokrSettingsModel, autosignDomains: $autosignDomains)';
+  return 'SideswapSettings.empty(mnemonicEncrypted: $mnemonicEncrypted, jadeId: $jadeId, licenseAccepted: $licenseAccepted, enableEndpoint: $enableEndpoint, useBiometricProtection: $useBiometricProtection, env: $env, phoneKey: $phoneKey, phoneNumber: $phoneNumber, usePinProtection: $usePinProtection, pinDataState: $pinDataState, settingsNetworkType: $settingsNetworkType, networkHost: $networkHost, networkPort: $networkPort, networkUseTLS: $networkUseTLS, knownNewReleaseBuild: $knownNewReleaseBuild, showAmpOnboarding: $showAmpOnboarding, networkSettingsModel: $networkSettingsModel, hideTxChainingPromptValue: $hideTxChainingPromptValue, proxySettings: $proxySettings, useProxy: $useProxy, defaultCurrency: $defaultCurrency, stokrSettingsModel: $stokrSettingsModel, desktopWindowGeometry: $desktopWindowGeometry, autosignDomains: $autosignDomains)';
 }
 
 
@@ -333,11 +346,11 @@ abstract mixin class _$SideswapSettingsCopyWith<$Res> implements $SideswapSettin
   factory _$SideswapSettingsCopyWith(_SideswapSettings value, $Res Function(_SideswapSettings) _then) = __$SideswapSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- Uint8List mnemonicEncrypted, String jadeId, bool licenseAccepted, bool enableEndpoint, bool useBiometricProtection, int env, String phoneKey, String phoneNumber, bool usePinProtection, PinDataState? pinDataState, SettingsNetworkType settingsNetworkType, String networkHost, int networkPort, bool networkUseTLS, int knownNewReleaseBuild, bool showAmpOnboarding, NetworkSettingsModel? networkSettingsModel, bool hideTxChainingPromptValue, ProxySettings? proxySettings, bool useProxy, String? defaultCurrency, StokrSettingsModel? stokrSettingsModel, Map<String, bool> autosignDomains
+ Uint8List mnemonicEncrypted, String jadeId, bool licenseAccepted, bool enableEndpoint, bool useBiometricProtection, int env, String phoneKey, String phoneNumber, bool usePinProtection, PinDataState? pinDataState, SettingsNetworkType settingsNetworkType, String networkHost, int networkPort, bool networkUseTLS, int knownNewReleaseBuild, bool showAmpOnboarding, NetworkSettingsModel? networkSettingsModel, bool hideTxChainingPromptValue, ProxySettings? proxySettings, bool useProxy, String? defaultCurrency, StokrSettingsModel? stokrSettingsModel, DesktopWindowGeometry? desktopWindowGeometry, Map<String, bool> autosignDomains
 });
 
 
-@override $PinDataStateCopyWith<$Res>? get pinDataState;@override $NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;@override $ProxySettingsCopyWith<$Res>? get proxySettings;@override $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel;
+@override $PinDataStateCopyWith<$Res>? get pinDataState;@override $NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;@override $ProxySettingsCopyWith<$Res>? get proxySettings;@override $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel;@override $DesktopWindowGeometryCopyWith<$Res>? get desktopWindowGeometry;
 
 }
 /// @nodoc
@@ -350,7 +363,7 @@ class __$SideswapSettingsCopyWithImpl<$Res>
 
 /// Create a copy of SideswapSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? mnemonicEncrypted = null,Object? jadeId = null,Object? licenseAccepted = null,Object? enableEndpoint = null,Object? useBiometricProtection = null,Object? env = null,Object? phoneKey = null,Object? phoneNumber = null,Object? usePinProtection = null,Object? pinDataState = freezed,Object? settingsNetworkType = null,Object? networkHost = null,Object? networkPort = null,Object? networkUseTLS = null,Object? knownNewReleaseBuild = null,Object? showAmpOnboarding = null,Object? networkSettingsModel = freezed,Object? hideTxChainingPromptValue = null,Object? proxySettings = freezed,Object? useProxy = null,Object? defaultCurrency = freezed,Object? stokrSettingsModel = freezed,Object? autosignDomains = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? mnemonicEncrypted = null,Object? jadeId = null,Object? licenseAccepted = null,Object? enableEndpoint = null,Object? useBiometricProtection = null,Object? env = null,Object? phoneKey = null,Object? phoneNumber = null,Object? usePinProtection = null,Object? pinDataState = freezed,Object? settingsNetworkType = null,Object? networkHost = null,Object? networkPort = null,Object? networkUseTLS = null,Object? knownNewReleaseBuild = null,Object? showAmpOnboarding = null,Object? networkSettingsModel = freezed,Object? hideTxChainingPromptValue = null,Object? proxySettings = freezed,Object? useProxy = null,Object? defaultCurrency = freezed,Object? stokrSettingsModel = freezed,Object? desktopWindowGeometry = freezed,Object? autosignDomains = null,}) {
   return _then(_SideswapSettings(
 mnemonicEncrypted: null == mnemonicEncrypted ? _self.mnemonicEncrypted : mnemonicEncrypted // ignore: cast_nullable_to_non_nullable
 as Uint8List,jadeId: null == jadeId ? _self.jadeId : jadeId // ignore: cast_nullable_to_non_nullable
@@ -374,7 +387,8 @@ as bool,proxySettings: freezed == proxySettings ? _self.proxySettings : proxySet
 as ProxySettings?,useProxy: null == useProxy ? _self.useProxy : useProxy // ignore: cast_nullable_to_non_nullable
 as bool,defaultCurrency: freezed == defaultCurrency ? _self.defaultCurrency : defaultCurrency // ignore: cast_nullable_to_non_nullable
 as String?,stokrSettingsModel: freezed == stokrSettingsModel ? _self.stokrSettingsModel : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
-as StokrSettingsModel?,autosignDomains: null == autosignDomains ? _self._autosignDomains : autosignDomains // ignore: cast_nullable_to_non_nullable
+as StokrSettingsModel?,desktopWindowGeometry: freezed == desktopWindowGeometry ? _self.desktopWindowGeometry : desktopWindowGeometry // ignore: cast_nullable_to_non_nullable
+as DesktopWindowGeometry?,autosignDomains: null == autosignDomains ? _self._autosignDomains : autosignDomains // ignore: cast_nullable_to_non_nullable
 as Map<String, bool>,
   ));
 }
@@ -426,6 +440,18 @@ $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel {
 
   return $StokrSettingsModelCopyWith<$Res>(_self.stokrSettingsModel!, (value) {
     return _then(_self.copyWith(stokrSettingsModel: value));
+  });
+}/// Create a copy of SideswapSettings
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DesktopWindowGeometryCopyWith<$Res>? get desktopWindowGeometry {
+    if (_self.desktopWindowGeometry == null) {
+    return null;
+  }
+
+  return $DesktopWindowGeometryCopyWith<$Res>(_self.desktopWindowGeometry!, (value) {
+    return _then(_self.copyWith(desktopWindowGeometry: value));
   });
 }
 }

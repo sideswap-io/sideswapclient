@@ -224,7 +224,7 @@ void main() {
 
       final balanceMap = container.read(assetBalanceProvider);
       expect(balanceMap['asset1'], 50);
-      expect(balanceMap.containsKey(null), false);
+      expect(balanceMap.keys, ['asset1']);
     });
 
     test('returns empty map when no balances', () {
@@ -976,6 +976,20 @@ void main() {
 
       final result = container.read(defaultCurrencyConversionProvider(null, 100));
       expect(result, '0.0');
+    });
+
+    test('returns "" when assetId is empty string and conversion is non-zero', () {
+      final container = ProviderContainer.test(
+        overrides: [
+          portfolioPricesProvider.overrideWithValue({'': 2.0}),
+          defaultConversionRateMultiplierProvider.overrideWithValue(Decimal.one),
+          assetsStateProvider.overrideWithValue({}),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = container.read(defaultCurrencyConversionProvider('', 100));
+      expect(result, '');
     });
 
     test('returns "0.0" when assetId is empty string and conversion is zero', () {

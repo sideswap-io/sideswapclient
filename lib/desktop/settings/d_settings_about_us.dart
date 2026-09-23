@@ -9,6 +9,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_licenses.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 
@@ -133,6 +134,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
         ],
         style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 693),
+        scrollOwner: ScrollOwner.wrapper,
       ),
     );
   }

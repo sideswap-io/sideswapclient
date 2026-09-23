@@ -11,7 +11,6 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/pegx_model.dart';
@@ -25,12 +24,8 @@ import 'package:sideswap_logger/custom_logger.dart';
 import 'package:sideswap_protobuf/pegx_api.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../helpers/test_utils.dart';
 import '../utils.dart';
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
 
 // Inline fakes (cannot import from other test files)
 class _FakeWebSocketChannel implements WebSocketChannel {
@@ -74,7 +69,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const PegxLoginState.loading());
     registerFallbackValue(const PegxGaidState.empty());
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     Localization.load(
       const Locale('en'),
       translations: Translations({
@@ -644,6 +639,13 @@ void main() {
         );
       });
 
+      test('updateReg branch does not crash', () {
+        expect(
+          () => handler.handleResp(Resp(updateReg: Resp_UpdateReg())),
+          returnsNormally,
+        );
+      });
+
       test('loadFile branch does not crash', () {
         expect(
           () => handler.handleResp(Resp(loadFile: Resp_LoadFile())),
@@ -755,6 +757,68 @@ void main() {
             'verify-connect',
           ),
         );
+      });
+
+      test('opens the mainnet endpoint when the env is not testnet', () async {
+        final urls = <String>[];
+        final mainnetChannel = _FakeWebSocketChannel();
+        final mainnetConnection = PegxConnection(
+          channelFactory: (url) async {
+            urls.add(url);
+            return mainnetChannel;
+          },
+        );
+        final mainnetContainer = ProviderContainer.test(
+          overrides: [
+            ampIdProvider.overrideWith(() => AmpIdNotifier()),
+            pegxWebsocketClientProvider.overrideWith((ref) {
+              return PegxProtocolHandler(
+                ref,
+                SIDESWAP_ENV_PROD,
+                connection: mainnetConnection,
+                idGenerator: () => Int64(42),
+              );
+            }),
+          ],
+        );
+        addTearDown(mainnetContainer.dispose);
+
+        await mainnetContainer
+            .read(pegxWebsocketClientProvider)
+            .connectToSocket();
+
+        expect(urls, [pegxApiUrl]);
+      });
+
+      test('opens the testnet endpoint when the env is testnet', () async {
+        final urls = <String>[];
+        final testnetChannel = _FakeWebSocketChannel();
+        final testnetConnection = PegxConnection(
+          channelFactory: (url) async {
+            urls.add(url);
+            return testnetChannel;
+          },
+        );
+        final testnetContainer = ProviderContainer.test(
+          overrides: [
+            ampIdProvider.overrideWith(() => AmpIdNotifier()),
+            pegxWebsocketClientProvider.overrideWith((ref) {
+              return PegxProtocolHandler(
+                ref,
+                SIDESWAP_ENV_TESTNET,
+                connection: testnetConnection,
+                idGenerator: () => Int64(42),
+              );
+            }),
+          ],
+        );
+        addTearDown(testnetContainer.dispose);
+
+        await testnetContainer
+            .read(pegxWebsocketClientProvider)
+            .connectToSocket();
+
+        expect(urls, [testnetPegxApiUrl]);
       });
 
       test('does nothing when already connected', () async {

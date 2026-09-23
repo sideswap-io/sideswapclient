@@ -17,7 +17,6 @@ class DPinTextField extends HookConsumerWidget {
     this.enabled = true,
     this.pin = '',
     this.error = false,
-    this.errorMessage = '',
     this.autofocus = false,
   });
 
@@ -28,8 +27,10 @@ class DPinTextField extends HookConsumerWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool enabled;
   final String pin;
+
+  /// Draws the red border. The message itself belongs to the screen, in a box
+  /// of its own outside this field's fixed height. ADR-0013 decision 8.
   final bool error;
-  final String errorMessage;
   final bool autofocus;
 
   @override
@@ -37,13 +38,16 @@ class DPinTextField extends HookConsumerWidget {
     final controller = useTextEditingController();
     final obscureText = useState(true);
 
+    // Keyed on `error` as well as `pin`: a mismatch changes no digit, and the
+    // caret has to come back to the end so the user can fix a wrong one with
+    // backspace. ADR-0013 decision 5.
     useEffect(() {
       controller.text = pin;
       controller.selection = TextSelection.fromPosition(
         TextPosition(offset: controller.text.length),
       );
       return;
-    }, [pin]);
+    }, [pin, error]);
 
     return Column(
       children: [
@@ -53,9 +57,12 @@ class DPinTextField extends HookConsumerWidget {
           child: Opacity(
             opacity: enabled ? 1.0 : 0.5,
             child: AbsorbPointer(
-              absorbing: enabled ? false : true,
+              absorbing: !enabled,
               child: TextField(
-                autofocus: true,
+                autofocus: autofocus,
+                // Stated, not inherited: the platform default selects the whole
+                // value on focus on desktop, and has changed before.
+                selectAllOnFocus: false,
                 controller: controller,
                 focusNode: focusNode,
                 obscureText: obscureText.value,
@@ -68,7 +75,6 @@ class DPinTextField extends HookConsumerWidget {
                   color: Colors.black,
                 ),
                 decoration: DSideSwapInputDecoration(
-                  errorText: errorMessage.isEmpty ? null : errorMessage,
                   suffixIcon: DPinIconButton(
                     obscureText: obscureText.value,
                     onPressed: () {

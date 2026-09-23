@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/csv_provider.dart';
 
 class DExportCsvPopup extends HookConsumerWidget {
@@ -29,6 +30,10 @@ class DExportCsvPopup extends HookConsumerWidget {
       width: 580,
       height: 230,
       alignment: AlignmentDirectional.topCenter,
+      // The body flexes to the declared height through a `Spacer()`, so the
+      // wrapper supplies the `Flexible` half only. ADR-0014's floor sweep for
+      // this surface is #268.
+      scrollOwner: ScrollOwner.child,
       onClose: () {
         Navigator.of(context).pop();
       },

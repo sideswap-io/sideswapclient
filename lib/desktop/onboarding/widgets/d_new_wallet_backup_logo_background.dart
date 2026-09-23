@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dart';
+import 'package:sideswap/desktop/onboarding/widgets/d_onboarding_block.dart';
 
 class DNewWalletBackupLogoBackground extends StatelessWidget {
   const DNewWalletBackupLogoBackground({super.key});
@@ -9,7 +10,7 @@ class DNewWalletBackupLogoBackground extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        const SizedBox(height: 640, child: DNewWalletBackupLogo()),
+        const DOnboardingBlock(child: DNewWalletBackupLogo()),
         Container(color: Colors.black.withValues(alpha: 0.5)),
       ],
     );

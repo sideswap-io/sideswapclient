@@ -6,6 +6,7 @@ import 'package:sideswap/desktop/common/button/d_settings_radio_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/currency_rates_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
@@ -35,6 +36,7 @@ class DSettingsDefaultCurrency extends ConsumerWidget {
         content: const DSettingsDefaultCurrencyContent(),
         style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 635),
+        scrollOwner: ScrollOwner.child,
         actions: [
           Center(
             child: DCustomTextBigButton(
@@ -60,9 +62,10 @@ class DSettingsDefaultCurrencyContent extends HookConsumerWidget {
     final defaultConverstionRate = ref.watch(defaultConversionRateProvider);
 
     return Center(
-      child: SizedBox(
-        width: 374,
-        height: 446,
+      // Design size; the list scrolls itself and absorbs a shorter window, so
+      // the box only needs permission to be shorter than the design height.
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 374, maxHeight: 446),
         child: CustomScrollView(
           slivers: [
             SliverList.builder(

@@ -10,6 +10,8 @@
 .svn/
 android/app/src/main/jniLibs/
 macos/Frameworks/
+linux/lib/
+windows/lib/
 # IntelliJ related
 *.iml
 *.ipr

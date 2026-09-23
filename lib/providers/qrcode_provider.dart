@@ -9,7 +9,6 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
-import 'package:sideswap/providers/outputs_providers.dart';
 
 part 'qrcode_provider.g.dart';
 
@@ -44,7 +43,6 @@ class QrCodeResult {
   bool? error;
   String? errorMessage;
   String? assetId;
-  OutputsData? outputsData;
 
   QrCodeResult({
     this.address,
@@ -57,7 +55,6 @@ class QrCodeResult {
     this.error,
     this.errorMessage,
     this.assetId,
-    this.outputsData,
   });
 
   QrCodeResult copyWith({
@@ -72,7 +69,6 @@ class QrCodeResult {
     String? errorMessage,
     String? orderId,
     String? assetId,
-    OutputsData? outputsData,
   }) {
     return QrCodeResult(
       address: address ?? this.address,
@@ -85,13 +81,12 @@ class QrCodeResult {
       error: error ?? this.error,
       errorMessage: errorMessage ?? this.errorMessage,
       assetId: assetId ?? this.assetId,
-      outputsData: outputsData ?? this.outputsData,
     );
   }
 
   @override
   String toString() {
-    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, assetId: $assetId, outputsData: $outputsData)';
+    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, assetId: $assetId)';
   }
 
   @override
@@ -108,8 +103,7 @@ class QrCodeResult {
         other.bitMask == bitMask &&
         other.error == error &&
         other.errorMessage == errorMessage &&
-        other.assetId == assetId &&
-        other.outputsData == outputsData;
+        other.assetId == assetId;
   }
 
   @override
@@ -123,8 +117,7 @@ class QrCodeResult {
         bitMask.hashCode ^
         error.hashCode ^
         errorMessage.hashCode ^
-        assetId.hashCode ^
-        outputsData.hashCode;
+        assetId.hashCode;
   }
 }
 
@@ -171,7 +164,7 @@ class QrCodeHelper {
         final bip21Result = ref.read(
           parseBIP21Provider(qrCode, BIP21AddressTypeEnum.bitcoin),
         );
-        return bip21Result.match(
+        return bip21Result.match<Either<Exception, QrCodeResult>>(
           (l) => Left(l),
           (r) => Right(
             QrCodeResult(
@@ -191,7 +184,7 @@ class QrCodeHelper {
         final bip21Result = ref.read(
           parseBIP21Provider(qrCode, BIP21AddressTypeEnum.liquidnetwork),
         );
-        return bip21Result.match(
+        return bip21Result.match<Either<Exception, QrCodeResult>>(
           (l) => Left(l),
           (r) => Right(
             QrCodeResult(
@@ -218,38 +211,24 @@ class QrCodeHelper {
         return parseSideSwapAddress(qrCode);
       }
 
-      _emitError('Invalid QR code'.tr());
-
-      _result.error = true;
-      _result.errorMessage = 'Invalid QR code'.tr();
-
-      return Right(_result);
+      return Right(_emitError('Invalid QR code'.tr()));
     } catch (e) {
       logger.w(e);
     }
 
-    // maybe it's a json?
+    // The outputs payload is imported on desktop and nowhere else. Recognise it
+    // here, locally, and say where it works. Every other QR is simply invalid.
     try {
-      await ref.read(outputsReaderProvider.notifier).decodeJsonString(qrCode);
-      final outputsData = ref.read(outputsReaderProvider);
-      return outputsData.match(
-        (l) {
-          return Right(_emitError(l.message ?? ''));
-        },
-        (r) {
-          return Right(QrCodeResult(outputsData: r));
-        },
-      );
+      if (jsonDecode(qrCode) case {'type': 'sideswap_app', 'version': '2'}) {
+        return Right(
+          _emitError('This file can only be imported on desktop'.tr()),
+        );
+      }
     } catch (e) {
-      logger.e(e);
-
-      _emitError('Invalid QR code'.tr());
-
-      _result.error = true;
-      _result.errorMessage = 'Invalid QR code'.tr();
-
-      return Right(_result);
+      logger.w(e);
     }
+
+    return Right(_emitError('Invalid QR code'.tr()));
   }
 
   Either<Exception, QrCodeResult> parseSideSwapAddress(String qrCode) {

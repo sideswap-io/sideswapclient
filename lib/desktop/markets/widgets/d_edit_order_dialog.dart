@@ -21,6 +21,7 @@ import 'package:sideswap/providers/limit_review_order_providers.dart';
 import 'package:sideswap/screens/markets/widgets/market_amount_text_field.dart';
 import 'package:sideswap/desktop/markets/widgets/market_order_panel.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -206,9 +207,9 @@ class DEditOrderDialog extends HookConsumerWidget {
                 actionsAlignment: MainAxisAlignment.spaceBetween,
                 actions: <Widget>[
                   TextButton(
-                    style: Theme.of(
-                      context,
-                    ).extension<SideswapYesButtonStyle>()!.style,
+                    style: Theme.of(context)
+                        .extension<SideswapYesButtonStyle>()!
+                        .style,
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(true);
                     },
@@ -216,9 +217,9 @@ class DEditOrderDialog extends HookConsumerWidget {
                   ),
                   TextButton(
                     focusNode: dialogNoFocusNode,
-                    style: Theme.of(
-                      context,
-                    ).extension<SideswapNoButtonStyle>()!.style,
+                    style: Theme.of(context)
+                        .extension<SideswapNoButtonStyle>()!
+                        .style,
                     onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop(false);
                     },
@@ -232,9 +233,8 @@ class DEditOrderDialog extends HookConsumerWidget {
       );
     });
 
-    final trackingPriceStyle = Theme.of(
-      context,
-    ).extension<DTrackingPriceStyle>();
+    final trackingPriceStyle = Theme.of(context)
+        .extension<DTrackingPriceStyle>();
 
     final defaultTrackingStyle = DTrackingPriceStyle(
       negativeColor:
@@ -290,15 +290,105 @@ class DEditOrderDialog extends HookConsumerWidget {
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 635),
       style: defaultDialogTheme,
+      scrollOwner: ScrollOwner.wrapper,
+      // Pinned below the body, resolved from the same order the body reads,
+      // because `actions` sits outside the body's own `match`. Not to be
+      // confused with the unrelated delete-confirmation `AlertDialog` above.
+      // Null rather than a list holding an empty box: `DContentDialog` draws
+      // the actions band whenever `actions` is non-null, so a placeholder
+      // here would paint a decorated strip under a dialog with no order.
+      actions: optionOrder.isNone()
+          ? null
+          : [
+              optionOrder.match(
+                () => const SizedBox(),
+                (order) => Row(
+                  children: [
+                    DCustomButton(
+                      width: 120,
+                      height: 39,
+                      onPressed: () {
+                        closeCallback();
+                        ref.invalidate(marketEditDetailsOrderProvider);
+                      },
+                      child: Text('Back'.tr()),
+                    ),
+                    const Spacer(),
+                    DCustomFilledBigButton(
+                      width: 120,
+                      height: 39,
+                      onPressed: acceptEnabled
+                          ? () {
+                              final editAmount = optionEditAmount.toNullable();
+                              final editPrice = optionEditPrice.toNullable();
+                              if (editAmount == null || editPrice == null) {
+                                return;
+                              }
+
+                              // we're use external variable to keep tracking price (order.priceTracking is ommited in this place)
+                              final newPriceTracking = trackingValue
+                                  .asDecimalPercent()
+                                  .toDouble();
+
+                              final msg = To();
+                              msg.orderEdit = To_OrderEdit(
+                                orderId: order.orderId,
+                                baseAmount: Int64(editAmount.asSatoshi()),
+                                price: order.isPriceTracking
+                                    ? null
+                                    : editPrice.asDouble(),
+                                priceTracking: order.isPriceTracking
+                                    ? newPriceTracking
+                                    : null,
+                              );
+                              ref.read(walletProvider).sendMsg(msg);
+
+                              closeCallback();
+                              ref.invalidate(marketEditDetailsOrderProvider);
+                            }
+                          : null,
+                      child: Text('Accept'.tr()),
+                    ),
+                    const Spacer(),
+                    DCustomFilledBigButton(
+                      width: 120,
+                      height: 39,
+                      onPressed: () async {
+                        final ret = await showDeleteDialogCallback();
+
+                        if (ret == true) {
+                          final msg = To();
+                          msg.orderCancel = To_OrderCancel(
+                            orderId: order.orderId,
+                          );
+                          ref.read(walletProvider).sendMsg(msg);
+
+                          closeCallback();
+                        }
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.delete_forever, size: 24),
+                          SizedBox(width: 4),
+                          Text('Delete'.tr()),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
       title: DContentDialogTitle(
         content: Text('Edit order'.tr()),
         onClose: () {
           closeCallback();
         },
       ),
+      // No fixed height: the body takes its natural size and the wrapper
+      // scrolls it when the window is short.
       content: SizedBox(
         width: 580,
-        height: 530,
         child: optionOrder.match(
           () => const SizedBox(),
           (order) => Column(
@@ -366,16 +456,16 @@ class DEditOrderDialog extends HookConsumerWidget {
                 children: [
                   Text(
                     'Order type'.tr(),
-                    style: Theme.of(
-                      context,
-                    ).extension<MarketAssetRowStyle>()!.labelStyle,
+                    style: Theme.of(context)
+                        .extension<MarketAssetRowStyle>()!
+                        .labelStyle,
                   ),
                   const Spacer(),
                   Text(
                     order.orderTypeDescription,
-                    style: Theme.of(
-                      context,
-                    ).extension<MarketAssetRowStyle>()!.amountStyle,
+                    style: Theme.of(context)
+                        .extension<MarketAssetRowStyle>()!
+                        .amountStyle,
                   ),
                 ],
               ),
@@ -392,12 +482,12 @@ class DEditOrderDialog extends HookConsumerWidget {
                       ? 'Sell'.tr()
                       : 'Buy'.tr();
                   final sideColor = order.tradeDir == TradeDir.SELL
-                      ? Theme.of(
-                          context,
-                        ).extension<MarketColorsStyle>()!.sellColor
-                      : Theme.of(
-                          context,
-                        ).extension<MarketColorsStyle>()!.buyColor;
+                      ? Theme.of(context)
+                            .extension<MarketColorsStyle>()!
+                            .sellColor
+                      : Theme.of(context)
+                            .extension<MarketColorsStyle>()!
+                            .buyColor;
 
                   return Row(
                     children: [
@@ -434,9 +524,9 @@ class DEditOrderDialog extends HookConsumerWidget {
                             children: [
                               Text(
                                 'Track index price'.tr(),
-                                style: Theme.of(
-                                  context,
-                                ).extension<MarketAssetRowStyle>()!.labelStyle,
+                                style: Theme.of(context)
+                                    .extension<MarketAssetRowStyle>()!
+                                    .labelStyle,
                               ),
                               const Spacer(),
                               FlutterSwitch(
@@ -559,82 +649,6 @@ class DEditOrderDialog extends HookConsumerWidget {
                 ],
                 false => [],
               },
-              const Spacer(),
-              Row(
-                children: [
-                  DCustomButton(
-                    width: 120,
-                    height: 39,
-                    onPressed: () {
-                      closeCallback();
-                      ref.invalidate(marketEditDetailsOrderProvider);
-                    },
-                    child: Text('Back'.tr()),
-                  ),
-                  const Spacer(),
-                  DCustomFilledBigButton(
-                    width: 120,
-                    height: 39,
-                    onPressed: acceptEnabled
-                        ? () {
-                            final editAmount = optionEditAmount.toNullable();
-                            final editPrice = optionEditPrice.toNullable();
-                            if (editAmount == null || editPrice == null) {
-                              return;
-                            }
-
-                            // we're use external variable to keep tracking price (order.priceTracking is ommited in this place)
-                            final newPriceTracking = trackingValue
-                                .asDecimalPercent()
-                                .toDouble();
-
-                            final msg = To();
-                            msg.orderEdit = To_OrderEdit(
-                              orderId: order.orderId,
-                              baseAmount: Int64(editAmount.asSatoshi()),
-                              price: order.isPriceTracking
-                                  ? null
-                                  : editPrice.asDouble(),
-                              priceTracking: order.isPriceTracking
-                                  ? newPriceTracking
-                                  : null,
-                            );
-                            ref.read(walletProvider).sendMsg(msg);
-
-                            closeCallback();
-                            ref.invalidate(marketEditDetailsOrderProvider);
-                          }
-                        : null,
-                    child: Text('Accept'.tr()),
-                  ),
-                  const Spacer(),
-                  DCustomFilledBigButton(
-                    width: 120,
-                    height: 39,
-                    onPressed: () async {
-                      final ret = await showDeleteDialogCallback();
-
-                      if (ret == true) {
-                        final msg = To();
-                        msg.orderCancel = To_OrderCancel(
-                          orderId: order.orderId,
-                        );
-                        ref.read(walletProvider).sendMsg(msg);
-
-                        closeCallback();
-                      }
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.delete_forever, size: 24),
-                        SizedBox(width: 4),
-                        Text('Delete'.tr()),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),

@@ -300,7 +300,7 @@ final class AllTxsNotifierProvider
   }
 }
 
-String _$allTxsNotifierHash() => r'93226d039c5c32315886e8105a132df0b78a43ce';
+String _$allTxsNotifierHash() => r'a46cc542df34f5052887612df8d94fe0594f1eb2';
 
 abstract class _$AllTxsNotifier extends $Notifier<Map<String, TransItem>> {
   Map<String, TransItem> build();

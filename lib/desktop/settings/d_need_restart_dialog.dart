@@ -28,6 +28,16 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
             SideSwapColors.brightTurquoise,
             BlendMode.srcIn,
           ),
+          // vector_graphics draws an empty box when the load fails, and it does
+          // not size the error widget the way it sizes the picture. The glyph
+          // therefore carries its own size. DContentDialogTitle gives its
+          // content a 44-pixel box, which is what the SVG above is constrained
+          // into as well.
+          errorBuilder: (context, error, stackTrace) => const Icon(
+            Icons.refresh,
+            size: 44,
+            color: SideSwapColors.brightTurquoise,
+          ),
         ),
       ),
       content: Center(

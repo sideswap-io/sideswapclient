@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/common/widgets/enter_to_dismiss.dart';
 import 'package:sideswap/common/widgets/insufficient_funds.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -69,6 +69,11 @@ class FlutterDialogPresenter implements DialogPresenter {
           width: 23,
           height: 23,
           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          // vector_graphics draws an empty box when the load fails, and it does
+          // not size the error widget the way it sizes the picture. The glyph
+          // therefore carries the size the SVG above asks for.
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.refresh, size: 23, color: Colors.white),
         );
         borderColor = SideSwapColors.brightTurquoise;
         break;
@@ -184,16 +189,7 @@ class FlutterDialogPresenter implements DialogPresenter {
       barrierDismissible:
           FlavorConfig.isDesktop, // Allow close popups with Esc on desktop
       builder: (BuildContext context) {
-        return KeyboardListener(
-          focusNode: FocusNode(),
-          autofocus: true,
-          onKeyEvent: (value) {
-            if (FlavorConfig.isDesktop &&
-                value is KeyDownEvent &&
-                value.logicalKey == LogicalKeyboardKey.enter) {
-              Navigator.of(context).pop();
-            }
-          },
+        return EnterToDismiss(
           child: Dialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -291,18 +287,7 @@ class FlutterDialogPresenter implements DialogPresenter {
       context: context,
       barrierDismissible: FlavorConfig.isDesktop,
       builder: (BuildContext context) {
-        return KeyboardListener(
-          focusNode: FocusNode(),
-          autofocus: true,
-          onKeyEvent: (KeyEvent event) {
-            if (FlavorConfig.isDesktop &&
-                event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.enter) {
-              Navigator.of(context).pop();
-            }
-          },
-          child: InsufficientFunds(msg: msg),
-        );
+        return EnterToDismiss(child: InsufficientFunds(msg: msg));
       },
     );
   }

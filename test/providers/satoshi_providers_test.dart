@@ -1,24 +1,20 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/satoshi_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
+import '../helpers/test_utils.dart';
 
 class MockAssetUtils extends Mock implements AssetUtils {}
 
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
 
   group('satoshiRepository provider', () {
@@ -134,6 +130,17 @@ void main() {
         // May return a value if it passes roundtrip, or null if conversion overflows
         expect(result, isNotNull);
         expect(result, equals(9223372036854775807));
+      });
+
+      test('returns null when the satoshi value overflows a 64-bit int', () {
+        // One satoshi past int64 max: BigInt.toInt() wraps, so the round-trip
+        // comparison fails and the parse is rejected instead of silently
+        // returning a negative amount.
+        final result = sut.parseAssetAmount(
+          amount: '92233720368.54775808',
+          precision: 8,
+        );
+        expect(result, isNull);
       });
 
       test('handles leading zeros', () {

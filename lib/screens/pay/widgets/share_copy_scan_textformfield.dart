@@ -60,8 +60,6 @@ class ShareCopyScanTextFormField extends HookConsumerWidget {
     final spaceBetween = 4.0;
     final iconWidth = 24.0;
 
-    final emptySuffix = useState(false);
-
     final defaultStyle = useMemoized(
       () => const TextStyle(
         fontSize: 17,
@@ -70,11 +68,25 @@ class ShareCopyScanTextFormField extends HookConsumerWidget {
       ),
     );
 
-    final suffixCounter = useState(0.0);
-    final gestureAreaWidth = useMemoized(() => spaceBetween * 2 + iconWidth);
-    final suffixWidth = useState(suffixCounter.value * gestureAreaWidth);
+    final gestureAreaWidth = spaceBetween * 2 + iconWidth;
 
-    final defaultFocusNode = focusNode ?? useFocusNode();
+    // Counted on every build rather than accumulated by an effect: a caller can
+    // change which callbacks it supplies between builds, and an incrementing
+    // counter would add to the previous total instead of replacing it.
+    final suffixButtonCount = [
+      onCopyTap,
+      onShareTap,
+      onScanTap,
+      onPasteTap,
+    ].nonNulls.length;
+    final emptySuffix = suffixButtonCount == 0;
+    final suffixWidth = suffixButtonCount * gestureAreaWidth;
+
+    // ADR-0011 decision 5: the hook is called on every build, never inside
+    // a `??`, so hook order cannot depend on whether the caller supplied a
+    // node. The unused node when one is supplied is the accepted price.
+    final internalFocusNode = useFocusNode();
+    final defaultFocusNode = focusNode ?? internalFocusNode;
 
     final onTapSuffixCallback = useCallback(({VoidCallback? onTap}) {
       if (onTap == null) {
@@ -91,36 +103,6 @@ class ShareCopyScanTextFormField extends HookConsumerWidget {
         defaultFocusNode.canRequestFocus = true;
       });
     });
-
-    useEffect(() {
-      if (onCopyTap == null &&
-          onPasteTap == null &&
-          onScanTap == null &&
-          onShareTap == null) {
-        emptySuffix.value = true;
-      }
-
-      if (onCopyTap != null) {
-        suffixCounter.value++;
-      }
-      if (onShareTap != null) {
-        suffixCounter.value++;
-      }
-      if (onScanTap != null) {
-        suffixCounter.value++;
-      }
-      if (onPasteTap != null) {
-        suffixCounter.value++;
-      }
-
-      return;
-    }, const []);
-
-    useEffect(() {
-      suffixWidth.value = suffixCounter.value * gestureAreaWidth;
-
-      return;
-    }, [suffixCounter.value]);
 
     return SizedBox(
       width: 538,
@@ -171,10 +153,10 @@ class ShareCopyScanTextFormField extends HookConsumerWidget {
                         fontWeight: FontWeight.normal,
                         color: SideSwapColors.bitterSweet,
                       ),
-                      suffixIcon: switch (emptySuffix.value) {
+                      suffixIcon: switch (emptySuffix) {
                         true => null,
                         _ => ShareCopyScanSuffixIcon(
-                          suffixWidth: suffixWidth.value,
+                          suffixWidth: suffixWidth,
                           onCopyTap: onCopyTap,
                           gestureAreaWidth: gestureAreaWidth,
                           onTapSuffixCallback: onTapSuffixCallback,

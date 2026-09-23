@@ -13,6 +13,9 @@ class MainFlutterWindow: NSWindow {
     DockAttentionChannel.register(
       messenger: flutterViewController.engine.binaryMessenger, window: self)
 
+    LaunchPlacementChannel.register(
+      messenger: flutterViewController.engine.binaryMessenger, window: self)
+
     super.awakeFromNib()
   }
 }

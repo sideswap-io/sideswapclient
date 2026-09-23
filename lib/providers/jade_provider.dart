@@ -216,11 +216,16 @@ abstract class AbstractJadeLockRepository {
 
 class JadeLockRepository implements AbstractJadeLockRepository {
   final Ref ref;
+
+  /// Captured while the element is alive. `walletProvider` is `keepAlive`, so
+  /// the instance stays usable after this repository's element is disposed.
+  final SideswapWallet wallet;
   final JadeLockState _lockState;
   final bool isJadeWallet;
 
   JadeLockRepository({
     required this.ref,
+    required this.wallet,
     required this.isJadeWallet,
     this._lockState = const JadeLockState.locked(),
   });
@@ -256,7 +261,14 @@ class JadeLockRepository implements AbstractJadeLockRepository {
     Future.microtask(() {
       final msg = To();
       msg.jadeUnlock = Empty();
-      ref.read(walletProvider).sendMsg(msg);
+      wallet.sendMsg(msg);
+
+      // A rebuild between the call and this microtask disposes our element.
+      // The unlock message above still goes out; the timer belongs to the
+      // element that is being replaced, so skip it.
+      if (!ref.mounted) {
+        return;
+      }
 
       ref.read(jadeLockStateTimerProvider.notifier).extendTimer();
     });
@@ -270,6 +282,9 @@ AbstractJadeLockRepository jadeLockRepository(Ref ref) {
 
   return JadeLockRepository(
     ref: ref,
+    // watch, not read: if walletProvider ever rebuilds, this repository
+    // rebuilds with it and captures the new instance
+    wallet: ref.watch(walletProvider),
     isJadeWallet: isJadeWallet,
     lockState: lockState,
   );

@@ -24,6 +24,7 @@ class LimitAmountTextField extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionBaseAsset = ref.watch(marketSubscribedBaseAssetProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
     final amountString = ref.watch(limitOrderAmountControllerProvider);
     final insufficientAmount = ref.watch(limitInsufficientAmountProvider);
     final minimumFeeAmount = ref.watch(limitMinimumFeeAmountProvider);
@@ -52,6 +53,22 @@ class LimitAmountTextField extends HookConsumerWidget {
       return;
     }, [amountString]);
 
+    // On desktop a pointer-down outside a text field unfocuses it, so clicking
+    // the BUY/SELL switch drops the caret. `autofocus` only fires when the node
+    // first attaches, and the flip rebuilds this widget instead of remounting
+    // it, so the field asks for focus back itself. `MarketAmountPanel` does the
+    // same at `market_order_panel.dart`, except that it also clears its
+    // controller. This one does not: the flip changes the side of the trade,
+    // not the size of it, and `limitOrderAmountControllerProvider` does not
+    // reset on `tradeDirStateProvider` either, so clearing here would be the
+    // new behaviour rather than the kept one.
+    // Keyed on the node as well as the direction, per ADR-0011 decision 7.
+    useEffect(() {
+      focusNode.requestFocus();
+
+      return;
+    }, [focusNode, tradeDirState]);
+
     return optionBaseAsset.match(
       () => SizedBox(),
       (baseAsset) => MarketAmountTextField(
@@ -60,6 +77,15 @@ class LimitAmountTextField extends HookConsumerWidget {
         controller: limitAmountController,
         autofocus: true,
         focusNode: focusNode,
+        // The refocus below is an *external* focus change, and a desktop
+        // `TextField` selects all of its text on those. That would put the
+        // typed amount one keystroke from gone, so this field opts out.
+        // A click and an autofocus are flagged internal by Flutter and never
+        // selected all, so those paths are unaffected. Tab traversal into the
+        // field is external and does lose its select-all: accepted, because
+        // the panel autofocuses this field on entry, so traversal reaches it
+        // rarely, and losing a typed amount is the worse outcome.
+        selectAllOnFocus: false,
         onEditingComplete: onEditingComplete,
         onChanged: (value) {},
         showConversion: showConversion,

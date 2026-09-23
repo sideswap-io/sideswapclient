@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -16,11 +17,53 @@ import 'package:sideswap/screens/instant_swap/listeners/instant_swap_listener.da
 import 'package:sideswap/screens/instant_swap/widgets/dropdown_amount_text_field.dart';
 import 'package:sideswap/screens/instant_swap/widgets/instant_swap_divider.dart';
 
+/// The height [InstantSwapButton] and the padding beneath it occupy at the
+/// bottom of the swap card.
+const double kInstantSwapActionHeight = 54 + 16;
+
 class InstantSwap extends HookConsumerWidget {
-  const InstantSwap({super.key});
+  const InstantSwap({super.key, this.pinnedActionBodyHeight});
+
+  /// Lays the form out at this design height inside the page's own scroll
+  /// owner and pins [InstantSwapButton] below it, the way `actions` is pinned
+  /// in a dialog — ADR-0014 decisions 8 and 11.
+  ///
+  /// Pass the height the form has at the design window, so it scrolls exactly
+  /// the shortfall of a shorter one and nothing at all where there is room.
+  /// Leave it null for the layout the page has today, where the button sits
+  /// at the bottom of the form behind a `Spacer()`; that is what the mobile
+  /// page uses, and it is unchanged.
+  final double? pinnedActionBodyHeight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final form = <Widget>[
+      const SizedBox(height: 18),
+      InstantSwapTitle(),
+      const SizedBox(height: 16),
+      InstantSwapTopDropdownAmountTextField(),
+      const SizedBox(height: 6),
+      InstantSwapDivider(),
+      // The backdrop the Receive field and anything below it sit on. The
+      // `SizedBox` is what makes it span the card: a `ColoredBox` takes its
+      // child's width, so without it the region is only as wide as the
+      // widest widget inside, and a narrow one would leave the card's own
+      // colour at both edges.
+      ColoredBox(
+        color: SideSwapColors.blumine,
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            children: [
+              const SizedBox(height: 6),
+              InstantSwapBottomDropdownAmountTextField(disabledAmount: false),
+            ],
+          ),
+        ),
+      ),
+    ];
+    final bodyHeight = pinnedActionBodyHeight;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -35,43 +78,70 @@ class InstantSwap extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const InstantSwapListener(),
-          const SizedBox(height: 18),
-          InstantSwapTitle(),
-          const SizedBox(height: 16),
-          InstantSwapTopDropdownAmountTextField(),
-          const SizedBox(height: 6),
-          InstantSwapDivider(),
-          ColoredBox(
-            color: SideSwapColors.blumine,
-            child: Column(
-              children: [
-                const SizedBox(height: 6),
-                InstantSwapBottomDropdownAmountTextField(disabledAmount: false),
-              ],
-            ),
-          ),
-          Flexible(
-            child: Stack(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
+          if (bodyHeight == null) ...[
+            // Today's layout: the button sits at the bottom of the form
+            // behind a `Spacer()`, on a backdrop that fills what is left.
+            ...form,
+            Flexible(
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      ),
+                      color: SideSwapColors.blumine,
                     ),
-                    color: SideSwapColors.blumine,
                   ),
-                ),
-                Column(
+                  Column(
+                    children: [
+                      Spacer(),
+                      InstantSwapButton(),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            Flexible(
+              child: DScrollWhenShort(
+                height: bodyHeight,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Spacer(),
-                    InstantSwapButton(),
-                    const SizedBox(height: 16),
+                    ...form,
+                    // The blumine backdrop the pinned action continues below,
+                    // so the two together paint the card exactly as the
+                    // single `Stack` above does. `SizedBox.expand` is what
+                    // gives it a width: a childless `ColoredBox` takes the
+                    // smallest width it is offered, which is zero, and paints
+                    // nothing at all.
+                    const Expanded(
+                      child: ColoredBox(
+                        color: SideSwapColors.blumine,
+                        child: SizedBox.expand(),
+                      ),
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+            DecoratedBox(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+                color: SideSwapColors.blumine,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [InstantSwapButton(), const SizedBox(height: 16)],
+              ),
+            ),
+          ],
         ],
       ),
     );

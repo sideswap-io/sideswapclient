@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,12 +13,9 @@ import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
-class MockSharedPreferences extends Mock implements SharedPreferences {}
+import '../helpers/test_utils.dart';
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
+class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 void _setupMockSharedPreferences(MockSharedPreferences mockPrefs) {
   when(() => mockPrefs.remove(any())).thenAnswer((_) async => true);
@@ -66,7 +62,7 @@ void main() {
     registerFallbackValue(SideswapSettings.empty(
       mnemonicEncrypted: Uint8List(0),
     ));
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
 
   group('Env', () {

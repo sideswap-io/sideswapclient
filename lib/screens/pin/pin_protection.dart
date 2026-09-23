@@ -85,9 +85,13 @@ class PinProtectionBody extends HookConsumerWidget {
       };
     }, [pinUnlockState]);
 
+    // The PIN and error state are reset by whoever raises this dialog, not
+    // here: a `ref.invalidate` from a hook effect runs inside build, and if any
+    // other subtree is still listening to those providers -- an outgoing dialog
+    // that has not finished popping is enough -- riverpod schedules a refresh,
+    // which marks the ProviderScope dirty mid-build.
     useEffect(() {
       pinFocusNode.requestFocus();
-      ref.read(pinProtectionHelperProvider).init();
 
       return;
     }, const []);
@@ -158,7 +162,14 @@ class PinProtectionBody extends HookConsumerWidget {
                   firstLaunchStateProvider,
                 );
                 final pinFieldState = ref.watch(pinFieldStateProvider);
+                final pinProtectionState = ref.watch(
+                  pinProtectionStateProvider,
+                );
                 return PinKeyboard(
+                  // The keys are already inert while waiting; this stops the
+                  // appearance from lying. ADR-0013 decision 12.
+                  enabled:
+                      pinProtectionState != const PinProtectionState.waiting(),
                   acceptType:
                       firstLaunchStateType != const FirstLaunchStateType.empty()
                       ? pinFieldState == const PinFieldState.second()

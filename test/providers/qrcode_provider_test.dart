@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/qrcode_models.dart';
@@ -13,34 +12,14 @@ import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
+import '../helpers/test_utils.dart';
+
 class FakeQrCodeResultModel extends Fake implements QrCodeResultModel {}
-
-class FakeOutputsReaderNotifier extends OutputsReaderNotifier {
-  final Either<OutputsError, OutputsData> _outputsState;
-  final bool decodeThrows;
-
-  FakeOutputsReaderNotifier(this._outputsState, {this.decodeThrows = false});
-
-  @override
-  Either<OutputsError, OutputsData> build() => _outputsState;
-
-  @override
-  Future<bool> decodeJsonString(String jsonString) async {
-    if (decodeThrows) throw Exception('JSON decode failed');
-    state = _outputsState;
-    return true;
-  }
-}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
 
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
   });
   group('QrCodeResultModelNotifier', () {
     late ProviderContainer container;
@@ -312,73 +291,59 @@ void main() {
       });
     });
 
-    group('JSON fallback path (outer try throws → falls to JSON decode)', () {
-      const testUrl = 'bitcoin:throwtest';
+    group('JSON payload path', () {
+      late ProviderContainer container;
+      late QrCodeHelper helper;
 
-      ProviderContainer makeContainer({
-        required Either<OutputsError, OutputsData> outputsState,
-        bool decodeThrows = false,
-      }) =>
-          ProviderContainer.test(
-            overrides: [
-              isAddrTypeValidProvider(testUrl, AddrType.bitcoin)
-                  .overrideWithValue(false),
-              isAddrTypeValidProvider(testUrl, AddrType.elements)
-                  .overrideWithValue(false),
-              parseBIP21Provider(testUrl, BIP21AddressTypeEnum.bitcoin)
-                  .overrideWith((ref) => throw Exception('forced')),
-              outputsReaderProvider.overrideWith(
-                () => FakeOutputsReaderNotifier(outputsState,
-                    decodeThrows: decodeThrows),
-              ),
-            ],
-          );
-
-      test('returns error when JSON decode throws', () async {
-        final container = makeContainer(
-          outputsState: const Left(OutputsErrorOutputsDataIsEmpty()),
-          decodeThrows: true,
-        );
+      setUp(() {
+        container = ProviderContainer.test();
         addTearDown(container.dispose);
-
-        final result =
-            await container.read(qrcodeHelperProvider).parseDynamicQrCode(testUrl);
-
-        result.match(
-          (l) => fail('Expected Right with error'),
-          (r) => expect(r.error, true),
-        );
+        helper = container.read(qrcodeHelperProvider);
       });
 
-      test('returns error result when JSON decode returns Left', () async {
-        final container = makeContainer(
-          outputsState: const Left(OutputsErrorWrongTypeOfFile('bad')),
-        );
-        addTearDown(container.dispose);
+      const emptyOutputs = Left<OutputsError, OutputsData>(
+        OutputsErrorOutputsDataIsEmpty(),
+      );
 
-        final result =
-            await container.read(qrcodeHelperProvider).parseDynamicQrCode(testUrl);
-
-        result.match(
-          (l) => fail('Expected Right'),
-          (r) => expect(r.error, true),
+      test('declines a sideswap_app version 2 payload with the desktop '
+          'message', () async {
+        final result = await helper.parseDynamicQrCode(
+          '{"type":"sideswap_app","version":"2",'
+          '"receivers":[{"address":"addr1"}]}',
         );
+
+        result.match((l) => fail('Expected Right'), (r) {
+          expect(r.error, true);
+          expect(r.errorMessage, 'This file can only be imported on desktop');
+          expect(r.address, isNull);
+        });
+        expect(container.read(outputsReaderProvider), emptyOutputs);
       });
 
-      test('returns outputs result when JSON decode returns Right', () async {
-        final container = makeContainer(
-          outputsState: Right(const OutputsData()),
-        );
-        addTearDown(container.dispose);
+      // Everything that is not the outputs payload is refused the same way,
+      // so the cases differ only in what was scanned.
+      const genericCases = [
+        (input: '{"type":"other","version":"2"}', name: 'a wrong type'),
+        (input: '{"type":"sideswap_app","version":"1"}', name: 'version 1'),
+        (
+          input: '{"type":"sideswap_app","version":2}',
+          name: 'an integer version',
+        ),
+        (input: '{"a":', name: 'broken JSON'),
+        (input: '["a:b"]', name: 'a JSON literal that is not an object'),
+      ];
 
-        final result =
-            await container.read(qrcodeHelperProvider).parseDynamicQrCode(testUrl);
+      for (final c in genericCases) {
+        test('reports the generic message for ${c.name}', () async {
+          final result = await helper.parseDynamicQrCode(c.input);
 
-        result.match(
-          (l) => fail('Expected Right'),
-          (r) => expect(r.outputsData, isNotNull),
-        );
-      });
+          result.match((l) => fail('Expected Right'), (r) {
+            expect(r.error, true);
+            expect(r.errorMessage, 'Invalid QR code');
+          });
+          expect(container.read(outputsReaderProvider), emptyOutputs);
+        });
+      }
     });
   });
 
@@ -663,7 +628,6 @@ void main() {
           error: false,
           errorMessage: null,
           assetId: 'asset-1',
-          outputsData: null,
         );
       });
 

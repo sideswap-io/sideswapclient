@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'network_settings_providers.dart';
@@ -9,6 +9,7 @@ part of 'network_settings_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 NetworkSettingsModel _$NetworkSettingsModelFromJson(
@@ -229,7 +230,7 @@ return apply(_that.settingsNetworkType,_that.env,_that.host,_that.port,_that.use
 @JsonSerializable()
 
 class NetworkSettingsModelEmpty implements NetworkSettingsModel {
-  const NetworkSettingsModelEmpty({this.settingsNetworkType, this.env, this.host, this.port, this.useTls, final  String? $type}): $type = $type ?? 'empty';
+  const NetworkSettingsModelEmpty({this.settingsNetworkType, this.env, this.host, this.port, this.useTls,  String? $type}): $type = $type ?? 'empty';
   factory NetworkSettingsModelEmpty.fromJson(Map<String, dynamic> json) => _$NetworkSettingsModelEmptyFromJson(json);
 
 @override final  SettingsNetworkType? settingsNetworkType;
@@ -303,7 +304,7 @@ as bool?,
 @JsonSerializable()
 
 class NetworkSettingsModelApply implements NetworkSettingsModel {
-  const NetworkSettingsModelApply({this.settingsNetworkType, this.env, this.host, this.port, this.useTls, final  String? $type}): $type = $type ?? 'apply';
+  const NetworkSettingsModelApply({this.settingsNetworkType, this.env, this.host, this.port, this.useTls,  String? $type}): $type = $type ?? 'apply';
   factory NetworkSettingsModelApply.fromJson(Map<String, dynamic> json) => _$NetworkSettingsModelApplyFromJson(json);
 
 @override final  SettingsNetworkType? settingsNetworkType;

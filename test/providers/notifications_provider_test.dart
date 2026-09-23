@@ -61,6 +61,31 @@ class _ThrowingLocalNotificationService extends MockLocalNotificationService {
   );
 }
 
+/// Records the OS notifications the notifier submitted.
+///
+/// [MockLocalNotificationService] gives `showNotification` a concrete body, so
+/// mocktail does not track it and `verifyNever` cannot be asked about it.
+class _RecordingLocalNotificationService extends MockLocalNotificationService {
+  final submitted = <String>[];
+
+  @override
+  Future<void> showNotification(
+    String title,
+    String body, {
+    String payload = '',
+    NotificationVisibility visibility = NotificationVisibility.public,
+    NotificationDetails? notificationDetails,
+    NotificationChannelType type = NotificationChannelType.main,
+    StyleInformation styleInformation = const DefaultStyleInformation(
+      true,
+      true,
+    ),
+    String? desktopSubtitle,
+  }) async {
+    submitted.add(title);
+  }
+}
+
 class MockDesktopDialog extends Mock implements DesktopDialog {}
 
 class MockDesktopWindowService extends Mock implements DesktopWindowService {}
@@ -123,6 +148,151 @@ From_SignerRequest _createBothRequest({
 
 class MockSignerRequest extends Mock implements From_SignerRequest {}
 
+/// Seeds the real notifier with a known list and lets a test replace it.
+///
+/// Overriding [build] rather than driving `addNotification` keeps the entries'
+/// ids and request ids under the test's control, which is what makes the
+/// identity case — an id handed to the lookup alongside a request id it does
+/// not belong to — expressible at all: `addNotification` mints one id per
+/// delivery from a counter that only ever goes up (#211), so it never files two
+/// *different* requests under one id, and the pairing has to be seeded. Same
+/// shape as the desktop widget suite's seed
+/// (`test/widgets/d_notifications_test.dart`).
+class _SeededNotifications extends Notifications {
+  _SeededNotifications(this._seed);
+
+  final List<NotificationData> _seed;
+
+  @override
+  List<NotificationData> build() => _seed;
+
+  void setEntries(List<NotificationData> entries) => state = entries;
+}
+
+/// Records the reason every removal was made under, over the real notifier.
+///
+/// Only [Notifications.removeNotification] is overridden — `build` is the real
+/// one — so the entries these tests sweep arrive through `addNotification` the
+/// way the app delivers them, and the reason is read back as the externally
+/// observable fact rather than reconstructed from the list.
+class _RecordingNotifications extends Notifications {
+  final removals = <(int, NotificationRemovalReason)>[];
+
+  @override
+  void removeNotification(
+    int notificationId, {
+    required NotificationRemovalReason reason,
+  }) {
+    removals.add((notificationId, reason));
+    super.removeNotification(notificationId, reason: reason);
+  }
+}
+
+/// Counts the sweeps that actually ran.
+///
+/// "Swept once, without a second fire" cannot be read off the removals: a fire
+/// that removes nothing is indistinguishable from one that never happened. An
+/// arming placed a whole second before the deadline produces thousands of them.
+class _CountingNotifications extends _RecordingNotifications {
+  int fires = 0;
+
+  @override
+  void sweepExpired() {
+    fires++;
+    super.sweepExpired();
+  }
+}
+
+/// A recording notifier that starts from a list the test chose.
+///
+/// The only way to put an entry whose deadline is already behind it into the
+/// list: `addNotification` drops a request that arrives past its deadline, so
+/// such an entry can only have been there already.
+class _SeededRecordingNotifications extends _RecordingNotifications {
+  _SeededRecordingNotifications(this._seed);
+
+  final List<NotificationData> _seed;
+
+  @override
+  List<NotificationData> build() => _seed;
+}
+
+/// Waits until [condition] holds, giving up after [timeout].
+///
+/// Polled rather than slept on a delay sized to the deadline: the suite runs at
+/// `--concurrency=16` under a random seed, where a fixed sleep that has to land
+/// just after a real timer is a race. The ceiling keeps a genuine regression a
+/// failure rather than a hang.
+Future<void> _waitUntil(
+  bool Function() condition, {
+  Duration timeout = const Duration(seconds: 10),
+}) async {
+  final giveUpAt = DateTime.now().add(timeout);
+  while (!condition() && DateTime.now().isBefore(giveUpAt)) {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+}
+
+/// A window service with every command stubbed to succeed, recording the badge
+/// counts it is given into [badgeWrites] when one is passed.
+///
+/// Built per test rather than once for the file: a mock reused across tests
+/// keeps its recorded invocations, which makes `verify(...).called(n)`
+/// order-dependent (docs/TESTING.md).
+MockDesktopWindowService _stubbedWindowService({List<int>? badgeWrites}) {
+  final service = MockDesktopWindowService();
+  when(() => service.onRequestDelivered(any())).thenAnswer((_) async {});
+  when(() => service.onRequestResolved(any(), any())).thenAnswer((_) async {});
+  when(() => service.abandonEpisode()).thenAnswer((_) async {});
+
+  // Stubbed whether or not anyone is recording: an unstubbed `Future<void>`
+  // answers `null`, which the notifier hands to `unawaited` and which fails as
+  // a type error rather than as the assertion the test was making.
+  when(() => service.setPendingBadge(any())).thenAnswer((invocation) async {
+    badgeWrites?.add(invocation.positionalArguments.first as int);
+  });
+
+  return service;
+}
+
+/// A container with the notifier's three collaborators overridden, disposed
+/// with the test that built it.
+///
+/// [notifier] replaces the notifier itself, which is how a test both seeds the
+/// list and reads back the reason each removal was made under.
+ProviderContainer _notificationsContainer({
+  required MockDesktopWindowService windowService,
+  LocalNotificationService? localNotifications,
+  Notifications Function()? notifier,
+}) {
+  final container = ProviderContainer.test(
+    overrides: [
+      localNotificationsProvider.overrideWithValue(
+        localNotifications ?? MockLocalNotificationService(),
+      ),
+      desktopDialogProvider.overrideWithValue(MockDesktopDialog()),
+      desktopWindowServiceProvider.overrideWithValue(windowService),
+      if (notifier != null) notificationsProvider.overrideWith(notifier),
+    ],
+  );
+  addTearDown(container.dispose);
+  return container;
+}
+
+/// Raises the desktop flavour, which is what makes the app-icon badge and the
+/// window commands reachable at all.
+void _useDesktopFlavour() {
+  FlavorConfig(
+    flavor: Flavor.production,
+    values: FlavorValues(
+      enableNetworkSettings: false,
+      enableJade: true,
+      enableLocalEndpoint: false,
+      isDesktop: true,
+    ),
+  );
+}
+
 void main() {
   // Set up fallback values for protobuf types
   setUpAll(() {
@@ -130,6 +300,7 @@ void main() {
     registerFallbackValue(From_SignerRequest());
     registerFallbackValue(NotificationRemovalReason.expired);
     registerFallbackValue(From_SignerRequest_Sign());
+    registerFallbackValue(Option<NotificationData>.none());
     // Suppress logging to prevent async errors from path_provider
     logger = CustomLogger('SideSwap', output: _logOutput);
   });
@@ -331,36 +502,135 @@ void main() {
     });
   });
 
+  group('requestDeadlinePassed', () {
+    // Asked of a request that is about to be presented, before its dialog is
+    // built. The countdown provider cannot answer it: it is autoDispose and
+    // starts a timer on build, and its `none()` means both "no deadline" and
+    // "no such entry". ADR-0006 decision 5.
+    final now = DateTime(2026, 1, 1, 12);
+
+    NotificationData connectEntry({
+      required DateTime createdAt,
+      required Option<int> ttlMilliseconds,
+    }) => NotificationData(
+      1,
+      NotificationType.connect(
+        'req-A',
+        'https://example.com',
+        NotificationItemState.empty(),
+        createdAt,
+        ttlMilliseconds,
+      ),
+    );
+
+    test('answers no for a request that carries no countdown', () {
+      // A request without a deadline is not expired locally: there is no
+      // deadline to enforce and none is invented. ADR-0006 decision 7.
+      expect(
+        requestDeadlinePassed(
+          connectEntry(createdAt: now, ttlMilliseconds: none()),
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('answers no while the deadline is still ahead', () {
+      expect(
+        requestDeadlinePassed(
+          connectEntry(createdAt: now, ttlMilliseconds: Option.of(30000)),
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('answers yes once the deadline has passed', () {
+      expect(
+        requestDeadlinePassed(
+          connectEntry(
+            createdAt: now.subtract(Duration(seconds: 10)),
+            ttlMilliseconds: Option.of(1000),
+          ),
+          now: now,
+        ),
+        isTrue,
+      );
+    });
+
+    // The boundary is the deadline itself, to the millisecond. The predicate
+    // used to truncate to whole seconds and so answered "passed" from 999 ms
+    // before the deadline; a request is no longer treated as expired while any
+    // of its window remains. ADR-0010 decision 2.
+    test('answers no while a part-second of the window remains', () {
+      expect(
+        requestDeadlinePassed(
+          connectEntry(
+            createdAt: now.subtract(Duration(milliseconds: 600)),
+            ttlMilliseconds: Option.of(1000),
+          ),
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('answers no with a single millisecond of the window left', () {
+      expect(
+        requestDeadlinePassed(
+          connectEntry(
+            createdAt: now.subtract(Duration(milliseconds: 999)),
+            ttlMilliseconds: Option.of(1000),
+          ),
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('answers yes at the deadline itself', () {
+      expect(
+        requestDeadlinePassed(
+          connectEntry(
+            createdAt: now.subtract(Duration(milliseconds: 1000)),
+            ttlMilliseconds: Option.of(1000),
+          ),
+          now: now,
+        ),
+        isTrue,
+      );
+    });
+
+    test('answers the same way for a sign request', () {
+      final entry = NotificationData(
+        1,
+        NotificationType.signRequest(
+          From_SignerRequest_Sign(),
+          'req-A',
+          'https://example.com',
+          NotificationItemState.empty(),
+          now.subtract(Duration(seconds: 10)),
+          Option.of(1000),
+        ),
+      );
+
+      expect(requestDeadlinePassed(entry, now: now), isTrue);
+    });
+  });
+
   group('Notifications (Notifier)', () {
     late ProviderContainer container;
     late MockDesktopWindowService mockDesktopWindowService;
 
     void setupContainer([MockLocalNotificationService? mockNotifications]) {
-      container = ProviderContainer.test(
-        overrides: [
-          localNotificationsProvider.overrideWithValue(
-            mockNotifications ?? MockLocalNotificationService(),
-          ),
-          desktopDialogProvider.overrideWithValue(MockDesktopDialog()),
-          desktopWindowServiceProvider.overrideWithValue(
-            mockDesktopWindowService,
-          ),
-        ],
+      container = _notificationsContainer(
+        windowService: mockDesktopWindowService,
+        localNotifications: mockNotifications,
       );
-      addTearDown(container.dispose);
     }
 
     setUp(() {
-      mockDesktopWindowService = MockDesktopWindowService();
-      when(
-        () => mockDesktopWindowService.onRequestDelivered(any()),
-      ).thenAnswer((_) async {});
-      when(
-        () => mockDesktopWindowService.onRequestResolved(any(), any()),
-      ).thenAnswer((_) async {});
-      when(
-        () => mockDesktopWindowService.abandonEpisode(),
-      ).thenAnswer((_) async {});
+      mockDesktopWindowService = _stubbedWindowService();
       setupContainer();
     });
 
@@ -942,6 +1212,49 @@ void main() {
         final notifications = container.read(notificationsProvider);
         expect(notifications, isEmpty);
       });
+
+      // The one measured fact about the id counter, and the reason no document
+      // in this repo claims otherwise any more (#211). `clearAll()` ends in
+      // `ref.invalidateSelf()`, which rebuilds the element but does not replace
+      // the notifier riverpod caches against it, so `_id` is the same field
+      // afterwards and keeps counting rather than starting over.
+      //
+      // Driven through `addNotification` on both sides of the call, because
+      // that is the only path that mints an id at all: every other test in this
+      // suite seeds entries with ids of its own choosing, which is exactly why
+      // the suite could carry the opposite claim in its comments for as long as
+      // it did. Asserted as `greaterThan` rather than as the successor, so the
+      // one thing under test is that the counter did not go backwards.
+      //
+      // The notifier is read through the container at every step rather than
+      // hoisted into a local, so no step presupposes the instance identity that
+      // is the thing being measured.
+      test('the id counter keeps counting across clearAll', () {
+        container
+            .read(notificationsProvider.notifier)
+            .addNotification(
+              _createConnectRequest(
+                reqId: 'req-before',
+                origin: 'https://a.com',
+              ),
+            );
+        final idBefore = container.read(notificationsProvider).single.id;
+
+        container.read(notificationsProvider.notifier).clearAll();
+        expect(container.read(notificationsProvider), isEmpty);
+
+        container
+            .read(notificationsProvider.notifier)
+            .addNotification(
+              _createConnectRequest(
+                reqId: 'req-after',
+                origin: 'https://b.com',
+              ),
+            );
+        final idAfter = container.read(notificationsProvider).single.id;
+
+        expect(idAfter, greaterThan(idBefore));
+      });
     });
 
     group('getNotification', () {
@@ -1034,6 +1347,522 @@ void main() {
 
         expect(result.isNone(), true);
       });
+    });
+  });
+
+  // The notifier removes a request whose deadline has passed whether or not
+  // anything is watching: no widget mounted, no panel open, no provider
+  // watched. ADR-0010 decisions 1 and 3.
+  group('the expiry sweep', () {
+    late ProviderContainer container;
+    late MockDesktopWindowService mockDesktopWindowService;
+
+    NotificationData connectEntry(
+      int id,
+      String reqId, {
+      required DateTime createdAt,
+      required Option<int> ttlMilliseconds,
+      NotificationItemState itemState = const NotificationItemState.empty(),
+    }) => NotificationData(
+      id,
+      NotificationType.connect(
+        reqId,
+        'https://example.com',
+        itemState,
+        createdAt,
+        ttlMilliseconds,
+      ),
+    );
+
+    /// Puts [notifier] behind [notificationsProvider] in a fresh container,
+    /// which it leaves in [container], and builds it.
+    ///
+    /// What comes back is the same instance, so the removals it recorded are
+    /// read straight off it.
+    T built<T extends Notifications>(T notifier) {
+      container = _notificationsContainer(
+        windowService: mockDesktopWindowService,
+        notifier: () => notifier,
+      );
+      container.read(notificationsProvider.notifier);
+      return notifier;
+    }
+
+    setUp(() {
+      mockDesktopWindowService = _stubbedWindowService();
+    });
+
+    test(
+      'removes an entry whose deadline passes with nothing watching',
+      () async {
+        final notifier = built(_RecordingNotifications());
+
+        notifier.addNotification(
+          _createConnectRequest(
+            reqId: 'req-A',
+            origin: 'https://example.com',
+            ttlMilliseconds: 400,
+          ),
+        );
+        expect(notifier.removals, isEmpty);
+
+        await _waitUntil(() => notifier.removals.isNotEmpty);
+
+        expect(notifier.removals, [(1, NotificationRemovalReason.expired)]);
+        expect(container.read(notificationsProvider), isEmpty);
+      },
+    );
+
+    // Observable ordering only: that one timer serves the whole list rather
+    // than one per entry is a design rule, not an output.
+    test('entries leave in deadline order', () async {
+      final notifier = built(_RecordingNotifications());
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 400,
+        ),
+      );
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-B',
+          origin: 'https://example.com',
+          ttlMilliseconds: 2500,
+        ),
+      );
+
+      await _waitUntil(() => notifier.removals.isNotEmpty);
+
+      expect(notifier.removals, [(1, NotificationRemovalReason.expired)]);
+      expect(container.read(notificationsProvider).map((entry) => entry.id), [
+        2,
+      ]);
+
+      await _waitUntil(() => notifier.removals.length == 2);
+
+      expect(notifier.removals, [
+        (1, NotificationRemovalReason.expired),
+        (2, NotificationRemovalReason.expired),
+      ]);
+    });
+
+    // A request carrying no deadline is never past one: none is invented for it
+    // (ADR-0006 decision 7). Stated as "no expiry is recorded" — such a request
+    // can still leave through remote cancel or a user action.
+    test('never sweeps an entry that carries no deadline', () async {
+      final notifier = built(_RecordingNotifications());
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 400,
+        ),
+      );
+      notifier.addNotification(
+        _createConnectRequest(reqId: 'req-B', origin: 'https://example.com'),
+      );
+
+      await _waitUntil(() => notifier.removals.isNotEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+
+      expect(notifier.removals, [(1, NotificationRemovalReason.expired)]);
+      expect(container.read(notificationsProvider).map((entry) => entry.id), [
+        2,
+      ]);
+    });
+
+    // A cancelled entry is leaving as *remote cancel*, under a resolution the
+    // server performed. Recording it as *expired* would replace a known cause
+    // with a guessed one, and the reason is what the window policy turns on.
+    // ADR-0010 decision 3.
+    test('never records a cancelled entry as expired', () async {
+      final notifier = built(
+        _SeededRecordingNotifications([
+          connectEntry(
+            9,
+            'req-X',
+            createdAt: DateTime.now().subtract(const Duration(seconds: 5)),
+            ttlMilliseconds: Option.of(1000),
+            itemState: const NotificationItemState.canceled(),
+          ),
+        ]),
+      );
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 400,
+        ),
+      );
+
+      await _waitUntil(() => notifier.removals.isNotEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+
+      expect(notifier.removals, [(1, NotificationRemovalReason.expired)]);
+      expect(container.read(notificationsProvider).map((entry) => entry.id), [
+        9,
+      ]);
+    });
+
+    // An arming at `deadline - 1s` — the instant the truncating comparison used
+    // to answer "expired" at — fires where the predicate answers false, so it
+    // would remove nothing and leave the entry for a later rearm. The elapsed
+    // assertion is what fails then; it cannot be flaky in the other direction,
+    // because a late fire only makes the measurement larger.
+    test('arms at the deadline and sweeps once', () async {
+      final notifier = built(_CountingNotifications());
+
+      final startedAt = DateTime.now();
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 600,
+        ),
+      );
+
+      await _waitUntil(() => notifier.removals.isNotEmpty);
+
+      expect(
+        DateTime.now().difference(startedAt),
+        greaterThanOrEqualTo(const Duration(milliseconds: 600)),
+      );
+      expect(notifier.removals, [(1, NotificationRemovalReason.expired)]);
+
+      // The half of the criterion the removals cannot show. An arming at
+      // `deadline - 1s` fires where the predicate answers false, removes
+      // nothing, rearms on a delay that clamps to zero and spins until the real
+      // deadline — same removal, tens of thousands of fires. Two is allowed
+      // rather than one because `Timer` truncates its delay to whole
+      // milliseconds, so a fire can land a few microseconds inside the boundary
+      // and be rearmed once.
+      expect(notifier.fires, lessThanOrEqualTo(2));
+    });
+
+    // One sweep, two removals, one rearm at the end of it — the rule is per
+    // operation, not per `removeNotification`. Both entries are seeded past
+    // their deadline, so the arming clamps to the first opportunity rather than
+    // scheduling a negative delay. ADR-0010 decision 3.
+    test('one sweep takes every entry already past its deadline', () async {
+      final notifier = built(
+        _SeededRecordingNotifications([
+          connectEntry(
+            9,
+            'req-X',
+            createdAt: DateTime.now().subtract(const Duration(seconds: 5)),
+            ttlMilliseconds: Option.of(1000),
+          ),
+          connectEntry(
+            10,
+            'req-Y',
+            createdAt: DateTime.now().subtract(const Duration(seconds: 4)),
+            ttlMilliseconds: Option.of(1000),
+          ),
+        ]),
+      );
+
+      // Any other change to the list rearms, which is what puts the two
+      // overdue entries in front of a sweep.
+      notifier.addNotification(
+        _createConnectRequest(reqId: 'req-A', origin: 'https://example.com'),
+      );
+
+      await _waitUntil(() => notifier.removals.length == 2);
+
+      expect(notifier.removals, [
+        (9, NotificationRemovalReason.expired),
+        (10, NotificationRemovalReason.expired),
+      ]);
+      expect(container.read(notificationsProvider).map((entry) => entry.id), [
+        1,
+      ]);
+    });
+
+    // The notifier instance survives `clearAll()`'s `invalidateSelf` — riverpod
+    // caches it per element — so a timer left running would sweep the next
+    // generation's entries in silence rather than raising anything. Asserted
+    // inside one container, where a leaked timer can actually reach.
+    // The wait sits between `clearAll()` and the next delivery on purpose: a
+    // timer that outlived the invalidation gets to fire there, into the new
+    // generation, rather than being cancelled by the rearm the next delivery
+    // would perform.
+    //
+    // The removals cannot carry this criterion on their own: the sweep re-reads
+    // every deadline at fire time, so a stray timer can only ever remove
+    // entries that were due anyway. The fire count is what makes the leak
+    // observable, and the wait is what gives the leaked timer somewhere to
+    // land.
+    test('the expiry timer does not outlive its generation', () async {
+      final notifier = built(_CountingNotifications());
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 400,
+        ),
+      );
+      notifier.clearAll();
+
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+
+      // The assertion that carries the criterion. A timer the invalidation did
+      // not cancel is still armed for the instant that has just gone by, and
+      // firing is the only trace it leaves — the sweep it runs finds an empty
+      // list and changes nothing.
+      expect(notifier.fires, 0);
+
+      container
+          .read(notificationsProvider.notifier)
+          .addNotification(
+            _createConnectRequest(
+              reqId: 'req-B',
+              origin: 'https://example.com',
+              ttlMilliseconds: 2500,
+            ),
+          );
+
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+
+      expect(container.read(notificationsProvider), hasLength(1));
+      expect(notifier.removals, isEmpty);
+    });
+
+    // The sequence the criterion names: the entry's deadline is behind it when
+    // `cancelNotification` marks it, so the mark and the microtask that follows
+    // both run over an entry the sweep could otherwise have claimed. It leaves
+    // as *remote cancel*, under the resolution the server performed, and no
+    // expiry is recorded for it. ADR-0010 decision 3.
+    //
+    // Seeded past its deadline because that is the only way to reach the state:
+    // `addNotification` drops a request that arrives past its deadline, and an
+    // entry delivered live would be swept before any cancel could reach it.
+    test(
+      'a cancelled entry past its deadline leaves as a remote cancel',
+      () async {
+        final notifier = built(
+          _SeededRecordingNotifications([
+            connectEntry(
+              9,
+              'req-X',
+              createdAt: DateTime.now().subtract(const Duration(seconds: 5)),
+              ttlMilliseconds: Option.of(1000),
+            ),
+          ]),
+        );
+
+        notifier.cancelNotification('req-X');
+
+        await _waitUntil(() => notifier.removals.isNotEmpty);
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+
+        expect(notifier.removals, [
+          (9, NotificationRemovalReason.remoteCancel),
+        ]);
+        expect(container.read(notificationsProvider), isEmpty);
+      },
+    );
+
+    // The rule a backwards wall-clock correction exists for: a fire that finds
+    // nothing to do produces no state change, so a design that rearmed only on
+    // state changes would strand the timer for the rest of the session. That
+    // input cannot be produced from a test — the clock is not a seam — so the
+    // fire is made directly, which is faithful because a fire consumes the
+    // timer that delivered it. ADR-0010 decision 3.
+    test('a fire that removes nothing still rearms', () async {
+      final notifier = built(_RecordingNotifications());
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 800,
+        ),
+      );
+
+      notifier.sweepExpired();
+      expect(notifier.removals, isEmpty);
+      expect(container.read(notificationsProvider), hasLength(1));
+
+      await _waitUntil(() => notifier.removals.isNotEmpty);
+
+      expect(notifier.removals, [(1, NotificationRemovalReason.expired)]);
+    });
+  });
+
+  // A request whose deadline has already gone by when it arrives never enters
+  // the pending set. ADR-0010 decision 4.
+  group('a request dropped at delivery', () {
+    late ProviderContainer container;
+    late MockDesktopWindowService mockDesktopWindowService;
+    late List<int> badgeWrites;
+    late _RecordingLocalNotificationService mockLocalNotifications;
+
+    setUp(() {
+      badgeWrites = [];
+      mockDesktopWindowService = _stubbedWindowService(
+        badgeWrites: badgeWrites,
+      );
+      mockLocalNotifications = _RecordingLocalNotificationService();
+
+      // The badge and the window commands are desktop-only, so the flavour has
+      // to be raised for their absence to mean anything.
+      _useDesktopFlavour();
+
+      container = _notificationsContainer(
+        windowService: mockDesktopWindowService,
+        localNotifications: mockLocalNotifications,
+      );
+    });
+
+    test('a request with no time left never enters the pending set', () {
+      // Built first, so the zero this notifier writes on the desktop flavour is
+      // behind us before the delivery under test.
+      final notifier = container.read(notificationsProvider.notifier);
+      badgeWrites.clear();
+      clearInteractions(mockDesktopWindowService);
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-expired',
+          origin: 'https://example.com',
+          ttlMilliseconds: 0,
+        ),
+      );
+
+      expect(container.read(notificationsProvider), isEmpty);
+      expect(badgeWrites, isEmpty);
+      verifyNever(() => mockDesktopWindowService.onRequestDelivered(any()));
+      verifyNever(
+        () => mockDesktopWindowService.onRequestResolved(any(), any()),
+      );
+      expect(mockLocalNotifications.submitted, isEmpty);
+    });
+
+    test('the drop is logged once, with a non-negative elapsed amount', () {
+      container
+          .read(notificationsProvider.notifier)
+          .addNotification(
+            _createConnectRequest(
+              reqId: 'req-expired',
+              origin: 'https://example.com',
+              ttlMilliseconds: 0,
+            ),
+          );
+
+      final dropped = _logOutput.lines
+          .where((line) => line.contains('Dropped at delivery'))
+          .toList();
+
+      expect(dropped, hasLength(1));
+      expect(dropped.single, contains('req-expired'));
+      expect(dropped.single, contains('https://example.com'));
+
+      final elapsed = int.parse(
+        RegExp(r'was already (-?\d+)ms past')
+            .firstMatch(dropped.single)!
+            .group(1)!,
+      );
+      expect(elapsed, greaterThanOrEqualTo(0));
+    });
+
+    // A short but live TTL is delivered normally and counts down. Suppressing
+    // it would need a floor, and a floor invents a deadline the server did not
+    // give. Under the truncating comparison this request was dropped; the
+    // millisecond-precise one pins the scope to a TTL of zero and nothing else.
+    test('a request with a part-second of TTL is delivered normally', () {
+      final notifier = container.read(notificationsProvider.notifier);
+      badgeWrites.clear();
+      clearInteractions(mockDesktopWindowService);
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-brief',
+          origin: 'https://example.com',
+          ttlMilliseconds: 900,
+        ),
+      );
+
+      expect(container.read(notificationsProvider), hasLength(1));
+      expect(badgeWrites, [1]);
+      verify(() => mockDesktopWindowService.onRequestDelivered(1)).called(1);
+      expect(
+        container.read(signRequestNotificationTtlProvider(1)),
+        Option.of(0),
+      );
+    });
+
+    // Both payloads from one message is a wire state the `oneof` forbids, and
+    // the append handles it anyway; the drop is decided above both branches, so
+    // it takes both. Prior art for the input: `_createBothRequest`.
+    test(
+      'a message carrying both payloads with no time left produces nothing',
+      () {
+        container
+            .read(notificationsProvider.notifier)
+            .addNotification(
+              _createBothRequest(
+                reqId: 'req-both-expired',
+                origin: 'https://example.com',
+                ttlMilliseconds: 0,
+              ),
+            );
+
+        expect(container.read(notificationsProvider), isEmpty);
+      },
+    );
+  });
+
+  // The app-icon badge is desktop-only and the sweep is not, so this is the
+  // desktop half of the sweep's contract. ADR-0010 decision 1.
+  group('the expiry sweep on the desktop flavour', () {
+    late ProviderContainer container;
+    late MockDesktopWindowService mockDesktopWindowService;
+    late List<int> badgeWrites;
+
+    setUp(() {
+      badgeWrites = [];
+      mockDesktopWindowService = _stubbedWindowService(
+        badgeWrites: badgeWrites,
+      );
+      _useDesktopFlavour();
+
+      container = _notificationsContainer(
+        windowService: mockDesktopWindowService,
+      );
+    });
+
+    // Asserted on the badge target rather than on `pendingBadgeCount` of a
+    // list: that is a pure function of the list and cannot fail once the
+    // removal has happened, so it would not tell us the write was made.
+    test('a swept request decrements the app-icon badge', () async {
+      final notifier = container.read(notificationsProvider.notifier);
+
+      notifier.addNotification(
+        _createConnectRequest(
+          reqId: 'req-A',
+          origin: 'https://example.com',
+          ttlMilliseconds: 400,
+        ),
+      );
+      notifier.addNotification(
+        _createConnectRequest(reqId: 'req-B', origin: 'https://example.com'),
+      );
+      expect(badgeWrites.last, 2);
+
+      await _waitUntil(() => badgeWrites.last == 1);
+
+      expect(badgeWrites.last, 1);
+      verify(
+        () => mockDesktopWindowService.onRequestResolved(
+          1,
+          NotificationRemovalReason.expired,
+        ),
+      ).called(1);
     });
   });
 
@@ -1329,6 +2158,34 @@ void main() {
       expect(result.isNone(), true);
     });
 
+    // The display is whole seconds and stays whole seconds: making the expiry
+    // boundary millisecond-precise did not change the number on the screen.
+    // ADR-0010 decision 2.
+    test('renders zero for an entry with a part-second of its window left', () {
+      final notifications = [
+        NotificationData(
+          1,
+          NotificationType.connect(
+            'req-123',
+            'origin',
+            NotificationItemState.empty(),
+            DateTime.now().subtract(const Duration(milliseconds: 100)),
+            Option.of(1000),
+          ),
+        ),
+      ];
+
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWithValue(notifications)],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(signRequestNotificationTtlProvider(1)),
+        Option.of(0),
+      );
+    });
+
     test(
       'returns initial ttl value in seconds when notification is not expired',
       () {
@@ -1515,6 +2372,426 @@ void main() {
         expect(result.getOrElse(() => -1), greaterThan(0));
       });
     });
+
+    // A request carrying no countdown is not expired locally: there is no
+    // deadline to enforce and none is invented. ADR-0006 decision 7. Stated as
+    // "starts no countdown" rather than "it never leaves" — such a request can
+    // still go through remote cancel, a user action, or Clear all.
+    test('starts no countdown for a request that carries no deadline', () {
+      fakeAsync((async) {
+        final notifications = [
+          NotificationData(
+            1,
+            NotificationType.connect(
+              'req-123',
+              'origin',
+              NotificationItemState.empty(),
+              DateTime.now(),
+              none<int>(),
+            ),
+          ),
+        ];
+
+        container = ProviderContainer.test(
+          overrides: [notificationsProvider.overrideWithValue(notifications)],
+        );
+        addTearDown(container.dispose);
+
+        container.listen(signRequestNotificationTtlProvider(1), (_, _) {});
+
+        async.elapse(Duration(minutes: 5));
+
+        expect(async.pendingTimers, isEmpty);
+        expect(
+          container.read(signRequestNotificationTtlProvider(1)).isNone(),
+          isTrue,
+        );
+      });
+    });
+  });
+
+  group('pendingRequest', () {
+    late ProviderContainer container;
+
+    NotificationData connectEntry(
+      int id,
+      String reqId, {
+      NotificationItemState itemState = const NotificationItemState.empty(),
+    }) => NotificationData(
+      id,
+      NotificationType.connect(
+        reqId,
+        'origin',
+        itemState,
+        DateTime.now(),
+        Option.of(30000),
+      ),
+    );
+
+    test('yields the entry while the request is pending', () {
+      final entry = connectEntry(1, 'req-A');
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([entry]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(pendingRequestProvider(1, 'req-A')),
+        Option.of(entry),
+      );
+    });
+
+    test('yields the entry for a sign request too', () {
+      final entry = NotificationData(
+        1,
+        NotificationType.signRequest(
+          From_SignerRequest_Sign(),
+          'req-A',
+          'origin',
+          NotificationItemState.empty(),
+          DateTime.now(),
+          Option.of(30000),
+        ),
+      );
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([entry]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(pendingRequestProvider(1, 'req-A')),
+        Option.of(entry),
+      );
+    });
+
+    test('yields nothing when the list holds no such id', () {
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([connectEntry(2, 'req-A')]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(pendingRequestProvider(1, 'req-A')).isNone(),
+        isTrue,
+      );
+    });
+
+    test('yields nothing when the list is empty', () {
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWithValue([])],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(pendingRequestProvider(1, 'req-A')).isNone(),
+        isTrue,
+      );
+    });
+
+    test('yields nothing when the entry is in the cancelled state', () {
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([
+            connectEntry(
+              1,
+              'req-A',
+              itemState: NotificationItemState.canceled(),
+            ),
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(pendingRequestProvider(1, 'req-A')).isNone(),
+        isTrue,
+      );
+    });
+
+    // The local id is an arrival counter, so a bare integer match is not an
+    // identity: the request id is what says the entry under this id is the one
+    // the caller captured. `addNotification` cannot produce this pairing on its
+    // own — it mints one id per delivery from a counter that only goes up
+    // (#211), so it never files two *different* requests under one id — which
+    // is why it is seeded here. ADR-0006 decision 3.
+    test('yields nothing when the id addresses a different request', () {
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([connectEntry(1, 'req-B')]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(pendingRequestProvider(1, 'req-A')).isNone(),
+        isTrue,
+      );
+    });
+
+    test('re-emits when its answer changes', () async {
+      final entry = connectEntry(1, 'req-A');
+      final seeded = _SeededNotifications([entry]);
+      final listener = ProviderListener<Option<NotificationData>>();
+
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWith(() => seeded)],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(
+        pendingRequestProvider(1, 'req-A'),
+        listener.call,
+        fireImmediately: true,
+      );
+
+      seeded.setEntries([]);
+      // A derived provider reaches its listeners on the microtask after its
+      // dependency changed, not synchronously with it.
+      await Future<void>.delayed(Duration.zero);
+
+      verifyInOrder([
+        () => listener(null, Option.of(entry)),
+        () => listener(Option.of(entry), none()),
+      ]);
+    });
+
+    // The reason the lookup lives in a provider rather than in the dialog: a
+    // list rebuild that leaves this request untouched must not churn the
+    // dialog watching it. ADR-0006 decision 3.
+    test('does not re-emit when its answer is unchanged', () async {
+      final entry = connectEntry(1, 'req-A');
+      final seeded = _SeededNotifications([entry]);
+      final listener = ProviderListener<Option<NotificationData>>();
+
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWith(() => seeded)],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(
+        pendingRequestProvider(1, 'req-A'),
+        listener.call,
+        fireImmediately: true,
+      );
+
+      // A second request arriving: the list is a new object, this request's
+      // answer is not.
+      seeded.setEntries([connectEntry(2, 'req-B'), entry]);
+      await Future<void>.delayed(Duration.zero);
+
+      verify(() => listener(any(), any())).called(1);
+    });
+  });
+
+  group('nextPendingRequest', () {
+    late ProviderContainer container;
+
+    NotificationData connectEntry(
+      int id,
+      String reqId, {
+      NotificationItemState itemState = const NotificationItemState.empty(),
+    }) => NotificationData(
+      id,
+      NotificationType.connect(
+        reqId,
+        'origin',
+        itemState,
+        DateTime.now(),
+        Option.of(30000),
+      ),
+    );
+
+    NotificationData signEntry(int id, String reqId) => NotificationData(
+      id,
+      NotificationType.signRequest(
+        From_SignerRequest_Sign(),
+        reqId,
+        'origin',
+        NotificationItemState.empty(),
+        DateTime.now(),
+        Option.of(30000),
+      ),
+    );
+
+    test('yields nothing when nothing is waiting', () {
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWithValue([])],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider).isNone(), isTrue);
+    });
+
+    test('yields nothing when every entry has been cancelled', () {
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([
+            connectEntry(
+              1,
+              'req-A',
+              itemState: NotificationItemState.canceled(),
+            ),
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider).isNone(), isTrue);
+    });
+
+    test('yields the only request waiting', () {
+      final entry = connectEntry(1, 'req-A');
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([entry]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider), Option.of(entry));
+    });
+
+    // Oldest first, because a queue served newest-first starves the request
+    // with the least time left on it. ADR-0006 decision 5. The list is held
+    // newest-first, so this is not the head of it.
+    test('yields the oldest of several waiting', () {
+      final oldest = connectEntry(1, 'req-A');
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([
+            connectEntry(3, 'req-C'),
+            connectEntry(2, 'req-B'),
+            oldest,
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider), Option.of(oldest));
+    });
+
+    // The list is built newest-first today, and the answer must not depend on
+    // that: it is folded out of the whole list rather than read off one end.
+    test('yields the oldest whichever order the list is held in', () {
+      final oldest = connectEntry(1, 'req-A');
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([
+            oldest,
+            connectEntry(2, 'req-B'),
+            connectEntry(3, 'req-C'),
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider), Option.of(oldest));
+    });
+
+    test('passes over a cancelled entry to reach the oldest one waiting', () {
+      final pending = connectEntry(2, 'req-B');
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([
+            pending,
+            connectEntry(
+              1,
+              'req-A',
+              itemState: NotificationItemState.canceled(),
+            ),
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider), Option.of(pending));
+    });
+
+    // Two entries under one id is what `addNotification` would build for a
+    // request carrying both a connect and a sign payload, which the wire makes
+    // impossible today — the two are a protobuf `oneof`. Pinned anyway, because
+    // the tie-break is the reason this is a fold rather than a read off one end
+    // of the list: the entry the list holds first wins, which is the same one
+    // `pendingRequest` answers with, and the two have to agree about which
+    // entry an id addresses.
+    test('keeps the entry the list holds first when two share an id', () {
+      final sign = signEntry(1, 'req-A');
+
+      container = ProviderContainer.test(
+        overrides: [
+          notificationsProvider.overrideWithValue([
+            sign,
+            connectEntry(1, 'req-A'),
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(nextPendingRequestProvider), Option.of(sign));
+    });
+
+    test('re-emits when the request to present next changes', () async {
+      final first = connectEntry(1, 'req-A');
+      final second = connectEntry(2, 'req-B');
+      final seeded = _SeededNotifications([second, first]);
+      final listener = ProviderListener<Option<NotificationData>>();
+
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWith(() => seeded)],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(
+        nextPendingRequestProvider,
+        listener.call,
+        fireImmediately: true,
+      );
+
+      seeded.setEntries([second]);
+      await Future<void>.delayed(Duration.zero);
+
+      verifyInOrder([
+        () => listener(null, Option.of(first)),
+        () => listener(Option.of(first), Option.of(second)),
+      ]);
+    });
+
+    // What makes "a second request opens no window" true without anything
+    // guarding it: a later arrival is not the oldest, so the answer the
+    // listener watches does not change at all. ADR-0006 decision 5.
+    test('does not re-emit when a later request joins the queue', () async {
+      final first = connectEntry(1, 'req-A');
+      final seeded = _SeededNotifications([first]);
+      final listener = ProviderListener<Option<NotificationData>>();
+
+      container = ProviderContainer.test(
+        overrides: [notificationsProvider.overrideWith(() => seeded)],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(
+        nextPendingRequestProvider,
+        listener.call,
+        fireImmediately: true,
+      );
+
+      seeded.setEntries([connectEntry(2, 'req-B'), first]);
+      await Future<void>.delayed(Duration.zero);
+
+      verify(() => listener(any(), any())).called(1);
+    });
   });
 
   group('Notifications (Notifier) - Desktop flavor', () {
@@ -1531,47 +2808,18 @@ void main() {
     void setupDesktopContainer([
       MockLocalNotificationService? mockNotifications,
     ]) {
-      container = ProviderContainer.test(
-        overrides: [
-          localNotificationsProvider.overrideWithValue(
-            mockNotifications ?? MockLocalNotificationService(),
-          ),
-          desktopDialogProvider.overrideWithValue(MockDesktopDialog()),
-          desktopWindowServiceProvider.overrideWithValue(
-            mockDesktopWindowService,
-          ),
-        ],
+      container = _notificationsContainer(
+        windowService: mockDesktopWindowService,
+        localNotifications: mockNotifications,
       );
-      addTearDown(container.dispose);
     }
 
     setUp(() {
-      mockDesktopWindowService = MockDesktopWindowService();
-      when(
-        () => mockDesktopWindowService.onRequestDelivered(any()),
-      ).thenAnswer((_) async {});
-      when(
-        () => mockDesktopWindowService.onRequestResolved(any(), any()),
-      ).thenAnswer((_) async {});
-      when(
-        () => mockDesktopWindowService.abandonEpisode(),
-      ).thenAnswer((_) async {});
       badgeWrites = [];
-      when(() => mockDesktopWindowService.setPendingBadge(any())).thenAnswer((
-        invocation,
-      ) async {
-        badgeWrites.add(invocation.positionalArguments.first as int);
-      });
-      // Reinitialize FlavorConfig with isDesktop: true for desktop tests
-      FlavorConfig(
-        flavor: Flavor.production,
-        values: FlavorValues(
-          enableNetworkSettings: false,
-          enableJade: true,
-          enableLocalEndpoint: false,
-          isDesktop: true,
-        ),
+      mockDesktopWindowService = _stubbedWindowService(
+        badgeWrites: badgeWrites,
       );
+      _useDesktopFlavour();
       setupDesktopContainer();
     });
 
@@ -1745,9 +2993,8 @@ void main() {
       test(
         'a refused raise does not escape or lose the notification',
         () async {
-          when(
-            () => mockDesktopWindowService.onRequestDelivered(any()),
-          ).thenThrow(Exception('window manager refused activation'));
+          when(() => mockDesktopWindowService.onRequestDelivered(any()))
+              .thenThrow(Exception('window manager refused activation'));
 
           container
               .read(notificationsProvider.notifier)
@@ -1785,31 +3032,32 @@ void main() {
               .read(notificationsProvider.notifier)
               .removeNotification(1, reason: reason);
 
-          verify(
-            () => mockDesktopWindowService.onRequestResolved(1, reason),
-          ).called(1);
+          verify(() => mockDesktopWindowService.onRequestResolved(1, reason))
+              .called(1);
         });
       }
 
-      test('a remote cancel resolves the swept entry as remoteCancel', () async {
-        container
-            .read(notificationsProvider.notifier)
-            .cancelNotification('req-resolution');
-        // The sweep that removes cancelled entries runs a microtask later.
-        await Future<void>.delayed(Duration.zero);
+      test(
+        'a remote cancel resolves the swept entry as remoteCancel',
+        () async {
+          container
+              .read(notificationsProvider.notifier)
+              .cancelNotification('req-resolution');
+          // The sweep that removes cancelled entries runs a microtask later.
+          await Future<void>.delayed(Duration.zero);
 
-        verify(
-          () => mockDesktopWindowService.onRequestResolved(
-            1,
-            NotificationRemovalReason.remoteCancel,
-          ),
-        ).called(1);
-      });
+          verify(
+            () => mockDesktopWindowService.onRequestResolved(
+              1,
+              NotificationRemovalReason.remoteCancel,
+            ),
+          ).called(1);
+        },
+      );
 
       test('a refused resolution does not escape', () async {
-        when(
-          () => mockDesktopWindowService.onRequestResolved(any(), any()),
-        ).thenThrow(Exception('window manager refused'));
+        when(() => mockDesktopWindowService.onRequestResolved(any(), any()))
+            .thenThrow(Exception('window manager refused'));
 
         container
             .read(notificationsProvider.notifier)
@@ -1822,23 +3070,19 @@ void main() {
         expect(container.read(notificationsProvider), isEmpty);
       });
 
-      test(
-        'clearing every notification gives the raise episode up instead of '
-        'resolving anything: nothing else would ever empty it',
-        () {
-          container.read(notificationsProvider.notifier).clearAll();
+      test('clearing every notification gives the raise episode up instead of '
+          'resolving anything: nothing else would ever empty it', () {
+        container.read(notificationsProvider.notifier).clearAll();
 
-          verify(() => mockDesktopWindowService.abandonEpisode()).called(1);
-          verifyNever(
-            () => mockDesktopWindowService.onRequestResolved(any(), any()),
-          );
-        },
-      );
+        verify(() => mockDesktopWindowService.abandonEpisode()).called(1);
+        verifyNever(
+          () => mockDesktopWindowService.onRequestResolved(any(), any()),
+        );
+      });
 
       test('a refused abandon does not escape', () async {
-        when(
-          () => mockDesktopWindowService.abandonEpisode(),
-        ).thenThrow(Exception('window manager refused'));
+        when(() => mockDesktopWindowService.abandonEpisode())
+            .thenThrow(Exception('window manager refused'));
 
         container.read(notificationsProvider.notifier).clearAll();
         await Future<void>.delayed(Duration.zero);
@@ -1922,29 +3166,32 @@ void main() {
         );
       });
 
-      test('a request carrying both kinds logs each submission apart', () async {
-        setupDesktopContainer();
+      test(
+        'a request carrying both kinds logs each submission apart',
+        () async {
+          setupDesktopContainer();
 
-        container
-            .read(notificationsProvider.notifier)
-            .addNotification(
-              _createBothRequest(
-                reqId: 'req-both-logged',
-                origin: 'https://both.example.com',
-              ),
-            );
-        await Future<void>.delayed(Duration.zero);
+          container
+              .read(notificationsProvider.notifier)
+              .addNotification(
+                _createBothRequest(
+                  reqId: 'req-both-logged',
+                  origin: 'https://both.example.com',
+                ),
+              );
+          await Future<void>.delayed(Duration.zero);
 
-        // Both submissions share one notification id, so the payload type is
-        // the only thing telling the connect banner from the sign banner.
-        expect(
-          _logOutput.lines.join('\n'),
-          allOf(
-            contains('type=swaptionConnect'),
-            contains('type=swaptionSign'),
-          ),
-        );
-      });
+          // Both submissions share one notification id, so the payload type is
+          // the only thing telling the connect banner from the sign banner.
+          expect(
+            _logOutput.lines.join('\n'),
+            allOf(
+              contains('type=swaptionConnect'),
+              contains('type=swaptionSign'),
+            ),
+          );
+        },
+      );
 
       test('an accepted notification is logged against its request', () async {
         setupDesktopContainer();
@@ -2009,50 +3256,53 @@ void main() {
         expect(badgeWrites.last, 2);
       });
 
-      test(
-        'a request carrying both a connect and a sign payload counts as the '
-        'two cards the user actually sees',
-        () {
-          container
-              .read(notificationsProvider.notifier)
-              .addNotification(
-                _createBothRequest(
-                  reqId: 'req-badge-both',
-                  origin: 'https://both.com',
-                ),
-              );
+      test('a request carrying both a connect and a sign payload counts as the '
+          'two cards the user actually sees', () {
+        container
+            .read(notificationsProvider.notifier)
+            .addNotification(
+              _createBothRequest(
+                reqId: 'req-badge-both',
+                origin: 'https://both.com',
+              ),
+            );
 
-          expect(badgeWrites.last, 2);
-        },
-      );
+        expect(badgeWrites.last, 2);
+      });
 
       for (final reason in NotificationRemovalReason.values) {
-        test('a removal for ${reason.name} drops the count to what is left', () {
-          final notifier = container.read(notificationsProvider.notifier);
-          notifier.addNotification(
-            _createConnectRequest(
-              reqId: 'req-badge-kept',
-              origin: 'https://a.com',
-            ),
-          );
-          notifier.addNotification(
-            _createSignRequest(
-              reqId: 'req-badge-gone',
-              origin: 'https://b.com',
-            ),
-          );
-          final resolved = container.read(notificationsProvider).first.id;
+        test(
+          'a removal for ${reason.name} drops the count to what is left',
+          () {
+            final notifier = container.read(notificationsProvider.notifier);
+            notifier.addNotification(
+              _createConnectRequest(
+                reqId: 'req-badge-kept',
+                origin: 'https://a.com',
+              ),
+            );
+            notifier.addNotification(
+              _createSignRequest(
+                reqId: 'req-badge-gone',
+                origin: 'https://b.com',
+              ),
+            );
+            final resolved = container.read(notificationsProvider).first.id;
 
-          notifier.removeNotification(resolved, reason: reason);
+            notifier.removeNotification(resolved, reason: reason);
 
-          expect(badgeWrites.last, 1);
-        });
+            expect(badgeWrites.last, 1);
+          },
+        );
       }
 
       test('the last removal empties the badge', () {
         final notifier = container.read(notificationsProvider.notifier);
         notifier.addNotification(
-          _createConnectRequest(reqId: 'req-badge-only', origin: 'https://a.com'),
+          _createConnectRequest(
+            reqId: 'req-badge-only',
+            origin: 'https://a.com',
+          ),
         );
         final onlyOne = container.read(notificationsProvider).first.id;
 
@@ -2064,58 +3314,52 @@ void main() {
         expect(badgeWrites.last, 0);
       });
 
-      test(
-        'a remotely cancelled request stops counting the moment the '
-        'cancellation is recorded, not when the microtask removes it',
-        () {
-          final notifier = container.read(notificationsProvider.notifier);
-          notifier.addNotification(
-            _createConnectRequest(
-              reqId: 'req-badge-cancelled',
-              origin: 'https://a.com',
-            ),
-          );
-          notifier.addNotification(
-            _createSignRequest(
-              reqId: 'req-badge-surviving',
-              origin: 'https://b.com',
-            ),
-          );
+      test('a remotely cancelled request stops counting the moment the '
+          'cancellation is recorded, not when the microtask removes it', () {
+        final notifier = container.read(notificationsProvider.notifier);
+        notifier.addNotification(
+          _createConnectRequest(
+            reqId: 'req-badge-cancelled',
+            origin: 'https://a.com',
+          ),
+        );
+        notifier.addNotification(
+          _createSignRequest(
+            reqId: 'req-badge-surviving',
+            origin: 'https://b.com',
+          ),
+        );
 
-          notifier.cancelNotification('req-badge-cancelled');
+        notifier.cancelNotification('req-badge-cancelled');
 
-          // Asserted with the microtask still queued: the entry is in the list
-          // and already out of the count.
-          expect(container.read(notificationsProvider), hasLength(2));
-          expect(badgeWrites.last, 1);
-        },
-      );
+        // Asserted with the microtask still queued: the entry is in the list
+        // and already out of the count.
+        expect(container.read(notificationsProvider), hasLength(2));
+        expect(badgeWrites.last, 1);
+      });
 
-      test(
-        'the microtask that removes a cancelled entry does not change the '
-        'count it was already excluded from',
-        () async {
-          final notifier = container.read(notificationsProvider.notifier);
-          notifier.addNotification(
-            _createConnectRequest(
-              reqId: 'req-badge-cancelled',
-              origin: 'https://a.com',
-            ),
-          );
-          notifier.addNotification(
-            _createSignRequest(
-              reqId: 'req-badge-surviving',
-              origin: 'https://b.com',
-            ),
-          );
-          notifier.cancelNotification('req-badge-cancelled');
+      test('the microtask that removes a cancelled entry does not change the '
+          'count it was already excluded from', () async {
+        final notifier = container.read(notificationsProvider.notifier);
+        notifier.addNotification(
+          _createConnectRequest(
+            reqId: 'req-badge-cancelled',
+            origin: 'https://a.com',
+          ),
+        );
+        notifier.addNotification(
+          _createSignRequest(
+            reqId: 'req-badge-surviving',
+            origin: 'https://b.com',
+          ),
+        );
+        notifier.cancelNotification('req-badge-cancelled');
 
-          await pumpEventQueue();
+        await pumpEventQueue();
 
-          expect(container.read(notificationsProvider), hasLength(1));
-          expect(badgeWrites.last, 1);
-        },
-      );
+        expect(container.read(notificationsProvider), hasLength(1));
+        expect(badgeWrites.last, 1);
+      });
 
       test('clearing the list empties the badge without waiting for a read', () {
         final notifier = container.read(notificationsProvider.notifier);

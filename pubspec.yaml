@@ -1,11 +1,11 @@
 name: sideswap
 description: Sideswap Client.
-version: 1.9.1+5032
+version: 1.9.2+5033
 publish_to: none
 
 environment:
-  sdk: ^3.12.2
-  flutter: ^3.44.6
+  sdk: ^3.13.0
+  flutter: ^3.47.0
 
 dependencies:
   # git related dependencies
@@ -17,11 +17,6 @@ dependencies:
     git:
       url: https://github.com/sideswap-io/sideswap_websocket.git
       ref: encryption
-  window_size:
-    git:
-      url: https://github.com/google/flutter-desktop-embedding.git
-      ref: a738913c8ce2c9f47515382d40827e794a334274
-      path: plugins/window_size
   # path related dependencies
   candlesticks:
     path: thirdparty/candlesticks
@@ -64,13 +59,14 @@ dependencies:
   flutter_switch: ^0.3.2
   fpdart: ^1.2.0
   freezed_annotation: ^3.1.0
-  hooks_riverpod: ^3.3.2
-  riverpod: ^3.3.2
+  hooks_riverpod: ^3.4.2
+  riverpod: ^3.4.2
   http: ^1.6.0
   image: ^4.9.1
   image_picker: ^1.2.3
   json_annotation: ^4.12.0
   logger: ^2.7.0
+  marionette_flutter: 0.6.0
   marquee_plus: ^2.2.4
   matrix4_transform: ^4.0.1
   mobile_scanner: ^7.4.0
@@ -79,8 +75,9 @@ dependencies:
   path_provider: ^2.1.6
   pinput: ^6.0.2
   qr_flutter: ^4.1.0
-  riverpod_annotation: ^4.0.3
+  riverpod_annotation: ^4.0.6
   rxdart: ^0.28.0
+  screen_retriever: ^0.2.2
   share_plus: ^13.2.1
   shared_preferences: ^2.5.5
   shelf: ^1.4.2
@@ -107,41 +104,32 @@ dependencies:
 dev_dependencies:
   # normal dependencies
   build_runner: ^2.15.0
-  freezed: ^3.2.5
+  freezed: ^4.0.0-dev.3
   icons_launcher: ^3.1.0
   json_serializable: ^6.14.0
   pubm: ^0.3.0+1
-  riverpod_generator: ^4.0.4
-  riverpod_lint: ^3.1.4
+  riverpod_generator: ^4.0.8
+  riverpod_lint: ^3.1.8
   # test utilities — file system and platform mocking for provider tests
   file: ^7.0.1
   path_provider_platform_interface: ^2.1.3
+  # read the resolved permission_handler pubspec in the vendored-plugin drift test
+  pub_semver: ^2.2.0
+  yaml: ^3.1.3
   # sdk dependencies
   flutter_test:
     sdk: flutter
   fake_async: ^1.3.3
 
-# TEMPORARY: pin riverpod to the upstream fix for the "setState() called during
-# build" crash when opening the desktop Send dialog (flushing a dirty provider
-# during widget build). Fixed on riverpod master in commit 02b11c3 (#4816);
-# not yet in a published release (latest is 3.3.2). Remove once a release with
-# this fix is available and bump the normal constraints instead.
 dependency_overrides:
-  riverpod:
-    git:
-      url: https://github.com/rrousselGit/riverpod.git
-      ref: 02b11c3fb12f7e2f07252c750ccca1edead81953
-      path: packages/riverpod
-  flutter_riverpod:
-    git:
-      url: https://github.com/rrousselGit/riverpod.git
-      ref: 02b11c3fb12f7e2f07252c750ccca1edead81953
-      path: packages/flutter_riverpod
-  hooks_riverpod:
-    git:
-      url: https://github.com/rrousselGit/riverpod.git
-      ref: 02b11c3fb12f7e2f07252c750ccca1edead81953
-      path: packages/hooks_riverpod
+  # `permission_handler` itself comes from pub.dev. Only its Windows implementation is
+  # vendored, to drop a Geolocator subscription that would otherwise start Windows
+  # location services at every desktop launch. Re-read
+  # docs/adr/0007-vendored-permission-handler-windows.md and
+  # thirdparty/permission_handler_windows/UPSTREAM.md before every `permission_handler`
+  # bump: an override satisfies any constraint silently, including one it no longer meets.
+  permission_handler_windows:
+    path: thirdparty/permission_handler_windows
 
 flutter:
   uses-material-design: true

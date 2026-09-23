@@ -3,9 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:sideswap/common/encryption.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/encryption_providers.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_descriptors_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -13,8 +17,13 @@ import 'package:sideswap/side_swap_client_ffi.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
 import '../helpers/fake_configuration.dart';
+import '../helpers/fake_shared_preferences.dart';
+import '../helpers/settings_container.dart';
 import '../helpers/test_utils.dart';
 import '../utils.dart';
+
+class MockEncryptionRepository extends Mock
+    implements AbstractEncryptionRepository {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -611,5 +620,133 @@ void main() {
       );
     });
   });
-}
 
+  group('PIN record — disablePinProtection', () {
+    late FakeSharedPreferences prefs;
+    late MockEncryptionRepository encryption;
+
+    const blob = PinDataStateData(
+      salt: 'salt-a',
+      encryptedData: 'enc-a',
+      pinIdentifier: 'id-a',
+      hmac: 'hmac-a',
+    );
+
+    setUp(() {
+      prefs = FakeSharedPreferences();
+      encryption = MockEncryptionRepository();
+    });
+
+    ProviderContainer containerOverPrefs() {
+      return settingsContainer(
+        prefs,
+        overrides: [encryptionRepositoryProvider.overrideWithValue(encryption)],
+      );
+    }
+
+    /// A wallet with PIN protection standing and a PIN already entered, which
+    /// is where `disablePinProtection` expects to be called from.
+    Future<SideswapWallet> walletUnderPinProtection(
+      ProviderContainer container,
+    ) async {
+      container
+          .read(configurationProvider.notifier)
+          .activatePinProtection(blob);
+      await prefs.settle();
+
+      container.read(pinProtectionHelperProvider).onPinBlockadeCallback =
+          (_, _, _) async => true;
+      container
+          .read(pinDecryptedDataProvider.notifier)
+          .setPinDecryptedData(PinDecryptedData(true, mnemonic: 'a mnemonic'));
+
+      return container.read(walletProvider);
+    }
+
+    test(
+      'clears the blob and keeps a fallback mnemonic that survives a rebuild',
+      () async {
+        when(
+          () => encryption.encryptFallback(any()),
+        ).thenAnswer((_) async => Uint8List.fromList([7, 8, 9]));
+
+        final container = containerOverPrefs();
+        final wallet = await walletUnderPinProtection(container);
+
+        final result = await wallet.disablePinProtection();
+        await prefs.settle();
+
+        expect(result, true);
+
+        final reloaded = reloadSettings(prefs);
+        expect(reloaded.usePinProtection, false);
+        expect(reloaded.pinDataState, isA<PinDataStateEmpty>());
+        expect(reloaded.mnemonicEncrypted, Uint8List.fromList([7, 8, 9]));
+      },
+    );
+
+    test(
+      'keeps the PIN record standing when the fallback mnemonic comes back empty',
+      () async {
+        when(
+          () => encryption.encryptFallback(any()),
+        ).thenAnswer((_) async => Uint8List(0));
+
+        final container = containerOverPrefs();
+        final wallet = await walletUnderPinProtection(container);
+
+        final result = await wallet.disablePinProtection();
+        await prefs.settle();
+
+        // The desktop caller draws a success screen on `true`, so a disable
+        // that did not happen must not report one.
+        expect(result, false);
+
+        final reloaded = reloadSettings(prefs);
+        expect(reloaded.usePinProtection, true);
+        expect(reloaded.pinDataState, blob);
+      },
+    );
+
+    test('changes nothing when PIN protection is already off', () async {
+      final container = containerOverPrefs();
+      await prefs.settle();
+      final writesBefore = prefs.writeLog.length;
+
+      final result = await container
+          .read(walletProvider)
+          .disablePinProtection();
+      await prefs.settle();
+
+      expect(result, true);
+      expect(prefs.writeLog.length, writesBefore);
+    });
+
+    test(
+      'enabling biometric protection drops the PIN flag and survives a rebuild',
+      () async {
+        when(
+          () => encryption.encryptBiometric(any()),
+        ).thenAnswer((_) async => Uint8List.fromList([4, 5, 6]));
+
+        final container = containerOverPrefs();
+        container
+            .read(configurationProvider.notifier)
+            .activatePinProtection(blob);
+        await prefs.settle();
+
+        final wallet = container.read(walletProvider);
+        wallet.mnemonicRepository.setMnemonic('a mnemonic');
+
+        final result = await wallet.walletBiometricEnable();
+        await prefs.settle();
+
+        expect(result, true);
+
+        final reloaded = reloadSettings(prefs);
+        expect(reloaded.useBiometricProtection, true);
+        expect(reloaded.usePinProtection, false);
+      },
+    );
+  });
+}

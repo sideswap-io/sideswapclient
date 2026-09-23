@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_settings_button.dart';
+import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/settings/d_settings.dart';
 import 'package:sideswap/providers/config_provider.dart';
-import 'package:sideswap/screens/flavor_config.dart';
 
 import '../helpers/fake_configuration.dart';
+import '../helpers/surface_floor.dart';
 
 /// Jade settings so `isJadeWalletProvider` (reads `jadeId.isNotEmpty`) picks the
 /// Jade layout, which drops the long `View my recovery phrase` / `PIN
@@ -33,7 +34,7 @@ SideswapSettings _softwareSettings() => SideswapSettings.empty(
 
 /// DSettings with a tiny content cap so the row list overflows it -- exercises
 /// the scroll-on-overflow safety net on the real widget without a synthetic row
-/// set (no realistic row set reaches the production 664px cap).
+/// set (no realistic row set reaches the production 574px cap).
 class _CappedDSettings extends DSettings {
   const _CappedDSettings();
 
@@ -42,23 +43,13 @@ class _CappedDSettings extends DSettings {
 }
 
 void main() {
-  // `Localization` is a process-wide singleton and `FlavorConfig` a static
-  // store, so per docs/TESTING.md both are (re)initialised in setUp -- never
-  // setUpAll, which would leak into whatever runs next under a random seed.
-  //
   // enableLocalEndpoint: true renders the debug `Use local api server` row --
   // the extra row the content-sizing must still fit without scrolling.
+  late RouteRecorder routeRecorder;
+
   setUp(() {
-    Localization.load(const Locale('en'));
-    FlavorConfig(
-      flavor: Flavor.production,
-      values: FlavorValues(
-        enableNetworkSettings: true,
-        enableJade: false,
-        enableLocalEndpoint: true,
-        isDesktop: true,
-      ),
-    );
+    routeRecorder = RouteRecorder();
+    installSurfaceTestEnv(enableLocalEndpoint: true);
   });
 
   tearDownAll(() {
@@ -80,9 +71,7 @@ void main() {
     Size size = const Size(1600, 2000),
     Widget settingsWidget = const DSettings(),
   }) => tester.runAsync(() async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
+    sizeView(tester, size);
     await tester.pumpWidget(
       ProviderScope(
         // Keyed by wallet type so a second pump in the same test (the natural
@@ -90,17 +79,15 @@ void main() {
         // instead of reusing the first pump's overrides.
         key: ValueKey(settings.jadeId),
         overrides: [
-          configurationProvider.overrideWith(
-            () => FakeConfiguration(settings),
-          ),
+          configurationProvider.overrideWith(() => FakeConfiguration(settings)),
         ],
         child: MaterialApp(
+          navigatorObservers: [routeRecorder],
           home: Scaffold(
             body: Builder(
               builder: (context) => MediaQuery(
-                data: MediaQuery.of(
-                  context,
-                ).copyWith(textScaler: TextScaler.linear(textScale)),
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(textScale)),
                 child: settingsWidget,
               ),
             ),
@@ -110,13 +97,10 @@ void main() {
     );
   });
 
-  double maxScrollExtent(WidgetTester tester) {
-    final scrollable = find.descendant(
-      of: find.byType(SingleChildScrollView),
-      matching: find.byType(Scrollable),
-    );
-    return tester.state<ScrollableState>(scrollable).position.maxScrollExtent;
-  }
+  /// These trees hold exactly one `SingleChildScrollView` -- the row list's --
+  /// which the tests below assert before reading its extent.
+  double maxScrollExtent(WidgetTester tester) =>
+      extentOf(tester, find.byType(SingleChildScrollView));
 
   double topOf(WidgetTester tester, String title) =>
       tester.getTopLeft(find.widgetWithText(DSettingsButton, title)).dy;
@@ -184,15 +168,7 @@ void main() {
     (tester) async {
       // The production row set without the debug local-endpoint row must also
       // fit without scrolling (AC lists both sets).
-      FlavorConfig(
-        flavor: Flavor.production,
-        values: FlavorValues(
-          enableNetworkSettings: true,
-          enableJade: false,
-          enableLocalEndpoint: false,
-          isDesktop: true,
-        ),
-      );
+      configureDesktopFlavor();
 
       await pumpSettings(tester, settings: _softwareSettings());
 
@@ -335,35 +311,83 @@ void main() {
     },
   );
 
-  testWidgets(
-    'the export-descriptors entry is present for a Jade wallet and disabled '
-    'while the descriptors are not loaded',
-    (tester) async {
-      // `_jadeSettings()` logs in a Jade wallet, so this also covers AC "visible
-      // for Jade". `walletDescriptorsProvider` defaults to null (not loaded).
-      await pumpSettings(tester, settings: _jadeSettings(), textScale: 0.5);
+  testWidgets('the export-descriptors entry is present for a Jade wallet and disabled '
+      'while the descriptors are not loaded', (tester) async {
+    // `_jadeSettings()` logs in a Jade wallet, so this also covers AC "visible
+    // for Jade". `walletDescriptorsProvider` defaults to null (not loaded).
+    await pumpSettings(tester, settings: _jadeSettings(), textScale: 0.5);
 
-      final exportButton = find.widgetWithText(
-        DSettingsButton,
-        'Export watch-only descriptors',
+    final exportButton = find.widgetWithText(
+      DSettingsButton,
+      'Export watch-only descriptors',
+    );
+    expect(exportButton, findsOneWidget);
+    expect(tester.widget<DSettingsButton>(exportButton).disabled, isTrue);
+  });
+
+  testWidgets('the export-descriptors entry is present for a software wallet and disabled '
+      'while the descriptors are not loaded', (tester) async {
+    await pumpSettings(tester, settings: _softwareSettings());
+
+    final exportButton = find.widgetWithText(
+      DSettingsButton,
+      'Export watch-only descriptors',
+    );
+    expect(exportButton, findsOneWidget);
+    expect(tester.widget<DSettingsButton>(exportButton).disabled, isTrue);
+  });
+
+  // ADR-0014 decisions 8 and 9: the surface is 760px tall, above the 620px
+  // supported floor, so its body scrolls and its Delete action stays pinned.
+  group('ADR-0014 window floor', () {
+    /// The wrapper's own scroll owner, which must never appear: this surface
+    /// takes `ScrollOwner.child`, and a second owner nested inside the row
+    /// list's would swallow the wheel.
+    final wrapperScrollView = find.descendant(
+      of: find.byType(DContentDialog),
+      matching: find.byType(SingleChildScrollView),
+    );
+    final deleteRow = find.widgetWithText(DSettingsButton, 'Delete wallet');
+
+    testWidgets('at the design height the row list is the only scrollable and '
+        'has zero extent', (tester) async {
+      final errors = captureOverflow();
+
+      await pumpSettings(
+        tester,
+        settings: _softwareSettings(),
+        size: designHeight,
       );
-      expect(exportButton, findsOneWidget);
-      expect(tester.widget<DSettingsButton>(exportButton).disabled, isTrue);
-    },
-  );
 
-  testWidgets(
-    'the export-descriptors entry is present for a software wallet and disabled '
-    'while the descriptors are not loaded',
-    (tester) async {
-      await pumpSettings(tester, settings: _softwareSettings());
-
-      final exportButton = find.widgetWithText(
-        DSettingsButton,
-        'Export watch-only descriptors',
+      // The content owns the single scrollable; the dialog adds none.
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(wrapperScrollView, findsOneWidget);
+      expect(maxScrollExtent(tester), 0);
+      // The pinned Delete action is outside it.
+      expect(
+        find.descendant(
+          of: find.byType(SingleChildScrollView),
+          matching: deleteRow,
+        ),
+        findsNothing,
       );
-      expect(exportButton, findsOneWidget);
-      expect(tester.widget<DSettingsButton>(exportButton).disabled, isTrue);
-    },
-  );
+      expect(verticalOverflows(errors), isEmpty);
+    });
+
+    testWidgets('at the floor the row list yields the shortfall, nothing '
+        'overflows and Delete stays live', (tester) async {
+      final errors = captureOverflow();
+
+      await pumpSettings(tester, settings: _softwareSettings(), size: floor);
+
+      // The list really did scroll rather than the surface fitting anyway,
+      // which is what keeps the no-overflow assertion below meaningful.
+      expect(maxScrollExtent(tester), greaterThan(0));
+      expect(verticalOverflows(errors), isEmpty);
+      expect(deleteRow.hitTestable(), findsOneWidget);
+      await tapAndDrain(tester, deleteRow);
+      // Delete pushes its confirmation route.
+      expect(routeRecorder.pushes, greaterThan(1));
+    });
+  });
 }

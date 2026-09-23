@@ -12,6 +12,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_text_field.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
@@ -20,6 +21,30 @@ import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+
+/// Names the constant-height box that holds the message under the confirm
+/// field.
+const dPinSetupMessageReserveKey = Key('d-pin-setup-message-reserve');
+
+/// The gap between the confirm field and the message under it.
+const dPinSetupMessageGap = 8.0;
+
+/// The height reserved under the confirm field, present whether or not there is
+/// a message. Constant, so the field never changes size when a message appears.
+/// ADR-0013 decision 8; the number is measured by
+/// `test/widgets/pin_setup_message_reserve_test.dart`.
+const dPinSetupMessageReserveHeight = 36.0;
+
+/// The style the reserve is measured against.
+const dPinSetupMessageTextStyle = TextStyle(
+  fontFamily: 'Roboto',
+  fontSize: 12,
+  fontWeight: FontWeight.normal,
+  color: SideSwapColors.bitterSweet,
+);
+
+/// The width the message lays out in.
+const dPinSetupFieldWidth = 344.0;
 
 class DPinSetup extends ConsumerWidget {
   const DPinSetup({super.key, this.onEscapeKey});
@@ -74,6 +99,7 @@ class DPinSetup extends ConsumerWidget {
           ],
           style: const DContentDialogThemeData().merge(defaultDialogTheme),
           constraints: const BoxConstraints(maxWidth: 580, maxHeight: 645),
+          scrollOwner: ScrollOwner.wrapper,
           content: const DPinSetupContent(),
         ),
       );
@@ -86,8 +112,32 @@ class DPinSetupContent extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Holds the auto-dispose helper up for as long as the screen is here, so
+    // its `Ref` cannot die underneath the biometric await. It is not enough on
+    // its own -- `_prepareToSendPin` re-checks `ref.mounted` too. ADR-0013
+    // decision 16.
+    ref.listen(pinHelperProvider, (_, _) {});
+
     final firstPinFocusNode = useFocusNode();
     final secondPinFocusNode = useFocusNode();
+
+    // The one explicit trigger that returns focus to the confirm field. It is
+    // scheduled rather than issued here: riverpod notifies synchronously, so
+    // the field is still built disabled at this point and would refuse focus.
+    // ADR-0013 decision 9.
+    ref.listen(pinSetupStateProvider, (previous, next) {
+      if (next is! PinSetupStateError || previous is PinSetupStateError) {
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) {
+          return;
+        }
+
+        secondPinFocusNode.requestFocus();
+      });
+    });
 
     final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
 
@@ -211,34 +261,62 @@ class DPinSetupContent extends HookConsumerWidget {
               child: Consumer(
                 builder: ((context, ref, child) {
                   final secondPin = ref.watch(secondPinProvider);
-                  if (pinFieldState == const PinFieldState.second()) {
-                    secondPinFocusNode.requestFocus();
-                  }
                   final secondPinEnabled = ref.watch(secondPinEnabledProvider);
                   final pinSetupState = ref.watch(pinSetupStateProvider);
-                  final errorMessage = (pinSetupState is PinSetupStateError)
-                      ? pinSetupState.message
-                      : '';
+                  final attempt = ref.watch(pinSetupAttemptProvider);
+                  final overdue =
+                      attempt is PinSetupAttemptStateOutstanding &&
+                      attempt.overdue;
 
-                  return DPinTextField(
-                    focusNode: secondPinFocusNode,
-                    autofocus: true,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(8),
+                  final message = switch (pinSetupState) {
+                    PinSetupStateError(:final message) => message,
+                    _ when overdue => pinSetupTakingLongerKey.tr(),
+                    _ => '',
+                  };
+
+                  return Column(
+                    children: [
+                      DPinTextField(
+                        focusNode: secondPinFocusNode,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(8),
+                        ],
+                        enabled: secondPinEnabled,
+                        pin: secondPin,
+                        error: pinSetupState is PinSetupStateError,
+                        onChanged: (value) {
+                          ref
+                              .read(pinKeyboardHelperProvider)
+                              .onDesktopKeyChanged(secondPin, value);
+                        },
+                        onSubmitted: (_) {
+                          ref.read(pinKeyboardHelperProvider).keyPressed(11);
+                        },
+                      ),
+                      // The space is reserved whether or not there is a
+                      // message, so the field never changes size when one
+                      // appears. ADR-0013 decision 8.
+                      SizedBox(
+                        key: dPinSetupMessageReserveKey,
+                        width: dPinSetupFieldWidth,
+                        height: dPinSetupMessageReserveHeight,
+                        child: message.isEmpty
+                            ? null
+                            : Padding(
+                                padding: const EdgeInsets.only(
+                                  top: dPinSetupMessageGap,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(
+                                    message,
+                                    style: dPinSetupMessageTextStyle,
+                                  ),
+                                ),
+                              ),
+                      ),
                     ],
-                    enabled: secondPinEnabled,
-                    pin: secondPin,
-                    error: pinSetupState is PinSetupStateError,
-                    errorMessage: errorMessage,
-                    onChanged: (value) {
-                      ref
-                          .read(pinKeyboardHelperProvider)
-                          .onDesktopKeyChanged(secondPin, value);
-                    },
-                    onSubmitted: (_) {
-                      ref.read(pinKeyboardHelperProvider).keyPressed(11);
-                    },
                   );
                 }),
               ),
@@ -266,7 +344,12 @@ class DPinSetupContent extends HookConsumerWidget {
                     },
                   };
 
-                  return DPinKeyboard(acceptType: acceptType);
+                  final keyboardEnabled = ref.watch(firstPinEnabledProvider);
+
+                  return DPinKeyboard(
+                    acceptType: acceptType,
+                    enabled: keyboardEnabled,
+                  );
                 },
               ),
             ),

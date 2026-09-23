@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
@@ -52,7 +53,16 @@ class DJadeInfoDialog extends HookConsumerWidget {
     return PopScope(
       canPop: false,
       child: DContentDialog(
-        constraints: const BoxConstraints(minWidth: 200, minHeight: 100),
+        // 124 is this dialog's measured natural height in its tallest state --
+        // a signing status with a live time-to-live. It keeps no width bound:
+        // the dialog centres itself between two `Spacer`s and is deliberately
+        // full-width. See ADR-0014 decision 8.
+        constraints: const BoxConstraints(
+          minWidth: 200,
+          minHeight: 100,
+          maxHeight: 124,
+        ),
+        scrollOwner: ScrollOwner.wrapper,
         style: const DContentDialogThemeData().merge(
           const DContentDialogThemeData(
             padding: EdgeInsets.zero,

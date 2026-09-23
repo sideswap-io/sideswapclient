@@ -162,6 +162,7 @@ class DTxHistoryTransaction extends HookConsumerWidget {
     }
 
     return ListView.builder(
+      key: const PageStorageKey('transactions'),
       itemBuilder: (BuildContext context, int index) {
         final transItem = txList[index];
         final transItemHelper = ref.watch(transItemHelperProvider(transItem));

@@ -1170,6 +1170,37 @@ void main() {
       expect(container.read(marketHistoryOrderProvider), []);
     });
 
+    test('keeps the history total alive while the order list is watched', () async {
+      final subscription = container.listen(
+        marketHistoryOrderProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      container.read(marketHistoryTotalProvider.notifier).setState(42);
+      await container.pump();
+
+      expect(container.read(marketHistoryTotalProvider), 42);
+    });
+
+    test('drops the history total once the order list is unwatched', () async {
+      final subscription = container.listen(
+        marketHistoryOrderProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      container.read(marketHistoryTotalProvider.notifier).setState(42);
+      await container.pump();
+      expect(container.read(marketHistoryTotalProvider), 42);
+
+      subscription.close();
+      container.read(marketHistoryTotalProvider.notifier).setState(7);
+      await container.pump();
+
+      expect(container.read(marketHistoryTotalProvider), 0);
+    });
+
     test('loadHistory adds new orders', () {
       final order1 = HistoryOrder(id: Int64(1));
       final order2 = HistoryOrder(id: Int64(2));
@@ -2233,6 +2264,59 @@ void main() {
     test('returns false with default state', () {
       final result = container.read(limitOrderTradeButtonEnabledProvider);
       expect(result, false);
+    });
+
+    test('returns false when the amount is insufficient', () {
+      final container = ProviderContainer.test(
+        overrides: [
+          limitInsufficientAmountProvider.overrideWithValue(true),
+          limitInsufficientPriceProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(limitOrderTradeButtonEnabledProvider), false);
+    });
+
+    test('returns false when the price is insufficient', () {
+      final container = ProviderContainer.test(
+        overrides: [
+          limitInsufficientAmountProvider.overrideWithValue(false),
+          limitInsufficientPriceProvider.overrideWithValue(true),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(limitOrderTradeButtonEnabledProvider), false);
+    });
+
+    test('returns false while an order submit is already in flight', () {
+      final assetPair = AssetPair(base: 'BTC', quote: 'USD');
+      final asset = Asset()..ticker = 'BTC';
+      asset.freeze();
+      final marketInfo = MarketInfo(assetPair: assetPair);
+
+      final container = ProviderContainer.test(
+        overrides: [
+          marketSubscribedAssetPairProvider.overrideWithValue(Option.of(assetPair)),
+          subscribedMarketInfoProvider.overrideWithValue(Option.of(marketInfo)),
+          marketSubscribedBaseAssetProvider
+              .overrideWithValue(Option.of(asset)),
+          limitOrderAmountControllerProvider.overrideWithValue('1.0'),
+          limitOrderPriceControllerProvider.overrideWithValue('50000'),
+          limitInsufficientAmountProvider.overrideWithValue(false),
+          limitInsufficientPriceProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(limitOrderTradeButtonEnabledProvider), true);
+
+      container
+          .read(orderSubmitProvider.notifier)
+          .setState(From_OrderSubmit());
+
+      expect(container.read(limitOrderTradeButtonEnabledProvider), false);
     });
 
     test('returns true when amount and price are set', () {
@@ -4353,6 +4437,52 @@ void main() {
       addTearDown(container.dispose);
       final result = container.read(limitInsufficientPriceProvider);
       expect(result, true);
+    });
+
+    test('returns false when the order amount is zero but the price is not', () {
+      final feeAsset = Asset(assetId: 'USD', precision: 2);
+      feeAsset.freeze();
+      final quoteAsset = Asset(assetId: 'USD', precision: 2);
+      quoteAsset.freeze();
+      final mockSatoshiRepo = MockAbstractSatoshiRepository();
+      final assetPair = AssetPair(base: 'BTC', quote: 'USD');
+      final container = ProviderContainer.test(
+        overrides: [
+          limitFeeAssetProvider.overrideWithValue(Option.of(feeAsset)),
+          marketSubscribedQuoteAssetProvider.overrideWithValue(
+            Option.of(quoteAsset),
+          ),
+          marketMinimalAmountsNotfierProvider.overrideWithValue({
+            'USD': 1000,
+          }),
+          limitOrderPriceProvider.overrideWithValue(
+            OrderAmount(
+              amount: Decimal.parse('50000'),
+              satoshi: 5000000000000,
+              assetId: 'USD',
+              assetPair: assetPair,
+            ),
+          ),
+          limitOrderAmountProvider.overrideWithValue(
+            OrderAmount(
+              amount: Decimal.zero,
+              satoshi: 0,
+              assetId: 'BTC',
+              assetPair: assetPair,
+            ),
+          ),
+          satoshiRepositoryProvider.overrideWithValue(mockSatoshiRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(limitInsufficientPriceProvider), false);
+      verifyNever(
+        () => mockSatoshiRepo.satoshiForAmount(
+          amount: any(named: 'amount'),
+          assetId: any(named: 'assetId'),
+        ),
+      );
     });
 
     test('returns false when feeAsset != quoteAsset', () {

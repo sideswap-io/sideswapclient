@@ -5,7 +5,6 @@ import 'package:fpdart/fpdart.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:sideswap/common/enums.dart';
@@ -23,14 +22,10 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+import '../helpers/test_utils.dart';
 import '../utils.dart';
 
 class MockAppLinks extends Mock implements AppLinks {}
-
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
 
 class _FakeSideswapWallet extends Fake implements SideswapWallet {
   @override
@@ -53,7 +48,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     registerFallbackValue(LinkResultState.empty());
   });
 
@@ -665,6 +660,12 @@ void main() {
         expect(result, isA<LinkResultStateFailed>());
       });
 
+      test('routes app2app path', () {
+        final uri = Uri.parse('https://app.sideswap.io/app2app/?address=test');
+        final result = sut.handleAppUri(uri);
+        expect(result, isA<LinkResultStateFailed>());
+      });
+
       test('routes unknown path to failedUriPath', () {
         final uri = Uri.parse('https://app.sideswap.io/unknown/');
         final result = sut.handleAppUri(uri);
@@ -989,6 +990,42 @@ void main() {
         await streamController.close();
       },
     );
+
+    test('cancels the uri subscription when the provider is disposed', () async {
+      _setDesktopFlavor();
+      final streamController = StreamController<Uri>();
+      addTearDown(() => streamController.close());
+      when(
+        () => mockAppLinks.uriLinkStream,
+      ).thenAnswer((_) => streamController.stream);
+
+      final container = ProviderContainer.test(
+        overrides: [
+          serverLoginProvider.overrideWith(() => ServerLoginNotifier()),
+          universalLinkProvider.overrideWith((ref) {
+            return UniversalLink(
+              ref.watch(uiStateArgsProvider),
+              ref,
+              appLinks: mockAppLinks,
+            );
+          }),
+        ],
+      );
+      container
+          .read(serverLoginProvider.notifier)
+          .setServerLoginState(const ServerLoginStateLogin());
+
+      final sut = container.read(universalLinkProvider);
+      sut.handleIncomingLinks();
+
+      streamController.add(
+        Uri.parse('https://app.sideswap.io/swap/?order_id=42&private_id=abc'),
+      );
+      container.dispose();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sut.latestUri, isNull);
+    });
 
     test(
       'stream emits URI when server NOT logged in → stores as initialUri',

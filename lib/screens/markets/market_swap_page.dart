@@ -53,7 +53,9 @@ class MarketSwapPage extends HookConsumerWidget {
           },
           _ => null,
         },
-        _ => jadeLockRepository.refreshJadeLockState,
+        // read the provider at tap time: a memoized tear-off can outlive
+        // the repository instance it was bound to
+        _ => () => ref.read(jadeLockRepositoryProvider).refreshJadeLockState(),
       },
       [
         jadeLockRepository.lockState,

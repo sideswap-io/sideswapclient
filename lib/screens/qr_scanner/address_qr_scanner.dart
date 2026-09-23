@@ -88,13 +88,6 @@ class AddressQrScanner extends HookConsumerWidget {
             return;
           }
 
-          if (r.outputsData != null) {
-            ref
-                .read(qrCodeResultModelProvider.notifier)
-                .setModel(QrCodeResultModelData(result: r));
-            return;
-          }
-
           if (r.assetId != null &&
               ref.read(assetsStateProvider)[r.assetId] == null) {
             errorCallback('Unknown asset'.tr());

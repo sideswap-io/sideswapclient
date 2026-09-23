@@ -1,7 +1,6 @@
 import 'dart:ffi' as ffi;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:sideswap/common/enums.dart';
@@ -11,19 +10,16 @@ import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 
-class MockNativeLibrary extends Mock implements NativeLibrary {}
+import '../helpers/test_utils.dart';
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
+class MockNativeLibrary extends Mock implements NativeLibrary {}
 
 void main() {
   late MockNativeLibrary mockLib;
 
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     mockLib = MockNativeLibrary();
     Lib.lib = mockLib;
     registerFallbackValue(ffi.Pointer<ffi.Char>.fromAddress(0));

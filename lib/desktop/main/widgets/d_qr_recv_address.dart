@@ -66,8 +66,12 @@ class DQrRecvAddress extends HookConsumerWidget {
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          height: 70,
+        // A *minimum*, not a fixed height: a confidential address wraps to
+        // more rows than a short one, and a fixed box clipped the overflow
+        // instead of growing. The dialog's scroll body takes the extra.
+        // ADR-0014 decision 10.
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 70),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,

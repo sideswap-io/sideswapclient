@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'pegs_provider.dart';
@@ -9,6 +9,7 @@ part of 'pegs_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -63,7 +64,7 @@ class _$PegSubscribedValuesCopyWithImpl<$Res>
 /// Create a copy of PegSubscribedValues
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? pegInMinimumAmount = null,Object? pegInWalletBalance = null,Object? pegInWalletBalanceLoaded = null,Object? pegOutMinimumAmount = null,Object? pegOutWalletBalance = null,Object? pegOutNextBlockFeeRate = null,}) {
-  return _then(_self.copyWith(
+  return _then(PegSubscribedValues(
 pegInMinimumAmount: null == pegInMinimumAmount ? _self.pegInMinimumAmount : pegInMinimumAmount // ignore: cast_nullable_to_non_nullable
 as int,pegInWalletBalance: null == pegInWalletBalance ? _self.pegInWalletBalance : pegInWalletBalance // ignore: cast_nullable_to_non_nullable
 as int,pegInWalletBalanceLoaded: null == pegInWalletBalanceLoaded ? _self.pegInWalletBalanceLoaded : pegInWalletBalanceLoaded // ignore: cast_nullable_to_non_nullable
@@ -329,7 +330,7 @@ class _$PegOrderFeeDataCopyWithImpl<$Res>
 /// Create a copy of PegOrderFeeData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? feeRate = null,Object? bitcoinNetworkFee = null,}) {
-  return _then(_self.copyWith(
+  return _then(PegOrderFeeData(
 feeRate: null == feeRate ? _self.feeRate : feeRate // ignore: cast_nullable_to_non_nullable
 as Decimal,bitcoinNetworkFee: null == bitcoinNetworkFee ? _self.bitcoinNetworkFee : bitcoinNetworkFee // ignore: cast_nullable_to_non_nullable
 as int,

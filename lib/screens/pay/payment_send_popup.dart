@@ -48,16 +48,26 @@ class PaymentSendPopup extends HookConsumerWidget {
 
     final outputsData = ref.watch(outputsReaderProvider);
 
+    void closeFlow() {
+      outputsCleanup();
+
+      if (createdTx != null && createdTx.addressees.length == 1) {
+        ref.read(walletProvider).goBack();
+        return;
+      }
+
+      ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
+    }
+
     return SideSwapPopup(
-      onClose: () {
-        outputsCleanup();
-
-        if (createdTx != null && createdTx.addressees.length == 1) {
-          ref.read(walletProvider).goBack();
-          return;
+      onClose: closeFlow,
+      // The scaffold keeps canPop false, so the gesture arrives here with
+      // didPop false and this handler owns the routing.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          closeFlow();
         }
-
-        ref.read(pageStatusProvider.notifier).setStatus(Status.registered);
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

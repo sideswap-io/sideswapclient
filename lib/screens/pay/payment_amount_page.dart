@@ -36,16 +36,24 @@ class PaymentAmountPageArguments {
   QrCodeResult? result;
 }
 
-class PaymentAmountPage extends HookConsumerWidget {
+class PaymentAmountPage extends ConsumerWidget {
   const PaymentAmountPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createTxState = ref.watch(createTxStateProvider);
-    final createdTx = switch (createTxState) {
-      CreateTxStateCreated(createdTx: final createdTx) => createdTx,
-      CreateTxStateError(errorMsg: final errorMsg) => () {
-        if (errorMsg != null) {
+    // The outcome moves the user only when it arrives. A transaction stored
+    // before this screen mounted belongs to a flow that already finished, so
+    // it must move nothing (ADR-0012, decision 4).
+    ref.listen(createTxStateProvider, (previous, next) {
+      switch (next) {
+        case CreateTxStateCreated():
+          FocusManager.instance.primaryFocus?.unfocus();
+          Future.microtask(
+            () => ref
+                .read(pageStatusProvider.notifier)
+                .setStatus(Status.paymentSend),
+          );
+        case CreateTxStateError(errorMsg: final String errorMsg):
           Future.microtask(() async {
             await ref.read(utilsProvider).showErrorDialog(errorMsg);
 
@@ -57,25 +65,11 @@ class PaymentAmountPage extends HookConsumerWidget {
             ref.invalidate(sendPopupSelectedAssetIdProvider);
             ref.invalidate(sendPopupAmountProvider);
           });
-        }
-        return null;
-      }(),
-      _ => null,
-    };
-    ref.listen(selectedInputsHelperProvider, (previous, next) {});
-
-    useEffect(() {
-      if (createdTx != null) {
-        FocusManager.instance.primaryFocus?.unfocus();
-        Future.microtask(
-          () => ref
-              .read(pageStatusProvider.notifier)
-              .setStatus(Status.paymentSend),
-        );
+        case _:
+          break;
       }
-
-      return;
-    }, [createdTx]);
+    });
+    ref.listen(selectedInputsHelperProvider, (previous, next) {});
 
     return const PaymentAmountPageCreateTx();
   }

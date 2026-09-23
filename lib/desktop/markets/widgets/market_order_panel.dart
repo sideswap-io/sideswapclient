@@ -232,12 +232,12 @@ class MarketOrderPanel extends HookConsumerWidget {
                             value: tradeDirState == TradeDir.SELL,
                             activeToggleBackground:
                                 tradeDirState == TradeDir.SELL
-                                ? Theme.of(
-                                    context,
-                                  ).extension<MarketColorsStyle>()!.sellColor!
-                                : Theme.of(
-                                    context,
-                                  ).extension<MarketColorsStyle>()!.buyColor!,
+                                ? Theme.of(context)
+                                      .extension<MarketColorsStyle>()!
+                                      .sellColor!
+                                : Theme.of(context)
+                                      .extension<MarketColorsStyle>()!
+                                      .buyColor!,
                             inactiveToggleBackground:
                                 SideSwapColors.darkCerulean,
                             backgroundColor: SideSwapColors.darkCerulean,
@@ -269,17 +269,23 @@ class MarketOrderPanel extends HookConsumerWidget {
             child: Column(
               children: [
                 MarketTypeSwitch(),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final marketTypeSwitchState = ref.watch(
-                      marketTypeSwitchStateProvider,
-                    );
+                // The form is `Flexible` as well, so a page shorter than the
+                // panel hands the shortfall to the form, which scrolls it.
+                // Without this the form kept its full height and the column
+                // overflowed. ADR-0014 decision 8.
+                Flexible(
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final marketTypeSwitchState = ref.watch(
+                        marketTypeSwitchStateProvider,
+                      );
 
-                    return switch (marketTypeSwitchState) {
-                      MarketTypeSwitchStateMarket() => MarketPanel(),
-                      _ => LimitPanel(),
-                    };
-                  },
+                      return switch (marketTypeSwitchState) {
+                        MarketTypeSwitchStateMarket() => MarketPanel(),
+                        _ => LimitPanel(),
+                      };
+                    },
+                  ),
                 ),
               ],
             ),
@@ -308,9 +314,9 @@ class MarketTypeSwitch extends ConsumerWidget {
         activeText: 'Limit order'.tr(),
         inactiveText: 'Market order'.tr(),
         value: marketTypeSwitchState == MarketTypeSwitchState.limit(),
-        activeToggleBackground: Theme.of(
-          context,
-        ).extension<MarketColorsStyle>()!.buyColor!,
+        activeToggleBackground: Theme.of(context)
+            .extension<MarketColorsStyle>()!
+            .buyColor!,
         inactiveToggleBackground: SideSwapColors.darkCerulean,
         backgroundColor: SideSwapColors.darkCerulean,
         borderColor: SideSwapColors.darkCerulean,
@@ -331,12 +337,94 @@ class MarketTypeSwitch extends ConsumerWidget {
   }
 }
 
-class MarketPanel extends ConsumerWidget {
+/// The order form's scroll body, shared by both tabs.
+///
+/// One scroll owner for the whole form, so a wheel gesture anywhere over it
+/// moves every field. ADR-0014 decision 9.
+class _FormScrollBody extends HookWidget {
+  const _FormScrollBody({
+    required this.body,
+    required this.button,
+    this.scrollbarCrossAxisMargin,
+  });
+
+  final Widget body;
+
+  /// The order action. It is the last element of the scroll body, not a
+  /// pinned band: at the floor a pinned band would cut the field above it.
+  /// ADR-0014 decision 8 as amended by #267.
+  final Widget button;
+
+  /// Left `null` where the tab wants the ambient margin: `null` and `0` are
+  /// not the same margin.
+  final double? scrollbarCrossAxisMargin;
+
+  @override
+  Widget build(BuildContext context) {
+    final scrollController = useScrollController();
+
+    return ScrollbarTheme(
+      data: ScrollbarThemeData(
+        crossAxisMargin: scrollbarCrossAxisMargin,
+        thickness: WidgetStatePropertyAll(4),
+      ),
+      child: Scrollbar(
+        thumbVisibility: true,
+        controller: scrollController,
+        child: CustomScrollView(
+          controller: scrollController,
+          slivers: [
+            // A box adapter, not `SliverFillRemaining`: the latter measures
+            // its child's intrinsic height, and the amount field builds a
+            // `LayoutBuilder`, which refuses to report one.
+            SliverToBoxAdapter(child: body),
+            // The `Spacer()` holds the button at the bottom of the form where
+            // the page has the room, and collapses to nothing where it does
+            // not.
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(children: [Spacer(), button]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MarketPanel extends HookConsumerWidget {
   const MarketPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final optionMarketInfo = ref.watch(subscribedMarketInfoProvider);
+    final tradeDirState = ref.watch(tradeDirStateProvider);
+    final tradeButtonEnabled = ref.watch(marketOrderTradeButtonEnabledProvider);
+    final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
+    final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
+    final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
+
+    final marketOrderButtonPressedCallback = useMemoized(
+      () => switch (jadeLockRepository.isUnlocked()) {
+        true => switch (tradeButtonEnabled) {
+          true => () async {
+            await showSwapTradeDialog(
+              context,
+              ref,
+              optionQuoteSuccess: optionQuoteSuccess,
+              optionModifiers: Option.of(
+                PreviewOrderDialogModifiers(showOrderType: false),
+              ),
+            );
+          },
+          _ => null,
+        },
+        // read the provider at tap time: a memoized tear-off can outlive
+        // the repository instance it was bound to
+        _ => () => ref.read(jadeLockRepositoryProvider).refreshJadeLockState(),
+      },
+      [jadeLockRepository.lockState, tradeButtonEnabled, optionQuoteSuccess],
+    );
 
     return optionMarketInfo.match(
       () => SizedBox(),
@@ -350,18 +438,40 @@ class MarketPanel extends ConsumerWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.all(1),
-            child: SizedBox(
-              width: 370,
-              height: 331,
-              child: Column(
-                children: [
-                  SizedBox(height: 4),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: MarketAssetSwitchButtons(height: 36),
+            // A *maximum*, not a fixed height: the form keeps its 331 px
+            // design height where the page has the room, and takes what is
+            // left where it does not. ADR-0014 decision 10.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 331),
+              child: SizedBox(
+                width: 370,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: _FormScrollBody(
+                    body: Column(
+                      children: [
+                        SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: MarketAssetSwitchButtons(height: 36),
+                        ),
+                        MarketAmountPanel(),
+                      ],
+                    ),
+                    // The 8 px inset the fields carry. Without it the button
+                    // takes the full width of the form and draws 3 px wider
+                    // than the one on the limit tab.
+                    button: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: MarketOrderButton(
+                        height: 44,
+                        isSell: tradeDirState == TradeDir.SELL,
+                        onPressed: marketOrderButtonPressedCallback,
+                        text: marketOrderButtonText,
+                      ),
+                    ),
                   ),
-                  MarketAmountPanel(),
-                ],
+                ),
               ),
             ),
           ),
@@ -396,9 +506,9 @@ class MarketAssetSwitchButtons extends ConsumerWidget {
           activeText: quoteAsset.ticker,
           inactiveText: baseAsset.ticker,
           value: marketSideState == MarketSideState.quote(),
-          activeToggleBackground: Theme.of(
-            context,
-          ).extension<MarketColorsStyle>()!.buyColor!,
+          activeToggleBackground: Theme.of(context)
+              .extension<MarketColorsStyle>()!
+              .buyColor!,
           inactiveToggleBackground: SideSwapColors.darkCerulean,
           backgroundColor: SideSwapColors.darkCerulean,
           borderColor: SideSwapColors.darkCerulean,
@@ -423,14 +533,12 @@ class MarketAssetSwitchButtons extends ConsumerWidget {
 class MarketAmountPanel extends HookConsumerWidget {
   const MarketAmountPanel({
     this.onMaxPressed,
-    this.focusNode,
     this.onEditingComplete,
     this.onChanged,
     super.key,
   });
 
   final void Function()? onMaxPressed;
-  final FocusNode? focusNode;
   final void Function()? onEditingComplete;
   final ValueChanged<String>? onChanged;
 
@@ -445,7 +553,6 @@ class MarketAmountPanel extends HookConsumerWidget {
     );
     final tradeDirState = ref.watch(tradeDirStateProvider);
     final optionAcceptQuoteError = ref.watch(marketAcceptQuoteErrorProvider);
-    final marketOrderButtonText = ref.watch(marketOrderButtonTextProvider);
 
     final amountController = useTextEditingController();
 
@@ -473,7 +580,10 @@ class MarketAmountPanel extends HookConsumerWidget {
       return;
     }, [amountController]);
 
-    final amountFocusNode = focusNode ?? useFocusNode();
+    // ADR-0011 decision 3: the panel touches its node (`requestFocus` below)
+    // and no caller supplies one, so it owns the node privately and exposes
+    // no parameter.
+    final amountFocusNode = useFocusNode();
 
     useEffect(() {
       amountController.clear();
@@ -519,40 +629,17 @@ class MarketAmountPanel extends HookConsumerWidget {
 
     final optionQuoteSuccess = ref.watch(marketQuoteSuccessProvider);
 
-    final jadeLockRepository = ref.watch(jadeLockRepositoryProvider);
-
-    final marketOrderButtonPressedCallback = useMemoized(
-      () => switch (jadeLockRepository.isUnlocked()) {
-        true => switch (tradeButtonEnabled) {
-          true => () async {
-            await showSwapTradeDialog(
-              context, ref,
-              optionQuoteSuccess: optionQuoteSuccess,
-              optionModifiers: Option.of(
-                PreviewOrderDialogModifiers(showOrderType: false),
-              ),
-            );
-          },
-          _ => null,
-        },
-        _ => jadeLockRepository.refreshJadeLockState,
-      },
-      [
-        jadeLockRepository.lockState,
-        tradeButtonEnabled,
-        optionQuoteSuccess,
-      ],
-    );
-
     return optionBaseAsset.match(
       () => SizedBox(),
       (baseAsset) => optionQuoteAsset.match(
         () => SizedBox(),
+        // No height: the panel sizes to its content and the form's own scroll
+        // view carries the shortfall, so a long error grows the body instead
+        // of scrolling inside a fixed box. ADR-0014 decision 10.
         (quoteAsset) => SizedBox(
-          height: 291,
           width: 359,
           child: Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 6),
+            padding: const EdgeInsets.only(left: 8, right: 8),
             child: Column(
               children: [
                 MarketAmountTextField(
@@ -567,7 +654,8 @@ class MarketAmountPanel extends HookConsumerWidget {
                     onEditingComplete?.call();
                     if (tradeButtonEnabled) {
                       await showSwapTradeDialog(
-                        context, ref,
+                        context,
+                        ref,
                         optionQuoteSuccess: optionQuoteSuccess,
                       );
                     }
@@ -582,31 +670,18 @@ class MarketAmountPanel extends HookConsumerWidget {
                   descendantsAreFocusable: false,
                   child: BalanceLine(amountSide: true),
                 ),
-                SizedBox(
-                  height: tradeDirState == TradeDir.BUY ? 140 : 110,
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            MarketAmountError(),
-                            MarketLowBalanceError(),
-                            MarketQuoteSuccess(),
-                            MarketUnregisteredGaidError(),
-                            SizedBox(height: 10),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Spacer(),
-                MarketOrderButton(
-                  height: 44,
-                  isSell: tradeDirState == TradeDir.SELL,
-                  onPressed: marketOrderButtonPressedCallback,
-                  text: marketOrderButtonText,
+                // The rows sit in the form's scroll body directly. A box of
+                // their own would scroll inside the form and hide a long
+                // error behind a second scrollable.
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MarketAmountError(),
+                    MarketLowBalanceError(),
+                    MarketQuoteSuccess(),
+                    MarketUnregisteredGaidError(),
+                    SizedBox(height: 10),
+                  ],
                 ),
               ],
             ),
@@ -865,9 +940,8 @@ class MarketAmountError extends ConsumerWidget {
                   quoteError.error,
                   textAlign: TextAlign.start,
                   softWrap: true,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: SideSwapColors.bitterSweet,
-                  ),
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(color: SideSwapColors.bitterSweet),
                 ),
               ),
             ],
@@ -888,9 +962,8 @@ class MarketLowBalanceError extends ConsumerWidget {
     return optionLowBalance.match(
       () => SizedBox(),
       (lowBalance) => DefaultTextStyle(
-        style: Theme.of(
-          context,
-        ).textTheme.titleSmall!.copyWith(color: SideSwapColors.bitterSweet),
+        style: Theme.of(context).textTheme.titleSmall!
+            .copyWith(color: SideSwapColors.bitterSweet),
         child: Column(
           children: [
             SizedBox(height: 10),
@@ -960,9 +1033,8 @@ class MarketLowBalanceErrorRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.titleSmall?.copyWith(color: SideSwapColors.bitterSweet);
+    final textStyle = Theme.of(context).textTheme.titleSmall
+        ?.copyWith(color: SideSwapColors.bitterSweet);
 
     return Row(
       children: [
@@ -995,9 +1067,8 @@ class MarketUnregisteredGaidError extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.titleSmall?.copyWith(color: SideSwapColors.bitterSweet);
+    final textStyle = Theme.of(context).textTheme.titleSmall
+        ?.copyWith(color: SideSwapColors.bitterSweet);
 
     final optionUnregisteredGaid = ref.watch(
       marketQuoteUnregisteredGaidProvider,
@@ -1106,12 +1177,12 @@ class LimitPanel extends HookConsumerWidget {
           // true => tradeCallback,
           _ => null,
         },
-        _ => jadeLockRepository.refreshJadeLockState,
+        // read the provider at tap time: a memoized tear-off can outlive
+        // the repository instance it was bound to
+        _ => () => ref.read(jadeLockRepositoryProvider).refreshJadeLockState(),
       },
       [jadeLockRepository.lockState, tradeButtonEnabled, tradeCallback],
     );
-
-    final scrollController = useScrollController();
 
     return optionMarketInfo.match(
       () => SizedBox(),
@@ -1127,54 +1198,45 @@ class LimitPanel extends HookConsumerWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.all(1),
-              child: SizedBox(
-                width: 370,
-                height: 331,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 8, bottom: 6),
-                  child: ScrollbarTheme(
-                    data: ScrollbarThemeData(
-                      crossAxisMargin: -8,
-                      thickness: WidgetStatePropertyAll(4),
+              // A *maximum*, not a fixed height: the form keeps its 331 px
+              // design height where the page has the room, and takes what is
+              // left where it does not. A fixed box overflowed the column by
+              // 211 px at the supported floor. ADR-0014 decision 10.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 331),
+                child: SizedBox(
+                  width: 370,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 8,
+                      right: 8,
+                      bottom: 6,
                     ),
-                    child: Scrollbar(
-                      thumbVisibility: true,
-                      controller: scrollController,
-                      child: CustomScrollView(
-                        controller: scrollController,
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: Column(
-                              children: [
-                                LimitAmountTextField(
-                                  onEditingComplete: () {
-                                    tradeCallback();
-                                  },
-                                  showMaxButton: tradeDirState == TradeDir.SELL,
-                                ),
-                                LimitPriceTextField(
-                                  onEditingComplete: () {
-                                    tradeCallback();
-                                  },
-                                ),
-                              ],
-                            ),
+                    // At the floor a pinned CONTINUE band would have cut the
+                    // price field, so it rides at the end of the scroll body
+                    // instead. ADR-0014 decision 8 as amended by #267.
+                    child: _FormScrollBody(
+                      scrollbarCrossAxisMargin: -8,
+                      body: Column(
+                        children: [
+                          LimitAmountTextField(
+                            onEditingComplete: () {
+                              tradeCallback();
+                            },
+                            showMaxButton: tradeDirState == TradeDir.SELL,
                           ),
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Column(
-                              children: [
-                                Spacer(),
-                                MarketOrderButton(
-                                  height: 44,
-                                  isSell: tradeDirState == TradeDir.SELL,
-                                  onPressed: marketOrderButtonPressedCallback,
-                                  text: marketOrderButtonText,
-                                ),
-                              ],
-                            ),
+                          LimitPriceTextField(
+                            onEditingComplete: () {
+                              tradeCallback();
+                            },
                           ),
                         ],
+                      ),
+                      button: MarketOrderButton(
+                        height: 44,
+                        isSell: tradeDirState == TradeDir.SELL,
+                        onPressed: marketOrderButtonPressedCallback,
+                        text: marketOrderButtonText,
                       ),
                     ),
                   ),
@@ -1535,16 +1597,14 @@ class LimitPanelTtl extends HookConsumerWidget {
                     SizedBox(width: 6),
                     Text(
                       'TTL'.tr(),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: SideSwapColors.brightTurquoise,
-                      ),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(color: SideSwapColors.brightTurquoise),
                     ),
                     Spacer(),
                     Text(
                       limitTtlFlag.description(),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelMedium?.copyWith(fontSize: 13),
+                      style: Theme.of(context).textTheme.labelMedium
+                          ?.copyWith(fontSize: 13),
                     ),
                     const SizedBox(width: 6),
                     AnimatedDropdownArrow(

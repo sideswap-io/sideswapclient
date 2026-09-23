@@ -2,7 +2,6 @@ import 'package:fixnum/fixnum.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -21,6 +20,8 @@ import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap_logger/custom_logger.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+import '../helpers/test_utils.dart';
+
 class MockSideswapWallet extends Mock implements SideswapWallet {}
 
 class MockSatoshiRepository extends Mock
@@ -30,14 +31,9 @@ class MockAssetUtils extends Mock implements AssetUtils {}
 
 class MockAmountToString extends Mock implements AmountToString {}
 
-class _NoOpLogOutput extends LogOutput {
-  @override
-  void output(OutputEvent event) {}
-}
-
 void main() {
   setUpAll(() {
-    logger = CustomLogger('SideSwap', output: _NoOpLogOutput());
+    logger = CustomLogger('SideSwap', output: NoOpLogOutput());
     registerFallbackValue(CreateTx());
     registerFallbackValue(AmountToStringNamedParameters(amount: 0, ticker: ''));
     registerFallbackValue(Asset());
@@ -737,198 +733,6 @@ void main() {
           verify(() => mockWallet.createTx(captureAny())).captured;
       final createTx = captured.first as CreateTx;
       expect(createTx.hasFeeAssetId(), false);
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // PaymentHelper.mobileOutputsPaymentSend
-  // ---------------------------------------------------------------------------
-  group('PaymentHelper.mobileOutputsPaymentSend', () {
-    late MockSideswapWallet mockWallet;
-    late MockSatoshiRepository mockSatoshiRepo;
-
-    setUp(() {
-      mockWallet = MockSideswapWallet();
-      mockSatoshiRepo = MockSatoshiRepository();
-      when(() => mockWallet.createTx(any())).thenReturn(null);
-    });
-
-    (PaymentHelper, ProviderContainer) makeContainerAndHelper({
-      required Either<OutputsError, OutputsData> outputsData,
-      bool deductFeeFromOutput = false,
-      int deductIndex = 0,
-      Asset? feeAsset,
-      Asset? payjoinFeeAsset,
-      String liquidAssetId = 'lbtc',
-      Map<String, int> balances = const {},
-    }) {
-      final container = ProviderContainer.test(
-        overrides: [
-          outputsCreatorProvider.overrideWithValue(outputsData),
-          deductFeeFromOutputProvider.overrideWithValue(deductFeeFromOutput),
-          payjoinRadioButtonIndexProvider.overrideWithValue(deductIndex),
-          payjoinFeeAssetProvider.overrideWithValue(payjoinFeeAsset),
-          liquidAssetIdStateProvider.overrideWithValue(liquidAssetId),
-          satoshiRepositoryProvider.overrideWithValue(mockSatoshiRepo),
-          walletProvider.overrideWithValue(mockWallet),
-          for (final entry in balances.entries)
-            availableBalanceForAssetIdProvider(entry.key)
-                .overrideWithValue(entry.value),
-        ],
-      );
-      final helper = container.read(paymentHelperProvider);
-      return (helper, container);
-    }
-
-    test('Left outputsData returns error message', () {
-      const errMsg = 'mobile error';
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: Left(OutputsErrorWrongTypeOfFile(errMsg)),
-      );
-      addTearDown(container.dispose);
-
-      // ignore: deprecated_member_use
-      final result = helper.mobileOutputsPaymentSend();
-      expect(result, errMsg);
-      verifyNever(() => mockWallet.createTx(any()));
-    });
-
-    test('Right with null receivers returns null, no createTx', () {
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: const Right(OutputsData()),
-      );
-      addTearDown(container.dispose);
-
-      // ignore: deprecated_member_use
-      final result = helper.mobileOutputsPaymentSend();
-      expect(result, isNull);
-      verifyNever(() => mockWallet.createTx(any()));
-    });
-
-    test('payjoinFeeAsset null returns null (early exit)', () {
-      final receiver = const OutputsReceiver(
-        address: 'addr1',
-        assetId: 'asset1',
-        satoshi: 5000,
-      );
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: Right(OutputsData(receivers: [receiver])),
-        payjoinFeeAsset: null,
-      );
-      addTearDown(container.dispose);
-
-      // ignore: deprecated_member_use
-      final result = helper.mobileOutputsPaymentSend();
-      expect(result, isNull);
-      verifyNever(() => mockWallet.createTx(any()));
-    });
-
-    test('outputSatoshi > maxBalance-1000 sets mobileDeductFeeFromOutput=true',
-        () {
-      const assetId = 'asset1';
-      final receiver = const OutputsReceiver(
-        address: 'addr1',
-        assetId: assetId,
-        satoshi: 100000,
-      );
-      final feeAsset = Asset()..assetId = assetId;
-      // maxBalance=100500, 100000 > (100500-1000)=99500 → deduct=true
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: Right(OutputsData(receivers: [receiver])),
-        payjoinFeeAsset: feeAsset,
-        liquidAssetId: 'lbtc',
-        balances: {assetId: 100500},
-      );
-      addTearDown(container.dispose);
-
-      // ignore: deprecated_member_use
-      helper.mobileOutputsPaymentSend();
-      final captured =
-          verify(() => mockWallet.createTx(captureAny())).captured;
-      final createTx = captured.first as CreateTx;
-      expect(createTx.deductFeeOutput, 0);
-      expect(createTx.feeAssetId, assetId);
-    });
-
-    test(
-        'outputSatoshi <= maxBalance-1000 sets mobileDeductFeeFromOutput=false',
-        () {
-      const assetId = 'asset1';
-      final receiver = const OutputsReceiver(
-        address: 'addr1',
-        assetId: assetId,
-        satoshi: 5000,
-      );
-      final feeAsset = Asset()..assetId = 'lbtc';
-      // maxBalance=100000, 5000 <= (100000-1000)=99000 → deduct=false
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: Right(OutputsData(receivers: [receiver])),
-        payjoinFeeAsset: feeAsset,
-        liquidAssetId: 'lbtc',
-        balances: {assetId: 100000},
-      );
-      addTearDown(container.dispose);
-
-      // ignore: deprecated_member_use
-      helper.mobileOutputsPaymentSend();
-      final captured =
-          verify(() => mockWallet.createTx(captureAny())).captured;
-      final createTx = captured.first as CreateTx;
-      expect(createTx.hasDeductFeeOutput(), false);
-    });
-
-    test('when not deducting and feeAsset != liquidAssetId, feeAssetId is set',
-        () {
-      const assetId = 'asset1';
-      final receiver = const OutputsReceiver(
-        address: 'addr1',
-        assetId: assetId,
-        satoshi: 5000,
-      );
-      final feeAsset = Asset()..assetId = 'fee-other';
-      // maxBalance=100000, 5000 <= 99000 → deduct=false → feeAsset branch
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: Right(OutputsData(receivers: [receiver])),
-        payjoinFeeAsset: feeAsset,
-        liquidAssetId: 'lbtc',
-        balances: {assetId: 100000},
-      );
-      addTearDown(container.dispose);
-
-      // ignore: deprecated_member_use
-      helper.mobileOutputsPaymentSend();
-      final captured =
-          verify(() => mockWallet.createTx(captureAny())).captured;
-      final createTx = captured.first as CreateTx;
-      expect(createTx.feeAssetId, 'fee-other');
-    });
-
-    test('Right with receivers and selectedInputs passes utxos to createTx',
-        () {
-      const assetId = 'asset1';
-      final receiver = const OutputsReceiver(
-        address: 'addr1',
-        assetId: assetId,
-        satoshi: 5000,
-      );
-      final feeAsset = Asset()..assetId = 'lbtc';
-      final (helper, container) = makeContainerAndHelper(
-        outputsData: Right(OutputsData(receivers: [receiver])),
-        payjoinFeeAsset: feeAsset,
-        liquidAssetId: 'lbtc',
-        balances: {assetId: 100000},
-      );
-      addTearDown(container.dispose);
-
-      final utxo = const UtxosItem(txid: 'mobile-txid', vout: 1);
-      // ignore: deprecated_member_use
-      helper.mobileOutputsPaymentSend(selectedInputs: [utxo]);
-
-      final captured =
-          verify(() => mockWallet.createTx(captureAny())).captured;
-      final createTx = captured.first as CreateTx;
-      expect(createTx.utxos.isNotEmpty, true);
-      expect(createTx.utxos.first.txid, 'mobile-txid');
     });
   });
 

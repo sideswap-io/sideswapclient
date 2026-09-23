@@ -16,6 +16,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/markets/widgets/d_tracking_price.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/providers/asset_image_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/limit_review_order_providers.dart';
@@ -53,15 +54,26 @@ class DLimitPanelReviewOrderDialog extends HookConsumerWidget {
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 733),
       style: defaultDialogTheme,
+      scrollOwner: ScrollOwner.wrapper,
+      // Pinned below the body: submitting is what the review is for.
+      actions: [
+        LimitReviewSubmit(
+          onPressed: () {
+            closeCallback();
+          },
+        ),
+      ],
       title: DContentDialogTitle(
         content: Text('Review limit order'.tr()),
         onClose: () {
           closeCallback();
         },
       ),
+      // No fixed height: the body takes its natural size and the wrapper
+      // scrolls it when the window is short. A fixed height here would leave
+      // the scroll view with a shortfall the design window has no need of.
       content: SizedBox(
         width: 580,
-        height: 571,
         child: Column(
           children: [
             const SizedBox(height: 28),
@@ -97,12 +109,6 @@ class DLimitPanelReviewOrderDialog extends HookConsumerWidget {
             LimitReviewOrderType(),
             const SizedBox(height: 8),
             LimitReviewTracking(),
-            const Spacer(),
-            LimitReviewSubmit(
-              onPressed: () {
-                closeCallback();
-              },
-            ),
           ],
         ),
       ),
@@ -333,9 +339,8 @@ class LimitReviewOfflineSwap extends ConsumerWidget {
           Text('Sign type'.tr()),
           Spacer(),
           Tooltip(
-            message:
-                "Online orders (recommended):\n- Are not tied to specific UTXOs (spending UTXOs won't cancel online orders).\n- Can be partially matched, making them more flexible.\n- Order amount can be more than the available wallet balance.\n- Allow price editing.\n- Requires the application to be open and your computer to be running.\n\nOffline orders:\n- Are tied to specific UTXOs (spending UTXOs can cancel one or more orders).\n- Requires exact UTXO amount and therefore may require a funding transaction and payment of network fee.\n- Order amount cannot exceed available wallet balance.\n- Does not allow price editing.\n- Allows the application to be offline."
-                    .tr(),
+            message: "Online orders (recommended):\n- Are not tied to specific UTXOs (spending UTXOs won't cancel online orders).\n- Can be partially matched, making them more flexible.\n- Order amount can be more than the available wallet balance.\n- Allow price editing.\n- Requires the application to be open and your computer to be running.\n\nOffline orders:\n- Are tied to specific UTXOs (spending UTXOs can cancel one or more orders).\n- Requires exact UTXO amount and therefore may require a funding transaction and payment of network fee.\n- Order amount cannot exceed available wallet balance.\n- Does not allow price editing.\n- Allows the application to be offline."
+                .tr(),
             child: Icon(
               Icons.help_outlined,
               size: 20,
@@ -582,9 +587,8 @@ class LimitReviewTTL extends HookConsumerWidget {
                 children: [
                   Text(
                     limitTtlFlag.description(),
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelMedium?.copyWith(fontSize: 13),
+                    style: Theme.of(context).textTheme.labelMedium
+                        ?.copyWith(fontSize: 13),
                   ),
                   const SizedBox(width: 6),
                   AnimatedDropdownArrow(

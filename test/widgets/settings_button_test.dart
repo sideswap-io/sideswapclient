@@ -11,6 +11,11 @@ void main() {
   }) => tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
+        // NoSplash avoids Material's InkSparkle fragment shader, whose asset is
+        // unavailable under `--no-test-assets` (tools/coverage.dart) when the
+        // button is tapped; the ripple is not under test. Without it this only
+        // passes in a checkout that happens to carry a stale `build/` bundle.
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: Scaffold(
           body: SettingsButton(
             type: SettingsButtonType.recovery,

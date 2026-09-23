@@ -21,11 +21,17 @@ class PegInOut extends HookConsumerWidget {
     final pegRepository = ref.watch(pegRepositoryProvider);
     final deliverFocusNode = useFocusNode();
 
+    // Every mount-time side effect runs after the build, not during it:
+    // `getPegOutAmount` clears the swap network error, and a `ref.invalidate`
+    // raised from a build phase marks the enclosing `ProviderScope` as needing
+    // to build while the framework is already building.
     useEffect(() {
       final swapHelper = ref.read(swapHelperProvider);
-      Future.microtask(() => swapHelper.switchToPegs());
-      pegRepository.setActivePage(activePage: ActivePage.PEG_IN);
-      pegRepository.getPegOutAmount();
+      Future.microtask(() {
+        pegRepository.setActivePage(activePage: ActivePage.PEG_IN);
+        pegRepository.getPegOutAmount();
+        swapHelper.switchToPegs();
+      });
       return;
     }, const []);
 
@@ -119,39 +125,57 @@ class _PegContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // The interactive column has a fixed height and one Spacer of slack. The
+    // keyboard takes that slack away, so the column scrolls instead of
+    // overflowing. The panel background fills the stack instead of flexing in a
+    // column of its own, because it spans the viewport, not the scrolled
+    // content.
+    // The scroll-around-a-flex-child shape follows lib/screens/home/home.dart.
     return Stack(
       children: [
-        Column(
-          children: [
-            const SizedBox(height: 137),
-            Expanded(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: SideSwapColors.blumine,
+        Positioned.fill(
+          top: 137,
+          child: DecoratedBox(
+            key: const Key('peg_panel_background'),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: SideSwapColors.blumine,
+            ),
+          ),
+        ),
+        LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: constraints.maxWidth,
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    SizedBox(
+                      height: 109,
+                      child: SwapDeliverAmount(
+                        deliverFocusNode: deliverFocusNode,
+                      ),
+                    ),
+                    SwapMiddleIcon(
+                      onTap: ref.read(swapHelperProvider).toggleAssets,
+                    ),
+                    const SizedBox(height: 6),
+                    const SwapReceiveAmount(),
+                    const Spacer(),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: SwapBottomButton(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                child: const SizedBox.expand(),
               ),
             ),
-          ],
-        ),
-        Column(
-          children: [
-            const SizedBox(height: 5),
-            SizedBox(
-              height: 109,
-              child: SwapDeliverAmount(deliverFocusNode: deliverFocusNode),
-            ),
-            SwapMiddleIcon(onTap: ref.read(swapHelperProvider).toggleAssets),
-            const SizedBox(height: 6),
-            const SwapReceiveAmount(),
-            const Spacer(),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: SwapBottomButton(),
-            ),
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ],
     );

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class NotificationMenuStyle extends ThemeExtension<NotificationMenuStyle> {
@@ -36,7 +34,6 @@ class NotificationMenuStyle extends ThemeExtension<NotificationMenuStyle> {
 
 class NotificationItemConnectRequestStyle
     extends ThemeExtension<NotificationItemConnectRequestStyle> {
-  final double? height;
   final Decoration? decoration;
   final TextStyle? titleTextStyle;
   final Color? dividerColor;
@@ -48,7 +45,6 @@ class NotificationItemConnectRequestStyle
   final TextStyle? cancelledTextStyle;
 
   const NotificationItemConnectRequestStyle({
-    this.height,
     this.decoration,
     this.titleTextStyle,
     this.dividerColor,
@@ -62,7 +58,6 @@ class NotificationItemConnectRequestStyle
 
   @override
   NotificationItemConnectRequestStyle copyWith({
-    double? height,
     Decoration? decoration,
     TextStyle? titleTextStyle,
     Color? dividerColor,
@@ -74,7 +69,6 @@ class NotificationItemConnectRequestStyle
     TextStyle? cancelledTextStyle,
   }) {
     return NotificationItemConnectRequestStyle(
-      height: height ?? this.height,
       decoration: decoration ?? this.decoration,
       titleTextStyle: titleTextStyle ?? this.titleTextStyle,
       dividerColor: dividerColor ?? this.dividerColor,
@@ -98,7 +92,6 @@ class NotificationItemConnectRequestStyle
       return this;
     }
     return NotificationItemConnectRequestStyle(
-      height: lerpDouble(height, other.height, t),
       decoration: Decoration.lerp(decoration, other.decoration, t),
       titleTextStyle: TextStyle.lerp(titleTextStyle, other.titleTextStyle, t),
       dividerColor: Color.lerp(dividerColor, other.dividerColor, t),
@@ -138,14 +131,12 @@ class NotificationItemConnectRequestStyle
 
 class NotificationItemSignRequestStyle
     extends ThemeExtension<NotificationItemSignRequestStyle> {
-  final double? height;
   final Decoration? decoration;
   final TextStyle? titleTextStyle;
   final Color? dividerColor;
   final TextStyle? cancelledTextStyle;
 
   const NotificationItemSignRequestStyle({
-    this.height,
     this.decoration,
     this.titleTextStyle,
     this.dividerColor,
@@ -154,14 +145,12 @@ class NotificationItemSignRequestStyle
 
   @override
   NotificationItemSignRequestStyle copyWith({
-    double? height,
     Decoration? decoration,
     TextStyle? titleTextStyle,
     Color? dividerColor,
     TextStyle? cancelledTextStyle,
   }) {
     return NotificationItemSignRequestStyle(
-      height: height ?? this.height,
       decoration: decoration ?? this.decoration,
       titleTextStyle: titleTextStyle ?? this.titleTextStyle,
       dividerColor: dividerColor ?? this.dividerColor,
@@ -178,7 +167,6 @@ class NotificationItemSignRequestStyle
       return this;
     }
     return NotificationItemSignRequestStyle(
-      height: lerpDouble(height, other.height, t),
       decoration: Decoration.lerp(decoration, other.decoration, t),
       titleTextStyle: TextStyle.lerp(titleTextStyle, other.titleTextStyle, t),
       dividerColor: Color.lerp(dividerColor, other.dividerColor, t),

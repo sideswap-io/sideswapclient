@@ -67,6 +67,37 @@ rm -rf deps build
 ```
 
 
+### Native library for a developer build
+
+The desktop app loads the rust wallet library `sideswap_client` at run time. The
+Docker build above copies it for you. A developer build done with
+`flutter build linux`, `flutter build windows`, `flutter run -d linux` or
+`flutter run -d windows` copies it during the build's install step, so no manual
+copy is needed.
+
+The library is looked up in two places, in this order:
+
+1. The cargo target directory of the `sideswap_rust` checkout:
+   `<rust>/target/debug/` for a Debug build and `<rust>/target/release/`
+   otherwise. `<rust>` is the `SIDESWAP_RUST_DIR` environment variable when it is
+   set, and the `sideswap_rust` sibling directory of this repository otherwise.
+   On Windows and macOS the "Sideswap: cargo sideswap_client (desktop)" VS Code
+   task builds the Debug library. For a Profile or Release build, and on Linux,
+   run `cargo build -p sideswap_client [--release]` in that checkout yourself.
+2. A drop directory inside the platform directory, for developers who do not
+   build the rust library themselves: `linux/lib/libsideswap_client.so` and
+   `windows/lib/sideswap_client.dll`. Both directories are gitignored. On Windows
+   every other `.dll` in the chosen directory is copied too, which covers the
+   MinGW runtime libraries that ship beside a prebuilt DLL.
+
+When the library is in neither place, the build prints a warning that names both
+paths and still succeeds. Unless an earlier build already put the library in
+place, the app then starts and fails on the login screen. On
+Windows `flutter build windows` hides the console output of the install step, so
+the warning is visible only in the raw build log, for example through
+`cmake --install build/windows/x64 --config Debug`.
+
+
 ---
 
 ## 🔒 Security & Responsible Disclosure

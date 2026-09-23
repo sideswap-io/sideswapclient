@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'inputs_providers.dart';
@@ -9,6 +9,7 @@ part of 'inputs_providers.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -287,7 +288,7 @@ class _$InputsTxItemCopyWithImpl<$Res>
 /// Create a copy of InputsTxItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? tx = freezed,Object? satoshi = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(InputsTxItem(
 tx: freezed == tx ? _self.tx : tx // ignore: cast_nullable_to_non_nullable
 as String?,satoshi: freezed == satoshi ? _self.satoshi : satoshi // ignore: cast_nullable_to_non_nullable
 as int?,
@@ -541,7 +542,7 @@ class _$InputsAddressItemCopyWithImpl<$Res>
 /// Create a copy of InputsAddressItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? address = freezed,Object? txAmount = freezed,Object? comment = freezed,Object? satoshi = freezed,Object? inputsTx = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(InputsAddressItem(
 address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,txAmount: freezed == txAmount ? _self.txAmount : txAmount // ignore: cast_nullable_to_non_nullable
 as int?,comment: freezed == comment ? _self.comment : comment // ignore: cast_nullable_to_non_nullable
@@ -682,7 +683,7 @@ return $default(_that.address,_that.txAmount,_that.comment,_that.satoshi,_that.i
 
 
 class _InputsAddressItem implements InputsAddressItem {
-  const _InputsAddressItem({this.address, this.txAmount, this.comment, this.satoshi, final  List<InputsTxItem>? inputsTx}): _inputsTx = inputsTx;
+  const _InputsAddressItem({this.address, this.txAmount, this.comment, this.satoshi,  List<InputsTxItem>? inputsTx}): _inputsTx = inputsTx;
   
 
 @override final  String? address;
@@ -812,7 +813,7 @@ class _$InputsItemCopyWithImpl<$Res>
 /// Create a copy of InputsItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? inputs = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(InputsItem(
 inputs: freezed == inputs ? _self.inputs : inputs // ignore: cast_nullable_to_non_nullable
 as List<InputsAddressItem>?,
   ));
@@ -949,7 +950,7 @@ return $default(_that.inputs);case _:
 
 
 class _InputsItem implements InputsItem {
-  const _InputsItem({final  List<InputsAddressItem>? inputs}): _inputs = inputs;
+  const _InputsItem({ List<InputsAddressItem>? inputs}): _inputs = inputs;
   
 
  final  List<InputsAddressItem>? _inputs;

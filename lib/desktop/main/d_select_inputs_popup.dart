@@ -13,6 +13,7 @@ import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/widgets/d_scroll_when_short.dart';
 import 'package:sideswap/desktop/main/widgets/d_select_inputs_wallet_type_flag_popup_menu.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
@@ -37,14 +38,56 @@ class DSelectInputsPopup extends HookConsumerWidget {
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 1040, maxHeight: 808),
       style: defaultDialogTheme,
+      // The inputs list owns this surface's scrollable, so the wrapper
+      // supplies the `Flexible` half only.
+      scrollOwner: ScrollOwner.child,
+      // Pinned below the body: CONTINUE is what finishes the task.
+      actions: [
+        Consumer(
+          builder: (context, ref, child) {
+            const textColor = SideSwapColors.turquoise;
+
+            return Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Network fees will be visible on the transaction review screen.'
+                          .tr(),
+                      style: Theme.of(context).textTheme.labelMedium
+                          ?.copyWith(color: textColor),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                DCustomButton(
+                  width: 245,
+                  height: 44,
+                  isFilled: true,
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('CONTINUE'.tr()),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
       title: DContentDialogTitle(
         content: Text('Select inputs'.tr()),
         onClose: () {
           Navigator.of(context).pop();
         },
       ),
-      content: SizedBox(
-        height: 712,
+      // Design height. 84px lower than the 712 it was while CONTINUE shared
+      // this box: pinning that row in `actions` costs the dialog's actions
+      // padding plus the row itself, and the dialog's own 808 cap does not
+      // move, so 628 is all the body can have at the design window. The inputs
+      // list under it is `Flexible` and yields the rest on a short window.
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 628),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -55,7 +98,10 @@ class DSelectInputsPopup extends HookConsumerWidget {
               thickness: 1,
               color: SideSwapColors.jellyBean,
             ),
-            const DInputsList(),
+            // Flexible, so the list yields the shortfall on a short window
+            // instead of the column overflowing. Its own `minHeight: 76` is
+            // what stops it from disappearing.
+            const Flexible(child: DInputsList()),
             SizedBox(
               height: 48,
               child: Padding(
@@ -78,40 +124,6 @@ class DSelectInputsPopup extends HookConsumerWidget {
             ),
             const Spacer(),
             const DInputsDetails(),
-            const SizedBox(height: 16),
-            Consumer(
-              builder: (context, ref, child) {
-                const textColor = SideSwapColors.turquoise;
-
-                return Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Network fees will be visible on the transaction review screen.'
-                              .tr(),
-                          style: Theme.of(
-                            context,
-                          ).textTheme.labelMedium?.copyWith(color: textColor),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    DCustomButton(
-                      width: 245,
-                      height: 44,
-                      isFilled: true,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('CONTINUE'.tr()),
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -171,23 +183,20 @@ class DInputsListHeader extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               'Address/Hash'.tr(),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: SideSwapColors.cornFlower,
-              ),
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: SideSwapColors.cornFlower),
             ),
           ],
         ),
         Text(
           'Asset'.tr(),
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium?.copyWith(color: SideSwapColors.cornFlower),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: SideSwapColors.cornFlower),
         ),
         Text(
           'Balance'.tr(),
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium?.copyWith(color: SideSwapColors.cornFlower),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: SideSwapColors.cornFlower),
         ),
       ],
     );
@@ -299,15 +308,13 @@ class DInputsTotalAmountList extends HookConsumerWidget {
               children: [
                 Text(
                   'Asset'.tr(),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: SideSwapColors.cornFlower,
-                  ),
+                  style: Theme.of(context).textTheme.labelMedium
+                      ?.copyWith(color: SideSwapColors.cornFlower),
                 ),
                 Text(
                   'Balance'.tr(),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: SideSwapColors.cornFlower,
-                  ),
+                  style: Theme.of(context).textTheme.labelMedium
+                      ?.copyWith(color: SideSwapColors.cornFlower),
                 ),
               ],
             ),
